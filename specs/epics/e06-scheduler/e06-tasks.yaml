@@ -1,0 +1,38 @@
+epic: e06-scheduler
+slice: 2
+tasks:
+  - id: E6-T1
+    title: Hosted service with injected TimeProvider; no Thread.Sleep, no DateTime.Now in Domain
+    type: infra
+    status: pending
+    tests: [SC-10, ARC-06]
+  - id: E6-T2
+    title: Delivery scheduling at lead time and activation on the delivery date
+    type: application
+    status: pending
+    tests: [SC-01, SC-02, SC-11]
+  - id: E6-T3
+    title: Renewal — raise and settle the next invoice on the monthly anniversary
+    type: application
+    status: pending
+    tests: [SC-03, CO-08]
+  - id: E6-T4
+    title: Exactly-once renewal per period; safe when the service runs twice
+    type: application
+    status: pending
+    tests: [SC-04]
+  - id: E6-T5
+    title: Cancellation suppression and end-of-paid-period effective date, including a last-day request
+    type: application
+    status: pending
+    tests: [SC-05, SC-06]
+  - id: E6-T6
+    title: Period arithmetic from the stored anchor; 31st clamping and restoration
+    type: domain
+    status: pending
+    tests: [SC-07, SC-08]
+  - id: E6-T7
+    title: Business-date derivation at fixed +08:00
+    type: domain
+    status: pending
+    tests: [SC-09]

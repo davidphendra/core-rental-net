@@ -1,0 +1,72 @@
+project: CoreRentalNet
+product: Core Rental
+phase: specs_complete
+last_updated: 2026-09-10
+
+authority:
+  completion_decided_by: product_owner          # ADR-0014
+  deployment_requires_explicit_consent: true    # ADR-0014
+  epic_archive_rule: automatic_when_build_and_tests_green
+
+stack:
+  runtime: dotnet 10.0.400
+  ui: blazor-interactive-server
+  persistence: sqlite single file, module-prefixed tables
+  ef_core: 10.0.12 (pinned; security fix)
+  tests: xunit v2 + awesomeassertions, playwright, netarchtest
+
+decisions_locked: 18
+adrs: 15
+
+modules:
+  - name: Catalog
+    persists: false
+    note: read-only in-memory snapshot of products.json (62 SKUs)
+  - name: Workspace
+    persists: true
+    note: the draft; slots, quantities, delivery address, quote
+  - name: Rentals
+    persists: true
+    note: rental, invoices, periods, cancellation, access tokens
+
+epics:
+  - id: E1
+    name: catalog
+    slice: 1
+    status: ready
+  - id: E2
+    name: workspace
+    slice: 1
+    status: ready
+  - id: E3
+    name: host-ui
+    slice: 1
+    status: ready
+  - id: E4
+    name: checkout
+    slice: 1
+    status: ready
+  - id: E5
+    name: rentals
+    slice: 2
+    status: pending
+  - id: E6
+    name: scheduler
+    slice: 2
+    status: pending
+  - id: E7
+    name: test-matrix-and-e2e
+    slice: 3
+    status: pending
+  - id: E8
+    name: ci-and-docs
+    slice: 3
+    status: pending
+
+next_action: >
+  Begin Slice 1 / epic E1 (catalog): create the solution scaffold, central
+  package management, BuildingBlocks, and the read-only Catalog module with
+  unit tests. No application code before the product owner confirms the specs
+  in this directory.
+
+blocked_on: product owner review of specs/

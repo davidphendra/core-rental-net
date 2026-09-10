@@ -1,0 +1,43 @@
+epic: e05-checkout
+slice: 1
+tasks:
+  - id: E5-T1
+    title: DemoConfirmDialog — native dialog, Level-2 tokens, copy, Cancel semantics
+    type: ui
+    status: pending
+    tests: [CO-01, CO-05, UI-04]
+  - id: E5-T2
+    title: Phrase gate — trim + case-insensitive match, confirm disabled until matched, cancel keeps cart
+    type: ui
+    status: pending
+    tests: [CO-02, CO-03, CO-05]
+  - id: E5-T3
+    title: Server-side phrase validation rejecting a mismatched confirmation
+    type: application
+    status: pending
+    tests: [CO-04, SEC-03]
+  - id: E5-T4
+    title: CheckoutCommand — frozen composition, server pricing, rental + first invoice settled
+    type: application
+    status: pending
+    tests: [CO-06, CO-07, CO-08, CO-09, CO-14, SEC-01]
+  - id: E5-T5
+    title: Idempotency via Draft to Converted; repeat checkout returns the existing order
+    type: application
+    status: pending
+    tests: [CO-11]
+  - id: E5-T6
+    title: Guards — empty workspace, missing or short address, unresolvable SKU reference
+    type: application
+    status: pending
+    tests: [CO-12, ADDR-01, ADDR-02, ADDR-03, WS-13]
+  - id: E5-T7
+    title: Cart reset — clear draft, rotate cookie token via forced navigation
+    type: infra
+    status: pending
+    tests: [CO-10, ORD-05]
+  - id: E5-T8
+    title: Order confirmation page at /orders/{number} with token authorisation
+    type: ui
+    status: pending
+    tests: [ORD-01, ORD-02, ORD-03, ORD-04, SEC-06]

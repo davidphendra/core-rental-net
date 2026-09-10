@@ -558,14 +558,5 @@
     "description": "Palm Areca: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-palm-areca.svg"
-  },
-  {
-    "skuNo": "PTNE25GIL41Y",
-    "name": "Motorcycle Rental",
-    "category": "partner",
-    "subCategory": null,
-    "pricePerMonth": 1500000,
-    "description": "Your ticket to weekend adventures and quick cafe runs. Partner service — request only, not part of the setup total.",
-    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDzjIAuaxcV_rRiMy00v8cwn-pxzwpyvjnmspN6m-JdZcjS4wpchbvEIbu9AhU39Gt0UuXmBbvCpLuwHABEixWRrchkthbGrCJB24fDyTEWNO0IdIO8a458vmSwuNoPEOKru9qYVF5mS_42N6YoQne_hhILyTszOmFM0nOtv5cfe95PI5QEetoQOcIfGXGFsEOXDkiQvwFNXUU3hc6FrwfatsrwiMwp6vDzWNYXOcIcHvCQhvz66bCvsA"
   }
 ]

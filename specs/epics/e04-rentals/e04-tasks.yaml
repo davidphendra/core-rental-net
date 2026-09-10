@@ -1,0 +1,33 @@
+epic: e04-rentals
+slice: 1
+tasks:
+  - id: E4-T1
+    title: Rental aggregate, RentalNumber, status transitions, address snapshot, line snapshots
+    type: domain
+    status: pending
+    tests: [CO-06, CO-14, SC-11]
+  - id: E4-T2
+    title: Invoice aggregate, InvoiceNumber sequence, lines, subtotal, tax line rule, total, Open to Paid
+    type: domain
+    status: pending
+    tests: [CO-07, CO-08, CO-09, CO-14]
+  - id: E4-T3
+    title: Policies — delivery lead time, renewal on anniversary, cancellation at end of paid period
+    type: domain
+    status: pending
+    tests: [SC-05, SC-06, SC-07]
+  - id: E4-T4
+    title: IPaymentGateway + DemoPaymentGateway settling immediately
+    type: infra
+    status: pending
+    tests: [CO-07, SEC-04]
+  - id: E4-T5
+    title: Access token generation and hashing; get rental by token; get invoices by token
+    type: application
+    status: pending
+    tests: [ORD-01, ORD-02, ORD-04, SEC-02, SEC-06]
+  - id: E4-T6
+    title: RentalsContext, entity configuration, migrations for Rentals_* tables
+    type: infra
+    status: pending
+    tests: [ARC-02, ARC-03]

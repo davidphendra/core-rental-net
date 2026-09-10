@@ -1,0 +1,53 @@
+epic: e07-test-matrix-e2e
+slice: 3
+tasks:
+  - id: E7-T1
+    title: Integration tests — real SQLite file per test, migrations applied, torn down
+    type: test
+    status: pending
+    tests: [WS-13, DR-05, SEC-02]
+  - id: E7-T2
+    title: E2E host fixture — Kestrel subprocess, ephemeral port, temp database, teardown
+    type: test
+    status: pending
+    tests: []
+  - id: E7-T3
+    title: Playwright projects — Chromium desktop and one mobile viewport
+    type: test
+    status: pending
+    tests: [UI-07]
+  - id: E7-T4
+    title: E2E — happy path Home to Builder to Store to Review to dialog to confirmation
+    type: test
+    status: pending
+    tests: [NAV-03, CO-01, CO-03, CO-06, CO-10, ORD-03]
+  - id: E7-T5
+    title: E2E — wrong phrase rejected and no order created
+    type: test
+    status: pending
+    tests: [CO-04, SEC-03]
+  - id: E7-T6
+    title: E2E — reload mid-funnel preserves the draft; two-tab conflict resolves
+    type: test
+    status: pending
+    tests: [DR-02, DR-03, DR-06]
+  - id: E7-T7
+    title: E2E — empty workspace gating and direct /review redirect
+    type: test
+    status: pending
+    tests: [NAV-01, NAV-02, NAV-04, NAV-06]
+  - id: E7-T8
+    title: E2E — keyboard-only completion; dialog focus trap and Esc
+    type: test
+    status: pending
+    tests: [UI-04, UI-08]
+  - id: E7-T9
+    title: E2E — order enumeration without a token discloses nothing; hermetic (no third-party requests)
+    type: test
+    status: pending
+    tests: [SEC-05, SEC-06, UI-06]
+  - id: E7-T10
+    title: Resolve every test-matrix row to passing or n/a with a reason
+    type: chore
+    status: pending
+    tests: []

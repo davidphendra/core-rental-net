@@ -1,0 +1,43 @@
+epic: e02-workspace
+slice: 1
+tasks:
+  - id: E2-T1
+    title: Slot rule table in data + SlotId/SlotAssignment value objects + capacity and category invariants
+    type: domain
+    status: pending
+    tests: [SLOT-01, SLOT-02, SLOT-03, SLOT-05, WS-06, WS-07]
+  - id: E2-T2
+    title: Workspace aggregate — assign, replace, change quantity, remove, set address; Version concurrency
+    type: domain
+    status: pending
+    tests: [WS-01, WS-02, WS-03, WS-04, WS-05, WS-08, WS-09, WS-10, DR-06]
+  - id: E2-T3
+    title: Quote computation via IDefineProductPrices; references only, no stored prices
+    type: domain
+    status: pending
+    tests: [WS-11, WS-12, WS-13, WS-14]
+  - id: E2-T4
+    title: WorkspaceContext + entity configuration + migration (Workspace_* tables)
+    type: infra
+    status: pending
+    tests: [WS-14]
+  - id: E2-T5
+    title: Application commands and queries — assign, remove, change quantity, set address, get draft, get quote
+    type: application
+    status: pending
+    tests: [WS-01, WS-03, ADDR-02, ADDR-03, ADDR-05]
+  - id: E2-T6
+    title: IDefineWorkspaceComposition contract returning a frozen composition for Rentals
+    type: application
+    status: pending
+    tests: [ARC-01]
+  - id: E2-T7
+    title: Draft token — middleware issues/rotates the cookie; scoped provider captures it at prerender
+    type: infra
+    status: pending
+    tests: [DR-01, DR-02, DR-04, DR-05, DR-07, SEC-05]
+  - id: E2-T8
+    title: Integration tests — real SQLite file per test, migrations, prefix and concurrency assertions
+    type: test
+    status: pending
+    tests: [DR-05, DR-07, WS-13, ARC-03]

@@ -1,0 +1,18 @@
+epic: e08-ci-and-docs
+slice: 3
+tasks:
+  - id: E8-T1
+    title: GitHub Actions workflow — build, unit, architecture, integration, E2E with Chromium
+    type: chore
+    status: pending
+    tests: []
+  - id: E8-T2
+    title: Root README — run instructions, demo phrase, database reset, epic map, specs pointer
+    type: docs
+    status: pending
+    tests: []
+  - id: E8-T3
+    title: Archive index maintenance and a note that CI is dormant until a remote exists
+    type: docs
+    status: pending
+    tests: []

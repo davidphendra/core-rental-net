@@ -1,0 +1,48 @@
+epic: e01-catalog
+slice: 1
+tasks:
+  - id: E1-T1
+    title: Solution scaffold, Directory.Build.props/Packages.props, global.json, editorconfig, dotnet-tools manifest
+    type: chore
+    status: pending
+    tests: [ARC-05]
+  - id: E1-T2
+    title: BuildingBlocks.Domain — Entity, AggregateRoot, ValueObject, StronglyTypedId, Guard, domain exception
+    type: domain
+    status: pending
+    tests: []
+  - id: E1-T3
+    title: Money value object — IDR, decimal(18,2), single rounding point, id-ID display
+    type: domain
+    status: pending
+    tests: [MON-01, MON-02, MON-03, MON-04, MON-05, MON-06, MON-07, MON-08]
+  - id: E1-T4
+    title: BuildingBlocks.Application/Infrastructure — errors, id generator, ModuleDbContext base, SQLite connection setup
+    type: infra
+    status: pending
+    tests: []
+  - id: E1-T5
+    title: Catalog domain — Product, Sku, category/subcategory, badge, image path
+    type: domain
+    status: pending
+    tests: [CAT-10, CAT-11]
+  - id: E1-T6
+    title: Catalog loader — read products.json, validate, fail fast, in-memory immutable snapshot
+    type: infra
+    status: pending
+    tests: [CAT-01, CAT-02, CAT-03, CAT-12, CAT-13]
+  - id: E1-T7
+    title: Catalog queries — by category, subcategory, SKU, featured; extras/accessories groupings
+    type: application
+    status: pending
+    tests: [CAT-04, CAT-05, CAT-06, CAT-07, CAT-08, CAT-09]
+  - id: E1-T8
+    title: IDefineProductPrices public contract used by Workspace and Rentals
+    type: application
+    status: pending
+    tests: [CAT-11]
+  - id: E1-T9
+    title: Architecture tests — boundaries, DbContext ownership, table prefixes, domain purity, no mediator
+    type: test
+    status: pending
+    tests: [ARC-01, ARC-02, ARC-03, ARC-04, ARC-05, ARC-06]

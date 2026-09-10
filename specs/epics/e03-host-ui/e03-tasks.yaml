@@ -1,0 +1,58 @@
+epic: e03-host-ui
+slice: 1
+tasks:
+  - id: E3-T1
+    title: Host project, Program.cs composition root, InteractiveServer, module registration
+    type: infra
+    status: pending
+    tests: []
+  - id: E3-T2
+    title: tokens.css from DESIGN.md; base.css; remove all hardcoded colour/spacing
+    type: ui
+    status: pending
+    tests: [UI-01]
+  - id: E3-T3
+    title: slots.css — slotId to CSS custom properties; no coordinate literals in C#
+    type: ui
+    status: pending
+    tests: [UI-02]
+  - id: E3-T4
+    title: MarketingLayout, AppHeader, MobileBottomNav, BuilderShell
+    type: ui
+    status: pending
+    tests: [NAV-01, NAV-07, UI-07]
+  - id: E3-T5
+    title: Home page — hero, popular cards, How it Works
+    type: ui
+    status: pending
+    tests: [CAT-08]
+  - id: E3-T6
+    title: Builder — category nav, product grid, SlotCanvas, empty/filled slots, quantity stepper, remove control
+    type: ui
+    status: pending
+    tests: [WS-05, WS-08, WS-09, WS-10, SLOT-04]
+  - id: E3-T7
+    title: Store page — extras and accessories with Add to Setup
+    type: ui
+    status: pending
+    tests: [CAT-06, CAT-07]
+  - id: E3-T8
+    title: Review page — quote lines, fee, total, two-line address textarea, gated CTA
+    type: ui
+    status: pending
+    tests: [ADDR-01, ADDR-04, ADDR-06, ORD-03]
+  - id: E3-T9
+    title: Gating rules — disable Summary, Rent, View Setup Summary, Ready to Rent, CTA when empty; redirect direct /review
+    type: ui
+    status: pending
+    tests: [NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06]
+  - id: E3-T10
+    title: ProductImage placeholder state + vendor the 6 remote images locally
+    type: ui
+    status: pending
+    tests: [CAT-12, UI-05, UI-06]
+  - id: E3-T11
+    title: Accessibility pass — real buttons, accessible names, focus, landmarks, aria-disabled
+    type: ui
+    status: pending
+    tests: [UI-03, UI-08, NAV-05]
