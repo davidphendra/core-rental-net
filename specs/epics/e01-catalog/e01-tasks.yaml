@@ -1,48 +1,65 @@
 epic: e01-catalog
 slice: 1
+status: complete
+completed: 2026-09-10
+
 tasks:
   - id: E1-T1
     title: Solution scaffold, Directory.Build.props/Packages.props, global.json, editorconfig, dotnet-tools manifest
     type: chore
-    status: pending
+    status: done
     tests: [ARC-05]
   - id: E1-T2
-    title: BuildingBlocks.Domain — Entity, AggregateRoot, ValueObject, StronglyTypedId, Guard, domain exception
+    title: BuildingBlocks.Domain — Guard, DomainRuleViolationException
     type: domain
-    status: pending
-    tests: []
+    status: done
+    tests: [MON-01, MON-07]
+    note: >
+      Entity / AggregateRoot / ValueObject / StronglyTypedId were not created. They have no
+      consumer yet, and records already give value semantics. They land in E2 with the first
+      aggregate that needs them.
   - id: E1-T3
-    title: Money value object — IDR, decimal(18,2), single rounding point, id-ID display
+    title: Money value object — IDR, single rounding point, id-ID display
     type: domain
-    status: pending
+    status: done
     tests: [MON-01, MON-02, MON-03, MON-04, MON-05, MON-06, MON-07, MON-08]
   - id: E1-T4
-    title: BuildingBlocks.Application/Infrastructure — errors, id generator, ModuleDbContext base, SQLite connection setup
+    title: BuildingBlocks.Application/Infrastructure — errors, id generator, ModuleDbContext base, SQLite setup
     type: infra
-    status: pending
+    status: deferred
+    deferred_to: E2
     tests: []
+    note: >
+      Deferred deliberately. These are persistence primitives with no consumer in E1, and
+      writing them now would mean committing untested infrastructure. Persistence is E2's
+      concern and they arrive with the tests that exercise them.
   - id: E1-T5
-    title: Catalog domain — Product, Sku, category/subcategory, badge, image path
+    title: Catalog domain — Product, Sku, category/subcategory, badge, image availability
     type: domain
-    status: pending
+    status: done
     tests: [CAT-10, CAT-11]
   - id: E1-T6
-    title: Catalog loader — read products.json, validate, fail fast, in-memory immutable snapshot
+    title: Catalog loader — read, validate, fail fast, immutable in-memory snapshot
     type: infra
-    status: pending
-    tests: [CAT-01, CAT-02, CAT-03, CAT-12, CAT-13]
+    status: done
+    tests: [CAT-01, CAT-02, CAT-03, CAT-12, CAT-13, CAT-14]
   - id: E1-T7
-    title: Catalog queries — by category, subcategory, SKU, featured; extras/accessories groupings
+    title: Catalog queries — by category, subcategory, SKU, featured, and the two navigation groupings
     type: application
-    status: pending
+    status: done
     tests: [CAT-04, CAT-05, CAT-06, CAT-07, CAT-08, CAT-09]
+    note: >
+      A grouping turned out not to be a category filter: Accessories and Extras both draw from
+      the Accessory category, split by subcategory. Added CatalogGroupings as data plus a
+      GetCatalogGroup query. Found by a failing test, not by review.
   - id: E1-T8
     title: IDefineProductPrices public contract used by Workspace and Rentals
     type: application
-    status: pending
+    status: done
     tests: [CAT-11]
   - id: E1-T9
-    title: Architecture tests — boundaries, DbContext ownership, table prefixes, domain purity, no mediator
+    title: Architecture tests — boundaries, DbContext ownership, table prefixes, domain purity, package policy, clock access, catalog read-only
     type: test
-    status: pending
+    status: done
     tests: [ARC-01, ARC-02, ARC-03, ARC-04, ARC-05, ARC-06]
+    note: ARC-01, ARC-02 and ARC-03 pass vacuously until E2 adds a DbContext and a second module.

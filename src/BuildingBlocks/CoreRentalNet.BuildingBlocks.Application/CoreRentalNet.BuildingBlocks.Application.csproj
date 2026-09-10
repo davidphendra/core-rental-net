@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.BuildingBlocks.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CoreRentalNet.BuildingBlocks.Domain/CoreRentalNet.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

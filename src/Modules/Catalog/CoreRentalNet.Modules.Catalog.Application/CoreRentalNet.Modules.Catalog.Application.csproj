@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.Modules.Catalog.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CoreRentalNet.Modules.Catalog.Domain/CoreRentalNet.Modules.Catalog.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

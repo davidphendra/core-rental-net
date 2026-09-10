@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.ArchitectureTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Domain/CoreRentalNet.Modules.Catalog.Domain.csproj" />
+    <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Application/CoreRentalNet.Modules.Catalog.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

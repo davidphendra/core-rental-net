@@ -16,32 +16,33 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| CAT-01 | Load `products.json` at startup | 62 SKUs; chair 10, desk 10, beanbag 10, coffee 10, lamp 6, monitor 8, plant 8 | I | pending |
-| CAT-02 | File is malformed | startup fails fast with a clear message | I | pending |
-| CAT-03 | File is missing | startup fails fast with the resolved path in the message | I | pending |
-| CAT-04 | Query category `chair` | exactly 10, no other category leaks in | U | pending |
-| CAT-05 | Query subcategory `coffee` | exactly 10 | U | pending |
-| CAT-06 | Extras listing | `coffee ∪ beanbag` only | U | pending |
-| CAT-07 | Accessories listing | `monitor ∪ lamp ∪ plant` only | U | pending |
-| CAT-08 | `badge: popular` | exactly 2 SKUs flagged; featured selection uses it | U | pending |
-| CAT-09 | `partner` category | absent — the item was removed from the file | U | pending |
-| CAT-10 | Unknown SKU lookup | returns not-found, never throws | U | pending |
-| CAT-11 | Price lookup | returns `Money` in IDR, 2dp stored | U | pending |
-| CAT-12 | Image path points at a non-existent file | flagged so the UI renders a placeholder tile | U | pending |
-| CAT-13 | Catalog exposes no mutation API | verified by architecture test on public surface | A | pending |
+| CAT-01 | Load `products.json` at startup | 62 SKUs; chair 10, desk 10, beanbag 10, coffee 10, lamp 6, monitor 8, plant 8 | I | passing |
+| CAT-02 | File is malformed | startup fails fast with a clear message | I | passing |
+| CAT-03 | File is missing | startup fails fast with the resolved path in the message | I | passing |
+| CAT-04 | Query category `chair` | exactly 10, no other category leaks in | U | passing |
+| CAT-05 | Query subcategory `coffee` | exactly 10 | U | passing |
+| CAT-06 | Extras listing | `coffee ∪ beanbag` only | U | passing |
+| CAT-07 | Accessories listing | `monitor ∪ lamp ∪ plant` only | U | passing |
+| CAT-08 | `badge: popular` | exactly 2 SKUs flagged; featured selection uses it | U | passing |
+| CAT-09 | `partner` category | absent — the item was removed from the file | U | passing |
+| CAT-10 | Unknown SKU lookup | returns not-found, never throws | U | passing |
+| CAT-11 | Price lookup | returns `Money` in IDR, 2dp stored | U | passing |
+| CAT-12 | Image path points at a non-existent file | flagged so the UI renders a placeholder tile | U | passing |
+| CAT-13 | Catalog exposes no mutation API | verified by architecture test on public surface | A | passing |
+| CAT-14 | Catalog file contains a duplicate SKU (any casing) | rejected with the offending SKU named | I | passing |
 
 ## Money (ADR-0004)
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| MON-01 | Add two `Money` of the same currency | summed, currency preserved | U | pending |
-| MON-02 | Add two `Money` of different currency | rejected | U | pending |
-| MON-03 | Multiply by quantity | correct product | U | pending |
-| MON-04 | Rounding, exactly `.5` | rounds `AwayFromZero` | U | pending |
-| MON-05 | Rounding happens once at line finalization | no double rounding on a 9-unit workspace | U | pending |
-| MON-06 | Display format | `id-ID` → `Rp400.000`, 0 decimals | U | pending |
-| MON-07 | Zero and negative | zero allowed; negative rejected | U | pending |
-| MON-08 | No `double` in the money path | architecture test over the Domain assemblies | A | pending |
+| MON-01 | Add two `Money` of the same currency | summed, currency preserved | U | passing |
+| MON-02 | Add two `Money` of different currency | rejected | U | passing |
+| MON-03 | Multiply by quantity | correct product | U | passing |
+| MON-04 | Rounding, exactly `.5` | rounds `AwayFromZero` | U | passing |
+| MON-05 | Rounding happens once at line finalization | no double rounding on a 9-unit workspace | U | passing |
+| MON-06 | Display format | `id-ID` → `Rp400.000`, 0 decimals | U | passing |
+| MON-07 | Zero and negative | zero allowed; negative rejected | U | passing |
+| MON-08 | No `double` in the money path | architecture test over the Domain assemblies | A | passing |
 
 ## Slot rules (ADR-0008)
 
@@ -49,7 +50,7 @@ was never specified.
 |---|---|---|---|---|
 | SLOT-01 | Slot table | Desk 1, Chair 1, Monitor 3, Lamp 1, Plant 1, Coffee 1, Relax 1 | U | pending |
 | SLOT-02 | Maximum assignable units | 9 | U | pending |
-| SLOT-03 | Zone derivation | only subcategories present in the catalog produce a zone | U | pending |
+| SLOT-03 | Zone derivation | only subcategories present in the catalog produce a zone | U | passing |
 | SLOT-04 | Zone list rendered | Coffee Station and Relax Zone only | U,E | pending |
 | SLOT-05 | Slot capacity lives in data | changing Monitor to 4 requires no code change | U | pending |
 
@@ -157,12 +158,12 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| ARC-01 | Cross-module references | no module references another's `Domain` or `Infrastructure` | A | pending |
-| ARC-02 | `DbContext` ownership | one per persisting module (Workspace, Rentals); Catalog has none | A | pending |
-| ARC-03 | Table names | every mapped entity carries its module prefix | A | pending |
-| ARC-04 | Domain purity | Domain references no EF Core or ASP.NET type | A | pending |
-| ARC-05 | Absent plumbing | no mediator, no event bus, no outbox package referenced | A | pending |
-| ARC-06 | Time access | `TimeProvider` used everywhere; no `DateTime.Now`/`UtcNow` in Domain | A | pending |
+| ARC-01 | Cross-module references | no module references another's `Domain` or `Infrastructure` | A | passing (vacuous until E2 adds a second module / a DbContext) |
+| ARC-02 | `DbContext` ownership | one per persisting module (Workspace, Rentals); Catalog has none | A | passing (vacuous until E2 adds a second module / a DbContext) |
+| ARC-03 | Table names | every mapped entity carries its module prefix | A | passing (vacuous until E2 adds a second module / a DbContext) |
+| ARC-04 | Domain purity | Domain references no EF Core or ASP.NET type | A | passing |
+| ARC-05 | Absent plumbing | no mediator, no event bus, no outbox package referenced | A | passing |
+| ARC-06 | Time access | `TimeProvider` used everywhere; no `DateTime.Now`/`UtcNow` in Domain | A | passing |
 
 ## UI, tokens and accessibility (ADR-0012)
 

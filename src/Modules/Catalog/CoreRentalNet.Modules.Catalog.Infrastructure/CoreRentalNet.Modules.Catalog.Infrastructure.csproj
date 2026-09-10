@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.Modules.Catalog.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CoreRentalNet.Modules.Catalog.Application/CoreRentalNet.Modules.Catalog.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Shipped beside the assembly so the host can load it at runtime from any working directory. -->
+    <Content Include="../../../shared/data/products.json" Link="Catalog/products.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
