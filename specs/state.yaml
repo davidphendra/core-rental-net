@@ -1,6 +1,6 @@
 project: CoreRentalNet
 product: Core Rental
-phase: specs_complete
+phase: delivered_pending_acceptance
 last_updated: 2026-09-10
 
 authority:
@@ -66,10 +66,12 @@ epics:
   - id: E8
     name: ci-and-docs
     slice: 3
-    status: pending
+    status: archived
+    note: archived 2026-09-10, awaiting product owner acceptance
 
 next_action: >
-  Begin epic E8 (CI and documentation): the GitHub Actions workflow that runs build,
-  unit, integration and browser tests, and a root README.
+  None. All eight epics are archived and every row of specs/test-matrix.md passes.
+  The product owner decides whether the work is accepted; nothing is deployed and
+  nothing will be without explicit consent.
 
-blocked_on: product owner review of E1 to E7 (all archived, none accepted yet)
+blocked_on: product owner acceptance of E1 to E8, and a GitHub remote for the workflow
