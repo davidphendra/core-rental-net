@@ -1,7 +1,7 @@
 # Scope of the MVP. Anything absent here is out of scope by default.
 product: Core Rental
 revision: 1
-last_updated: 2026-02-12
+last_updated: 2026-09-10
 
 in_scope:
   - "Browse a fixed catalog of 62 office SKUs (chairs, desks, extras)"
