@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>CoreRentalNet.IntegrationTests</RootNamespace>
+    <RootNamespace>CoreRentalNet.Modules.Workspace.UnitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
-    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Infrastructure/CoreRentalNet.Modules.Workspace.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

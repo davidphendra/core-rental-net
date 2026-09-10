@@ -18,6 +18,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Domain/CoreRentalNet.Modules.Workspace.Domain.csproj" />
+    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
+    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Infrastructure/CoreRentalNet.Modules.Workspace.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,43 +1,78 @@
 epic: e02-workspace
 slice: 1
+status: complete
+completed: 2026-09-10
+commits:
+  - "E2a: domain, slot rules, quote"
+  - "E2b: persistence, token, integration tests"
+
 tasks:
   - id: E2-T1
-    title: Slot rule table in data + SlotId/SlotAssignment value objects + capacity and category invariants
+    title: Slot rule table in data + SlotId / SlotAssignment invariants
     type: domain
-    status: pending
-    tests: [SLOT-01, SLOT-02, SLOT-03, SLOT-05, WS-06, WS-07]
+    status: done
+    tests: [SLOT-01, SLOT-02, SLOT-05, WS-06]
+    note: >
+      Compatibility is by construction rather than a runtime check: a product maps to
+      exactly one slot through a total function, so a wrong-category assignment is not
+      something the code can express. One enum, one table, no compatibility conditional.
   - id: E2-T2
-    title: Workspace aggregate — assign, replace, change quantity, remove, set address; Version concurrency
+    title: Workspace aggregate - assign, replace, change quantity, remove, set address, convert, Version
     type: domain
-    status: pending
-    tests: [WS-01, WS-02, WS-03, WS-04, WS-05, WS-08, WS-09, WS-10, DR-06]
+    status: done
+    tests: [WS-01, WS-02, WS-03, WS-04, WS-05, WS-08, WS-09, WS-10, ADDR-02, ADDR-03, ADDR-05, CO-11]
+    note: >
+      Version is bumped by the aggregate on every mutation rather than by a SaveChanges
+      override, which keeps the concurrency rule in the domain and needs no interceptor.
   - id: E2-T3
-    title: Quote computation via IDefineProductPrices; references only, no stored prices
+    title: Quote computed from the catalog; references only, no stored prices
     type: domain
-    status: pending
-    tests: [WS-11, WS-12, WS-13, WS-14]
+    status: done
+    tests: [WS-11, WS-12, WS-13]
+    note: >
+      An unresolvable SKU is reported as an unavailable line, excluded from the subtotal
+      and flagged, rather than throwing a 500 or being silently priced at zero.
   - id: E2-T4
-    title: WorkspaceContext + entity configuration + migration (Workspace_* tables)
+    title: WorkspaceContext, entity configuration, migration for the Workspace_ tables
     type: infra
-    status: pending
-    tests: [WS-14]
+    status: done
+    tests: [WS-14, ARC-02, ARC-03]
+    note: >
+      ModuleDbContext was not created. A base class whose only job was automatic prefixing
+      would have conflicted with the arch test that reads the declared table names, so
+      there is one mechanism, not two: explicit prefixed names plus a source-scan rule.
   - id: E2-T5
-    title: Application commands and queries — assign, remove, change quantity, set address, get draft, get quote
+    title: Application commands and queries - assign, remove, change quantity, set address, read, quote
     type: application
-    status: pending
-    tests: [WS-01, WS-03, ADDR-02, ADDR-03, ADDR-05]
+    status: done
+    tests: [WS-05, WS-08, WS-09, WS-10, ADDR-04, WS-11]
   - id: E2-T6
-    title: IDefineWorkspaceComposition contract returning a frozen composition for Rentals
+    title: IDefineWorkspaceComposition - frozen composition for Rentals
     type: application
-    status: pending
+    status: done
     tests: [ARC-01]
+    note: A test asserts the composition carries Sku and Quantity only, so no price can leak across the boundary.
   - id: E2-T7
-    title: Draft token — middleware issues/rotates the cookie; scoped provider captures it at prerender
+    title: Draft token mechanism
     type: infra
-    status: pending
-    tests: [DR-01, DR-02, DR-04, DR-05, DR-07, SEC-05]
+    status: partial
+    tests: [DR-05]
+    note: >
+      Generation, hashing and lookup are done and integration-tested. The HTTP cookie
+      middleware is deferred to E3 because it needs a request pipeline, and the Host
+      project is E3. DR-01 to DR-04 and DR-07 therefore stay pending until E3/E7.
   - id: E2-T8
-    title: Integration tests — real SQLite file per test, migrations, prefix and concurrency assertions
+    title: Integration tests against a real SQLite file, one per test
     type: test
-    status: pending
-    tests: [DR-05, DR-07, WS-13, ARC-03]
+    status: done
+    tests: [DR-05, DR-06, WS-14, ARC-02, ARC-03, SLOT-06]
+    note: >
+      Includes a genuine two-context concurrency conflict asserting the first writer's
+      change survived and the second did not overwrite it, and a schema read proving no
+      draft or assignment column could hold a price.
+
+deviations:
+  - "dotnet-tools.json named the tool command 'ef'; dotnet-ef exposes 'dotnet-ef'. Fixed."
+  - "EF-generated migrations are excluded from style rules in .editorconfig (EF emits block-scoped namespaces)."
+  - "EF Core 10 creates its own __EFMigrationsLock table; the table-prefix test exempts EF bookkeeping only."
+  - "The module-boundary test now asserts it discovered every module on disk, so the rule can never quietly pass on nothing."

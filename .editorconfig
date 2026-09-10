@@ -29,3 +29,10 @@ dotnet_diagnostic.CA1848.severity = none
 dotnet_diagnostic.CA1707.severity = none
 dotnet_diagnostic.CA2007.severity = none
 dotnet_diagnostic.CA1051.severity = none
+
+# Entity Framework generates block-scoped namespaces and its own formatting. Excluding
+# generated migrations keeps the style rules meaningful for hand-written code.
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.IDE0161.severity = none

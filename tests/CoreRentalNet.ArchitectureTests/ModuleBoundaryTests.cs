@@ -13,11 +13,12 @@ public sealed class ModuleBoundaryTests
     {
         var modules = ModuleAssemblies();
 
-        // Nothing to check while only one module exists; the rule becomes real in E2.
-        if (modules.Count < 2)
-        {
-            return;
-        }
+        // Guards against the rule silently going vacuous: if the repository has N module
+        // directories, N modules must have been discovered in the test output.
+        var moduleDirectories = Directory.GetDirectories(RepoRoot.Combine("src", "Modules")).Length;
+        modules.Select(entry => entry.Module).Distinct().Count().Should().BeGreaterThanOrEqualTo(
+            moduleDirectories,
+            "every module on disk must be discovered, otherwise this rule proves nothing");
 
         foreach (var (module, assembly) in modules)
         {

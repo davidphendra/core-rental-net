@@ -48,30 +48,31 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| SLOT-01 | Slot table | Desk 1, Chair 1, Monitor 3, Lamp 1, Plant 1, Coffee 1, Relax 1 | U | pending |
-| SLOT-02 | Maximum assignable units | 9 | U | pending |
+| SLOT-01 | Slot table | Desk 1, Chair 1, Monitor 3, Lamp 1, Plant 1, Coffee 1, Relax 1 | U | passing |
+| SLOT-02 | Maximum assignable units | 9 | U | passing |
 | SLOT-03 | Zone derivation | only subcategories present in the catalog produce a zone | U | passing |
 | SLOT-04 | Zone list rendered | Coffee Station and Relax Zone only | U,E | pending |
-| SLOT-05 | Slot capacity lives in data | changing Monitor to 4 requires no code change | U | pending |
+| SLOT-05 | Slot capacity lives in data | changing Monitor to 4 requires no code change | U | passing |
+| SLOT-06 | Every product in the real catalog maps to exactly one slot | mapping is total, and every slot has at least one product behind it | I | passing |
 
 ## Workspace composition
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| WS-01 | Assign a chair to an empty workspace | Chair slot filled, quantity 1 | U | pending |
-| WS-02 | Assign a second chair | replaces the first; quantity stays 1; total unchanged | U | pending |
-| WS-03 | Assign three monitors | all three accepted | U | pending |
-| WS-04 | Assign a fourth monitor | refused with a capacity message; total unchanged | U,E | pending |
-| WS-05 | Assign a plant | lands in the Plant slot; the user never picks a slot | U | pending |
-| WS-06 | Add a monitor from a product card when the slot is full | refused with a message, no silent replacement | U,E | pending |
-| WS-07 | Assign a wrong-category item to a slot | unrepresentable — no code path permits it | U | pending |
-| WS-08 | Remove via the slot's `×` | slot returns to its dashed empty state | U,E | pending |
-| WS-09 | Stepper `−` at quantity 1 | removes the item | U | pending |
-| WS-10 | Stepper `+` at capacity | disabled; state unchanged | U,E | pending |
-| WS-11 | Quote | sum of `price × quantity` recomputed from the catalog on every read | U | pending |
-| WS-12 | Catalog price changes between reads | quote reflects the new price | U | pending |
-| WS-13 | Draft references a SKU absent from the catalog | validation error and a visible message — never a 500, never a silent drop | U,I | pending |
-| WS-14 | Draft stores no price column | schema assertion | A | pending |
+| WS-01 | Assign a chair to an empty workspace | Chair slot filled, quantity 1 | U | passing |
+| WS-02 | Assign a second chair | replaces the first; quantity stays 1; total unchanged | U | passing |
+| WS-03 | Assign three monitors | all three accepted | U | passing |
+| WS-04 | Assign a fourth monitor | refused with a capacity message; total unchanged | U,E | passing (unit; E2E pending) |
+| WS-05 | Assign a plant | lands in the Plant slot; the user never picks a slot | U | passing |
+| WS-06 | Add a monitor from a product card when the slot is full | refused with a message, no silent replacement | U,E | passing (unit; E2E pending) |
+| WS-07 | Assign a wrong-category item to a slot | unrepresentable — no code path permits it | U | passing |
+| WS-08 | Remove via the slot's `×` | slot returns to its dashed empty state | U,E | passing (unit; E2E pending) |
+| WS-09 | Stepper `−` at quantity 1 | removes the item | U | passing |
+| WS-10 | Stepper `+` at capacity | disabled; state unchanged | U,E | passing (unit; E2E pending) |
+| WS-11 | Quote | sum of `price × quantity` recomputed from the catalog on every read | U | passing |
+| WS-12 | Catalog price changes between reads | quote reflects the new price | U | passing |
+| WS-13 | Draft references a SKU absent from the catalog | validation error and a visible message — never a 500, never a silent drop | U,I | passing |
+| WS-14 | Draft stores no price column | schema assertion | A | passing |
 
 ## Draft persistence and the cookie token (ADR-0007)
 
@@ -81,8 +82,8 @@ was never specified.
 | DR-02 | Navigate Builder → Store → Review | the same draft is carried through | E | pending |
 | DR-03 | Browser reload mid-funnel | the draft survives | E | pending |
 | DR-04 | Cookie attributes | `HttpOnly`, `Secure`, `SameSite=Lax` | E | pending |
-| DR-05 | Token is not the draft identifier | not equal to the draft id; stored hashed | I | pending |
-| DR-06 | Two tabs edit the same draft | concurrency conflict surfaced; reload shows current state | U,I | pending |
+| DR-05 | Token is not the draft identifier | not equal to the draft id; stored hashed | I | passing |
+| DR-06 | Two tabs edit the same draft | concurrency conflict surfaced; reload shows current state | U,I | passing |
 | DR-07 | Draft created lazily | visiting Home twice does not create two drafts | I | pending |
 
 ## Navigation and gating
@@ -102,10 +103,10 @@ was never specified.
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
 | ADDR-01 | Checkout with no address | refused, field highlighted | U,E | pending |
-| ADDR-02 | Whitespace only | refused after trimming | U | pending |
-| ADDR-03 | 4 characters / 201 characters | refused at both bounds | U | pending |
+| ADDR-02 | Whitespace only | refused after trimming | U | passing |
+| ADDR-03 | 4 characters / 201 characters | refused at both bounds | U | passing |
 | ADDR-04 | Saved on blur | one write per blur, not per keystroke | U,E | pending |
-| ADDR-05 | Newlines inside the value | normalised before storage | U | pending |
+| ADDR-05 | Newlines inside the value | normalised before storage | U | passing |
 | ADDR-06 | Two-line textarea | renders 2 rows; location icon top-aligned | E | pending |
 
 ## Checkout and the demo dialog (ADR-0010)
@@ -158,9 +159,9 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| ARC-01 | Cross-module references | no module references another's `Domain` or `Infrastructure` | A | passing (vacuous until E2 adds a second module / a DbContext) |
-| ARC-02 | `DbContext` ownership | one per persisting module (Workspace, Rentals); Catalog has none | A | passing (vacuous until E2 adds a second module / a DbContext) |
-| ARC-03 | Table names | every mapped entity carries its module prefix | A | passing (vacuous until E2 adds a second module / a DbContext) |
+| ARC-01 | Cross-module references | no module references another's `Domain` or `Infrastructure` | A | passing |
+| ARC-02 | `DbContext` ownership | one per persisting module (Workspace, Rentals); Catalog has none | A | passing |
+| ARC-03 | Table names | every mapped entity carries its module prefix | A | passing |
 | ARC-04 | Domain purity | Domain references no EF Core or ASP.NET type | A | passing |
 | ARC-05 | Absent plumbing | no mediator, no event bus, no outbox package referenced | A | passing |
 | ARC-06 | Time access | `TimeProvider` used everywhere; no `DateTime.Now`/`UtcNow` in Domain | A | passing |
