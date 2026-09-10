@@ -67,7 +67,7 @@ epics:
     status: pending
 
 next_action: >
-  Begin epic E5 (checkout): the demo dialog with the typed phrase, the checkout command
-  that turns a draft into an order, the cart reset and the confirmation page.
+  Begin epic E6 (scheduler): the hosted service that schedules delivery, activates the
+  rental and raises each renewal, with the cancellation boundary.
 
-blocked_on: product owner review of E1 to E4 (all archived, none yet accepted)
+blocked_on: product owner review of E1 to E5 (all archived, none yet accepted)
