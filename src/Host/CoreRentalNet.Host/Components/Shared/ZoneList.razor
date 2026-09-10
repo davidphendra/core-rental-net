@@ -1,0 +1,22 @@
+@* The zones that sit below the scene. Only zones the catalog can actually fill are rendered. *@
+<div class="zone-list">
+    @foreach (var slot in View.Slots.Where(slot => ZoneIds.Contains(slot.Slot)))
+    {
+        <section class="zone stack-sm">
+            <h3 class="label-md chip chip--neutral">@slot.DisplayName</h3>
+            <SlotView Slot="slot" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" />
+        </section>
+    }
+</div>
+
+@code {
+    private static readonly SlotId[] ZoneIds = [SlotId.CoffeeStation, SlotId.RelaxZone];
+
+    [Parameter, EditorRequired] public WorkspaceView View { get; set; } = default!;
+
+    [Parameter] public EventCallback<SlotId> OnPick { get; set; }
+
+    [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
+
+    [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+}

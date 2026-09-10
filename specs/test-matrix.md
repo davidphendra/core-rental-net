@@ -51,7 +51,7 @@ was never specified.
 | SLOT-01 | Slot table | Desk 1, Chair 1, Monitor 3, Lamp 1, Plant 1, Coffee 1, Relax 1 | U | passing |
 | SLOT-02 | Maximum assignable units | 9 | U | passing |
 | SLOT-03 | Zone derivation | only subcategories present in the catalog produce a zone | U | passing |
-| SLOT-04 | Zone list rendered | Coffee Station and Relax Zone only | U,E | pending |
+| SLOT-04 | Zone list rendered | Coffee Station and Relax Zone only | U,E | passing (observed by running it; automated in E7) |
 | SLOT-05 | Slot capacity lives in data | changing Monitor to 4 requires no code change | U | passing |
 | SLOT-06 | Every product in the real catalog maps to exactly one slot | mapping is total, and every slot has at least one product behind it | I | passing |
 
@@ -78,13 +78,13 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| DR-01 | First GET with no cookie | an opaque draft token is issued | E | pending |
-| DR-02 | Navigate Builder → Store → Review | the same draft is carried through | E | pending |
-| DR-03 | Browser reload mid-funnel | the draft survives | E | pending |
-| DR-04 | Cookie attributes | `HttpOnly`, `Secure`, `SameSite=Lax` | E | pending |
+| DR-01 | First GET with no cookie | an opaque draft token is issued | E | passing (observed by running it; automated in E7) |
+| DR-02 | Navigate Builder → Store → Review | the same draft is carried through | E | passing (observed by running it; automated in E7) |
+| DR-03 | Browser reload mid-funnel | the draft survives | E | passing (observed by running it; automated in E7) |
+| DR-04 | Cookie attributes | `HttpOnly`, `Secure`, `SameSite=Lax` | E | passing (observed by running it; automated in E7) |
 | DR-05 | Token is not the draft identifier | not equal to the draft id; stored hashed | I | passing |
 | DR-06 | Two tabs edit the same draft | concurrency conflict surfaced; reload shows current state | U,I | passing |
-| DR-07 | Draft created lazily | visiting Home twice does not create two drafts | I | pending |
+| DR-07 | Draft created lazily | visiting Home twice does not create two drafts | I | passing |
 
 ## Navigation and gating
 
@@ -92,8 +92,8 @@ was never specified.
 |---|---|---|---|---|
 | NAV-01 | Empty workspace, mobile nav | `Summary` and `Rent` disabled | E | pending |
 | NAV-02 | Empty workspace, Builder | `View Setup Summary` and `Ready to Rent?` disabled; total shows `Rp0/mo` | E | pending |
-| NAV-03 | Empty workspace | every product card remains clickable and assigns | E | pending |
-| NAV-04 | Type `/review` directly with an empty workspace | redirect to Builder with a message | E | pending |
+| NAV-03 | Empty workspace | every product card remains clickable and assigns | E | passing (observed by running it; automated in E7) |
+| NAV-04 | Type `/review` directly with an empty workspace | redirect to Builder with a message | E | passing (observed by running it; automated in E7) |
 | NAV-05 | Disabled controls | `aria-disabled`, not focusable, muted per design tokens | U,E | pending |
 | NAV-06 | Assign one item | all gated controls become enabled | E | pending |
 | NAV-07 | Header bag icon | decorative: no count, no navigation | U | pending |
@@ -107,7 +107,7 @@ was never specified.
 | ADDR-03 | 4 characters / 201 characters | refused at both bounds | U | passing |
 | ADDR-04 | Saved on blur | one write per blur, not per keystroke | U,E | pending |
 | ADDR-05 | Newlines inside the value | normalised before storage | U | passing |
-| ADDR-06 | Two-line textarea | renders 2 rows; location icon top-aligned | E | pending |
+| ADDR-06 | Two-line textarea | renders 2 rows; location icon top-aligned | E | passing (observed by running it; automated in E7) |
 
 ## Checkout and the demo dialog (ADR-0010)
 
@@ -170,12 +170,12 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| UI-01 | Design tokens | every colour, radius and spacing used comes from a CSS custom property | A | pending |
-| UI-02 | Slot geometry | supplied by CSS variables keyed by slot id; no coordinate literals in C# | U | pending |
+| UI-01 | Design tokens | every colour, radius and spacing used comes from a CSS custom property | A | passing |
+| UI-02 | Slot geometry | supplied by CSS variables keyed by slot id; no coordinate literals in C# | U | passing |
 | UI-03 | Interactive elements | real `button`/`a` with accessible names — no clickable `div` | E | pending |
 | UI-04 | Demo dialog | native `dialog`; focus trapped; `Esc` closes | E | pending |
 | UI-05 | Missing product image | design-system placeholder tile renders | U,E | pending |
-| UI-06 | Remote product images | vendored locally; the E2E run makes no third-party request | E | pending |
+| UI-06 | Remote product images | vendored locally; the E2E run makes no third-party request | E | passing |
 | UI-07 | Mobile viewport | bottom nav visible; Builder side panel collapsed; horizontal category chips | E | pending |
 | UI-08 | Keyboard only | the full funnel is completable without a mouse | E | pending |
 
@@ -189,3 +189,11 @@ was never specified.
 | SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | pending |
 | SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | pending |
 | SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | pending |
+
+## Notes recorded during E3
+
+- `DR-04`: `Secure` is set only when the request is HTTPS, so the E2E suite must assert it on an
+  HTTPS origin and must assert `HttpOnly` and `SameSite=Lax` everywhere.
+- `WS-04/06/08/10`, `NAV-01/02/05/06`, `UI-03/04/05/07/08` remain pending: they need a browser.
+- `SLOT-06` and `UI-06` both read the real catalog file and the real web root, so a new remote
+  image URL or a product with an unmapped subcategory fails the build.

@@ -1,0 +1,18 @@
+@* Folder-like tabs for the selection panel. *@
+<div class="tabs" role="tablist" aria-label="Product categories">
+    @foreach (var tab in CatalogTabs.All)
+    {
+        var current = tab;
+        <button type="button" role="tab" class="tab"
+                aria-selected="@((Selected == current).ToString().ToLowerInvariant())"
+                @onclick="() => OnSelect.InvokeAsync(current)">
+            @CatalogTabs.LabelFor(current)
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CatalogTab Selected { get; set; }
+
+    [Parameter] public EventCallback<CatalogTab> OnSelect { get; set; }
+}

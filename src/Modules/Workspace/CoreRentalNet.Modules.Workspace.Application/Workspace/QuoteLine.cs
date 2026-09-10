@@ -14,7 +14,9 @@ public sealed record QuoteLine(
     string Name,
     int Quantity,
     Money? UnitMonthlyPrice,
-    Money? LineMonthlyTotal)
+    Money? LineMonthlyTotal,
+    string? ImagePath,
+    bool ImageAvailable)
 {
     public bool IsAvailable => UnitMonthlyPrice is not null;
 }

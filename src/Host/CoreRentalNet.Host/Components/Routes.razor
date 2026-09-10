@@ -1,0 +1,15 @@
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MarketingLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MarketingLayout)">
+            <div class="container section stack-md">
+                <h1 class="headline-lg">Nothing here</h1>
+                <p class="body-lg muted">That address does not exist in this demo.</p>
+                <a class="button button--primary" href="/">Back to the home page</a>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

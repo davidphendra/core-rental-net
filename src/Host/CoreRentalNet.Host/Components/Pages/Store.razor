@@ -1,0 +1,97 @@
+@page "/extras"
+@inject WorkspaceSession Session
+@inject GetCatalogPageHandler CatalogPage
+@inject GetCatalogGroupHandler CatalogGroup
+<PageTitle>Accessory Store — Core Rental</PageTitle>
+
+<section class="section">
+    <div class="container stack-lg">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="/builder">Builder</a>
+            <span aria-hidden="true">&rsaquo;</span>
+            <span>Extras</span>
+            <span aria-hidden="true">&rsaquo;</span>
+            <span>Summary</span>
+        </nav>
+
+        <div class="stack-sm">
+            <h1 class="headline-lg">Add Your Bali Vibes</h1>
+            <p class="body-lg muted">
+                Elevate your workspace with premium extras. Enhance productivity and comfort with our
+                curated selection of tropical tech lifestyle additions.
+            </p>
+        </div>
+
+        <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
+
+        @if (Session.Error is not null)
+        {
+            <p class="alert" role="alert">@Session.Error</p>
+        }
+        else if (LastAdded is not null)
+        {
+            <p class="alert alert--info" role="status">@LastAdded added to your workspace.</p>
+        }
+
+        <div class="grid-cards">
+            @foreach (var product in products)
+            {
+                <ProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AddAsync" />
+            }
+        </div>
+
+        <div class="row">
+            <a class="button button--ghost" href="/builder">Back to the builder</a>
+            <a class="button button--primary" href="/review"
+               aria-disabled="@Session.IsEmpty.ToString().ToLowerInvariant()"
+               tabindex="@(Session.IsEmpty ? -1 : 0)">View Setup Summary</a>
+        </div>
+    </div>
+</section>
+
+@code {
+    [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
+
+    private CatalogTab tab = CatalogTab.Extras;
+    private IReadOnlyList<ProductListItem> products = [];
+    private string? LastAdded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(DraftToken))
+        {
+            await Session.EnsureLoadedAsync(DraftToken);
+        }
+
+        LoadProducts();
+    }
+
+    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
+
+    private async Task SelectTabAsync(CatalogTab selected)
+    {
+        tab = selected;
+        LastAdded = null;
+        LoadProducts();
+        await Task.CompletedTask;
+    }
+
+    private bool IsAssigned(string sku)
+        => Session.Current?.Slots.Any(slot => slot.Sku == sku) == true;
+
+    private async Task AddAsync(ProductListItem product)
+    {
+        if (string.IsNullOrEmpty(DraftToken))
+        {
+            return;
+        }
+
+        LastAdded = null;
+        await Session.AssignAsync(DraftToken, product.Sku);
+
+        if (Session.Error is null)
+        {
+            LastAdded = product.Name;
+        }
+    }
+}

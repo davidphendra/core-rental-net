@@ -1,0 +1,76 @@
+@page "/"
+@inject GetFeaturedProductsHandler FeaturedProducts
+<PageTitle>Core Rental — your Bali office, delivered</PageTitle>
+
+<section class="section bg-pattern">
+    <div class="container hero">
+        <div class="stack-lg">
+            <span class="chip">Tropical Tech Aesthetic</span>
+            <h1 class="display-lg">Your Bali Office,<br /><span class="primary-text">Delivered.</span></h1>
+            <p class="body-lg muted">
+                Rent a fully equipped desk for a month at a time. Compose it item by item, see exactly what
+                it costs, and we assemble it at your villa.
+            </p>
+            <div class="row">
+                <a class="button button--primary" href="/builder">Build Your Setup</a>
+                <a class="button button--ghost" href="/extras">View Accessories</a>
+            </div>
+        </div>
+        <div class="hero__scene">
+            @foreach (var product in featured)
+            {
+                <a class="card card--interactive card--offset hero__card" href="/builder">
+                    <div class="row-between">
+                        <span class="chip">@(product.SubCategory?.ToString() ?? product.Category.ToString())</span>
+                        @if (product.IsFeatured)
+                        {
+                            <span class="label-sm uppercase primary-text">Popular</span>
+                        }
+                    </div>
+                    <div class="hero__card-media">
+                        <ProductImage AltText="@product.Name" ImagePath="@product.ImagePath"
+                                      ImageAvailable="@product.ImageAvailable"
+                                      Glyph="@ProductGlyph.ForProduct(product.Category, product.SubCategory)" />
+                    </div>
+                    <div class="stack-sm">
+                        <span class="label-md">@product.Name</span>
+                        <PriceTag Value="@product.MonthlyPrice" />
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container stack-lg">
+        <div class="stack-sm text-center">
+            <h2 class="headline-lg">How it Works</h2>
+            <p class="body-lg muted">From concept to comfort in three steps.</p>
+        </div>
+        <ol class="steps list-reset">
+            <li class="step">
+                <span class="step__badge">1</span>
+                <h3 class="headline-md">Design</h3>
+                <p class="body-md muted">Mix and match desks, chairs, monitors and the tropical extras on the canvas.</p>
+            </li>
+            <li class="step">
+                <span class="step__badge">2</span>
+                <h3 class="headline-md">Rent</h3>
+                <p class="body-md muted">Month to month, cancel any time. The first month is due when you confirm.</p>
+            </li>
+            <li class="step">
+                <span class="step__badge">3</span>
+                <h3 class="headline-md">Work</h3>
+                <p class="body-md muted">We deliver and assemble at your villa. You focus on the deep work.</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<ProductListItem> featured = [];
+
+    protected override void OnInitialized()
+        => featured = FeaturedProducts.Handle(new GetFeaturedProducts());
+}

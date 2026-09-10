@@ -1,0 +1,43 @@
+@* The scene. Geometry is in slots.css; this component only decides what each slot holds. *@
+<div class="workspace-stage">
+    <div class="scene">
+        @foreach (var slot in SceneSlots(AccessorySlots))
+        {
+            <SlotView Slot="slot" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
+        }
+
+        <div class="scene__desk">
+            <span class="scene__leg scene__leg--left" aria-hidden="true"></span>
+            <span class="scene__leg scene__leg--right" aria-hidden="true"></span>
+        </div>
+
+        @foreach (var slot in SceneSlots(BelowBarSlots))
+        {
+            <SlotView Slot="slot" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public WorkspaceView View { get; set; } = default!;
+
+    [Parameter] public bool ReadOnly { get; set; }
+
+    [Parameter] public EventCallback<SlotId> OnPick { get; set; }
+
+    [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
+
+    [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+
+    /// <summary>Above and beside the desk. Enumerated as data so a slot cannot be forgotten.</summary>
+    private static readonly SlotId[] AccessorySlots = [SlotId.Monitor, SlotId.Lamp, SlotId.Plant];
+
+    /// <summary>The desk itself rests on the bar, with the chair in front of it.</summary>
+    private static readonly SlotId[] BelowBarSlots = [SlotId.Desk, SlotId.Chair];
+
+    private IEnumerable<AssignableSlot> SceneSlots(params SlotId[] slots)
+        => slots.Select(SlotOf);
+
+    private AssignableSlot SlotOf(SlotId slot)
+        => View.Slots.First(candidate => candidate.Slot == slot);
+}

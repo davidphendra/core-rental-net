@@ -32,7 +32,7 @@ public static class SqliteDatabase
 
         using var command = connection.CreateCommand();
 
-        command.CommandText = $"PRAGMA journal_mode={settings.JournalMode}; PRAGMA busy_timeout={settings.BusyTimeoutSeconds * 1000};";
+        command.CommandText = settings.PragmaScript;
         command.ExecuteNonQuery();
     }
 

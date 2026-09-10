@@ -1,0 +1,128 @@
+@page "/review"
+@inject WorkspaceSession Session
+@inject CheckoutSettings Checkout
+@inject NavigationManager Navigation
+<PageTitle>Review Your Workspace — Core Rental</PageTitle>
+
+<section class="section">
+    <div class="container stack-lg">
+        <div class="stack-sm">
+            <h1 class="headline-lg">Review Your Workspace</h1>
+            <p class="body-md muted">Confirm your setup details and schedule delivery.</p>
+        </div>
+
+        @if (Session.Current is null)
+        {
+            <p class="body-md muted">Loading your workspace…</p>
+        }
+        else
+        {
+            <div class="two-column">
+                <div class="two-column__wide stack-md">
+                    <div class="card card--flat stack-md panel">
+                        <h2 class="headline-md">Your setup</h2>
+                        <SlotCanvas View="Session.Current" ReadOnly />
+                    </div>
+                    <div class="zone-tiles">
+                        @foreach (var slot in Session.Current.Slots.Where(slot => slot.Slot is SlotId.CoffeeStation or SlotId.RelaxZone))
+                        {
+                            <div class="zone-tile @(slot.IsFilled ? null : "zone-tile--empty")">
+                                <span class="zone-tile__glyph" aria-hidden="true">@SlotLabel(slot)</span>
+                                <span class="label-sm">@(slot.IsFilled ? slot.DisplayName : $"{slot.DisplayName} (Empty)")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="two-column__narrow stack-md">
+                    <div class="receipt">
+                        <h2 class="headline-md primary-text">Order Summary</h2>
+
+                        <ul class="line-list list-reset">
+                            @foreach (var line in Session.Current.Quote.Lines)
+                            {
+                                <li class="line-item">
+                                    <span class="row">
+                                        <span class="line-item__media">
+                                            <ProductImage AltText="@line.Name" ImagePath="@line.ImagePath"
+                                                          ImageAvailable="@line.ImageAvailable"
+                                                          Glyph="@ProductGlyph.ForSlot(line.Slot)" />
+                                        </span>
+                                        <span class="stack-sm">
+                                            <span class="label-md">@line.Name</span>
+                                            <span class="label-sm muted">Qty: @line.Quantity</span>
+                                        </span>
+                                    </span>
+                                    <span class="body-md">
+                                        @(line.LineMonthlyTotal is null ? "unavailable" : $"{line.LineMonthlyTotal.ToDisplayString()}/mo")
+                                    </span>
+                                </li>
+                            }
+                        </ul>
+
+                        @if (Session.Current.Quote.HasUnavailableLines)
+                        {
+                            <p class="alert" role="alert">
+                                An item in your workspace is no longer in the catalog. Remove it before renting.
+                            </p>
+                        }
+
+                        <DeliveryAddressField Address="Session.Current.DeliveryAddress"
+                                              Error="Session.Error"
+                                              OnSave="SaveAddressAsync" />
+
+                        <TotalsBlock Subtotal="@Session.Current.Quote.MonthlySubtotal" DeliveryFee="@Checkout.DeliveryFee" />
+
+                        @* Checkout is wired up with the order model: the button is honest about it
+                           rather than looking clickable and doing nothing. *@
+                        <button type="button" class="button button--cta" disabled
+                                aria-disabled="true"
+                                title="Checkout arrives with the order model">
+                            Rent This Setup
+                        </button>
+                        <p class="label-sm muted text-center">
+                            Demo checkout — no payment is taken.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(DraftToken))
+        {
+            return;
+        }
+
+        await Session.EnsureLoadedAsync(DraftToken);
+
+        // An empty workspace has nothing to review, so send the customer back to the builder.
+        if (Session.IsEmpty)
+        {
+            Navigation.NavigateTo("/builder?empty=1");
+        }
+    }
+
+    private async Task SaveAddressAsync(string? address)
+    {
+        if (!string.IsNullOrEmpty(DraftToken))
+        {
+            await Session.SetDeliveryAddressAsync(DraftToken, address);
+        }
+    }
+
+    private static string SlotLabel(AssignableSlot slot) => slot.Slot switch
+    {
+        SlotId.CoffeeStation => "☕",
+        SlotId.RelaxZone => "☁",
+        SlotId.Plant => "❀",
+        SlotId.Monitor => "▭",
+        _ => "•",
+    };
+}

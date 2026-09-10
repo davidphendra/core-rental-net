@@ -14,7 +14,9 @@ public sealed record AssignableSlot(
     string? Sku,
     string? Name,
     int Quantity,
-    Money? UnitMonthlyPrice)
+    Money? UnitMonthlyPrice,
+    string? ImagePath,
+    bool ImageAvailable)
 {
     public bool IsFilled => Sku is not null;
 }

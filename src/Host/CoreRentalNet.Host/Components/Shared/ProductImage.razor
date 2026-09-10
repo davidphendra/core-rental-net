@@ -1,0 +1,27 @@
+@* A product image, or a deliberate placeholder when no image file exists. *@
+<div class="product-image @CssClass">
+    @if (ImageAvailable && !string.IsNullOrWhiteSpace(ImagePath))
+    {
+        <img src="@ImagePath" alt="@AltText" loading="lazy" />
+    }
+    else
+    {
+        <svg class="product-image__glyph" viewBox="0 0 24 24" role="img" aria-label="@AltText" focusable="false">
+            <path d="@ProductGlyph.PathFor(Glyph)"
+                  fill="none" stroke="currentColor" stroke-width="1.4"
+                  stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string AltText { get; set; } = string.Empty;
+
+    [Parameter] public string? ImagePath { get; set; }
+
+    [Parameter] public bool ImageAvailable { get; set; }
+
+    [Parameter] public string Glyph { get; set; } = "beanbag";
+
+    [Parameter] public string? CssClass { get; set; }
+}

@@ -1,0 +1,26 @@
+@* Saved on blur, not on every keystroke: the write happens once per edit (matrix ADDR-04). *@
+<div class="field @(Error is null ? null : "field--invalid")">
+    <label for="delivery-address">Delivery Location</label>
+    <textarea id="delivery-address" rows="2" maxlength="200"
+              placeholder="e.g., Villa Lotus, Canggu..."
+              value="@Address"
+              aria-describedby="delivery-address-hint"
+              aria-invalid="@((Error is not null).ToString().ToLowerInvariant())"
+              @onchange="OnChangedAsync"></textarea>
+    <span class="field__hint" id="delivery-address-hint">Where should we assemble your setup?</span>
+    @if (Error is not null)
+    {
+        <span class="field__error" role="alert">@Error</span>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Address { get; set; }
+
+    [Parameter] public string? Error { get; set; }
+
+    [Parameter] public EventCallback<string?> OnSave { get; set; }
+
+    private Task OnChangedAsync(ChangeEventArgs args)
+        => OnSave.InvokeAsync(args.Value as string);
+}

@@ -104,6 +104,8 @@ public static class CatalogLoader
             throw new CatalogLoadException($"Catalog file '{path}': '{skuCode}' has no image path.");
         }
 
+        imagePath = PreferVendoredImage(imagePath, sku, webRootPath);
+
         try
         {
             return new Product(
@@ -166,6 +168,38 @@ public static class CatalogLoader
                 $"Catalog file '{path}': '{skuCode}' has the unknown badge '{value}'."),
         };
     }
+
+    /// <summary>
+    /// A remote image is replaced by a local copy when one has been vendored for this SKU, so
+    /// the running app never depends on a third-party host.
+    /// </summary>
+    private static string PreferVendoredImage(string imagePath, Sku sku, string? webRootPath)
+    {
+        if (!imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(webRootPath))
+        {
+            return imagePath;
+        }
+
+        var directory = Path.Combine(webRootPath, VendoredImageDirectory.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+        if (!Directory.Exists(directory))
+        {
+            return imagePath;
+        }
+
+        foreach (var candidate in Directory.GetFiles(directory))
+        {
+            if (string.Equals(Path.GetFileNameWithoutExtension(candidate), sku.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return $"{VendoredImageDirectory}/{Path.GetFileName(candidate)}";
+            }
+        }
+
+        return imagePath;
+    }
+
+    /// <summary>Where locally vendored product images live, relative to the web root.</summary>
+    public const string VendoredImageDirectory = "/images/vendored";
 
     /// <summary>
     /// A remote image is assumed to exist; a local path is checked against the web root when

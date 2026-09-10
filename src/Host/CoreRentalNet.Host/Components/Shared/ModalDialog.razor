@@ -1,0 +1,57 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JavaScript
+@* Native <dialog>: focus trapping, Esc and an inert background come for free (ADR-0012). *@
+<dialog @ref="element" class="modal" @onclose="HandleClosedAsync" aria-labelledby="@TitleId">
+    <div class="modal__panel">
+        <h2 class="headline-md" id="@TitleId">@Title</h2>
+        <div class="modal__body">@ChildContent</div>
+        @if (Actions is not null)
+        {
+            <div class="modal__actions">@Actions</div>
+        }
+    </div>
+</dialog>
+
+@code {
+    private IJSObjectReference? module;
+    private ElementReference element;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    [Parameter] public EventCallback OnClosed { get; set; }
+
+    private string TitleId { get; } = $"dialog-title-{Guid.NewGuid():N}";
+
+    public async Task ShowAsync()
+    {
+        module ??= await JavaScript.InvokeAsync<IJSObjectReference>("import", "./js/dialog.js");
+        await module.InvokeVoidAsync("show", element);
+    }
+
+    public async Task CloseAsync()
+    {
+        if (module is null)
+        {
+            return;
+        }
+
+        await module.InvokeVoidAsync("close", element);
+        await OnClosed.InvokeAsync();
+    }
+
+    private Task HandleClosedAsync() => OnClosed.InvokeAsync();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+
+        GC.SuppressFinalize(this);
+    }
+}

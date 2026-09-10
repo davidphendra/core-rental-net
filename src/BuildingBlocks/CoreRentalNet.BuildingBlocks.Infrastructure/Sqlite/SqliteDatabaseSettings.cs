@@ -49,6 +49,9 @@ public sealed record SqliteDatabaseSettings
     /// <summary>WAL and a long busy timeout are correct on local disk; App Service needs a rollback journal.</summary>
     public static SqliteDatabaseSettings Local(string databasePath) => new(databasePath);
 
+    /// <summary>One source for the pragma statements, used by both the opener and the EF interceptor.</summary>
+    public string PragmaScript => $"PRAGMA journal_mode={JournalMode}; PRAGMA busy_timeout={BusyTimeoutSeconds * 1000};";
+
     public string ConnectionString => new SqliteConnectionStringBuilder
     {
         DataSource = DatabasePath,

@@ -1,0 +1,9 @@
+.total-bar {
+  display: flex; align-items: center; gap: var(--stack-md);
+  padding: 12px 20px; border-radius: var(--radius-full); box-shadow: var(--shadow-3);
+  background: var(--surface-container-lowest);
+}
+.total-bar__amount { display: flex; flex-direction: column; }
+.total-bar__caption { color: var(--outline); }
+.total-bar__per { font-weight: 400; }
+.total-bar__divider { width: 1px; height: 2rem; background: var(--surface-container-highest); }

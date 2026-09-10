@@ -1,0 +1,29 @@
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Core Rental — your Bali office, delivered</title>
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/slots.css" />
+    <HeadOutlet />
+</head>
+<body>
+    <!-- The draft token is read from the request and handed to the interactive tree here.
+         Components cannot read the cookie themselves: a circuit is not an HTTP request. -->
+    <CascadingValue Value="DraftToken" Name="DraftToken">
+        <Routes @rendermode="InteractiveServer" />
+    </CascadingValue>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>
+
+@code {
+    public string DraftToken { get; private set; } = string.Empty;
+
+    protected override void OnInitialized()
+        => DraftToken = DraftTokenMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
+}

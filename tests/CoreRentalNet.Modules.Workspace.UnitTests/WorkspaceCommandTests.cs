@@ -172,3 +172,53 @@ public sealed class WorkspaceCommandTests
         quote.MonthlySubtotal.Amount.Should().Be(800000m);
     }
 }
+
+public sealed class StartDraftTests
+{
+    private static TestCatalog Catalog()
+        => new TestCatalog().Add("CHA0001", 400000m, CatalogCategory.Chair, null);
+
+    [Fact] // DR-07
+    public async Task Starting_a_draft_creates_exactly_one_and_is_idempotent()
+    {
+        var context = new WorkspaceTestContext();
+        var handler = new StartDraftHandler(context.Repository, Catalog());
+
+        var first = await handler.HandleAsync(new StartDraft(context.Token));
+        var second = await handler.HandleAsync(new StartDraft(context.Token));
+
+        first.WorkspaceId.Should().Be(second.WorkspaceId);
+        first.IsEmpty.Should().BeTrue();
+        first.Slots.Should().HaveCount(7);
+        context.Repository.SaveCount.Should().Be(1, "the second call must not write another draft");
+    }
+
+    [Fact]
+    public async Task Two_browsers_get_two_drafts()
+    {
+        var context = new WorkspaceTestContext();
+        var handler = new StartDraftHandler(context.Repository, Catalog());
+
+        var first = await handler.HandleAsync(new StartDraft("browser-one"));
+        var second = await handler.HandleAsync(new StartDraft("browser-two"));
+
+        first.WorkspaceId.Should().NotBe(second.WorkspaceId);
+    }
+
+    [Fact]
+    public async Task A_started_draft_can_be_filled_and_read_back()
+    {
+        var context = new WorkspaceTestContext();
+        var catalog = Catalog();
+        await new StartDraftHandler(context.Repository, catalog).HandleAsync(new StartDraft(context.Token));
+
+        await new AssignProductHandler(context.Repository, catalog)
+            .HandleAsync(new AssignProduct(context.Token, "CHA0001"));
+
+        var read = await new GetWorkspaceHandler(context.Repository, catalog)
+            .HandleAsync(new GetWorkspace(context.Token));
+
+        read.TotalUnits.Should().Be(1);
+        read.CanCheckout.Should().BeTrue();
+    }
+}

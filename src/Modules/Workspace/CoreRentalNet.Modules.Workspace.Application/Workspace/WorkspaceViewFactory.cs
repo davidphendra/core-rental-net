@@ -26,7 +26,9 @@ public static class WorkspaceViewFactory
                     assignment?.Sku,
                     line is null || !line.IsAvailable ? null : line.Name,
                     assignment?.Quantity ?? 0,
-                    line?.UnitMonthlyPrice);
+                    line?.UnitMonthlyPrice,
+                    line is null || !line.IsAvailable ? null : line.ImagePath,
+                    line is not null && line.IsAvailable && line.ImageAvailable);
             })
             .ToArray();
 

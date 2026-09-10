@@ -1,0 +1,4 @@
+.hero__card { position: absolute; width: 14rem; padding: var(--stack-md); display: flex; flex-direction: column; gap: var(--stack-sm); }
+.hero__card:nth-child(1) { top: 8%; right: 8%; }
+.hero__card:nth-child(2) { bottom: 3%; left: 6%; transform: rotate(-2deg); }
+.hero__card-media { height: 9rem; }

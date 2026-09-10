@@ -1,0 +1,92 @@
+/* Tropical Tech — every value here comes from specs/design/tropical_tech/DESIGN.md.
+   Nothing else in the app may hardcode a colour, radius, spacing or font size. */
+
+:root {
+  /* Colour */
+  --surface: #f8f9fa;
+  --surface-dim: #d9dadb;
+  --surface-bright: #f8f9fa;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f3f4f5;
+  --surface-container: #edeeef;
+  --surface-container-high: #e7e8e9;
+  --surface-container-highest: #e1e3e4;
+  --on-surface: #191c1d;
+  --on-surface-variant: #3d4949;
+  --inverse-surface: #2e3132;
+  --inverse-on-surface: #f0f1f2;
+  --outline: #6d7979;
+  --outline-variant: #bcc9c8;
+  --surface-tint: #006a6a;
+  --primary: #006767;
+  --on-primary: #ffffff;
+  --primary-container: #008282;
+  --on-primary-container: #f3fffe;
+  --inverse-primary: #6fd7d6;
+  --secondary: #376757;
+  --on-secondary: #ffffff;
+  --secondary-container: #baeed9;
+  --on-secondary-container: #3d6d5d;
+  --tertiary: #974400;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #bb580d;
+  --on-tertiary-container: #fffbff;
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+  --primary-fixed: #8cf3f3;
+  --primary-fixed-dim: #6fd7d6;
+  --on-primary-fixed: #002020;
+
+  /* Type */
+  --font-display: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-label: Manrope, "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  --display-lg-size: 48px;   --display-lg-line: 56px;  --display-lg-weight: 700; --display-lg-tracking: -0.02em;
+  --headline-lg-size: 32px;  --headline-lg-line: 40px; --headline-lg-weight: 700; --headline-lg-tracking: -0.01em;
+  --headline-lg-mobile-size: 28px; --headline-lg-mobile-line: 36px;
+  --headline-md-size: 24px;  --headline-md-line: 32px; --headline-md-weight: 600;
+  --body-lg-size: 18px;      --body-lg-line: 28px;     --body-lg-weight: 400;
+  --body-md-size: 16px;      --body-md-line: 24px;     --body-md-weight: 400;
+  --label-md-size: 14px;     --label-md-line: 20px;    --label-md-weight: 600; --label-md-tracking: 0.02em;
+  --label-sm-size: 12px;     --label-sm-line: 16px;    --label-sm-weight: 700; --label-sm-tracking: 0.05em;
+
+  /* Spacing: an 8px linear scale */
+  --unit: 8px;
+  --stack-sm: 8px;
+  --stack-md: 16px;
+  --stack-lg: 32px;
+  --section-gap: 80px;
+  --gutter: 24px;
+  --margin-mobile: 16px;
+  --margin-desktop: 40px;
+  --container-max: 1280px;
+
+  /* Shapes */
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Elevation: tonal layers and ambient shadows tinted with the primary teal */
+  --shadow-1: 0 4px 20px rgb(0 103 103 / 8%);
+  --shadow-2: 0 8px 30px rgb(0 103 103 / 8%);
+  --shadow-3: 0 8px 30px rgb(0 103 103 / 12%);
+  --glass: rgb(248 249 250 / 80%);
+  --backdrop-blur: 12px;
+
+  /* Not present in DESIGN.md: the desk's wood tones come from the canvas mockup, and these
+     are the only two alpha values the components need. They live here so no other file
+     needs a colour literal. */
+  --wood-surface: #e8cdb4;
+  --wood-edge: #d2b496;
+  --scrim: rgb(25 28 29 / 40%);
+  --focus-ring: rgb(0 103 103 / 15%);
+
+  --header-height: 80px;
+  --sidebar-width: 320px;
+}

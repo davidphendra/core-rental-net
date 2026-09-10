@@ -70,6 +70,8 @@ public static class CatalogMapping
             product.Name,
             product.Category.ToContract(),
             product.SubCategory.ToContract(),
-            product.MonthlyPrice);
+            product.MonthlyPrice,
+            product.ImagePath,
+            product.ImageAvailable);
     }
 }

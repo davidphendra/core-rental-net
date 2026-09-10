@@ -1,0 +1,24 @@
+@* Minus and plus around a count. Disabled at the bounds so the limit is visible, not just enforced. *@
+<div class="stepper" role="group" aria-label="@Label">
+    <button type="button" class="stepper__button" aria-label="Remove one @ItemName"
+            disabled="@(Quantity <= 1)" @onclick="() => OnChange.InvokeAsync(Quantity - 1)">
+        &minus;
+    </button>
+    <span class="stepper__count" aria-live="polite">@Quantity</span>
+    <button type="button" class="stepper__button" aria-label="Add one @ItemName"
+            disabled="@(Quantity >= MaxQuantity)" @onclick="() => OnChange.InvokeAsync(Quantity + 1)">
+        &plus;
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public int Quantity { get; set; }
+
+    [Parameter, EditorRequired] public int MaxQuantity { get; set; }
+
+    [Parameter] public string ItemName { get; set; } = "unit";
+
+    [Parameter] public string Label { get; set; } = "Quantity";
+
+    [Parameter] public EventCallback<int> OnChange { get; set; }
+}

@@ -1,0 +1,26 @@
+@* Subtotal, the one-time delivery and setup charge, and what is due today. *@
+<dl class="totals">
+    <div class="totals__row">
+        <dt class="body-md muted">Subtotal</dt>
+        <dd class="body-md">@Subtotal.ToDisplayString()/mo</dd>
+    </div>
+    <div class="totals__row">
+        <dt class="body-md muted">Delivery &amp; Setup (one-time)</dt>
+        <dd class="body-md">@DeliveryFee.ToDisplayString()</dd>
+    </div>
+    <div class="totals__row totals__row--grand">
+        <dt class="headline-md">Grand Total</dt>
+        <dd class="totals__grand">
+            <span class="headline-md primary-text">@GrandTotal.ToDisplayString()</span>
+            <span class="label-sm muted">First month due today</span>
+        </dd>
+    </div>
+</dl>
+
+@code {
+    [Parameter, EditorRequired] public Money Subtotal { get; set; }
+
+    [Parameter, EditorRequired] public Money DeliveryFee { get; set; }
+
+    private Money GrandTotal => Subtotal.Add(DeliveryFee);
+}

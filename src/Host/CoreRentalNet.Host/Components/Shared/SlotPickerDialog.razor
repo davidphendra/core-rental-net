@@ -1,0 +1,46 @@
+@* Opens already filtered to the slot that was clicked, so the choice is always valid. *@
+<ModalDialog @ref="dialog" Title="@Title" OnClosed="HandleClosedAsync">
+    <ChildContent>
+    <div class="picker">
+        @if (Candidates.Count == 0)
+        {
+            <p class="body-md muted">Nothing in the catalog fits this slot.</p>
+        }
+        else
+        {
+            @foreach (var product in Candidates)
+            {
+                var candidate = product;
+                <ProductCard Product="candidate" OnSelect="() => PickAsync(candidate)" />
+            }
+        }
+    </div>
+    </ChildContent>
+    <Actions>
+        <button type="button" class="button button--ghost" @onclick="CloseAsync">Cancel</button>
+    </Actions>
+</ModalDialog>
+
+@code {
+    private ModalDialog? dialog;
+
+    [Parameter, EditorRequired] public IReadOnlyList<ProductListItem> Candidates { get; set; } = [];
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "Choose an item";
+
+    [Parameter] public EventCallback<ProductListItem> OnPick { get; set; }
+
+    [Parameter] public EventCallback OnDismissed { get; set; }
+
+    public Task ShowAsync() => dialog?.ShowAsync() ?? Task.CompletedTask;
+
+    public Task CloseAsync() => dialog?.CloseAsync() ?? Task.CompletedTask;
+
+    private async Task PickAsync(ProductListItem product)
+    {
+        await OnPick.InvokeAsync(product);
+        await CloseAsync();
+    }
+
+    private Task HandleClosedAsync() => OnDismissed.InvokeAsync();
+}

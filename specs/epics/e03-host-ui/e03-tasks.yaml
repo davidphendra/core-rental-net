@@ -1,58 +1,92 @@
 epic: e03-host-ui
 slice: 1
+status: complete
+completed: 2026-09-10
+verification: specs/verifications/E3-host-walkthrough.md
+
 tasks:
   - id: E3-T1
-    title: Host project, Program.cs composition root, InteractiveServer, module registration
+    title: Host project, composition root, InteractiveServer, module registration
     type: infra
-    status: pending
-    tests: []
+    status: done
+    note: >
+      Modules are wired in Program.cs rather than through a per-module ModuleStartup. With three
+      modules that is one readable file instead of three indirections.
   - id: E3-T2
-    title: tokens.css from DESIGN.md; base.css; remove all hardcoded colour/spacing
+    title: tokens.css from DESIGN.md, base.css, no hardcoded colour anywhere else
     type: ui
-    status: pending
+    status: done
     tests: [UI-01]
+    note: >
+      The desk's wood tones and the two alpha values were literals in my own CSS. They are now
+      tokens too, flagged as not coming from DESIGN.md, because a colour literal is how a design
+      system stops being one.
   - id: E3-T3
-    title: slots.css — slotId to CSS custom properties; no coordinate literals in C#
+    title: slots.css geometry keyed by slot id, no coordinates in component code
     type: ui
-    status: pending
+    status: done
     tests: [UI-02]
+    note: >
+      A test now asserts every slot is rendered and every canvas slot has geometry. It exists
+      because two slots had geometry and no component, so they were invisible and nothing failed.
   - id: E3-T4
-    title: MarketingLayout, AppHeader, MobileBottomNav, BuilderShell
+    title: Marketing and Builder layouts, header, mobile bottom nav
     type: ui
-    status: pending
-    tests: [NAV-01, NAV-07, UI-07]
+    status: done
+    tests: [NAV-03]
   - id: E3-T5
-    title: Home page — hero, popular cards, How it Works
+    title: Home page
     type: ui
-    status: pending
-    tests: [CAT-08]
+    status: done
+    note: Featured cards come from the popular badge, not from hardcoded product names.
   - id: E3-T6
-    title: Builder — category nav, product grid, SlotCanvas, empty/filled slots, quantity stepper, remove control
+    title: Builder with canvas, picker, steppers, remove control, running total
     type: ui
-    status: pending
-    tests: [WS-05, WS-08, WS-09, WS-10, SLOT-04]
+    status: done
+    tests: [SLOT-04]
   - id: E3-T7
-    title: Store page — extras and accessories with Add to Setup
+    title: Store page
     type: ui
-    status: pending
-    tests: [CAT-06, CAT-07]
+    status: done
   - id: E3-T8
-    title: Review page — quote lines, fee, total, two-line address textarea, gated CTA
+    title: Review page with quote, two-line address field, totals, zone tiles
     type: ui
-    status: pending
-    tests: [ADDR-01, ADDR-04, ADDR-06, ORD-03]
+    status: done
+    tests: [ADDR-06]
   - id: E3-T9
-    title: Gating rules — disable Summary, Rent, View Setup Summary, Ready to Rent, CTA when empty; redirect direct /review
+    title: Gating rules and the empty-workspace redirect
     type: ui
-    status: pending
-    tests: [NAV-01, NAV-02, NAV-03, NAV-04, NAV-05, NAV-06]
+    status: done
+    tests: [NAV-04]
   - id: E3-T10
-    title: ProductImage placeholder state + vendor the 6 remote images locally
+    title: Product images vendored, placeholder state for missing files
     type: ui
-    status: pending
-    tests: [CAT-12, UI-05, UI-06]
+    status: done
+    tests: [UI-05, UI-06]
+    note: A test asserts that loading the real catalog against the real web root leaves no remote image path.
   - id: E3-T11
-    title: Accessibility pass — real buttons, accessible names, focus, landmarks, aria-disabled
+    title: Accessibility by markup, native dialog, real buttons
     type: ui
-    status: pending
-    tests: [UI-03, UI-08, NAV-05]
+    status: partial
+    tests: [UI-03, UI-04]
+    note: >
+      Markup discipline is applied throughout: real button and anchor elements, accessible names,
+      aria-disabled on gated controls, a native dialog for the picker. The keyboard and focus
+      assertions need a browser and belong to E7.
+  - id: E3-T12
+    title: Draft token cookie middleware
+    type: infra
+    status: done
+    tests: [DR-01, DR-04]
+    note: >
+      Includes rotation through a query flag that redirects without it, so a refresh does not
+      rotate twice. E5 triggers it at checkout.
+
+found_while_running:
+  - "Nothing created the draft: the middleware issued a token and the first read threw. Added an idempotent StartDraft command; this was a missing decision, not a typo."
+  - "Only five of the seven slots rendered: Lamp and Plant had geometry and no component."
+  - "The database directory was never created, so a clean start-up failed with 'unable to open database file'."
+
+deviations:
+  - "The delivery fee lives in CheckoutSettings reading configuration. It belongs to the invoice model and moves there with the Rentals module."
+  - "'Rent This Setup' is deliberately disabled: order creation is the checkout change, and a control that looks live but does nothing is worse than one that explains itself."

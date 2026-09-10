@@ -1,0 +1,24 @@
+@* One catalog item. Clicking it assigns it; the slot is decided by the domain, not the customer. *@
+<button type="button" class="product-card @(IsSelected ? "product-card--selected" : null)"
+        aria-pressed="@IsSelected.ToString().ToLowerInvariant()"
+        aria-label="@($"Add {Product.Name} to your workspace")"
+        @onclick="() => OnSelect.InvokeAsync(Product)">
+    @if (IsSelected)
+    {
+        <span class="product-card__check" aria-hidden="true">&#10003;</span>
+    }
+    <div class="product-card__media">
+        <ProductImage AltText="@Product.Name" ImagePath="@Product.ImagePath" ImageAvailable="@Product.ImageAvailable"
+                      Glyph="@ProductGlyph.ForProduct(Product.Category, Product.SubCategory)" />
+    </div>
+    <span class="product-card__name label-sm">@Product.Name</span>
+    <span class="product-card__price">+@Product.MonthlyPrice.ToDisplayString()/mo</span>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public ProductListItem Product { get; set; } = default!;
+
+    [Parameter] public bool IsSelected { get; set; }
+
+    [Parameter] public EventCallback<ProductListItem> OnSelect { get; set; }
+}

@@ -1,0 +1,4 @@
+.slot__media { width: 100%; flex: 1; min-height: 0; }
+.slot__name { color: var(--on-surface); font-weight: 700; }
+.slot__price { color: var(--on-surface-variant); font-size: 10px; }
+.slot__plus { font-size: 20px; line-height: 1; }

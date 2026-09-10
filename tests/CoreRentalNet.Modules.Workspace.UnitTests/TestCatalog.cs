@@ -13,14 +13,17 @@ internal sealed class TestCatalog : IDefineProductPrices
         decimal monthlyPrice,
         CatalogCategory category = CatalogCategory.Accessory,
         CatalogSubCategory? subCategory = CatalogSubCategory.Monitor,
-        string? name = null)
+        string? name = null,
+        bool imageAvailable = true)
     {
         views[sku] = new ProductPriceView(
             sku.ToUpperInvariant(),
             name ?? $"Product {sku.ToUpperInvariant()}",
             category,
             subCategory,
-            Money.Idr(monthlyPrice));
+            Money.Idr(monthlyPrice),
+            "/images/test.svg",
+            imageAvailable);
 
         return this;
     }

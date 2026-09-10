@@ -19,14 +19,16 @@ public static class WorkspaceQuoter
             var price = prices.FindPrice(assignment.Sku);
 
             lines.Add(price is null
-                ? new QuoteLine(assignment.Slot, assignment.Sku, "(no longer available)", assignment.Quantity, null, null)
+                ? new QuoteLine(assignment.Slot, assignment.Sku, "(no longer available)", assignment.Quantity, null, null, null, false)
                 : new QuoteLine(
                     assignment.Slot,
                     price.Sku,
                     price.Name,
                     assignment.Quantity,
                     price.MonthlyPrice,
-                    price.MonthlyPrice.Times(assignment.Quantity).Round()));
+                    price.MonthlyPrice.Times(assignment.Quantity).Round(),
+                    price.ImagePath,
+                    price.ImageAvailable));
         }
 
         var subtotal = lines.Count == 0 || lines.All(line => line.LineMonthlyTotal is null)

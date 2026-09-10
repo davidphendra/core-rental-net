@@ -1,0 +1,139 @@
+/* The canvas geometry lives here and nowhere else.
+   The C# model knows which slot a product belongs to; it does not know where that slot is. */
+
+.workspace-stage {
+  position: relative;
+  width: 100%;
+  min-height: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--stack-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--surface-container-high);
+  background: var(--surface-bright);
+  overflow: hidden;
+}
+
+.workspace-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: radial-gradient(var(--primary) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  max-width: 42rem;
+  height: 16rem;
+  margin-bottom: 6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.scene__desk {
+  width: 100%;
+  height: 2rem;
+  border-radius: var(--radius);
+  background: var(--wood-surface);
+  border: 1px solid var(--wood-edge);
+  box-shadow: var(--shadow-1);
+  position: relative;
+  z-index: 0;
+}
+
+.scene__leg { position: absolute; top: 100%; width: 1rem; height: 8rem; background: var(--wood-edge); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+.scene__leg--left { left: 1rem; }
+.scene__leg--right { right: 1rem; }
+
+/* One rule, seven coordinate blocks. */
+.slot {
+  position: absolute;
+  left: var(--slot-x);
+  top: var(--slot-y);
+  width: var(--slot-w);
+  height: var(--slot-h);
+  transform: translate(var(--slot-tx, 0), var(--slot-ty, 0));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.slot--monitor { --slot-x: 50%; --slot-y: 0; --slot-w: 12rem; --slot-h: 8rem; --slot-tx: -50%; }
+.slot--lamp { --slot-x: calc(100% - 13rem); --slot-y: calc(100% - 7.5rem); --slot-w: 6rem; --slot-h: 6rem; }
+.slot--plant { --slot-x: calc(100% - 6.5rem); --slot-y: calc(100% - 7.5rem); --slot-w: 6rem; --slot-h: 6rem; }
+.slot--chair { --slot-x: 50%; --slot-y: calc(100% - 3rem); --slot-w: 8rem; --slot-h: 10rem; --slot-tx: -50%; }
+
+/* A filled slot sits on the scene; an empty one is a dashed invitation. */
+.slot--empty {
+  border: 2px dashed var(--outline-variant);
+  background: transparent;
+  color: var(--outline);
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms, color 150ms;
+}
+.slot--empty:hover { background: var(--surface-container-low); border-color: var(--primary-container); color: var(--primary); }
+
+.slot--filled {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--surface-container-highest);
+  box-shadow: var(--shadow-1);
+}
+
+.slot__quantity {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding-inline: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-label);
+  font-size: var(--label-sm-size);
+  font-weight: 700;
+}
+
+.slot__remove {
+  position: absolute;
+  top: -0.5rem;
+  left: -0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-highest);
+  color: var(--on-surface-variant);
+  cursor: pointer;
+}
+.slot__remove:hover { background: var(--error-container); color: var(--on-error-container); }
+
+/* Zones sit below the scene and are laid out, not positioned. */
+.zone-list { display: grid; gap: var(--gutter); grid-template-columns: 1fr; }
+@media (min-width: 768px) { .zone-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.slot--coffee-station, .slot--relax-zone { position: static; width: 100%; height: 6rem; transform: none; --slot-w: 100%; --slot-h: 6rem; }
+
+/* The desk itself is a card resting on the bar; the bar is scenery. */
+.slot--desk { --slot-x: 50%; --slot-y: calc(100% - 9rem); --slot-w: 11rem; --slot-h: 5rem; --slot-tx: -50%; }
+
+/* Shown on the review preview: the shape of an empty slot without inviting a click. */
+.slot--static { cursor: default; }
+.slot--static:hover { background: transparent; border-color: var(--outline-variant); color: var(--outline); }

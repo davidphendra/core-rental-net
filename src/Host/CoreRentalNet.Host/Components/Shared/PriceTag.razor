@@ -1,0 +1,7 @@
+<span class="price-tag label-md">
+    <strong>@Value.ToDisplayString()</strong><span class="muted">/mo</span>
+</span>
+
+@code {
+    [Parameter, EditorRequired] public Money Value { get; set; }
+}

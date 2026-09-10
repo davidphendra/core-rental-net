@@ -1,0 +1,67 @@
+@* One slot on the canvas: an empty invitation, or an item with its controls. *@
+@if (Slot.IsFilled)
+{
+    <div class="slot @SlotCss.ClassFor(Slot.Slot) slot--filled">
+        @if (Slot.Quantity > 1)
+        {
+            <span class="slot__quantity" aria-hidden="true">&times;@Slot.Quantity</span>
+        }
+        @if (!ReadOnly)
+        {
+            <button type="button" class="slot__remove" aria-label="@($"Remove {Slot.Name}")"
+                    @onclick="() => OnRemove.InvokeAsync(Slot.Slot)">&times;</button>
+        }
+        <div class="slot__media">
+            <ProductImage AltText="@(Slot.Name ?? Slot.DisplayName)" ImagePath="@Slot.ImagePath"
+                          ImageAvailable="@Slot.ImageAvailable" Glyph="@ProductGlyph.ForSlot(Slot.Slot)" />
+        </div>
+        <span class="slot__name label-sm">@Slot.Name</span>
+        @if (Slot.UnitMonthlyPrice is not null)
+        {
+            <span class="slot__price">@Slot.UnitMonthlyPrice.ToDisplayString()/mo</span>
+        }
+        @if (!ReadOnly && Slot.MaxQuantity > 1)
+        {
+            <QuantityStepper Quantity="@Slot.Quantity" MaxQuantity="@Slot.MaxQuantity"
+                             ItemName="@Slot.DisplayName" Label="@($"{Slot.DisplayName} quantity")"
+                             OnChange="@(value => OnQuantityChange.InvokeAsync((Slot.Slot, value)))" />
+        }
+    </div>
+}
+else if (ReadOnly)
+{
+    <div class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty slot--static">
+        <span class="label-sm">@EmptyLabel</span>
+    </div>
+}
+else
+{
+    <button type="button" class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty"
+            @onclick="() => OnPick.InvokeAsync(Slot.Slot)">
+        <span class="slot__plus" aria-hidden="true">&plus;</span>
+        <span class="label-sm">@EmptyLabel</span>
+    </button>
+}
+
+@code {
+    [Parameter, EditorRequired] public AssignableSlot Slot { get; set; } = default!;
+
+    /// <summary>True on the review preview, where the canvas is shown but not edited.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    [Parameter] public EventCallback<SlotId> OnPick { get; set; }
+
+    [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
+
+    [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+
+    private string EmptyLabel => Slot.Slot switch
+    {
+        SlotId.CoffeeStation => "Add Machine",
+        SlotId.RelaxZone => "Add Bean Bag",
+        SlotId.Plant => "Place a Plant",
+        SlotId.Monitor => "Add Monitor",
+        SlotId.Lamp => "Add Lamp",
+        _ => $"Add {Slot.DisplayName}",
+    };
+}

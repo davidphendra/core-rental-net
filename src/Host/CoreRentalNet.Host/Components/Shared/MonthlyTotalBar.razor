@@ -1,0 +1,21 @@
+@* The running total and the way out of the builder. Both are disabled until something is assigned. *@
+<div class="total-bar card">
+    <div class="total-bar__amount">
+        <span class="total-bar__caption label-sm uppercase">Monthly total</span>
+        <span class="headline-md">@View.Quote.MonthlySubtotal.ToDisplayString()<span class="total-bar__per label-md muted">/mo</span></span>
+    </div>
+    <span class="total-bar__divider" aria-hidden="true"></span>
+    <button type="button" class="button button--cta button--small"
+            disabled="@(!View.CanCheckout)"
+            aria-disabled="@((!View.CanCheckout).ToString().ToLowerInvariant())"
+            title="@(View.CanCheckout ? null : "Add an item to your workspace first")"
+            @onclick="OnReady">
+        Ready to Rent?
+    </button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public WorkspaceView View { get; set; } = default!;
+
+    [Parameter] public EventCallback OnReady { get; set; }
+}
