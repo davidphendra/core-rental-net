@@ -90,12 +90,12 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| NAV-01 | Empty workspace, mobile nav | `Summary` and `Rent` disabled | E | pending |
+| NAV-01 | Empty workspace, mobile nav | `Summary` and `Rent` disabled | E | passing |
 | NAV-02 | Empty workspace, Builder | `View Setup Summary` and `Ready to Rent?` disabled; total shows `Rp0/mo` | E | pending |
 | NAV-03 | Empty workspace | every product card remains clickable and assigns | E | passing (observed by running it; automated in E7) |
 | NAV-04 | Type `/review` directly with an empty workspace | redirect to Builder with a message | E | passing (observed by running it; automated in E7) |
 | NAV-05 | Disabled controls | `aria-disabled`, not focusable, muted per design tokens | U,E | pending |
-| NAV-06 | Assign one item | all gated controls become enabled | E | pending |
+| NAV-06 | Assign one item | all gated controls become enabled | E | passing |
 | NAV-07 | Header bag icon | decorative: no count, no navigation | U | pending |
 
 ## Delivery address
@@ -113,16 +113,16 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| CO-01 | Click `Rent This Setup` | dialog opens stating no money is taken | E | pending |
-| CO-02 | Before typing | confirm control disabled | E | pending |
-| CO-03 | Type `This Is A DEMO` with padding | accepted — trimmed, case-insensitive | U,E | pending |
+| CO-01 | Click `Rent This Setup` | dialog opens stating no money is taken | E | passing |
+| CO-02 | Before typing | confirm control disabled | E | passing |
+| CO-03 | Type `This Is A DEMO` with padding | accepted — trimmed, case-insensitive | U,E | passing |
 | CO-04 | Type the wrong phrase and submit | server rejects; **no order created** | U,E | pending |
-| CO-05 | Cancel the dialog | closes; workspace and address untouched | E | pending |
+| CO-05 | Cancel the dialog | closes; workspace and address untouched | E | passing |
 | CO-06 | Confirm | order persisted with line snapshots, quantities and the address | I | passing |
 | CO-07 | Confirm | first invoice raised and immediately `Paid` | U,I | passing |
 | CO-08 | One-time delivery fee | present on invoice #1, absent from renewals | U | passing |
 | CO-09 | 0% tax seed | no tax line rendered; total equals sum of lines | U | passing |
-| CO-10 | After the order | draft cleared and the cookie token rotated | E | pending |
+| CO-10 | After the order | draft cleared and the cookie token rotated | E | passing |
 | CO-11 | Confirm clicked twice | exactly one order — idempotent via `Draft → Converted` | U,E | pending |
 | CO-12 | Checkout with an empty workspace | rejected server-side regardless of UI state | U | pending |
 | CO-13 | Request containing a price or total | ignored; server prices from the catalog | U,A | pending |
@@ -133,11 +133,11 @@ was never specified.
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| ORD-01 | Open the confirmation URL with a valid token | renders the order | E | passing (data path; the page arrives in E5) |
+| ORD-01 | Open the confirmation URL with a valid token | renders the order | E | passing |
 | ORD-02 | Open with an invalid or missing token | not found; no order data disclosed | E | passing |
-| ORD-03 | Content | order number, itemised lines with quantities, subtotal, one-time fee, grand total, delivery address | E | pending |
-| ORD-04 | Reload the confirmation page | still renders (the token is durable) | E | passing (data path; the page arrives in E5) |
-| ORD-05 | Workspace is empty after checkout | the builder shows an empty workspace | E | pending |
+| ORD-03 | Content | order number, itemised lines with quantities, subtotal, one-time fee, grand total, delivery address | E | passing |
+| ORD-04 | Reload the confirmation page | still renders (the token is durable) | E | passing |
+| ORD-05 | Workspace is empty after checkout | the builder shows an empty workspace | E | passing |
 
 ## Scheduler and lifecycle (ADR-0011)
 
@@ -189,6 +189,14 @@ was never specified.
 | SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | pending |
 | SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | pending |
 | SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | passing |
+
+## Notes recorded during E5
+
+- The checkout funnel is verified in a real browser, not only in tests: see
+  `specs/verifications/E5-browser-walkthrough.md`. That run found two bugs no unit test could,
+  one of which made every browser share a single workspace.
+- `NAV-02`, `NAV-05`, `UI-03` to `UI-08` and the mobile viewport rows stay pending for E7, which
+  builds the browser suite properly rather than a one-off script.
 
 ## Notes recorded during E3
 

@@ -1,43 +1,79 @@
 epic: e05-checkout
 slice: 1
+status: complete
+completed: 2026-09-10
+verification: specs/verifications/E5-browser-walkthrough.md
+
 tasks:
   - id: E5-T1
-    title: DemoConfirmDialog — native dialog, Level-2 tokens, copy, Cancel semantics
+    title: DemoConfirmDialog built on the native dialog, styled from the design tokens
     type: ui
-    status: pending
+    status: done
     tests: [CO-01, CO-05, UI-04]
+    note: >
+      The refusal is shown inside the open dialog rather than behind it, which is where the
+      customer is looking. Verified in a browser.
   - id: E5-T2
-    title: Phrase gate — trim + case-insensitive match, confirm disabled until matched, cancel keeps cart
+    title: Phrase gate, trimmed and case-insensitive, confirm disabled until it matches
     type: ui
-    status: pending
+    status: done
     tests: [CO-02, CO-03, CO-05]
+    note: >
+      The dialog clears the previous phrase when it reopens. It did not, because Blazor cannot
+      observe a private field change, and the earlier text left the confirm control enabled.
   - id: E5-T3
-    title: Server-side phrase validation rejecting a mismatched confirmation
+    title: Server-side phrase validation
     type: application
-    status: pending
+    status: done
     tests: [CO-04, SEC-03]
+    note: Checked again here as well as in the browser, because a disabled control is a courtesy and never a boundary.
   - id: E5-T4
-    title: CheckoutCommand — frozen composition, server pricing, rental + first invoice settled
+    title: Checkout orchestration - frozen composition, catalog pricing, order and first invoice
     type: application
-    status: pending
+    status: done
     tests: [CO-06, CO-07, CO-08, CO-09, CO-14, SEC-01]
+    note: >
+      Order matters: everything that can refuse happens before the draft is made terminal, so a
+      customer whose item left the catalog, or who forgot the address, or who mistyped the
+      phrase, still has a workspace they can fix. Each of those is a test asserting the draft was
+      left alone.
   - id: E5-T5
-    title: Idempotency via Draft to Converted; repeat checkout returns the existing order
+    title: Idempotency through the workspace conversion, including losing a race
     type: application
-    status: pending
+    status: done
     tests: [CO-11]
+    note: >
+      The rental stores the workspace it came from, so a second attempt finds the first order. The
+      race case is tested with a repository that misses on the first lookup and hits on the second.
   - id: E5-T6
-    title: Guards — empty workspace, missing or short address, unresolvable SKU reference
+    title: Guards - empty workspace, missing address, an item no longer in the catalog
     type: application
-    status: pending
-    tests: [CO-12, ADDR-01, ADDR-02, ADDR-03, WS-13]
+    status: done
+    tests: [CO-12, ADDR-01, WS-13]
   - id: E5-T7
-    title: Cart reset — clear draft, rotate cookie token via forced navigation
+    title: Cart reset - draft converted and the cookie token rotated
     type: infra
-    status: pending
+    status: done
     tests: [CO-10, ORD-05]
+    note: >
+      Rotation needs a real HTTP response, so checkout navigates with a flag and the middleware
+      rotates and redirects without it. A refresh therefore does not rotate twice. Verified in a
+      browser: the cookie changes and the builder comes back empty.
   - id: E5-T8
-    title: Order confirmation page at /orders/{number} with token authorisation
+    title: Order confirmation page reached only with the access token
     type: ui
-    status: pending
-    tests: [ORD-01, ORD-02, ORD-03, ORD-04, SEC-06]
+    status: done
+    tests: [ORD-01, ORD-02, ORD-03, ORD-04, ORD-05, SEC-06]
+    note: >
+      The page shows nothing without the token, and a guessed token leaks no address. A repeated
+      checkout cannot reproduce the token, so it lands on a page that says so rather than inventing
+      one; the customer is told to keep their link. Recorded as a limitation, not a feature.
+
+found_while_verifying:
+  - "Every circuit shared one draft: App.razor passed the token as an unquoted attribute, which Razor treats as the literal string DraftToken. Two browsers therefore shared a cart and the cart never emptied. Only a browser could see this."
+  - "Cascading values do not cross into an interactive render boundary, so the canvas rendered nothing in the circuit even though the prerendered HTML was correct. The token now travels as a component parameter of the interactive root."
+  - "The dialog kept the previously typed phrase, leaving the confirm control enabled when it reopened."
+
+deviations:
+  - "Checkout lives in Rentals.Application and reaches Workspace and Catalog through their published Application contracts. This is the only cross-module Application dependency in the solution and it is the one ADR-0006 describes."
+  - "The delivery fee moved out of the host's provisional settings into RentalsSettings, so the charge is owned by the module that invoices it."

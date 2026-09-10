@@ -1,5 +1,11 @@
 # E3 verification — running the application
 
+> **Partially superseded.** The draft cookie rotated correctly, but a later browser run found that
+> every circuit shared one workspace (a Razor attribute-literal mistake in the draft token), so any
+> observation here that depended on per-browser drafts was measuring a shared draft. See
+> `E5-browser-walkthrough.md` for the corrected picture. The routing, gating and rendering
+> observations below still stand.
+
 Run on 2026-09-10 against the real application, real SQLite file and a real HTTP server.
 Tests passing is not evidence that the thing works, so this records what was actually observed.
 

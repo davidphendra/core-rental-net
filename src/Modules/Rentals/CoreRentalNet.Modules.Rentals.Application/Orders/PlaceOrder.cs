@@ -74,6 +74,7 @@ public sealed class PlaceOrderService(
 
         var rental = Rental.Place(
             RentalId.New(),
+            request.WorkspaceId,
             rentalNumber,
             token.Hash,
             request.DeliveryAddress,

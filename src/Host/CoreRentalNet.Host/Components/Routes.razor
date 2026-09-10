@@ -1,3 +1,4 @@
+<CascadingValue Name="DraftToken" Value="DraftToken">
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(MarketingLayout)" />
@@ -13,3 +14,12 @@
         </LayoutView>
     </NotFound>
 </Router>
+</CascadingValue>
+
+@code {
+    /// <summary>
+    /// Passed in from the root component as a parameter, which survives the jump into the
+    /// interactive circuit, and re-published here for everything below it.
+    /// </summary>
+    [Parameter] public string? DraftToken { get; set; }
+}

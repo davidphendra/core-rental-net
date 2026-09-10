@@ -12,6 +12,7 @@ public sealed class RentalLifecycleTests
     private static Domain.Rental PlacedRental(DateOnly? placedOn = null)
         => Domain.Rental.Place(
             RentalId.New(),
+            Guid.NewGuid(),
             RentalNumber.Of(2026, 1),
             AccessToken.HashOf("raw"),
             "Villa Lotus, Canggu",
@@ -37,11 +38,11 @@ public sealed class RentalLifecycleTests
     public void An_order_without_lines_or_an_address_is_refused()
     {
         var noLines = () => Domain.Rental.Place(
-            RentalId.New(), RentalNumber.Of(2026, 1), AccessToken.HashOf("raw"), "Villa", Money.Idr(1m), [], Placed);
+            RentalId.New(), Guid.NewGuid(), RentalNumber.Of(2026, 1), AccessToken.HashOf("raw"), "Villa", Money.Idr(1m), [], Placed);
         noLines.Should().Throw<DomainRuleViolationException>();
 
         var noAddress = () => Domain.Rental.Place(
-            RentalId.New(), RentalNumber.Of(2026, 1), AccessToken.HashOf("raw"), "   ", Money.Idr(1m),
+            RentalId.New(), Guid.NewGuid(), RentalNumber.Of(2026, 1), AccessToken.HashOf("raw"), "   ", Money.Idr(1m),
             [new RentalLine("CHA449AGLBB0", "Chair", 1, Money.Idr(400_000m))], Placed);
         noAddress.Should().Throw<DomainRuleViolationException>();
     }

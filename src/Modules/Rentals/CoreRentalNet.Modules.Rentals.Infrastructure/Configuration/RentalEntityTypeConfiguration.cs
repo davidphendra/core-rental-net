@@ -27,6 +27,10 @@ internal sealed class RentalEntityTypeConfiguration : IEntityTypeConfiguration<D
         builder.Property(rental => rental.AccessTokenHash).HasMaxLength(64).IsRequired();
         builder.HasIndex(rental => rental.AccessTokenHash).IsUnique();
 
+        // One order per workspace is what makes a repeated checkout safe.
+        builder.Property(rental => rental.WorkspaceId).IsRequired();
+        builder.HasIndex(rental => rental.WorkspaceId).IsUnique();
+
         builder.Property(rental => rental.Status).HasConversion<int>().IsRequired();
         builder.Property(rental => rental.DeliveryAddress).HasMaxLength(200).IsRequired();
         builder.Property(rental => rental.DeliveryFee).HasConversion(MoneyConversion.Converter).HasPrecision(18, 2).IsRequired();

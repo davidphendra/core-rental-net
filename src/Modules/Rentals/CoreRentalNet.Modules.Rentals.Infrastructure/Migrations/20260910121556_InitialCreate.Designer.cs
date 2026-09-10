@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
 {
     [DbContext(typeof(RentalsContext))]
-    [Migration("20260910121157_InitialCreate")]
+    [Migration("20260910121556_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -135,12 +135,18 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccessTokenHash")
                         .IsUnique();
 
                     b.HasIndex("Number")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId")
                         .IsUnique();
 
                     b.ToTable("Rentals_Rental", (string)null);

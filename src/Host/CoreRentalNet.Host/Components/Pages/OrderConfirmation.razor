@@ -1,0 +1,157 @@
+@page "/orders/{Number}"
+@inject GetRentalByTokenHandler RentalReader
+@inject GetInvoicesByTokenHandler InvoiceReader
+<PageTitle>@($"Order {Number} — Core Rental")</PageTitle>
+
+<section class="section">
+    <div class="container stack-lg">
+        @if (string.IsNullOrWhiteSpace(Token))
+        {
+            <div class="receipt stack-md">
+                <h1 class="headline-lg">Order @Number was already placed</h1>
+                <p class="body-md muted">
+                    Order details are only shown through the link you were given when it was placed.
+                    There is no account to sign in to and this demonstration sends no email, so keep
+                    that link.
+                </p>
+                <a class="button button--primary" href="/builder">Design another workspace</a>
+            </div>
+        }
+        else if (Rental is null)
+        {
+            <div class="receipt stack-md">
+                <h1 class="headline-lg">Order not found</h1>
+                <p class="body-md muted">
+                    That link does not match any order. Order details are only shown with the exact
+                    link that was issued.
+                </p>
+                <a class="button button--primary" href="/">Back to the home page</a>
+            </div>
+        }
+        else
+        {
+            <div class="stack-sm">
+                <span class="chip">Confirmed</span>
+                <h1 class="headline-lg">Your workspace is booked</h1>
+                <p class="body-lg muted">
+                    Order <strong>@Rental.Number</strong> · @Rental.Lines.Sum(line => line.Quantity) units ·
+                    delivered to @Rental.DeliveryAddress
+                </p>
+            </div>
+
+            <div class="two-column">
+                <div class="two-column__wide stack-md">
+                    <div class="card card--flat stack-md panel">
+                        <h2 class="headline-md">Order Summary</h2>
+                        <ul class="line-list list-reset">
+                            @foreach (var line in Rental.Lines)
+                            {
+                                <li class="line-item">
+                                    <span class="stack-sm">
+                                        <span class="label-md">@line.Name</span>
+                                        <span class="label-sm muted">Qty: @line.Quantity · @line.UnitMonthlyPrice.ToDisplayString()/mo each</span>
+                                    </span>
+                                    <span class="body-md">@line.LineTotal.ToDisplayString()/mo</span>
+                                </li>
+                            }
+                        </ul>
+
+                        <dl class="totals">
+                            <div class="totals__row">
+                                <dt class="body-md muted">Subtotal</dt>
+                                <dd class="body-md">@Rental.MonthlyTotal.ToDisplayString()/mo</dd>
+                            </div>
+                            <div class="totals__row">
+                                <dt class="body-md muted">Delivery &amp; Setup (one-time)</dt>
+                                <dd class="body-md">@Rental.DeliveryFee.ToDisplayString()</dd>
+                            </div>
+                            @if (FirstInvoice?.HasTaxLine == true)
+                            {
+                                <div class="totals__row">
+                                    <dt class="body-md muted">Tax</dt>
+                                    <dd class="body-md">@FirstInvoice.TaxAmount.ToDisplayString()</dd>
+                                </div>
+                            }
+                            <div class="totals__row totals__row--grand">
+                                <dt class="headline-md">Grand Total</dt>
+                                <dd class="totals__grand">
+                                    <span class="headline-md primary-text">@GrandTotal.ToDisplayString()</span>
+                                    <span class="label-sm muted">First month due today</span>
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="two-column__narrow stack-md">
+                    <div class="receipt">
+                        <h2 class="headline-md primary-text">What happens next</h2>
+                        <dl>
+                            <div class="totals__row">
+                                <dt class="body-md muted">Placed on</dt>
+                                <dd class="body-md">@Rental.PlacedOn.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)</dd>
+                            </div>
+                            <div class="totals__row">
+                                <dt class="body-md muted">Delivery</dt>
+                                <dd class="body-md">
+                                    @((Rental.DeliveryScheduledFor ?? Rental.PlacedOn).ToString("d MMMM yyyy", CultureInfo.InvariantCulture))
+                                </dd>
+                            </div>
+                            <div class="totals__row">
+                                <dt class="body-md muted">Current month</dt>
+                                <dd class="body-md">
+                                    @Rental.CurrentPeriodStart.ToString("d MMM", CultureInfo.InvariantCulture)
+                                    &ndash;
+                                    @Rental.CurrentPeriodEnd.AddDays(-1).ToString("d MMM", CultureInfo.InvariantCulture)
+                                </dd>
+                            </div>
+                            @if (FirstInvoice is not null)
+                            {
+                                <div class="totals__row">
+                                    <dt class="body-md muted">Invoice</dt>
+                                    <dd class="body-md">@FirstInvoice.Number · paid</dd>
+                                </div>
+                            }
+                        </dl>
+                        <p class="label-sm muted">
+                            Rent runs month to month. Cancelling stops the next charge and takes effect at
+                            the end of the month you have paid for.
+                        </p>
+                        <p class="label-sm muted text-center">Demo checkout — no payment was taken.</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Number { get; set; } = string.Empty;
+
+    [Parameter, SupplyParameterFromQuery(Name = "t")] public string? Token { get; set; }
+
+    private RentalView? Rental { get; set; }
+
+    private InvoiceView? FirstInvoice { get; set; }
+
+    private Money GrandTotal => FirstInvoice?.Total ?? Rental?.MonthlyTotal.Add(Rental.DeliveryFee) ?? Money.Idr(0m);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            return;
+        }
+
+        Rental = await RentalReader.HandleAsync(new GetRentalByToken(Token));
+
+        if (Rental is null || !string.Equals(Rental.Number, Number, StringComparison.OrdinalIgnoreCase))
+        {
+            Rental = null;
+            return;
+        }
+
+        var invoices = await InvoiceReader.HandleAsync(new GetInvoicesByToken(Token));
+        FirstInvoice = invoices.FirstOrDefault();
+    }
+}

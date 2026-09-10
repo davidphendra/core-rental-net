@@ -1,0 +1,72 @@
+@* The acknowledgement that stands in for payment. Nothing is charged in this application. *@
+<ModalDialog @ref="dialog" Title="This is a demonstration" OnClosed="HandleClosedAsync">
+    <ChildContent>
+        <p class="body-md">
+            No money is taken and no card is involved. Core Rental is a demonstration, so the only
+            thing checkout needs is your acknowledgement.
+        </p>
+        <div class="field">
+            <label for="demo-confirmation">Type <strong>@DemoConfirmation.Phrase</strong> to confirm</label>
+            <input id="demo-confirmation" type="text" autocomplete="off" spellcheck="false"
+                   value="@typed"
+                   aria-describedby="demo-confirmation-hint"
+                   @oninput="OnTyped" />
+            <span class="field__hint" id="demo-confirmation-hint">
+                Capitalisation and extra spaces do not matter.
+            </span>
+        </div>
+        @if (Error is not null)
+        {
+            <p class="alert" role="alert">@Error</p>
+        }
+    </ChildContent>
+    <Actions>
+        <button type="button" class="button button--ghost" @onclick="CloseAsync">Cancel</button>
+        <button type="button" class="button button--cta"
+                disabled="@(!IsSatisfied)"
+                aria-disabled="@((!IsSatisfied).ToString().ToLowerInvariant())"
+                @onclick="ConfirmAsync">
+            Rent This Setup
+        </button>
+    </Actions>
+</ModalDialog>
+
+@code {
+    private ModalDialog? dialog;
+    private string? typed;
+
+    [Parameter] public string? Error { get; set; }
+
+    [Parameter] public EventCallback<string> OnConfirm { get; set; }
+
+    [Parameter] public EventCallback OnDismissed { get; set; }
+
+    private bool IsSatisfied => DemoConfirmation.IsSatisfied(typed);
+
+    public async Task ShowAsync()
+    {
+        // Reset before showing. The field is private, so Blazor cannot see the change on its own:
+        // without this the phrase typed last time is still there, and the confirm control is
+        // already enabled when the dialog reopens.
+        typed = null;
+        StateHasChanged();
+
+        await (dialog?.ShowAsync() ?? Task.CompletedTask);
+    }
+
+    public Task CloseAsync() => dialog?.CloseAsync() ?? Task.CompletedTask;
+
+    private void OnTyped(ChangeEventArgs args) => typed = args.Value as string;
+
+    private async Task ConfirmAsync()
+    {
+        if (!IsSatisfied)
+        {
+            return;
+        }
+
+        await OnConfirm.InvokeAsync(typed!);
+    }
+
+    private Task HandleClosedAsync() => OnDismissed.InvokeAsync();
+}

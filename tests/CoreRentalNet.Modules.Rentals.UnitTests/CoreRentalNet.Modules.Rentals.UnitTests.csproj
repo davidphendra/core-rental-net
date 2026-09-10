@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Application/CoreRentalNet.Modules.Rentals.Application.csproj" />
+    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

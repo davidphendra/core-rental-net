@@ -12,6 +12,7 @@ public sealed class InvoiceTests
     private static Domain.Rental Rental(decimal deliveryFee = 750_000m)
         => Domain.Rental.Place(
             RentalId.New(),
+            Guid.NewGuid(),
             RentalNumber.Of(2026, 1),
             AccessToken.HashOf("raw"),
             "Villa Lotus, Canggu",
@@ -125,6 +126,7 @@ public sealed class InvoiceTests
     {
         var rental = Domain.Rental.Place(
             RentalId.New(),
+            Guid.NewGuid(),
             RentalNumber.Of(2026, 3),
             AccessToken.HashOf("raw"),
             "Villa Lotus, Canggu",

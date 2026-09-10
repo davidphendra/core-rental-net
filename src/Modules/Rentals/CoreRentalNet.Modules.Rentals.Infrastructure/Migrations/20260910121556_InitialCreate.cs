@@ -54,6 +54,7 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    WorkspaceId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Number = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
                     AccessTokenHash = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
@@ -137,6 +138,12 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                 name: "IX_Rentals_Rental_Number",
                 table: "Rentals_Rental",
                 column: "Number",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Rentals_Rental_WorkspaceId",
+                table: "Rentals_Rental",
+                column: "WorkspaceId",
                 unique: true);
         }
 

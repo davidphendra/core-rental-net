@@ -13,16 +13,19 @@
     <HeadOutlet />
 </head>
 <body>
-    <!-- The draft token is read from the request and handed to the interactive tree here.
-         Components cannot read the cookie themselves: a circuit is not an HTTP request. -->
-    <CascadingValue Value="DraftToken" Name="DraftToken">
-        <Routes @rendermode="InteractiveServer" />
-    </CascadingValue>
+    <!-- The draft token is read from the request here and passed to the interactive root as a
+         parameter. It has to arrive as a parameter: a cascading value declared by a static
+         parent is not serialized into the circuit, so the interactive tree would never see it.
+         Routes re-publishes it as a cascading value for the pages and layouts below.
+         The at-sign is load-bearing: without it Razor passes the literal text "DraftToken", and every
+         circuit then shares one draft. -->
+    <Routes @rendermode="InteractiveServer" DraftToken="@DraftToken" />
     <script src="_framework/blazor.web.js"></script>
 </body>
 </html>
 
 @code {
+    /// <summary>Read during the initial request, because a circuit is not an HTTP request.</summary>
     public string DraftToken { get; private set; } = string.Empty;
 
     protected override void OnInitialized()

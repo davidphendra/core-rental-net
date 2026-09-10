@@ -17,6 +17,11 @@ public sealed class RentalRepository(RentalsContext context) : IRentalRepository
     public async Task<Domain.Rental?> FindByIdAsync(RentalId id, CancellationToken cancellationToken = default)
         => await context.Rentals.FirstOrDefaultAsync(rental => rental.Id == id, cancellationToken).ConfigureAwait(false);
 
+    public async Task<Domain.Rental?> FindByWorkspaceIdAsync(Guid workspaceId, CancellationToken cancellationToken = default)
+        => await context.Rentals
+            .FirstOrDefaultAsync(rental => rental.WorkspaceId == workspaceId, cancellationToken)
+            .ConfigureAwait(false);
+
     public async Task AddAsync(Domain.Rental rental, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(rental);

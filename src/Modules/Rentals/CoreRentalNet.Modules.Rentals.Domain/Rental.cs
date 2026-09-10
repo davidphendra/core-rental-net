@@ -21,6 +21,7 @@ public sealed class Rental
 
     private Rental(
         RentalId id,
+        Guid workspaceId,
         RentalNumber number,
         string accessTokenHash,
         string deliveryAddress,
@@ -34,6 +35,9 @@ public sealed class Rental
         }
 
         Id = RentalId.From(id.Value);
+        WorkspaceId = workspaceId == Guid.Empty
+            ? throw new DomainRuleViolationException("An order must remember the workspace it came from.")
+            : workspaceId;
         Number = number ?? throw new DomainRuleViolationException("An order requires a number.");
         AccessTokenHash = Guard.NotEmpty(accessTokenHash, "Access token hash", 64);
         DeliveryAddress = Guard.NotEmpty(deliveryAddress, "Delivery address", 200);
@@ -46,6 +50,12 @@ public sealed class Rental
     }
 
     public RentalId Id { get; private set; }
+
+    /// <summary>
+    /// The draft this order came from. It is what makes checkout idempotent: the second attempt
+    /// finds the order instead of placing another one.
+    /// </summary>
+    public Guid WorkspaceId { get; private set; }
 
     public RentalNumber Number { get; private set; }
 
@@ -86,13 +96,14 @@ public sealed class Rental
 
     public static Rental Place(
         RentalId id,
+        Guid workspaceId,
         RentalNumber number,
         string accessTokenHash,
         string deliveryAddress,
         Money deliveryFee,
         IReadOnlyList<RentalLine> lines,
         DateOnly placedOn)
-        => new(id, number, accessTokenHash, deliveryAddress, deliveryFee, lines, placedOn);
+        => new(id, workspaceId, number, accessTokenHash, deliveryAddress, deliveryFee, lines, placedOn);
 
     /// <summary>The period a date falls in, measured from the anchor.</summary>
     public RentalPeriod PeriodContaining(DateOnly date) => RenewalPolicy.PeriodContaining(AnchorDate, date);

@@ -7,6 +7,9 @@
   <ItemGroup>
     <ProjectReference Include="../CoreRentalNet.Modules.Rentals.Domain/CoreRentalNet.Modules.Rentals.Domain.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Application/CoreRentalNet.BuildingBlocks.Application.csproj" />
+    <!-- Checkout orchestrates across modules through their public Application contracts only. -->
+    <ProjectReference Include="../../Workspace/CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
+    <ProjectReference Include="../../Catalog/CoreRentalNet.Modules.Catalog.Application/CoreRentalNet.Modules.Catalog.Application.csproj" />
   </ItemGroup>
 
 </Project>

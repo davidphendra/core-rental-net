@@ -132,12 +132,18 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccessTokenHash")
                         .IsUnique();
 
                     b.HasIndex("Number")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId")
                         .IsUnique();
 
                     b.ToTable("Rentals_Rental", (string)null);

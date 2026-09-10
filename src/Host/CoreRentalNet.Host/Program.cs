@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.Host.Components;
 using CoreRentalNet.Host.Infrastructure;
@@ -11,6 +12,12 @@ using CoreRentalNet.Modules.Workspace.Application.Commands;
 using CoreRentalNet.Modules.Workspace.Application.Contracts;
 using CoreRentalNet.Modules.Workspace.Application.Queries;
 using CoreRentalNet.Modules.Workspace.Domain;
+using CoreRentalNet.Modules.Rentals.Application;
+using CoreRentalNet.Modules.Rentals.Application.Checkout;
+using CoreRentalNet.Modules.Rentals.Application.Orders;
+using CoreRentalNet.Modules.Rentals.Application.Queries;
+using CoreRentalNet.Modules.Rentals.Domain;
+using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,7 +75,6 @@ builder.Services.AddDbContext<WorkspaceContext>((provider, options) =>
 builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
 builder.Services.AddScoped<IDefineWorkspaceComposition, DefineWorkspaceComposition>();
 
-builder.Services.AddSingleton<CheckoutSettings>();
 builder.Services.AddScoped<GetFeaturedProductsHandler>();
 builder.Services.AddScoped<GetCatalogPageHandler>();
 builder.Services.AddScoped<GetCatalogGroupHandler>();
@@ -79,6 +85,29 @@ builder.Services.AddScoped<AssignProductHandler>();
 builder.Services.AddScoped<RemoveAssignmentHandler>();
 builder.Services.AddScoped<ChangeQuantityHandler>();
 builder.Services.AddScoped<SetDeliveryAddressHandler>();
+
+// ---------------------------------------------------------------------------
+// Rentals: the same file, its own tables and its own migration history.
+// ---------------------------------------------------------------------------
+builder.Services.AddDbContext<RentalsContext>((provider, options) =>
+{
+    RentalsPersistence.Configure(options, sqliteSettings);
+    options.AddInterceptors(provider.GetRequiredService<SqlitePragmaInterceptor>());
+});
+
+builder.Services.AddSingleton(new RentalsSettings(
+    Money.Idr(builder.Configuration.GetValue("Rentals:DeliveryFeeAmount", 750_000m)),
+    builder.Configuration.GetValue("Rentals:TaxRate", 0m)));
+
+builder.Services.AddScoped<IRentalRepository, RentalRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IUnitOfWork, RentalsUnitOfWork>();
+builder.Services.AddScoped<INumberSequence, SqliteNumberSequence>();
+builder.Services.AddScoped<IPlaceOrder, PlaceOrderService>();
+builder.Services.AddScoped<IConvertWorkspaceToOrder, ConvertWorkspaceToOrder>();
+builder.Services.AddScoped<ICheckout, CheckoutService>();
+builder.Services.AddScoped<GetRentalByTokenHandler>();
+builder.Services.AddScoped<GetInvoicesByTokenHandler>();
 
 builder.Services.AddScoped<WorkspaceSession>();
 
@@ -99,8 +128,11 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<WorkspaceContext>();
-    await context.Database.MigrateAsync();
+    var workspace = scope.ServiceProvider.GetRequiredService<WorkspaceContext>();
+    await workspace.Database.MigrateAsync();
+
+    var rentals = scope.ServiceProvider.GetRequiredService<RentalsContext>();
+    await rentals.Database.MigrateAsync();
 }
 
 await app.RunAsync();

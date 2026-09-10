@@ -11,3 +11,11 @@ export function close(element) {
         element.close();
     }
 }
+
+// Move the caret into the first control so the customer can start typing immediately.
+export function focusFirstField(element) {
+    const field = element?.querySelector('input, textarea, select, button:not([disabled])');
+    if (field) {
+        field.focus();
+    }
+}

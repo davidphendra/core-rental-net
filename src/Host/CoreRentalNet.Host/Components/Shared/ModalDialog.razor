@@ -30,6 +30,14 @@
     {
         module ??= await JavaScript.InvokeAsync<IJSObjectReference>("import", "./js/dialog.js");
         await module.InvokeVoidAsync("show", element);
+        await InvokeAsync(FocusFirstFieldAsync);
+    }
+
+    /// <summary>Native dialog handles the focus trap; moving the caret into the first control is ours.</summary>
+    private async Task FocusFirstFieldAsync()
+    {
+        module ??= await JavaScript.InvokeAsync<IJSObjectReference>("import", "./js/dialog.js");
+        await module.InvokeVoidAsync("focusFirstField", element);
     }
 
     public async Task CloseAsync()
