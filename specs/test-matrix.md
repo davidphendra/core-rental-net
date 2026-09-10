@@ -190,6 +190,35 @@ was never specified.
 | SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | passing |
 | SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | passing |
 
+## Authentication (ADR-0016 to ADR-0020)
+
+| id | scenario | expected | layer | status |
+|---|---|---|---|---|
+| AUTH-01 | No identity configuration at all | OIDC is not registered, the sign-in affordance is hidden, every guest route works | I,E | pending |
+| AUTH-02 | The application starts with no `Auth0:Domain` | it boots and serves the funnel; identity is not required to run | E | pending |
+| AUTH-03 | Selecting sign-in | a redirect to the authority's authorization endpoint, carrying the return URL | E | pending |
+| AUTH-04 | Completing the handshake | an authentication cookie is issued and the customer is signed in | E | pending |
+| AUTH-05 | Selecting sign-out | the cookie is cleared and the browser is sent to the authority's logout endpoint | E | pending |
+| AUTH-06 | A local return URL | honoured after sign-in | I,E | pending |
+| AUTH-07 | A non-local return URL | refused, so the login page cannot be an open redirect | U,I | pending |
+| AUTH-08 | Every committed configuration file | contains no client secret | A | pending |
+| AUTH-09 | What is persisted after sign-in | no access token and no refresh token anywhere | U,A | pending |
+| AUTH-10 | The authentication cookie | `HttpOnly`, `SameSite=Lax`, and `Secure` in production | I | pending |
+| AUTH-11 | A signed-in checkout | the order records the subject, email and name as at that moment | U,I | pending |
+| AUTH-12 | A guest checkout | the order records no customer, and its link still opens it | U,I | pending |
+| AUTH-13 | My rentals | lists only the signed-in customer's own orders | U,I,E | pending |
+| AUTH-14 | One customer requesting another's order by number | nothing, and no data disclosed | U,I | pending |
+| AUTH-15 | An order detail page | opens by ownership, and by token for a guest | U,I,E | pending |
+| AUTH-16 | The sign-in affordance | present in the header and at the review step, and absent when unconfigured | E | pending |
+| AUTH-17 | The browser suite | drives a real OIDC handshake against a local provider, with no interception | E | pending |
+| AUTH-18 | Production with the local provider enabled | the application refuses to start | A | pending |
+| AUTH-19 | Real tenant credentials present | the opt-in test validates the tenant configuration; skipped otherwise | I | pending |
+| AUTH-20 | Signing in with a workspace in progress | the draft survives the round trip | E | pending |
+| AUTH-21 | Signing out | the draft and any confirmation link are left alone | E | pending |
+| AUTH-22 | A tab left open past the cookie expiry | keeps the circuit's authentication context, as recorded in ADR-0019 | E | pending |
+| AUTH-23 | A signed-in header | initials are drawn, and no image is fetched from the identity provider | E | pending |
+| AUTH-24 | A signed-in journey | reaches nothing but the application, exactly as the guest journey does | E | pending |
+
 ## Notes recorded during E7
 
 - The browser suite is committed (`tests/CoreRentalNet.E2E`): a real Kestrel process started the way

@@ -1,6 +1,7 @@
 # ADR-0012: Blazor Web App with InteractiveServer; design tokens as CSS variables
 
-- **Status:** Accepted (2026-09-10)
+- **Status:** Accepted (2026-09-10), **amended by ADR-0017**: still no REST API for clients, but two
+authentication redirect endpoints now exist
 - **Decided by:** architecture
 
 ## Context

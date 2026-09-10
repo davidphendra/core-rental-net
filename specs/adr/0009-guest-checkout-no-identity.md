@@ -1,6 +1,7 @@
 # ADR-0009: Guest checkout; no identity provider for the MVP
 
-- **Status:** Accepted (2026-09-10)
+- **Status:** Accepted (2026-09-10), **amended by ADR-0016**: the identity provider is no longer
+  deferred, though guest checkout and the absence of an administrator both stand
 - **Decided by:** product owner
 
 ## Context
