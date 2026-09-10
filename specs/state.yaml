@@ -43,7 +43,8 @@ epics:
   - id: E3
     name: host-ui
     slice: 1
-    status: ready
+    status: archived
+    note: archived 2026-09-10, awaiting product owner acceptance
   - id: E4
     name: checkout
     slice: 1
@@ -66,7 +67,7 @@ epics:
     status: pending
 
 next_action: >
-  Begin epic E3 (host UI): the Blazor host, the design tokens, slots.css, the four
-  designed screens, and the draft token cookie middleware that E2 deferred.
+  Begin epic E4 (rentals): the Rental and Invoice aggregates, order and invoice numbering,
+  the access token, and the policies the scheduler will drive.
 
-blocked_on: product owner review of E1 and E2 (both archived, neither yet accepted)
+blocked_on: product owner review of E1, E2 and E3 (all archived, none yet accepted)
