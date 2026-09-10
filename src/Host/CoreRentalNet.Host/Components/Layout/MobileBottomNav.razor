@@ -12,14 +12,14 @@
         <span class="label-sm">Store</span>
     </NavLink>
     <a class="bottom-nav__item" href="/review"
-       aria-disabled="@Session.IsEmpty.ToString().ToLowerInvariant()"
+       aria-disabled="@(Session.IsEmpty.ToString().ToLowerInvariant())"
        tabindex="@(Session.IsEmpty ? -1 : 0)"
        @onclick="GoToReviewAsync" @onclick:preventDefault="Session.IsEmpty">
         <span class="bottom-nav__glyph" aria-hidden="true">&#9776;</span>
         <span class="label-sm">Summary</span>
     </a>
     <a class="bottom-nav__item" href="/review"
-       aria-disabled="@(!CanCheckout).ToString().ToLowerInvariant()"
+       aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"
        tabindex="@(CanCheckout ? 0 : -1)"
        @onclick="GoToReviewAsync" @onclick:preventDefault="@(!CanCheckout)">
         <span class="bottom-nav__glyph" aria-hidden="true">&#10003;</span>

@@ -26,6 +26,8 @@
     <!-- FakeTimeProvider, so the scheduler and the billing anchor are tested by moving the
          clock rather than by sleeping. -->
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
+    <!-- 1.62.0 matches the Chromium revision already in the local Playwright cache. -->
+    <PackageVersion Include="Microsoft.Playwright" Version="1.62.0" />
   </ItemGroup>
 
 </Project>

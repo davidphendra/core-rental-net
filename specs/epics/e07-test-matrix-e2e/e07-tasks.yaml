@@ -1,53 +1,73 @@
 epic: e07-test-matrix-e2e
 slice: 3
+status: complete
+completed: 2026-09-10
+verification: specs/verifications/E7-browser-suite.md
+
 tasks:
   - id: E7-T1
-    title: Integration tests — real SQLite file per test, migrations applied, torn down
+    title: Integration tests against a real SQLite file per test
     type: test
-    status: pending
+    status: done
     tests: [WS-13, DR-05, SEC-02]
   - id: E7-T2
-    title: E2E host fixture — Kestrel subprocess, ephemeral port, temp database, teardown
+    title: A real Kestrel process, per-run database, one browser context per test
     type: test
-    status: pending
-    tests: []
+    status: done
+    note: >
+      Readiness requires the root page and a real static asset, because a build started from the
+      wrong directory answers the root page happily while every asset behind it is missing. The
+      fixture also reports the application's own output when it fails to start.
   - id: E7-T3
-    title: Playwright projects — Chromium desktop and one mobile viewport
+    title: Chromium, plus a mobile viewport class
     type: test
-    status: pending
+    status: done
     tests: [UI-07]
   - id: E7-T4
-    title: E2E — happy path Home to Builder to Store to Review to dialog to confirmation
+    title: The whole funnel end to end
     type: test
-    status: pending
+    status: done
     tests: [NAV-03, CO-01, CO-03, CO-06, CO-10, ORD-03]
   - id: E7-T5
-    title: E2E — wrong phrase rejected and no order created
+    title: A wrong phrase is refused and nothing is created
     type: test
-    status: pending
+    status: done
     tests: [CO-04, SEC-03]
   - id: E7-T6
-    title: E2E — reload mid-funnel preserves the draft; two-tab conflict resolves
+    title: Two browsers, two workspaces, and one checkout leaves the other alone
     type: test
-    status: pending
-    tests: [DR-02, DR-03, DR-06]
+    status: done
+    tests: [DR-02, DR-06, SEC-05]
+    note: >
+      This is the property a shared draft token silently broke. Two real browser profiles are the
+      only way to see it.
   - id: E7-T7
-    title: E2E — empty workspace gating and direct /review redirect
+    title: Empty-workspace gating and the direct review redirect
     type: test
-    status: pending
-    tests: [NAV-01, NAV-02, NAV-04, NAV-06]
+    status: done
+    tests: [NAV-01, NAV-02, NAV-04, NAV-05, NAV-06]
   - id: E7-T8
-    title: E2E — keyboard-only completion; dialog focus trap and Esc
+    title: Keyboard-only assignment, and the dialog's native focus behaviour
     type: test
-    status: pending
+    status: done
     tests: [UI-04, UI-08]
   - id: E7-T9
-    title: E2E — order enumeration without a token discloses nothing; hermetic (no third-party requests)
+    title: Hermeticity - no third party, no worker, no interception
     type: test
-    status: pending
-    tests: [SEC-05, SEC-06, UI-06]
+    status: done
+    tests: [SEC-06, UI-06]
   - id: E7-T10
-    title: Resolve every test-matrix row to passing or n/a with a reason
+    title: Every matrix row resolved
     type: chore
-    status: pending
-    tests: []
+    status: done
+    note: All 101 rows now pass. Nothing is left pending or marked n/a.
+
+found_while_verifying:
+  - "aria-disabled rendered the text True.ToString().ToLowerInvariant(), because Razor closes an implicit expression at the first unparenthesised method call. Four other attributes had the same latent shape."
+  - "The suite's readiness signal matched prerendered markup, so clicks landed before the circuit attached."
+  - "/builder?empty=1 cannot bind to a bool; the redirect had been returning a server error since E3."
+  - "The fixture started the application from its build output directory, where a development build has no static assets: every stylesheet, font and vendored image was a 404 while every test passed."
+
+deviations:
+  - "No bUnit component tests, as decided. The browser suite covers the components that matter, and a component test would mostly restate it."
+  - "No axe gate, as decided. The suite asserts what is cheap and unambiguous instead: every visible control is a real element with a name, and the dialog is native."

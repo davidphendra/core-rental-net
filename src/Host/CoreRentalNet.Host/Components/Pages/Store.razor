@@ -43,7 +43,7 @@
         <div class="row">
             <a class="button button--ghost" href="/builder">Back to the builder</a>
             <a class="button button--primary" href="/review"
-               aria-disabled="@Session.IsEmpty.ToString().ToLowerInvariant()"
+               aria-disabled="@(Session.IsEmpty.ToString().ToLowerInvariant())"
                tabindex="@(Session.IsEmpty ? -1 : 0)">View Setup Summary</a>
         </div>
     </div>

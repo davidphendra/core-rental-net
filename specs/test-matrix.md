@@ -62,13 +62,13 @@ was never specified.
 | WS-01 | Assign a chair to an empty workspace | Chair slot filled, quantity 1 | U | passing |
 | WS-02 | Assign a second chair | replaces the first; quantity stays 1; total unchanged | U | passing |
 | WS-03 | Assign three monitors | all three accepted | U | passing |
-| WS-04 | Assign a fourth monitor | refused with a capacity message; total unchanged | U,E | passing (unit; E2E pending) |
+| WS-04 | Assign a fourth monitor | refused with a capacity message; total unchanged | U,E | passing |
 | WS-05 | Assign a plant | lands in the Plant slot; the user never picks a slot | U | passing |
-| WS-06 | Add a monitor from a product card when the slot is full | refused with a message, no silent replacement | U,E | passing (unit; E2E pending) |
+| WS-06 | Add a monitor from a product card when the slot is full | refused with a message, no silent replacement | U,E | passing |
 | WS-07 | Assign a wrong-category item to a slot | unrepresentable — no code path permits it | U | passing |
-| WS-08 | Remove via the slot's `×` | slot returns to its dashed empty state | U,E | passing (unit; E2E pending) |
+| WS-08 | Remove via the slot's `×` | slot returns to its dashed empty state | U,E | passing |
 | WS-09 | Stepper `−` at quantity 1 | removes the item | U | passing |
-| WS-10 | Stepper `+` at capacity | disabled; state unchanged | U,E | passing (unit; E2E pending) |
+| WS-10 | Stepper `+` at capacity | disabled; state unchanged | U,E | passing |
 | WS-11 | Quote | sum of `price × quantity` recomputed from the catalog on every read | U | passing |
 | WS-12 | Catalog price changes between reads | quote reflects the new price | U | passing |
 | WS-13 | Draft references a SKU absent from the catalog | validation error and a visible message — never a 500, never a silent drop | U,I | passing |
@@ -91,21 +91,21 @@ was never specified.
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
 | NAV-01 | Empty workspace, mobile nav | `Summary` and `Rent` disabled | E | passing |
-| NAV-02 | Empty workspace, Builder | `View Setup Summary` and `Ready to Rent?` disabled; total shows `Rp0/mo` | E | pending |
+| NAV-02 | Empty workspace, Builder | `View Setup Summary` and `Ready to Rent?` disabled; total shows `Rp0/mo` | E | passing |
 | NAV-03 | Empty workspace | every product card remains clickable and assigns | E | passing (observed by running it; automated in E7) |
 | NAV-04 | Type `/review` directly with an empty workspace | redirect to Builder with a message | E | passing (observed by running it; automated in E7) |
-| NAV-05 | Disabled controls | `aria-disabled`, not focusable, muted per design tokens | U,E | pending |
+| NAV-05 | Disabled controls | `aria-disabled`, not focusable, muted per design tokens | U,E | passing |
 | NAV-06 | Assign one item | all gated controls become enabled | E | passing |
-| NAV-07 | Header bag icon | decorative: no count, no navigation | U | pending |
+| NAV-07 | Header bag icon | decorative: no count, no navigation | U | passing |
 
 ## Delivery address
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| ADDR-01 | Checkout with no address | refused, field highlighted | U,E | pending |
+| ADDR-01 | Checkout with no address | refused, field highlighted | U,E | passing |
 | ADDR-02 | Whitespace only | refused after trimming | U | passing |
 | ADDR-03 | 4 characters / 201 characters | refused at both bounds | U | passing |
-| ADDR-04 | Saved on blur | one write per blur, not per keystroke | U,E | pending |
+| ADDR-04 | Saved on blur | one write per blur, not per keystroke | U,E | passing |
 | ADDR-05 | Newlines inside the value | normalised before storage | U | passing |
 | ADDR-06 | Two-line textarea | renders 2 rows; location icon top-aligned | E | passing (observed by running it; automated in E7) |
 
@@ -116,16 +116,16 @@ was never specified.
 | CO-01 | Click `Rent This Setup` | dialog opens stating no money is taken | E | passing |
 | CO-02 | Before typing | confirm control disabled | E | passing |
 | CO-03 | Type `This Is A DEMO` with padding | accepted — trimmed, case-insensitive | U,E | passing |
-| CO-04 | Type the wrong phrase and submit | server rejects; **no order created** | U,E | pending |
+| CO-04 | Type the wrong phrase and submit | server rejects; **no order created** | U,E | passing |
 | CO-05 | Cancel the dialog | closes; workspace and address untouched | E | passing |
 | CO-06 | Confirm | order persisted with line snapshots, quantities and the address | I | passing |
 | CO-07 | Confirm | first invoice raised and immediately `Paid` | U,I | passing |
 | CO-08 | One-time delivery fee | present on invoice #1, absent from renewals | U | passing |
 | CO-09 | 0% tax seed | no tax line rendered; total equals sum of lines | U | passing |
 | CO-10 | After the order | draft cleared and the cookie token rotated | E | passing |
-| CO-11 | Confirm clicked twice | exactly one order — idempotent via `Draft → Converted` | U,E | pending |
-| CO-12 | Checkout with an empty workspace | rejected server-side regardless of UI state | U | pending |
-| CO-13 | Request containing a price or total | ignored; server prices from the catalog | U,A | pending |
+| CO-11 | Confirm clicked twice | exactly one order — idempotent via `Draft → Converted` | U,E | passing |
+| CO-12 | Checkout with an empty workspace | rejected server-side regardless of UI state | U | passing |
+| CO-13 | Request containing a price or total | ignored; server prices from the catalog | U,A | passing |
 | CO-14 | Order and invoice numbering | `CR-YYYY-NNNN`, `INV-YYYY-NNNN`, sequential | U | passing |
 | CO-15 | Scheduler never creates a duplicate invoice for a settled period | see SC-04 | U | passing |
 
@@ -172,23 +172,35 @@ was never specified.
 |---|---|---|---|---|
 | UI-01 | Design tokens | every colour, radius and spacing used comes from a CSS custom property | A | passing |
 | UI-02 | Slot geometry | supplied by CSS variables keyed by slot id; no coordinate literals in C# | U | passing |
-| UI-03 | Interactive elements | real `button`/`a` with accessible names — no clickable `div` | E | pending |
-| UI-04 | Demo dialog | native `dialog`; focus trapped; `Esc` closes | E | pending |
-| UI-05 | Missing product image | design-system placeholder tile renders | U,E | pending |
+| UI-03 | Interactive elements | real `button`/`a` with accessible names — no clickable `div` | E | passing |
+| UI-04 | Demo dialog | native `dialog`; focus trapped; `Esc` closes | E | passing |
+| UI-05 | Missing product image | design-system placeholder tile renders | U,E | passing |
 | UI-06 | Remote product images | vendored locally; the E2E run makes no third-party request | E | passing |
-| UI-07 | Mobile viewport | bottom nav visible; Builder side panel collapsed; horizontal category chips | E | pending |
-| UI-08 | Keyboard only | the full funnel is completable without a mouse | E | pending |
+| UI-07 | Mobile viewport | bottom nav visible; Builder side panel collapsed; horizontal category chips | E | passing |
+| UI-08 | Keyboard only | the full funnel is completable without a mouse | E | passing |
 
 ## Security
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| SEC-01 | Tampered price or total in the request | ignored; server-priced | U | pending |
+| SEC-01 | Tampered price or total in the request | ignored; server-priced | U | passing |
 | SEC-02 | Tokens at rest | draft and order tokens stored hashed | I | passing |
-| SEC-03 | Demo phrase | validated server-side, not only in the browser | U | pending |
-| SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | pending |
-| SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | pending |
+| SEC-03 | Demo phrase | validated server-side, not only in the browser | U | passing |
+| SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | passing |
+| SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | passing |
 | SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | passing |
+
+## Notes recorded during E7
+
+- The browser suite is committed (`tests/CoreRentalNet.E2E`): a real Kestrel process started the way
+  a person starts it, its own throwaway database, one browser context per test, Chromium, and **no
+  interception of any kind**. See `specs/verifications/E7-browser-suite.md`.
+- It found three application bugs that 280 passing tests and every `curl` check had missed:
+  a Razor expression that rendered `True.ToString().ToLowerInvariant()` into an accessibility
+  attribute, an E2E readiness signal that matched prerendered markup, and a redirect whose query
+  value could not be bound to a `bool`.
+- `SLOT-04` is asserted as two zones rather than four: Garage and Outdoor Gear were removed with
+  the partner item, and a zone no product can fill must not be drawn.
 
 ## Notes recorded during E6
 

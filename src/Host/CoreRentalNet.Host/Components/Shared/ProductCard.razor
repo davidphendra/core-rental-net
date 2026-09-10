@@ -1,6 +1,6 @@
 @* One catalog item. Clicking it assigns it; the slot is decided by the domain, not the customer. *@
 <button type="button" class="product-card @(IsSelected ? "product-card--selected" : null)"
-        aria-pressed="@IsSelected.ToString().ToLowerInvariant()"
+        aria-pressed="@(IsSelected.ToString().ToLowerInvariant())"
         aria-label="@($"Add {Product.Name} to your workspace")"
         @onclick="() => OnSelect.InvokeAsync(Product)">
     @if (IsSelected)

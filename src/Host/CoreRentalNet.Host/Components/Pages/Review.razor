@@ -164,7 +164,7 @@
         // An empty workspace has nothing to review, so send the customer back to the builder.
         if (Session.IsEmpty)
         {
-            Navigation.NavigateTo("/builder?empty=1");
+            Navigation.NavigateTo("/builder?empty=true");
         }
     }
 
