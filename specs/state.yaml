@@ -38,7 +38,8 @@ epics:
   - id: E2
     name: workspace
     slice: 1
-    status: ready
+    status: archived
+    note: archived 2026-09-10, awaiting product owner acceptance
   - id: E3
     name: host-ui
     slice: 1
@@ -65,8 +66,7 @@ epics:
     status: pending
 
 next_action: >
-  Begin epic E2 (workspace): the draft aggregate, the slot rule table, the quote,
-  SQLite persistence, and the draft cookie token. Adds BuildingBlocks.Application
-  and BuildingBlocks.Infrastructure, which E1 deferred.
+  Begin epic E3 (host UI): the Blazor host, the design tokens, slots.css, the four
+  designed screens, and the draft token cookie middleware that E2 deferred.
 
-blocked_on: product owner review of E1 (archived, not yet accepted)
+blocked_on: product owner review of E1 and E2 (both archived, neither yet accepted)
