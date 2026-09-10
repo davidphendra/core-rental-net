@@ -118,42 +118,42 @@ was never specified.
 | CO-03 | Type `This Is A DEMO` with padding | accepted — trimmed, case-insensitive | U,E | pending |
 | CO-04 | Type the wrong phrase and submit | server rejects; **no order created** | U,E | pending |
 | CO-05 | Cancel the dialog | closes; workspace and address untouched | E | pending |
-| CO-06 | Confirm | order persisted with line snapshots, quantities and the address | I | pending |
-| CO-07 | Confirm | first invoice raised and immediately `Paid` | U,I | pending |
-| CO-08 | One-time delivery fee | present on invoice #1, absent from renewals | U | pending |
-| CO-09 | 0% tax seed | no tax line rendered; total equals sum of lines | U | pending |
+| CO-06 | Confirm | order persisted with line snapshots, quantities and the address | I | passing |
+| CO-07 | Confirm | first invoice raised and immediately `Paid` | U,I | passing |
+| CO-08 | One-time delivery fee | present on invoice #1, absent from renewals | U | passing |
+| CO-09 | 0% tax seed | no tax line rendered; total equals sum of lines | U | passing |
 | CO-10 | After the order | draft cleared and the cookie token rotated | E | pending |
 | CO-11 | Confirm clicked twice | exactly one order — idempotent via `Draft → Converted` | U,E | pending |
 | CO-12 | Checkout with an empty workspace | rejected server-side regardless of UI state | U | pending |
 | CO-13 | Request containing a price or total | ignored; server prices from the catalog | U,A | pending |
-| CO-14 | Order and invoice numbering | `CR-YYYY-NNNN`, `INV-YYYY-NNNN`, sequential | U | pending |
+| CO-14 | Order and invoice numbering | `CR-YYYY-NNNN`, `INV-YYYY-NNNN`, sequential | U | passing |
 | CO-15 | Scheduler never creates a duplicate invoice for a settled period | see SC-04 | U | pending |
 
 ## Order confirmation
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| ORD-01 | Open the confirmation URL with a valid token | renders the order | E | pending |
-| ORD-02 | Open with an invalid or missing token | not found; no order data disclosed | E | pending |
+| ORD-01 | Open the confirmation URL with a valid token | renders the order | E | passing (data path; the page arrives in E5) |
+| ORD-02 | Open with an invalid or missing token | not found; no order data disclosed | E | passing |
 | ORD-03 | Content | order number, itemised lines with quantities, subtotal, one-time fee, grand total, delivery address | E | pending |
-| ORD-04 | Reload the confirmation page | still renders (the token is durable) | E | pending |
+| ORD-04 | Reload the confirmation page | still renders (the token is durable) | E | passing (data path; the page arrives in E5) |
 | ORD-05 | Workspace is empty after checkout | the builder shows an empty workspace | E | pending |
 
 ## Scheduler and lifecycle (ADR-0011)
 
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
-| SC-01 | Time advances past the delivery lead time | delivery scheduled at the lead-time date | U | pending |
+| SC-01 | Time advances past the delivery lead time | delivery scheduled at the lead-time date | U | passing |
 | SC-02 | Clock reaches the delivery date | rental becomes `Active` | U | pending |
 | SC-03 | Monthly anniversary | next invoice raised **and settled exactly once** | U | pending |
 | SC-04 | Scheduler executes twice for the same period | no duplicate invoice | U | pending |
 | SC-05 | Cancellation requested | next invoice suppressed | U | pending |
-| SC-06 | Cancellation effective date | end of the currently paid period, no refund | U | pending |
-| SC-07 | Order placed 31 January | periods `anchor.AddMonths(N)` → 28 Feb, 31 Mar, 30 Apr | U | pending |
-| SC-08 | Anchor stored once | no drift across twelve periods | U | pending |
-| SC-09 | Order placed 01:00 WITA on 1 Feb | anchors to 1 Feb, not 31 Jan (fixed `+08:00`) | U | pending |
-| SC-10 | Fake clock advances but no real time passes | architecture test: no `Thread.Sleep`, no `DateTime.Now` | A | pending |
-| SC-11 | Lifecycle transitions | `Placed → Paid → DeliveryScheduled → Active → CancellationRequested → Ended` | U | pending |
+| SC-06 | Cancellation effective date | end of the currently paid period, no refund | U | passing |
+| SC-07 | Order placed 31 January | periods `anchor.AddMonths(N)` → 28 Feb, 31 Mar, 30 Apr | U | passing |
+| SC-08 | Anchor stored once | no drift across twelve periods | U | passing |
+| SC-09 | Order placed 01:00 WITA on 1 Feb | anchors to 1 Feb, not 31 Jan (fixed `+08:00`) | U | passing |
+| SC-10 | Fake clock advances but no real time passes | architecture test: no `Thread.Sleep`, no `DateTime.Now` | A | passing |
+| SC-11 | Lifecycle transitions | `Placed → Paid → DeliveryScheduled → Active → CancellationRequested → Ended` | U | passing |
 
 ## Architecture
 
@@ -184,16 +184,19 @@ was never specified.
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
 | SEC-01 | Tampered price or total in the request | ignored; server-priced | U | pending |
-| SEC-02 | Tokens at rest | draft and order tokens stored hashed | I | pending |
+| SEC-02 | Tokens at rest | draft and order tokens stored hashed | I | passing |
 | SEC-03 | Demo phrase | validated server-side, not only in the browser | U | pending |
 | SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | pending |
 | SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | pending |
-| SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | pending |
+| SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | passing |
 
 ## Notes recorded during E3
 
 - `DR-04`: `Secure` is set only when the request is HTTPS, so the E2E suite must assert it on an
   HTTPS origin and must assert `HttpOnly` and `SameSite=Lax` everywhere.
 - `WS-04/06/08/10`, `NAV-01/02/05/06`, `UI-03/04/05/07/08` remain pending: they need a browser.
+- `ORD-01` and `ORD-04` are marked as passing on the data path: the query, the token check and
+  the frozen amounts are covered, and the rendered page arrives with checkout.
+- `CO-11/12/13` and everything about the confirmation *page* remain pending until checkout exists.
 - `SLOT-06` and `UI-06` both read the real catalog file and the real web root, so a new remote
   image URL or a product with an unmapped subcategory fails the build.

@@ -8,6 +8,8 @@
     <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
     <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Infrastructure/CoreRentalNet.Modules.Workspace.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Application/CoreRentalNet.Modules.Rentals.Application.csproj" />
+    <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Infrastructure/CoreRentalNet.Modules.Rentals.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,6 +17,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
   </ItemGroup>
 
 </Project>

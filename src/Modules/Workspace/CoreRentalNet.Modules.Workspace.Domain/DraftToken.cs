@@ -1,54 +1,26 @@
-using System.Security.Cryptography;
-using System.Text;
 using CoreRentalNet.BuildingBlocks.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Domain;
 
 /// <summary>
-/// The opaque handle that addresses a draft without an account.
+/// The opaque handle that addresses a draft without an account. A distinct type from the order
+/// access token so the two cannot be confused, but the same mechanism underneath.
 /// </summary>
-/// <remarks>
-/// Only the hash is ever stored, and only the hash is ever compared. The raw value exists
-/// once, in the cookie, and is never persisted or logged (ADR-0007).
-/// </remarks>
 public sealed record DraftToken
 {
-    public const int RawTokenBytes = 32;
+    private readonly OpaqueToken token;
 
-    private DraftToken(string hash) => Hash = hash;
+    private DraftToken(OpaqueToken token) => this.token = token;
 
-    public string Hash { get; }
+    public string Hash => token.Hash;
 
-    /// <summary>Issues a new raw token. This is the only moment the raw value exists.</summary>
-    public static string IssueRawToken()
-        => Base64Url(RandomNumberGenerator.GetBytes(RawTokenBytes));
+    public static string IssueRawToken() => OpaqueToken.IssueRawToken();
 
-    public static DraftToken FromRawToken(string rawToken)
-    {
-        if (string.IsNullOrWhiteSpace(rawToken))
-        {
-            throw new DomainRuleViolationException("A draft token is required.");
-        }
+    public static DraftToken FromRawToken(string rawToken) => new(OpaqueToken.FromRawToken(rawToken));
 
-        return new DraftToken(HashOf(rawToken));
-    }
+    public static DraftToken FromHash(string hash) => new(OpaqueToken.FromHash(hash));
 
-    /// <summary>Rehydrates from a stored hash, for looking a draft up.</summary>
-    public static DraftToken FromHash(string hash)
-    {
-        if (hash.Length != 64 || !hash.All(char.IsAsciiHexDigit))
-        {
-            throw new DomainRuleViolationException("'hash' is not a draft token hash.");
-        }
-
-        return new DraftToken(hash.ToUpperInvariant());
-    }
-
-    public static string HashOf(string rawToken)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(rawToken)));
+    public static string HashOf(string rawToken) => OpaqueToken.HashOf(rawToken);
 
     public override string ToString() => Hash;
-
-    private static string Base64Url(byte[] bytes)
-        => Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }

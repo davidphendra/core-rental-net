@@ -2,7 +2,7 @@ using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using Xunit;
 
-namespace CoreRentalNet.Modules.Catalog.UnitTests;
+namespace CoreRentalNet.BuildingBlocks.UnitTests;
 
 public sealed class MoneyTests
 {

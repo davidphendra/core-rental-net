@@ -59,9 +59,11 @@ using (SqliteDatabase.Open(sqliteSettings))
 builder.Services.AddSingleton(sqliteSettings);
 builder.Services.AddSingleton<SqlitePragmaInterceptor>();
 
-builder.Services.AddDbContext<WorkspaceContext>((provider, options) => options
-    .UseSqlite(sqliteSettings.ConnectionString)
-    .AddInterceptors(provider.GetRequiredService<SqlitePragmaInterceptor>()));
+builder.Services.AddDbContext<WorkspaceContext>((provider, options) =>
+{
+    WorkspacePersistence.Configure(options, sqliteSettings);
+    options.AddInterceptors(provider.GetRequiredService<SqlitePragmaInterceptor>());
+});
 
 builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
 builder.Services.AddScoped<IDefineWorkspaceComposition, DefineWorkspaceComposition>();

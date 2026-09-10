@@ -1,4 +1,5 @@
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
+using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,16 +26,32 @@ internal sealed class SqliteTestDatabase : IAsyncDisposable
 
     public WorkspaceContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<WorkspaceContext>()
-            .UseSqlite(Settings.ConnectionString)
-            .Options;
+        // Configured through the module's own settings, exactly as the host does, so the tests
+        // cannot drift from the application.
+        var options = new DbContextOptionsBuilder<WorkspaceContext>();
+        WorkspacePersistence.Configure(options, Settings);
 
-        return new WorkspaceContext(options);
+        return new WorkspaceContext(options.Options);
     }
 
     public async Task<WorkspaceContext> CreateMigratedContextAsync()
     {
         var context = CreateContext();
+        await context.Database.MigrateAsync();
+        return context;
+    }
+
+    public RentalsContext CreateRentalsContext()
+    {
+        var options = new DbContextOptionsBuilder<RentalsContext>();
+        RentalsPersistence.Configure(options, Settings);
+
+        return new RentalsContext(options.Options);
+    }
+
+    public async Task<RentalsContext> CreateMigratedRentalsContextAsync()
+    {
+        var context = CreateRentalsContext();
         await context.Database.MigrateAsync();
         return context;
     }
