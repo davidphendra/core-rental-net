@@ -1,18 +1,32 @@
 epic: e08-ci-and-docs
 slice: 3
+status: complete
+completed: 2026-09-10
+
 tasks:
   - id: E8-T1
-    title: GitHub Actions workflow — build, unit, architecture, integration, E2E with Chromium
+    title: A GitHub Actions workflow that builds and runs every test layer
     type: chore
-    status: pending
-    tests: []
+    status: done
+    note: >
+      Restore, build in Release with warnings as errors, run the 282 non-browser tests, install
+      Chromium using the Playwright package's own script so the browser revision matches the
+      library, then run the 43 browser tests. Validated locally: a Release build, both test
+      commands, and the filtered command exiting zero even though the browser project contributes
+      no matching tests.
   - id: E8-T2
-    title: Root README — run instructions, demo phrase, database reset, epic map, specs pointer
+    title: A root README with run instructions, the demo phrase and the reset
     type: docs
-    status: pending
-    tests: []
+    status: done
   - id: E8-T3
-    title: Archive index maintenance and a note that CI is dormant until a remote exists
+    title: Record that CI has never run, and keep the archive index current
     type: docs
-    status: pending
-    tests: []
+    status: done
+    note: >
+      The README says plainly that the workflow has never executed because there is no remote. A
+      workflow that has never run is an unverified claim, and saying so is cheaper than implying a
+      green build.
+
+deviations:
+  - "No dotnet format verification step. Style is already enforced by the build (warnings as errors plus EnforceCodeStyleInBuild), and a separate formatter check would fight the generated migrations."
+  - "Nothing deploys. Deployment is a deliberate decision that has not been made, and it is recorded as such rather than configured by default."

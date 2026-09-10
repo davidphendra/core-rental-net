@@ -1,0 +1,56 @@
+name: CI
+
+# Dormant until this repository has a remote. Everything below runs from a clean
+# checkout, so the first push is the first time it executes.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install the SDK from global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore CoreRentalNet.sln
+
+      # Warnings are errors, so a style or analyser regression fails here rather than
+      # being noticed later.
+      - name: Build
+        run: dotnet build CoreRentalNet.sln --configuration Release --no-restore
+
+      - name: Unit, architecture and integration tests
+        run: >-
+          dotnet test CoreRentalNet.sln
+          --configuration Release
+          --no-build
+          --filter "FullyQualifiedName!~CoreRentalNet.E2E"
+
+      # The browser suite drives a real Chromium over a real socket, so the browser has
+      # to exist before it runs. The script comes from the Playwright package itself, so
+      # the browser revision always matches the library.
+      - name: Install Chromium
+        run: pwsh tests/CoreRentalNet.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Browser tests
+        run: dotnet test tests/CoreRentalNet.E2E --configuration Release --no-build
+
+      - name: Upload browser test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-output
+          path: |
+            tests/CoreRentalNet.E2E/**/*.png
+            tests/CoreRentalNet.E2E/**/*.log
+          if-no-files-found: ignore
