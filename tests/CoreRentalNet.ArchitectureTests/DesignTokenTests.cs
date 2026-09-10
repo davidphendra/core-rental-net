@@ -39,6 +39,53 @@ public sealed class DesignTokenTests
             "every colour must come from a custom property in tokens.css (ADR-0012)");
     }
 
+    [Fact] // UI-06
+    public void Nothing_in_the_host_fetches_from_a_third_party()
+    {
+        var offenders = new List<string>();
+
+        foreach (var file in Directory
+                     .GetFiles(Path.Combine(HostRoot, "wwwroot"), "*.*", SearchOption.AllDirectories)
+                     .Concat(Directory.GetFiles(Path.Combine(HostRoot, "Components"), "*.razor", SearchOption.AllDirectories)))
+        {
+            if (file.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            var text = File.ReadAllText(file);
+
+            if (text.Contains("googleapis.com", StringComparison.OrdinalIgnoreCase)
+                || text.Contains("gstatic.com", StringComparison.OrdinalIgnoreCase)
+                || text.Contains("googleusercontent.com", StringComparison.OrdinalIgnoreCase)
+                || text.Contains("cdn.", StringComparison.OrdinalIgnoreCase))
+            {
+                offenders.Add(Path.GetRelativePath(RepoRoot.Path, file));
+            }
+        }
+
+        offenders.Should().BeEmpty(
+            "the browser test suite must run with no network access to anything but the app itself");
+    }
+
+    [Fact] // UI-06
+    public void The_design_system_fonts_are_served_by_the_application()
+    {
+        var fonts = Path.Combine(HostRoot, "wwwroot", "fonts");
+        var files = Directory.GetFiles(fonts, "*.woff2");
+
+        files.Should().HaveCountGreaterThanOrEqualTo(5, "the two families and the weights DESIGN.md uses");
+
+        foreach (var file in files)
+        {
+            File.ReadAllBytes(file)[..4].Should().Equal("wOF2"u8.ToArray(), $"{Path.GetFileName(file)} must be a woff2 file");
+            new FileInfo(file).Length.Should().BeGreaterThan(5000, $"{Path.GetFileName(file)} must contain real glyphs, not a subset with no latin characters");
+        }
+
+        var styles = File.ReadAllText(Path.Combine(HostRoot, "wwwroot", "styles", "fonts.css"));
+        styles.Should().Contain("Plus Jakarta Sans").And.Contain("Manrope");
+    }
+
     [Fact] // UI-01
     public void The_token_file_holds_the_palette_from_the_design_system()
     {

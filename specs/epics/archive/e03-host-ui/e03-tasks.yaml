@@ -87,6 +87,9 @@ found_while_running:
   - "Only five of the seven slots rendered: Lamp and Plant had geometry and no component."
   - "The database directory was never created, so a clean start-up failed with 'unable to open database file'."
 
+follow_up_within_e3:
+  - "The design system fonts were initially left to a fallback stack, because loading them from Google would have broken the hermetic test requirement. They are now self-hosted as latin-subset woff2 files under wwwroot/fonts, so the demo renders in Plus Jakarta Sans and Manrope with no third-party request. A test guards that the fonts are real files and that nothing in the host fetches from a third party."
+
 deviations:
   - "The delivery fee lives in CheckoutSettings reading configuration. It belongs to the invoice model and moves there with the Rentals module."
   - "'Rent This Setup' is deliberately disabled: order creation is the checkout change, and a control that looks live but does nothing is worse than one that explains itself."

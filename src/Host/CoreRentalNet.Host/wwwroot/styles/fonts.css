@@ -1,0 +1,43 @@
+/* Self-hosted so the demo renders in the design system's own faces without asking a
+   third-party host for them on every page load. Both families are licensed under the
+   SIL Open Font License, which permits this. Files are latin subsets. */
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/PlusJakartaSans-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/PlusJakartaSans-600.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/PlusJakartaSans-700.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/Manrope-600.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/Manrope-700.woff2") format("woff2");
+}
