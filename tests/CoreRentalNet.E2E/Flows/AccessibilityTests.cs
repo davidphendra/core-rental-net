@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
@@ -9,7 +10,7 @@ namespace CoreRentalNet.E2E.Flows;
 /// The markup discipline from ADR-0012, asserted rather than assumed. There is no axe gate by
 /// decision, but "everything clickable is a real control with a name" is cheap to check.
 /// </summary>
-public sealed class AccessibilityTests(HostFixture host) : E2ETest(host)
+public sealed class AccessibilityTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     private static readonly string[] Pages = ["/", "/builder", "/extras"];
 

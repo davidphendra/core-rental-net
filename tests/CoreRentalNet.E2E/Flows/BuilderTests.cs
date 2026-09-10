@@ -2,13 +2,14 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>
 /// The canvas: what a customer can and cannot put in a workspace, driven the way they drive it.
 /// </summary>
-public sealed class BuilderTests(HostFixture host) : E2ETest(host)
+public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     [Fact] // WS-01
     public async Task Clicking_a_product_card_fills_its_slot_without_choosing_a_slot()

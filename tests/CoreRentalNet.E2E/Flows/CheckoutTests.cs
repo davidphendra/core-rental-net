@@ -2,11 +2,12 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>The funnel, from a filled workspace to a confirmation the customer can return to.</summary>
-public sealed class CheckoutTests(HostFixture host) : E2ETest(host)
+public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     [Fact] // CO-01
     public async Task Renting_opens_a_dialog_that_says_nothing_is_charged()

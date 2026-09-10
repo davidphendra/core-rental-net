@@ -2,13 +2,14 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>
 /// The suite runs against the application and nothing else. No interception, and no third party.
 /// </summary>
-public sealed class HermeticityTests(HostFixture host) : E2ETest(host)
+public sealed class HermeticityTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     [Fact] // UI-06
     public async Task A_whole_funnel_reaches_nothing_but_the_application()

@@ -2,13 +2,14 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>
 /// What is and is not reachable before the workspace holds anything.
 /// </summary>
-public sealed class NavigationTests(HostFixture host) : E2ETest(host)
+public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     [Fact] // NAV-02, NAV-05
     public async Task On_desktop_the_way_out_of_the_builder_is_closed_until_something_is_assigned()

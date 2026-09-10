@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E;
 
@@ -10,8 +11,9 @@ namespace CoreRentalNet.E2E;
 /// That is how tests stay independent without restarting the application between them.
 /// </summary>
 [Collection(E2ECollection.Name)]
-public abstract class E2ETest(HostFixture host) : IAsyncLifetime
+public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsyncLifetime
 {
+
     protected HostFixture Host { get; } = host;
 
     protected IPage Page { get; private set; } = null!;
@@ -27,6 +29,18 @@ public abstract class E2ETest(HostFixture host) : IAsyncLifetime
         // Every test asserts its own requests stay on this origin; see HermeticityTests.
         Requests.Clear();
         Page.Request += (_, request) => Requests.Add(request.Url);
+
+        // A Blazor circuit that fails to start looks exactly like a slow page. Forwarding the
+        // browser's own console and unhandled errors turns that into a diagnosable failure.
+        Page.Console += (_, message) =>
+        {
+            if (message.Type is "error" or "warning")
+            {
+                output.WriteLine($"[console:{message.Type}] {message.Text}");
+            }
+        };
+
+        Page.PageError += (_, error) => output.WriteLine($"[pageerror] {error}");
     }
 
     public async Task DisposeAsync() => await Page.Context.DisposeAsync();

@@ -1,6 +1,7 @@
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
@@ -8,7 +9,7 @@ namespace CoreRentalNet.E2E.Flows;
 /// Two browsers, two workspaces. This is the property that a shared draft token silently broke
 /// once, and the only way to see it is with two real browser profiles.
 /// </summary>
-public sealed class WorkspaceIsolationTests(HostFixture host) : E2ETest(host)
+public sealed class WorkspaceIsolationTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     [Fact] // SEC-05
     public async Task One_browser_cannot_see_another_browsers_workspace()

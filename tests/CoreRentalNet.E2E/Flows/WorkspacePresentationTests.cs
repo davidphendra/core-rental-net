@@ -2,11 +2,12 @@ using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>How the workspace itself is presented, rather than what it can do.</summary>
-public sealed class WorkspacePresentationTests(HostFixture host) : E2ETest(host)
+public sealed class WorkspacePresentationTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     [Fact] // SLOT-04
     public async Task Only_the_zones_the_catalog_can_fill_are_shown()

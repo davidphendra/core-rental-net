@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 namespace CoreRentalNet.Host.Presentation;
 
@@ -10,33 +11,30 @@ namespace CoreRentalNet.Host.Presentation;
 /// draft token, because a value declared by a statically-rendered parent does not cross into an
 /// interactive render boundary.
 /// <para>
+/// A parameter that crosses that boundary is round-tripped through JSON, so this type has to be
+/// one the serializer can rebuild: a public constructor whose parameters match its properties, and
+/// nothing computed being mistaken for state. An earlier version had a private constructor and the
+/// circuit silently refused to start — the page prerendered perfectly and then never became
+/// interactive.
+/// </para>
+/// <para>
 /// Claims are read by their standard names first and by their short OIDC names second: the
 /// identity provider may or may not map inbound claims, and a customer whose email is silently
 /// missing is worse than one the code has to look for.
 /// </para>
 /// </remarks>
-public sealed record CurrentCustomer
+public sealed record CurrentCustomer(string? Subject, string? Email, string? Name)
 {
-    private CurrentCustomer(string? subject, string? email, string? name)
-    {
-        Subject = subject;
-        Email = email;
-        Name = name;
-    }
-
     public static CurrentCustomer Anonymous { get; } = new(null, null, null);
 
-    public string? Subject { get; }
-
-    public string? Email { get; }
-
-    public string? Name { get; }
-
+    [JsonIgnore]
     public bool IsSignedIn => !string.IsNullOrWhiteSpace(Subject);
 
     /// <summary>What is drawn instead of the provider's picture, so no page reaches a third party.</summary>
+    [JsonIgnore]
     public string DisplayName => Name ?? Email ?? "Account";
 
+    [JsonIgnore]
     public string Initials
     {
         get

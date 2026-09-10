@@ -1,6 +1,7 @@
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CoreRentalNet.E2E.Flows;
 
@@ -8,7 +9,7 @@ namespace CoreRentalNet.E2E.Flows;
 /// A phone viewport, because the layouts are explicitly responsive and the bottom navigation and
 /// the collapsed builder panel are real code paths that a desktop run never touches.
 /// </summary>
-public sealed class MobileViewportTests(HostFixture host) : E2ETest(host)
+public sealed class MobileViewportTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
     protected override ViewportSize? Viewport => new() { Width = 390, Height = 844 };
 
