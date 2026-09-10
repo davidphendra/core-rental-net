@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rent Your Setup Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;family=Manrope:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#9ed1bd",
+                      "surface-container-high": "#e7e8e9",
+                      "on-tertiary-fixed": "#331200",
+                      "primary-container": "#008282",
+                      "inverse-primary": "#6fd7d6",
+                      "surface-container-low": "#f3f4f5",
+                      "tertiary-container": "#bb580d",
+                      "surface-dim": "#d9dadb",
+                      "on-secondary-fixed-variant": "#1d4f40",
+                      "on-primary-fixed": "#002020",
+                      "surface-tint": "#006a6a",
+                      "on-tertiary-fixed-variant": "#763300",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#3d6d5d",
+                      "surface-variant": "#e1e3e4",
+                      "on-primary-container": "#f3fffe",
+                      "surface-bright": "#f8f9fa",
+                      "on-secondary-fixed": "#002117",
+                      "tertiary-fixed": "#ffdbc9",
+                      "outline": "#6d7979",
+                      "tertiary-fixed-dim": "#ffb68d",
+                      "inverse-surface": "#2e3132",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#baeed9",
+                      "on-surface": "#191c1d",
+                      "background": "#f8f9fa",
+                      "on-primary-fixed-variant": "#004f4f",
+                      "on-tertiary-container": "#fffbff",
+                      "on-primary": "#ffffff",
+                      "primary-fixed": "#8cf3f3",
+                      "on-surface-variant": "#3d4949",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-background": "#191c1d",
+                      "on-error": "#ffffff",
+                      "surface": "#f8f9fa",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container": "#edeeef",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6",
+                      "primary-fixed-dim": "#6fd7d6",
+                      "secondary-fixed": "#baeed9",
+                      "tertiary": "#974400",
+                      "outline-variant": "#bcc9c8",
+                      "primary": "#006767",
+                      "surface-container-highest": "#e1e3e4",
+                      "secondary": "#376757"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-lg": "32px",
+                      "gutter": "24px",
+                      "unit": "8px",
+                      "stack-sm": "8px",
+                      "margin-mobile": "16px",
+                      "section-gap": "80px",
+                      "container-max": "1280px",
+                      "margin-desktop": "40px",
+                      "stack-md": "16px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Plus Jakarta Sans"],
+                      "display-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Plus Jakarta Sans"],
+                      "label-sm": ["Manrope"],
+                      "headline-lg-mobile": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "label-md": ["Manrope"]
+              },
+              "fontSize": {
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Soft lift effect for interactive cards */
+        .tropical-hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .tropical-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 103, 103, 0.08), 0 8px 10px -6px rgba(0, 103, 103, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar (Desktop) -->
+<header class="hidden md:flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-20 bg-surface dark:bg-inverse-surface z-40 relative">
+<div class="flex items-center gap-gutter">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">Moni's Workspace</span>
+</div>
+<nav class="flex items-center gap-stack-lg h-full">
+<a class="text-on-surface-variant dark:text-surface-variant text-label-md font-label-md hover:text-primary-container dark:hover:text-secondary-fixed-dim transition-colors flex items-center h-full" href="#">How it Works</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary h-full flex items-center text-label-md font-label-md opacity-80 transition-all" href="#">Workspace Builder</a>
+<a class="text-on-surface-variant dark:text-surface-variant text-label-md font-label-md hover:text-primary-container dark:hover:text-secondary-fixed-dim transition-colors flex items-center h-full" href="#">Accessory Store</a>
+</nav>
+<div class="flex items-center gap-stack-sm">
+<button class="p-2 text-primary dark:text-inverse-primary rounded-full hover:bg-surface-variant transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A smiling digital nomad working in a lush Bali cafe, high quality portrait shot, soft natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTsHEU1eyEgtZPy2ZsSd6ioZ1uCgocqxA_Wa9OXj9kaNzX9dDkFIB7dl7YncUZ41eSa0zA0m2nFBTGwfNbDur0yx2skH1G0zAEI315rsPTESoNzaFExT9GE_J41gW_VKmtg6M8rdLqEDul8Y-F7ZWWveTVnFd4Oc0Dri_CXqh7SPUhqAs0BCx6MUCydbnVfRZSBWZsmGv1YyrHGmttWJucFd7bB88vQi_OFF9Y1avWNH9spSWfnV6CZA"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg md:py-section-gap pb-32 md:pb-stack-lg">
+<div class="flex flex-col mb-stack-lg">
+<h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-on-surface mb-unit">Review Your Workspace</h1>
+<p class="text-on-surface-variant">Confirm your setup details and schedule delivery.</p>
+</div>
+<div class="flex flex-col lg:flex-row gap-gutter lg:gap-stack-lg items-start">
+<!-- Left Side: Visual Preview -->
+<div class="w-full lg:w-3/5 flex flex-col gap-stack-md">
+<div class="bg-surface-bright rounded-2xl shadow-sm border border-surface-variant overflow-hidden flex flex-col h-full relative group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none"></div>
+<!-- Main Preview Image -->
+<div class="aspect-video w-full relative bg-surface-container-low">
+<img class="w-full h-full object-cover" data-alt="A hyper-realistic 3D render of a modern ergonomic workspace setup placed in a bright, airy tropical villa living room. Features a high-end mesh chair, adjustable standing desk, dual monitors, and a small potted monstera plant. The lighting is soft, natural daylight pouring in from large windows overlooking a lush garden. The color palette is composed of soft whites, light natural woods, and deep greens, creating a serene and highly productive atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8fOpoaFqcYrMrymsGlmCtYAaaTaKbfFdHwihNLIMD0A7nanjJIR2ZFlVVoYw-WDuJ3emE_ti0j_G1BNXsHqqrvBl8TS80Nzq09jwE_7zkHyGE4i4BpGQL5S7Xw4LZpmApMVY7TKz2R_lCgrbpvHXdKf9VJOmbGhM2MHrNV0gwVtwaRQG1E_580PYUByliGAh03Nbmi0eUcTZV4Vu0EiUL54vsSKaxlKOzXfsBoyEqczV0Czc7CJBfaQ"/>
+<!-- Floating Setup Badges -->
+<div class="absolute top-4 left-4 z-20 flex gap-2">
+<span class="bg-surface/90 backdrop-blur-md text-primary font-label-sm text-label-sm px-3 py-1.5 rounded-full border border-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">air</span> Air Conditioned
+                            </span>
+<span class="bg-surface/90 backdrop-blur-md text-primary font-label-sm text-label-sm px-3 py-1.5 rounded-full border border-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">wifi</span> High-Speed
+                            </span>
+</div>
+</div>
+</div>
+<!-- Selected Zones Overview -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-stack-sm">
+<div class="bg-surface rounded-xl p-stack-sm border border-outline-variant/30 flex flex-col items-center justify-center gap-2 text-center tropical-hover">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined">coffee_maker</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Coffee Station</span>
+</div>
+<div class="bg-surface rounded-xl p-stack-sm border border-outline-variant/30 flex flex-col items-center justify-center gap-2 text-center tropical-hover">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined">surfing</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Outdoor Gear</span>
+</div>
+<div class="bg-surface rounded-xl p-stack-sm border border-outline-variant/30 flex flex-col items-center justify-center gap-2 text-center tropical-hover">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center opacity-50">
+<span class="material-symbols-outlined">chair_alt</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant opacity-60">Relax Zone (Empty)</span>
+</div>
+<div class="bg-surface rounded-xl p-stack-sm border border-outline-variant/30 flex flex-col items-center justify-center gap-2 text-center tropical-hover">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center opacity-50">
+<span class="material-symbols-outlined">garage</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant opacity-60">Garage (Empty)</span>
+</div>
+</div>
+</div>
+<!-- Right Side: Receipt & Checkout -->
+<div class="w-full lg:w-2/5 flex flex-col gap-stack-md">
+<div class="bg-surface rounded-2xl shadow-sm border border-surface-variant p-gutter flex flex-col relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+<h2 class="text-headline-md font-headline-md text-primary mb-stack-md border-b border-surface-variant pb-4">Order Summary</h2>
+<!-- Item List -->
+<div class="flex flex-col gap-stack-sm mb-stack-md">
+<!-- Item 1 -->
+<div class="flex justify-between items-center py-2">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined icon-fill">chair</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">ErgoPro Chair V2</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Qty: 1</span>
+</div>
+</div>
+<span class="text-body-md font-body-md font-semibold text-on-surface">$45.00/mo</span>
+</div>
+<!-- Item 2 -->
+<div class="flex justify-between items-center py-2">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined icon-fill">desk</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">Standing Desk Bamboo</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Qty: 1</span>
+</div>
+</div>
+<span class="text-body-md font-body-md font-semibold text-on-surface">$60.00/mo</span>
+</div>
+<!-- Item 3 -->
+<div class="flex justify-between items-center py-2">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined icon-fill">monitor</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">27" 4K Monitor</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Qty: 2</span>
+</div>
+</div>
+<span class="text-body-md font-body-md font-semibold text-on-surface">$80.00/mo</span>
+</div>
+<!-- Item 4 -->
+<div class="flex justify-between items-center py-2">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined icon-fill">coffee_maker</span>
+</div>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">Espresso Machine</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Qty: 1</span>
+</div>
+</div>
+<span class="text-body-md font-body-md font-semibold text-on-surface">$25.00/mo</span>
+</div>
+</div>
+<!-- Delivery Input -->
+<div class="mt-4 pt-4 border-t border-surface-variant flex flex-col gap-2">
+<label class="text-label-md font-label-md text-on-surface" for="delivery-address">Delivery Location</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">location_on</span>
+</div>
+<input class="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg pl-10 pr-4 py-3 text-body-md font-body-md text-on-surface outline-none transition-colors" id="delivery-address" placeholder="e.g., Villa Lotus, Canggu..." type="text"/>
+</div>
+</div>
+<!-- Totals -->
+<div class="mt-6 pt-4 border-t border-dashed border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between text-body-md font-body-md text-on-surface-variant">
+<span>Subtotal</span>
+<span>$210.00/mo</span>
+</div>
+<div class="flex justify-between text-body-md font-body-md text-on-surface-variant">
+<span>Delivery &amp; Setup (One-time)</span>
+<span>$50.00</span>
+</div>
+<div class="flex justify-between items-center mt-2 pt-2 border-t border-surface-variant">
+<span class="text-headline-md font-headline-md text-on-surface">Grand Total</span>
+<div class="flex flex-col items-end">
+<span class="text-headline-md font-headline-md text-primary">$260.00</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">First month due today</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full bg-tertiary-container hover:bg-tertiary-fixed-dim text-on-tertiary-container text-body-lg font-body-lg font-bold py-4 px-6 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 transform active:scale-95">
+<span class="material-symbols-outlined icon-fill">shopping_cart_checkout</span>
+                    Rent This Setup
+                </button>
+<p class="text-center text-label-sm font-label-sm text-on-surface-variant mt-2">Secure checkout via Stripe. Cancel anytime.</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-margin-mobile py-2 bg-surface dark:bg-inverse-surface shadow-lg z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">architecture</span>
+<span class="text-label-sm font-label-sm mt-1">Build</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">storefront</span>
+<span class="text-label-sm font-label-sm mt-1">Store</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-2xl px-4 py-1 scale-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px] icon-fill">receipt_long</span>
+<span class="text-label-sm font-label-sm mt-1 font-bold">Summary</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px]">shopping_cart</span>
+<span class="text-label-sm font-label-sm mt-1">Rent</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,571 @@
+[
+  {
+    "skuNo": "CHA449AGLBB0",
+    "name": "Seminyak Lounge",
+    "category": "chair",
+    "pricePerMonth": 400000,
+    "description": "Seminyak Lounge: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-seminyak-lounge.svg"
+  },
+  {
+    "skuNo": "CHA5HT5BIT9F",
+    "name": "Jimbaran High-Back",
+    "category": "chair",
+    "pricePerMonth": 650000,
+    "description": "Jimbaran High-Back: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-jimbaran-high-back.svg"
+  },
+  {
+    "skuNo": "CHABMH9N2O0V",
+    "name": "Sanur Mesh",
+    "category": "chair",
+    "pricePerMonth": 500000,
+    "description": "Sanur Mesh: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-sanur-mesh.svg"
+  },
+  {
+    "skuNo": "CHAEHOLSGPSA",
+    "name": "Nusa Dua Executive",
+    "category": "chair",
+    "pricePerMonth": 450000,
+    "description": "Nusa Dua Executive: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-nusa-dua-executive.svg"
+  },
+  {
+    "skuNo": "CHAH1V9VTLIV",
+    "name": "Ubud Recline",
+    "category": "chair",
+    "pricePerMonth": 600000,
+    "description": "Ubud Recline: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-ubud-recline.svg"
+  },
+  {
+    "skuNo": "CHAM6ECR76VJ",
+    "name": "Bingin Draft",
+    "category": "chair",
+    "pricePerMonth": 750000,
+    "description": "Bingin Draft: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-bingin-draft.svg"
+  },
+  {
+    "skuNo": "CHAN9NIJKIU7",
+    "name": "Canggu Task",
+    "category": "chair",
+    "subCategory": null,
+    "pricePerMonth": 600000,
+    "description": "Premium black ergonomic task chair with headrest. Built for long coding sessions.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAL1X4LeQqM58AEA417piC29Bo082Rq3vt0dnBCgetkEQSr4AFtNRdji1Bl4FLNnQnxKDBURZyQor1m9EYvlQ7rPNw2bV67NV9y6ngGjh5bVUmAvT3u-Y3KVSq2AWoCd1lJ9N6BK8_eRWI5oaRweuNqMNP_6zFF0Eraf3cv1pc5YcQo6W9yfZbBXqucJ58Rt3-_6yjsuV6BxHc4NQHuM2AAdI7WumWlCcaK-dc2wKUwUX4j4NoAnO2JGA",
+    "badge": "popular"
+  },
+  {
+    "skuNo": "CHAV6KWDBAKD",
+    "name": "Kuta Flex",
+    "category": "chair",
+    "pricePerMonth": 550000,
+    "description": "Kuta Flex: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-kuta-flex.svg"
+  },
+  {
+    "skuNo": "CHAVYQ0F444B",
+    "name": "Amed Gaming",
+    "category": "chair",
+    "pricePerMonth": 700000,
+    "description": "Amed Gaming: ergonomic support for deep-work sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-amed-gaming.svg"
+  },
+  {
+    "skuNo": "CHAX7C7LZ5PH",
+    "name": "Uluwatu Chair",
+    "category": "chair",
+    "subCategory": null,
+    "pricePerMonth": 450000,
+    "description": "Light gray mesh ergonomic chair. Clean, modern, island-cafe approved.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBBwHPiawlGW3969dKW5o0XTGnhWLB7SwZJ1dya2tRUgjUU4aJ57EsoC07NsBbECvVj-A89woj0Z4N4KP6MsUv6P_tniwCxhkludiVF1furDdZHeHwnPAj6ThoyWccd5LnFpPNYQH-ECtHmwM9bZDxSJ0KRfTOEiCKql5T_MUOfhh7MvV2neUNSSqUjZTPBbdHNldnhg5bJNETbvOcBADObdhNzdVWWPkDGp7Y60N8A28SLf_WwO-rMZg"
+  },
+  {
+    "skuNo": "DSK6VE4Q6KEY",
+    "name": "Canggu Bamboo",
+    "category": "desk",
+    "pricePerMonth": 800000,
+    "description": "Canggu Bamboo: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-canggu-bamboo.svg"
+  },
+  {
+    "skuNo": "DSK7TI4BIQ1B",
+    "name": "Ubud Solid Teak",
+    "category": "desk",
+    "pricePerMonth": 700000,
+    "description": "Ubud Solid Teak: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-ubud-solid-teak.svg"
+  },
+  {
+    "skuNo": "DSKAAV28F480",
+    "name": "Kerobokan Sit-Stand",
+    "category": "desk",
+    "pricePerMonth": 900000,
+    "description": "Kerobokan Sit-Stand: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-kerobokan-sit-stand.svg"
+  },
+  {
+    "skuNo": "DSKGSGPYGLGA",
+    "name": "Sanur Writing",
+    "category": "desk",
+    "pricePerMonth": 1400000,
+    "description": "Sanur Writing: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-sanur-writing.svg"
+  },
+  {
+    "skuNo": "DSKH57QRNDWN",
+    "name": "Denpasar Heavy-Duty",
+    "category": "desk",
+    "pricePerMonth": 1200000,
+    "description": "Denpasar Heavy-Duty: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-denpasar-heavy-duty.svg"
+  },
+  {
+    "skuNo": "DSKIZJBQTS2Y",
+    "name": "Berawa Corner",
+    "category": "desk",
+    "pricePerMonth": 1100000,
+    "description": "Berawa Corner: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-berawa-corner.svg"
+  },
+  {
+    "skuNo": "DSKNWDV00VXG",
+    "name": "Pererenan Minimal",
+    "category": "desk",
+    "pricePerMonth": 1000000,
+    "description": "Pererenan Minimal: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-pererenan-minimal.svg"
+  },
+  {
+    "skuNo": "DSKQ8PZL95PL",
+    "name": "Uluwatu Compact",
+    "category": "desk",
+    "pricePerMonth": 1300000,
+    "description": "Uluwatu Compact: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-uluwatu-compact.svg"
+  },
+  {
+    "skuNo": "DSKSKDOLUXSH",
+    "name": "Jimbaran Executive",
+    "category": "desk",
+    "pricePerMonth": 1500000,
+    "description": "Jimbaran Executive: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-jimbaran-executive.svg"
+  },
+  {
+    "skuNo": "DSKUBUTUEHMA",
+    "name": "Seminyak Standing",
+    "category": "desk",
+    "pricePerMonth": 600000,
+    "description": "Seminyak Standing: a sturdy, island-tested work surface.",
+    "subCategory": null,
+    "image": "/placeholders/desk-seminyak-standing.svg"
+  },
+  {
+    "skuNo": "BBG26TT9WKQD",
+    "name": "Seminyak Floor Seat",
+    "category": "accessory",
+    "pricePerMonth": 350000,
+    "description": "Seminyak Floor Seat: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-seminyak-floor-seat.svg"
+  },
+  {
+    "skuNo": "BBG3FDN4UP6Y",
+    "name": "Zero-Gravity Lounger",
+    "category": "accessory",
+    "pricePerMonth": 325000,
+    "description": "Zero-Gravity Lounger: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-zero-gravity-lounger.svg"
+  },
+  {
+    "skuNo": "BBG3KDU9A2B5",
+    "name": "Pouf Ottoman",
+    "category": "accessory",
+    "pricePerMonth": 250000,
+    "description": "Pouf Ottoman: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-pouf-ottoman.svg"
+  },
+  {
+    "skuNo": "BBGAWADNDZ8F",
+    "name": "Pererenan Lounger",
+    "category": "accessory",
+    "pricePerMonth": 425000,
+    "description": "Pererenan Lounger: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-pererenan-lounger.svg"
+  },
+  {
+    "skuNo": "BBGD41M3CEEF",
+    "name": "Canggu Bean Pod",
+    "category": "accessory",
+    "pricePerMonth": 400000,
+    "description": "Canggu Bean Pod: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-canggu-bean-pod.svg"
+  },
+  {
+    "skuNo": "BBGJ0QGYQC5K",
+    "name": "Berawa Sofa Sack",
+    "category": "accessory",
+    "pricePerMonth": 450000,
+    "description": "Berawa Sofa Sack: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-berawa-sofa-sack.svg"
+  },
+  {
+    "skuNo": "BBGM2P366F2Q",
+    "name": "Ubud Cushion Lounge",
+    "category": "accessory",
+    "pricePerMonth": 375000,
+    "description": "Ubud Cushion Lounge: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-ubud-cushion-lounge.svg"
+  },
+  {
+    "skuNo": "BBGQ9TM1HXUL",
+    "name": "Bean Bag Lounge",
+    "category": "accessory",
+    "subCategory": "beanbag",
+    "pricePerMonth": 350000,
+    "description": "Perfect for brainstorming or a quick creative break away from the desk.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDTzT4Tf58tkbo6X7I2a_aF5XrHlXm7pV5GAMydtstbloGCCC5_LoXb0tmuXW4wxWFYp-K9r_DSFRd1FhGZfwlTIYs9u_Sjj1mFpCjduawANJZfqSIyG6At13g6nueBMlme0wHSmw-E-EfohvvNKC2bxhS5hjAytlxV74b3eU4-sS57APj0jGatARBLneuXhfgqykyMcCtzQkWzlSZRG8qSUB5-oQ8bepiLtS2v0uGGLiAqRSWf3aYV7A"
+  },
+  {
+    "skuNo": "BBGQWIMKKA9M",
+    "name": "Hammock Seat",
+    "category": "accessory",
+    "pricePerMonth": 275000,
+    "description": "Hammock Seat: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-hammock-seat.svg"
+  },
+  {
+    "skuNo": "BBGZT9EADBQM",
+    "name": "Floor Cushion Set",
+    "category": "accessory",
+    "pricePerMonth": 300000,
+    "description": "Floor Cushion Set: the relax-zone essential.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-floor-cushion-set.svg"
+  },
+  {
+    "skuNo": "CFE2LPSBMNRB",
+    "name": "Berawa Espresso Duo",
+    "category": "accessory",
+    "pricePerMonth": 800000,
+    "description": "Berawa Espresso Duo: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-berawa-espresso-duo.svg"
+  },
+  {
+    "skuNo": "CFE6KEPZP8LF",
+    "name": "Seminyak Cold Drip",
+    "category": "accessory",
+    "pricePerMonth": 600000,
+    "description": "Seminyak Cold Drip: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-seminyak-cold-drip.svg"
+  },
+  {
+    "skuNo": "CFE6UP8CUECI",
+    "name": "Espresso Machine",
+    "category": "accessory",
+    "subCategory": "coffee",
+    "pricePerMonth": 750000,
+    "description": "Premium bean-to-cup machine. Keep your energy up for those long coding sessions.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuATDymSt-AcHwZo3PpW0B2MasVp31eN2xETL6HE47QwVmUWSdXfr-qebhbti1geNj2S4aMEcJMq27UHmxy529UDQVfz-wvP1qG47iXhoRJ6JE94YTqOytJXeiNu-RpHVidaOks0Rqec_ZG3bxs_cCkz1LHDRGPAbPPeM5S-gX5Pn2iRmP6ALD028fqVXigofgft6xjAXAJH1dkI1xqBho3iv1Yh5a72Xhq1BLbi-2Nrx9Miaguq30crjA"
+  },
+  {
+    "skuNo": "CFE8GP1YC67Q",
+    "name": "Ubud French Press",
+    "category": "accessory",
+    "pricePerMonth": 650000,
+    "description": "Ubud French Press: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-ubud-french-press.svg"
+  },
+  {
+    "skuNo": "CFEBT0A8IIHK",
+    "name": "Pour-Over Kit",
+    "category": "accessory",
+    "pricePerMonth": 400000,
+    "description": "Pour-Over Kit: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-pour-over-kit.svg"
+  },
+  {
+    "skuNo": "CFEFUWHGVPI4",
+    "name": "Cold Brew Tower",
+    "category": "accessory",
+    "pricePerMonth": 500000,
+    "description": "Cold Brew Tower: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-cold-brew-tower.svg"
+  },
+  {
+    "skuNo": "CFEPSCM6MUV8",
+    "name": "Moka Pot Set",
+    "category": "accessory",
+    "pricePerMonth": 450000,
+    "description": "Moka Pot Set: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-moka-pot-set.svg"
+  },
+  {
+    "skuNo": "CFER19IR6FWF",
+    "name": "Canggu Siphon",
+    "category": "accessory",
+    "pricePerMonth": 700000,
+    "description": "Canggu Siphon: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-canggu-siphon.svg"
+  },
+  {
+    "skuNo": "CFEXJN350XWL",
+    "name": "Kerobokan Drip Bar",
+    "category": "accessory",
+    "pricePerMonth": 750000,
+    "description": "Kerobokan Drip Bar: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-kerobokan-drip-bar.svg"
+  },
+  {
+    "skuNo": "CFEZ6NVZXEKB",
+    "name": "Barista Bundle",
+    "category": "accessory",
+    "pricePerMonth": 550000,
+    "description": "Barista Bundle: keep the caffeine pipeline flowing.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-barista-bundle.svg"
+  },
+  {
+    "skuNo": "LMP088XRUVM3",
+    "name": "Pererenan Clip Light",
+    "category": "accessory",
+    "pricePerMonth": 180000,
+    "description": "Pererenan Clip Light: soft, adjustable light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-pererenan-clip-light.svg"
+  },
+  {
+    "skuNo": "LMP1LYB5QL81",
+    "name": "Jimbaran Floor Lamp",
+    "category": "accessory",
+    "pricePerMonth": 200000,
+    "description": "Jimbaran Floor Lamp: soft, adjustable light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-jimbaran-floor-lamp.svg"
+  },
+  {
+    "skuNo": "LMP6V7MXB4G5",
+    "name": "Seminyak Architect",
+    "category": "accessory",
+    "pricePerMonth": 140000,
+    "description": "Seminyak Architect: soft, adjustable light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-seminyak-architect.svg"
+  },
+  {
+    "skuNo": "LMP7GDS3M86F",
+    "name": "Canggu Desk Lamp",
+    "category": "accessory",
+    "pricePerMonth": 100000,
+    "description": "Canggu Desk Lamp: soft, adjustable light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-canggu-desk-lamp.svg"
+  },
+  {
+    "skuNo": "LMPFN3UXKQUL",
+    "name": "Ubud Warm Glow",
+    "category": "accessory",
+    "pricePerMonth": 120000,
+    "description": "Ubud Warm Glow: soft, adjustable light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-ubud-warm-glow.svg"
+  },
+  {
+    "skuNo": "LMPJ8G9H90RX",
+    "name": "Berawa LED Bar",
+    "category": "accessory",
+    "pricePerMonth": 160000,
+    "description": "Berawa LED Bar: soft, adjustable light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-berawa-led-bar.svg"
+  },
+  {
+    "skuNo": "MON5F4827B9G",
+    "name": "Nusa Dua 27\" Touch",
+    "category": "accessory",
+    "pricePerMonth": 475000,
+    "description": "Nusa Dua 27\" Touch: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-nusa-dua-27-touch.svg"
+  },
+  {
+    "skuNo": "MONHMHMGMFF2",
+    "name": "Seminyak 32\" UHD",
+    "category": "accessory",
+    "pricePerMonth": 350000,
+    "description": "Seminyak 32\" UHD: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-seminyak-32-uhd.svg"
+  },
+  {
+    "skuNo": "MONJVAP81NPQ",
+    "name": "Batu Bolong 27\" 4K",
+    "category": "accessory",
+    "pricePerMonth": 300000,
+    "description": "Batu Bolong 27\" 4K: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-batu-bolong-27-4k.svg"
+  },
+  {
+    "skuNo": "MONM8S9DUP01",
+    "name": "Canggu Portable 15.6\"",
+    "category": "accessory",
+    "pricePerMonth": 375000,
+    "description": "Canggu Portable 15.6\": crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-canggu-portable-15-6.svg"
+  },
+  {
+    "skuNo": "MONVEUY2CJU4",
+    "name": "Berawa 24\" QHD",
+    "category": "accessory",
+    "pricePerMonth": 325000,
+    "description": "Berawa 24\" QHD: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-berawa-24-qhd.svg"
+  },
+  {
+    "skuNo": "MONYGJQLAYJ1",
+    "name": "Ubud 34\" Ultrawide",
+    "category": "accessory",
+    "pricePerMonth": 400000,
+    "description": "Ubud 34\" Ultrawide: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-ubud-34-ultrawide.svg"
+  },
+  {
+    "skuNo": "MONZBGXDCJ8P",
+    "name": "Pererenan 27\" 144Hz",
+    "category": "accessory",
+    "pricePerMonth": 425000,
+    "description": "Pererenan 27\" 144Hz: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-pererenan-27-144hz.svg"
+  },
+  {
+    "skuNo": "MONZLCUQ9JVS",
+    "name": "Kuta 22\" FHD",
+    "category": "accessory",
+    "pricePerMonth": 450000,
+    "description": "Kuta 22\" FHD: crisp pixels for code and creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-kuta-22-fhd.svg"
+  },
+  {
+    "skuNo": "PLT0Y6PHJWV1",
+    "name": "Monstera Plant",
+    "category": "accessory",
+    "subCategory": "plant",
+    "pricePerMonth": 200000,
+    "description": "Breathe fresh island air into your setup. Low maintenance, high vibes.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBNM8NClz_4yWCUaLWIxUl0VPsSwgzpS59SzMt0oeaXq5pGtVdSkC_qDItbd-HAgqnVyUtLH-m5VqKPqRAtEPISuAm251n7PkVt1ryhwJ4Dj0EJ6poWJpX0frBBEqDW0sliyEsIJFl8ceIC7iFvn10G_cBFqr5urj_3NK1nKDh6C89ACSPSxxwk26WN_eqbSgCqurzJo5NuHocB4Gi30a1MnfutsimRiply4I4hnqATq-QtK8lgaJzBuQ",
+    "badge": "popular"
+  },
+  {
+    "skuNo": "PLT2HJ908KI2",
+    "name": "ZZ Plant",
+    "category": "accessory",
+    "pricePerMonth": 160000,
+    "description": "ZZ Plant: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-zz-plant.svg"
+  },
+  {
+    "skuNo": "PLT3RN3T0OOD",
+    "name": "Rubber Tree",
+    "category": "accessory",
+    "pricePerMonth": 140000,
+    "description": "Rubber Tree: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-rubber-tree.svg"
+  },
+  {
+    "skuNo": "PLT4RYTRRWMZ",
+    "name": "Peace Lily",
+    "category": "accessory",
+    "pricePerMonth": 220000,
+    "description": "Peace Lily: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-peace-lily.svg"
+  },
+  {
+    "skuNo": "PLTH3L2679JO",
+    "name": "Bamboo Stalk",
+    "category": "accessory",
+    "pricePerMonth": 180000,
+    "description": "Bamboo Stalk: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-bamboo-stalk.svg"
+  },
+  {
+    "skuNo": "PLTH5HSE1F92",
+    "name": "Snake Plant",
+    "category": "accessory",
+    "pricePerMonth": 100000,
+    "description": "Snake Plant: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-snake-plant.svg"
+  },
+  {
+    "skuNo": "PLTK2MAFZG83",
+    "name": "Fiddle Leaf Fig",
+    "category": "accessory",
+    "pricePerMonth": 200000,
+    "description": "Fiddle Leaf Fig: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-fiddle-leaf-fig.svg"
+  },
+  {
+    "skuNo": "PLTV3GHR000R",
+    "name": "Palm Areca",
+    "category": "accessory",
+    "pricePerMonth": 120000,
+    "description": "Palm Areca: living greenery that survives (almost) anything.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-palm-areca.svg"
+  },
+  {
+    "skuNo": "PTNE25GIL41Y",
+    "name": "Motorcycle Rental",
+    "category": "partner",
+    "subCategory": null,
+    "pricePerMonth": 1500000,
+    "description": "Your ticket to weekend adventures and quick cafe runs. Partner service — request only, not part of the setup total.",
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDzjIAuaxcV_rRiMy00v8cwn-pxzwpyvjnmspN6m-JdZcjS4wpchbvEIbu9AhU39Gt0UuXmBbvCpLuwHABEixWRrchkthbGrCJB24fDyTEWNO0IdIO8a458vmSwuNoPEOKru9qYVF5mS_42N6YoQne_hhILyTszOmFM0nOtv5cfe95PI5QEetoQOcIfGXGFsEOXDkiQvwFNXUU3hc6FrwfatsrwiMwp6vDzWNYXOcIcHvCQhvz66bCvsA"
+  }
+]

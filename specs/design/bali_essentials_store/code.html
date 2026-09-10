@@ -1,0 +1,297 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Add Your Bali Vibes - Accessory Store</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Plus Jakarta Sans & Manrope -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#9ed1bd",
+                        "surface-container-high": "#e7e8e9",
+                        "on-tertiary-fixed": "#331200",
+                        "primary-container": "#008282",
+                        "inverse-primary": "#6fd7d6",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-container": "#bb580d",
+                        "surface-dim": "#d9dadb",
+                        "on-secondary-fixed-variant": "#1d4f40",
+                        "on-primary-fixed": "#002020",
+                        "surface-tint": "#006a6a",
+                        "on-tertiary-fixed-variant": "#763300",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#3d6d5d",
+                        "surface-variant": "#e1e3e4",
+                        "on-primary-container": "#f3fffe",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed": "#002117",
+                        "tertiary-fixed": "#ffdbc9",
+                        "outline": "#6d7979",
+                        "tertiary-fixed-dim": "#ffb68d",
+                        "inverse-surface": "#2e3132",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#baeed9",
+                        "on-surface": "#191c1d",
+                        "background": "#f8f9fa",
+                        "on-primary-fixed-variant": "#004f4f",
+                        "on-tertiary-container": "#fffbff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#8cf3f3",
+                        "on-surface-variant": "#3d4949",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-background": "#191c1d",
+                        "on-error": "#ffffff",
+                        "surface": "#f8f9fa",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#6fd7d6",
+                        "secondary-fixed": "#baeed9",
+                        "tertiary": "#974400",
+                        "outline-variant": "#bcc9c8",
+                        "primary": "#006767",
+                        "surface-container-highest": "#e1e3e4",
+                        "secondary": "#376757"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "section-gap": "80px",
+                        "container-max": "1280px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Manrope"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Subtle lift on hover for cards */
+        .tropical-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 139, 139, 0.05), 0 2px 4px -1px rgba(0, 139, 139, 0.03);
+        }
+        .tropical-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 139, 139, 0.08), 0 4px 6px -2px rgba(0, 139, 139, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden" data-mode="connect">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-inverse-surface flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-20 docked full-width top-0 sticky z-40 flat no shadows">
+<div class="flex items-center gap-4">
+<span class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">Core Rental</span>
+</div>
+<nav class="hidden md:flex gap-gutter">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary-container dark:hover:text-secondary-fixed-dim transition-colors text-body-md font-body-md" href="#">Home</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary-container dark:hover:text-secondary-fixed-dim transition-colors text-body-md font-body-md" href="#">Workspace Builder</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary pb-1 opacity-80 transition-all text-body-md font-body-md" href="#">Accessory Store</a>
+</nav>
+<div class="flex items-center gap-4">
+<button aria-label="shopping_bag" class="p-2 rounded-full hover:bg-surface-variant transition-colors text-primary dark:text-inverse-primary">
+<span class="material-symbols-outlined">shopping_bag</span>
+</button>
+
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="flex flex-1 max-w-container-max mx-auto w-full">
+<!-- SideNavBar (Desktop) -->
+<aside class="bg-surface-container-low dark:bg-surface-container-high shadow-sm docked left h-full w-80 hidden lg:flex flex-col gap-stack-md p-gutter fixed left-0 top-20 h-[calc(100vh-80px)] z-30">
+<div class="mb-stack-lg">
+<h2 class="text-headline-md font-headline-md font-extrabold text-primary">Selection Panel</h2>
+<p class="text-label-md font-label-md text-on-surface-variant mt-1">Build your setup</p>
+</div>
+<nav class="flex flex-col gap-stack-sm flex-1">
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md text-label-md font-label-md hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim transition-colors" href="#">
+<span class="material-symbols-outlined">chair</span>
+                    Chairs
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md text-label-md font-label-md hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim transition-colors" href="#">
+<span class="material-symbols-outlined">desk</span>
+                    Desks
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md text-label-md font-label-md hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim transition-colors" href="#">
+<span class="material-symbols-outlined">keyboard</span>
+                    Accessories
+                </a>
+<a class="bg-primary-container text-on-primary-container rounded-xl flex items-center gap-stack-sm p-stack-md text-label-md font-label-md scale-95 transition-transform duration-150 shadow-sm" href="#">
+<span class="material-symbols-outlined fill-icon">beach_access</span>
+                    Extras
+                </a>
+</nav>
+<div class="mt-auto">
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-bold text-body-md hover:bg-surface-tint transition-colors shadow-md">
+                    View Setup Summary
+                </button>
+</div>
+</aside>
+<!-- Canvas -->
+<main class="flex-1 lg:ml-80 px-margin-mobile md:px-margin-desktop py-stack-lg min-h-screen pb-32 lg:pb-stack-lg">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant mb-stack-md">
+<a class="hover:text-primary transition-colors" href="#">Builder</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Extras</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary font-bold">Summary</span>
+</nav>
+<header class="mb-stack-lg">
+<h1 class="text-display-lg font-display-lg text-on-surface mb-2">Add Your Bali Vibes</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-2xl">Elevate your workspace with premium extras. Enhance productivity and comfort with our curated selection of tropical tech lifestyle additions.</p>
+</header>
+<!-- Store Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Item 1: Monstera Plant -->
+<div class="tropical-card bg-surface-container-lowest rounded-xl p-stack-md flex flex-col border border-surface-variant">
+<div class="h-48 w-full bg-surface-container-low rounded-lg mb-stack-md relative overflow-hidden group">
+<img alt="Monstera Plant" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A lush, green Monstera Deliciosa plant in a minimalist white ceramic pot, bathed in soft, diffused natural sunlight. The setting implies a clean, modern tropical office environment. Light mode, high resolution, vibrant greens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNM8NClz_4yWCUaLWIxUl0VPsSwgzpS59SzMt0oeaXq5pGtVdSkC_qDItbd-HAgqnVyUtLH-m5VqKPqRAtEPISuAm251n7PkVt1ryhwJ4Dj0EJ6poWJpX0frBBEqDW0sliyEsIJFl8ceIC7iFvn10G_cBFqr5urj_3NK1nKDh6C89ACSPSxxwk26WN_eqbSgCqurzJo5NuHocB4Gi30a1MnfutsimRiply4I4hnqATq-QtK8lgaJzBuQ">
+<div class="absolute top-2 right-2 bg-secondary-container text-on-secondary-container text-label-sm font-label-sm px-2 py-1 rounded-full shadow-sm">
+                            Popular
+                        </div>
+</div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-headline-md font-headline-md text-on-surface">Monstera Plant</h3>
+<span class="text-headline-md font-headline-md text-primary">$15<span class="text-body-md text-on-surface-variant">/mo</span></span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant flex-1 mb-stack-md">Breathe fresh island air into your setup. Low maintenance, high vibes.</p>
+<button class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-on-primary transition-colors py-2 rounded-lg font-bold flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">add_circle</span> Add to Setup
+                    </button>
+</div>
+<!-- Item 2: Espresso Machine -->
+<div class="tropical-card bg-surface-container-lowest rounded-xl p-stack-md flex flex-col border border-surface-variant">
+<div class="h-48 w-full bg-surface-container-low rounded-lg mb-stack-md relative overflow-hidden group">
+<img alt="Espresso Machine" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A sleek, modern espresso machine, metallic and matte black, resting on a clean wooden counter. A steaming cup of espresso sits nearby. Soft, natural light suggesting early morning in a high-end digital nomad villa." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATDymSt-AcHwZo3PpW0B2MasVp31eN2xETL6HE47QwVmUWSdXfr-qebhbti1geNj2S4aMEcJMq27UHmxy529UDQVfz-wvP1qG47iXhoRJ6JE94YTqOytJXeiNu-RpHVidaOks0Rqec_ZG3bxs_cCkz1LHDRGPAbPPeM5S-gX5Pn2iRmP6ALD028fqVXigofgft6xjAXAJH1dkI1xqBho3iv1Yh5a72Xhq1BLbi-2Nrx9Miaguq30crjA">
+</div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-headline-md font-headline-md text-on-surface">Espresso Machine</h3>
+<span class="text-headline-md font-headline-md text-primary">$45<span class="text-body-md text-on-surface-variant">/mo</span></span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant flex-1 mb-stack-md">Premium bean-to-cup machine. Keep your energy up for those long coding sessions.</p>
+<button class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-on-primary transition-colors py-2 rounded-lg font-bold flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">add_circle</span> Add to Setup
+                    </button>
+</div>
+<!-- Item 3: Bean Bag Lounge -->
+<div class="tropical-card bg-surface-container-lowest rounded-xl p-stack-md flex flex-col border border-surface-variant">
+<div class="h-48 w-full bg-surface-container-low rounded-lg mb-stack-md relative overflow-hidden group">
+<img alt="Bean Bag Lounge" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A large, comfortable, light gray ergonomic bean bag chair positioned on a polished concrete floor in a bright, minimalist room with a hint of tropical foliage in the background. Relaxing and modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTzT4Tf58tkbo6X7I2a_aF5XrHlXm7pV5GAMydtstbloGCCC5_LoXb0tmuXW4wxWFYp-K9r_DSFRd1FhGZfwlTIYs9u_Sjj1mFpCjduawANJZfqSIyG6At13g6nueBMlme0wHSmw-E-EfohvvNKC2bxhS5hjAytlxV74b3eU4-sS57APj0jGatARBLneuXhfgqykyMcCtzQkWzlSZRG8qSUB5-oQ8bepiLtS2v0uGGLiAqRSWf3aYV7A">
+</div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-headline-md font-headline-md text-on-surface">Bean Bag Lounge</h3>
+<span class="text-headline-md font-headline-md text-primary">$20<span class="text-body-md text-on-surface-variant">/mo</span></span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant flex-1 mb-stack-md">Perfect for brainstorming or taking a quick creative break away from the desk.</p>
+<button class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-on-primary transition-colors py-2 rounded-lg font-bold flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">add_circle</span> Add to Setup
+                    </button>
+</div>
+<!-- Item 4: Surfboard Rack -->
+<div class="tropical-card bg-surface-container-lowest rounded-xl p-stack-md flex flex-col border border-surface-variant">
+<div class="h-48 w-full bg-surface-container-low rounded-lg mb-stack-md relative overflow-hidden group">
+<img alt="Surfboard Rack" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A minimalist bamboo surfboard rack holding a sleek, white shortboard. The rack is mounted on a pristine white wall. Sunlight casts soft shadows, creating a calm, coastal modern vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAecaEM7eKFfeS2KXqo23hYmEQpN16h33suYUTcL2IcFQg9BTVu4WhGWqgN9AG_tWe_6Y4yNE7KZbqTM3-S6lORwkLJjuSTROKUCTQIWRs8F74ZtLSURFvOgLc74VdfBQvYFB50PqlumGpSDFL3Q7I3quMsneSf_EOTQijXihKkeg-b_eJIqgFGkla9fhkfLYGna8OzJ8sDCE6QRrK3ldRDCs6UDOZaiiVl6xsmQFPi8i7iW6umY8fN9g">
+</div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-headline-md font-headline-md text-on-surface">Surfboard Rack</h3>
+<span class="text-headline-md font-headline-md text-primary">$10<span class="text-body-md text-on-surface-variant">/mo</span></span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant flex-1 mb-stack-md">Keep your board safe and ready for the dawn patrol just outside your workspace.</p>
+<button class="w-full border-2 border-primary text-primary hover:bg-primary hover:text-on-primary transition-colors py-2 rounded-lg font-bold flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">add_circle</span> Add to Setup
+                    </button>
+</div>
+<!-- Item 5: Motorcycle Rental -->
+<div class="tropical-card bg-surface-container-lowest rounded-xl p-stack-md flex flex-col border border-surface-variant md:col-span-2 xl:col-span-1">
+<div class="h-48 w-full bg-surface-container-low rounded-lg mb-stack-md relative overflow-hidden group flex items-center justify-center">
+<img alt="Motorcycle Rental" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 absolute inset-0" data-alt="A classic custom cafe racer motorcycle parked on a paved driveway near a modern villa. The bike is detailed and stylish, evoking a sense of adventure and freedom typical of the Bali digital nomad lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzjIAuaxcV_rRiMy00v8cwn-pxzwpyvjnmspN6m-JdZcjS4wpchbvEIbu9AhU39Gt0UuXmBbvCpLuwHABEixWRrchkthbGrCJB24fDyTEWNO0IdIO8a458vmSwuNoPEOKru9qYVF5mS_42N6YoQne_hhILyTszOmFM0nOtv5cfe95PI5QEetoQOcIfGXGFsEOXDkiQvwFNXUU3hc6FrwfatsrwiMwp6vDzWNYXOcIcHvCQhvz66bCvsA">
+<div class="absolute inset-0 bg-surface-tint opacity-10"></div>
+<div class="relative z-10 bg-surface/90 backdrop-blur-sm px-4 py-2 rounded-full border border-surface-variant flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-tertiary-container">verified</span>
+<span class="font-bold text-on-surface text-label-md">Partner Service</span>
+</div>
+</div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-headline-md font-headline-md text-on-surface">Motorcycle Rental</h3>
+<span class="text-headline-md font-headline-md text-primary">$120<span class="text-body-md text-on-surface-variant">/mo</span></span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant flex-1 mb-stack-md">Your ticket to weekend adventures and quick cafe runs. Includes helmet &amp; insurance.</p>
+<button class="w-full bg-tertiary-container text-on-tertiary-container hover:opacity-90 transition-opacity py-2 rounded-lg font-bold flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">two_wheeler</span> Request Rental
+                    </button>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile) -->
+<nav class="bg-surface dark:bg-inverse-surface shadow-lg lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-margin-mobile py-2 docked full-width bottom-0 z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Build</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-2xl px-4 py-1 scale-90 transition-all" href="#">
+<span class="material-symbols-outlined fill-icon">storefront</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Store</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Summary</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Rent</span>
+</a>
+</nav>
+
+
+</body></html>

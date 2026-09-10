@@ -1,0 +1,319 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Workspace Builder - Moni's Workspace</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700&amp;family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#9ed1bd",
+                        "surface-container-high": "#e7e8e9",
+                        "on-tertiary-fixed": "#331200",
+                        "primary-container": "#008282",
+                        "inverse-primary": "#6fd7d6",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-container": "#bb580d",
+                        "surface-dim": "#d9dadb",
+                        "on-secondary-fixed-variant": "#1d4f40",
+                        "on-primary-fixed": "#002020",
+                        "surface-tint": "#006a6a",
+                        "on-tertiary-fixed-variant": "#763300",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#3d6d5d",
+                        "surface-variant": "#e1e3e4",
+                        "on-primary-container": "#f3fffe",
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed": "#002117",
+                        "tertiary-fixed": "#ffdbc9",
+                        "outline": "#6d7979",
+                        "tertiary-fixed-dim": "#ffb68d",
+                        "inverse-surface": "#2e3132",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#baeed9",
+                        "on-surface": "#191c1d",
+                        "background": "#f8f9fa",
+                        "on-primary-fixed-variant": "#004f4f",
+                        "on-tertiary-container": "#fffbff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#8cf3f3",
+                        "on-surface-variant": "#3d4949",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-background": "#191c1d",
+                        "on-error": "#ffffff",
+                        "surface": "#f8f9fa",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#edeeef",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#6fd7d6",
+                        "secondary-fixed": "#baeed9",
+                        "tertiary": "#974400",
+                        "outline-variant": "#bcc9c8",
+                        "primary": "#006767",
+                        "surface-container-highest": "#e1e3e4",
+                        "secondary": "#376757"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "section-gap": "80px",
+                        "container-max": "1280px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Manrope"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-md": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom ambient shadow for the tropical tech feel */
+        .shadow-ambient {
+            box-shadow: 0 8px 24px -4px rgba(0, 103, 103, 0.08), 0 4px 12px -6px rgba(0, 103, 103, 0.04);
+        }
+        
+        /* Dashed border for empty slots */
+        .slot-empty {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23bcc9c8' stroke-width='2' stroke-dasharray='6%2c 6' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            border-radius: 12px;
+        }
+
+        /* Hide scrollbar for clean horizontal scrolling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden flex flex-col" data-mode="connect">
+<!-- TopAppBar -->
+<header class="fixed top-0 z-50 bg-surface dark:bg-inverse-surface w-full">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-20">
+<!-- Brand -->
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">
+                Moni's Workspace
+            </div>
+<!-- Navigation Links (Desktop) -->
+<nav class="hidden md:flex gap-8">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary-container dark:hover:text-secondary-fixed-dim transition-colors text-body-md font-body-md" href="#">
+                    Home &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</a>
+<a class="text-primary dark:text-inverse-primary font-bold border-b-2 border-primary pb-1 text-body-md font-body-md opacity-80 transition-all" href="#">
+                    Workspace Builder
+                </a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary-container dark:hover:text-secondary-fixed-dim transition-colors text-body-md font-body-md" href="#">
+                    Accessory Store
+                </a>
+</nav>
+<!-- Trailing Actions -->
+<div>
+<button class="p-2 rounded-full hover:bg-surface-variant transition-colors text-primary">
+<span class="material-symbols-outlined icon-fill">shopping_bag</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-20 w-full max-w-container-max mx-auto relative">
+<!-- SideNavBar (Desktop) -->
+<aside class="hidden lg:flex flex-col gap-stack-md p-gutter fixed left-0 top-20 h-[calc(100vh-80px)] bg-surface-container-low dark:bg-surface-container-high shadow-sm w-80 z-40">
+<div class="mb-4">
+<h2 class="text-headline-md font-headline-md text-primary dark:text-inverse-primary font-extrabold">Selection Panel</h2>
+<p class="text-on-surface-variant text-label-md font-label-md mt-1">Build your setup</p>
+</div>
+<nav class="flex flex-col gap-2 flex-1">
+<!-- Active Tab -->
+<a class="bg-primary-container text-on-primary-container rounded-xl flex items-center gap-stack-sm p-stack-md scale-95 transition-transform duration-150 text-label-md font-label-md" href="#">
+<span class="material-symbols-outlined">chair</span>
+                    Chairs
+                </a>
+<!-- Inactive Tabs -->
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim text-label-md font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined">desk</span>
+                    Desks
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim text-label-md font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined">keyboard</span>
+                    Accessories
+                </a>
+<a class="text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md hover:bg-secondary-container dark:hover:bg-secondary-fixed-dim text-label-md font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined">beach_access</span>
+                    Extras
+                </a>
+</nav>
+<!-- Side Nav content area (The actual items to select based on active tab) -->
+<div class="flex-1 overflow-y-auto mt-4 border-t border-outline-variant pt-4 pr-2">
+<div class="grid grid-cols-2 gap-3">
+<!-- Item 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-3 border border-surface-variant hover:border-primary-container cursor-pointer transition-all hover:-translate-y-1 group">
+<div class="h-24 w-full bg-surface-container rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+<img class="object-cover w-full h-full group-hover:scale-105 transition-transform" data-alt="A clean, modern, isometric 3D render of an ergonomic office chair in light gray mesh, sitting on a pristine white background. High key lighting, minimalist soft tech style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBwHPiawlGW3969dKW5o0XTGnhWLB7SwZJ1dya2tRUgjUU4aJ57EsoC07NsBbECvVj-A89woj0Z4N4KP6MsUv6P_tniwCxhkludiVF1furDdZHeHwnPAj6ThoyWccd5LnFpPNYQH-ECtHmwM9bZDxSJ0KRfTOEiCKql5T_MUOfhh7MvV2neUNSSqUjZTPBbdHNldnhg5bJNETbvOcBADObdhNzdVWWPkDGp7Y60N8A28SLf_WwO-rMZg">
+</div>
+<h4 class="text-label-sm font-label-sm text-on-surface font-bold">Uluwatu Chair</h4>
+<p class="text-[10px] text-on-surface-variant mt-1">+$45/mo</p>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-3 border-2 border-primary cursor-pointer transition-all relative">
+<div class="absolute -top-2 -right-2 bg-primary text-on-primary rounded-full w-5 h-5 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] icon-fill">check</span>
+</div>
+<div class="h-24 w-full bg-surface-container rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+<img class="object-cover w-full h-full" data-alt="A clean, modern, isometric 3D render of a premium black ergonomic task chair with headrest, sitting on a pristine white background. High key lighting, minimalist soft tech style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1X4LeQqM58AEA417piC29Bo082Rq3vt0dnBCgetkEQSr4AFtNRdji1Bl4FLNnQnxKDBURZyQor1m9EYvlQ7rPNw2bV67NV9y6ngGjh5bVUmAvT3u-Y3KVSq2AWoCd1lJ9N6BK8_eRWI5oaRweuNqMNP_6zFF0Eraf3cv1pc5YcQo6W9yfZbBXqucJ58Rt3-_6yjsuV6BxHc4NQHuM2AAdI7WumWlCcaK-dc2wKUwUX4j4NoAnO2JGA">
+</div>
+<h4 class="text-label-sm font-label-sm text-on-surface font-bold">Canggu Task</h4>
+<p class="text-[10px] text-on-surface-variant mt-1">+$60/mo</p>
+</div>
+</div>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold mt-4 hover:bg-surface-tint transition-colors">
+                View Setup Summary
+            </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-80 w-full px-margin-mobile lg:px-margin-desktop py-stack-lg pb-32">
+<!-- Mobile Tab Replacement (Visible only < lg) -->
+<div class="lg:hidden flex overflow-x-auto gap-2 mb-6 no-scrollbar pb-2">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container text-label-md font-label-md whitespace-nowrap flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">chair</span> Chairs
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap flex items-center gap-2 border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">desk</span> Desks
+                </button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap flex items-center gap-2 border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]">keyboard</span> Accessories
+                </button>
+</div>
+<!-- Header -->
+<div class="text-center mb-section-gap">
+<h1 class="text-headline-lg-mobile lg:text-display-lg font-display-lg text-primary mb-2">Design Your Workspace!</h1>
+<p class="text-body-lg font-body-lg text-outline">Create Your Perfect Setup</p>
+</div>
+<!-- Visual Canvas Area (Bento Layout style) -->
+<div class="relative w-full max-w-4xl mx-auto h-[500px] bg-surface-bright rounded-[2rem] shadow-ambient border border-surface-container-high p-8 flex flex-col items-center justify-center overflow-hidden">
+<!-- Background grid hint -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#006767 1px, transparent 1px); background-size: 24px 24px;"></div>
+<!-- Central Desk Setup Abstraction -->
+<div class="relative w-full max-w-2xl h-64 flex flex-col items-center justify-end z-10">
+<!-- Monitor Area (Empty Slot Example) -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-32 slot-empty flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-outline text-3xl mb-1 group-hover:text-primary transition-colors">add</span>
+<span class="text-label-sm font-label-sm text-outline group-hover:text-primary">Add Monitor</span>
+</div>
+<!-- Plant Area (Empty Slot Example) -->
+<div class="absolute bottom-8 right-40 w-24 h-24 slot-empty flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-outline text-2xl mb-1 group-hover:text-primary transition-colors">light</span>
+<span class="text-[10px] font-label-sm text-outline group-hover:text-primary text-center">Add Lamp</span>
+</div><div class="absolute bottom-8 right-12 w-24 h-24 slot-empty flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-outline text-2xl mb-1 group-hover:text-primary transition-colors">local_florist</span>
+<span class="text-[10px] font-label-sm text-outline group-hover:text-primary text-center">Place a Plant</span>
+</div>
+<!-- Selected Desk (Solid) -->
+<div class="w-full h-8 bg-[#e8cdb4] rounded-md shadow-sm relative z-0 border border-[#d2b496]">
+<div class="absolute top-full left-4 w-4 h-32 bg-[#d2b496] rounded-b-sm"></div>
+<div class="absolute top-full right-4 w-4 h-32 bg-[#d2b496] rounded-b-sm"></div>
+</div>
+<!-- Selected Chair (Overlay) -->
+<div class="absolute -bottom-16 left-1/2 -translate-x-1/2 w-32 h-40 z-20">
+<img class="object-contain w-full h-full drop-shadow-md" data-alt="A clean, flat illustration of a black ergonomic task chair viewed directly from the front, designed for a modern workspace UI, rendered on a transparent background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbfOt0rNbV3gqWyBFA-KaW7aOTaS3HBYCGZPojW1VnoDUxuX7qByvBhnY7T0Yzg1XPOIwpaoI8KlgsWnsKdyw4VshA9YXXGqyorQClJ2VShh4DMwaY6oczsK0z04dj03qQxM-9NHQK7gInT9HxzpZ_nY3BJXL-BtSsmmX58phcQ4r-GOTg4QPtUOGHv9EfzvekQZujl5Ns_-njsb9o2QGu61mhywx-1TIIuBmPADw9Yirz7k5doCVYDg">
+</div>
+</div>
+</div>
+<!-- Secondary Zones (Extras) -->
+<div class="mt-section-gap grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-4xl mx-auto">
+<!-- Zone 1 -->
+<div class="flex flex-col items-center">
+<h3 class="text-label-md font-label-md text-on-surface bg-surface-container-highest px-4 py-1 rounded-full mb-4">Coffee Station</h3>
+<div class="w-full h-24 slot-empty flex items-center justify-center cursor-pointer hover:bg-surface-container-low group">
+<span class="material-symbols-outlined text-outline mr-2 group-hover:text-primary">add</span>
+<span class="text-label-sm font-label-sm text-outline group-hover:text-primary">Add Machine</span>
+</div>
+</div>
+<!-- Zone 2 -->
+<div class="flex flex-col items-center">
+<h3 class="text-label-md font-label-md text-on-surface bg-surface-container-highest px-4 py-1 rounded-full mb-4">Relax Zone</h3>
+<div class="w-full h-24 slot-empty flex items-center justify-center cursor-pointer hover:bg-surface-container-low group">
+<span class="material-symbols-outlined text-outline mr-2 group-hover:text-primary">add</span>
+<span class="text-label-sm font-label-sm text-outline group-hover:text-primary">Add Bean Bag</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Desktop Sticky Summary Bar (Appears inside main content area at bottom) -->
+<div class="hidden lg:flex fixed bottom-8 left-1/2 transform -translate-x-1/2 ml-40 bg-surface-bright rounded-full shadow-ambient px-6 py-3 items-center gap-6 z-40 border border-surface-container-highest">
+<div class="flex flex-col">
+<span class="text-[10px] text-outline uppercase tracking-wider font-bold">Monthly Total</span>
+<span class="text-headline-md font-headline-md text-on-surface font-bold">$105<span class="text-label-md font-label-md text-on-surface-variant">/mo</span></span>
+</div>
+<div class="w-px h-8 bg-surface-container-highest"></div>
+<button class="bg-tertiary-container text-on-tertiary-container px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity">
+            Ready to Rent?
+        </button>
+</div>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-margin-mobile py-2 z-50 rounded-t-xl shadow-lg bg-surface dark:bg-inverse-surface">
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-2xl px-4 py-1 scale-90 transition-all" href="#">
+<span class="material-symbols-outlined icon-fill">architecture</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Build</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Store</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Summary</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-variant rounded-2xl transition-colors text-tertiary-container font-bold" href="#">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="text-label-sm font-label-sm-mobile mt-1">Rent</span>
+</a>
+</nav>
+
+
+</body></html>
