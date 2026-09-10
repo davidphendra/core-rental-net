@@ -56,7 +56,8 @@ epics:
   - id: E6
     name: scheduler
     slice: 2
-    status: pending
+    status: archived
+    note: archived 2026-09-10, awaiting product owner acceptance
   - id: E7
     name: test-matrix-and-e2e
     slice: 3
@@ -67,7 +68,7 @@ epics:
     status: pending
 
 next_action: >
-  Begin epic E6 (scheduler): the hosted service that schedules delivery, activates the
-  rental and raises each renewal, with the cancellation boundary.
+  Begin epic E7 (test matrix and browser suite): turn the one-off browser check into a
+  committed suite with its own host fixture, and close the remaining matrix rows.
 
-blocked_on: product owner review of E1 to E5 (all archived, none yet accepted)
+blocked_on: product owner review of E1 to E6 (all archived, none accepted yet)
