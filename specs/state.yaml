@@ -61,14 +61,15 @@ epics:
   - id: E7
     name: test-matrix-and-e2e
     slice: 3
-    status: pending
+    status: archived
+    note: archived 2026-09-10, awaiting product owner acceptance
   - id: E8
     name: ci-and-docs
     slice: 3
     status: pending
 
 next_action: >
-  Begin epic E7 (test matrix and browser suite): turn the one-off browser check into a
-  committed suite with its own host fixture, and close the remaining matrix rows.
+  Begin epic E8 (CI and documentation): the GitHub Actions workflow that runs build,
+  unit, integration and browser tests, and a root README.
 
-blocked_on: product owner review of E1 to E6 (all archived, none accepted yet)
+blocked_on: product owner review of E1 to E7 (all archived, none accepted yet)
