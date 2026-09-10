@@ -1,0 +1,24 @@
+@inject IdentitySettings Identity
+@* Sign-in, or who you are. Absent entirely when no identity provider is configured. *@
+@if (Identity.IsConfigured)
+{
+    @if (Customer.IsSignedIn)
+    {
+        <span class="account-chip">
+            <span class="account-chip__initials" aria-hidden="true">@Customer.Initials</span>
+            <span class="sr-only">Signed in as @Customer.DisplayName</span>
+            <a class="app-header__link" href="/rentals">My rentals</a>
+            <a class="app-header__link" href="/account/logout">Sign out</a>
+        </span>
+    }
+    else
+    {
+        <a class="app-header__link" href="@($"/account/login?returnUrl={Uri.EscapeDataString(ReturnUrl)}")">Sign in</a>
+    }
+}
+
+@code {
+    [CascadingParameter(Name = "Customer")] public CurrentCustomer Customer { get; set; } = CurrentCustomer.Anonymous;
+
+    [Parameter] public string ReturnUrl { get; set; } = "/";
+}

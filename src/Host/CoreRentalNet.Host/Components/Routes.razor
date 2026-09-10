@@ -1,3 +1,4 @@
+<CascadingValue Name="Customer" Value="Customer">
 <CascadingValue Name="DraftToken" Value="DraftToken">
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
@@ -15,6 +16,7 @@
     </NotFound>
 </Router>
 </CascadingValue>
+</CascadingValue>
 
 @code {
     /// <summary>
@@ -22,4 +24,7 @@
     /// interactive circuit, and re-published here for everything below it.
     /// </summary>
     [Parameter] public string? DraftToken { get; set; }
+
+    /// <summary>Published beside the draft token, for the same reason and by the same mechanism.</summary>
+    [Parameter] public CurrentCustomer Customer { get; set; } = CurrentCustomer.Anonymous;
 }

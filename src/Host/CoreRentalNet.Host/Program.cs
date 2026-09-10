@@ -1,5 +1,7 @@
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using CoreRentalNet.Host.Components;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
@@ -23,6 +25,73 @@ using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ---------------------------------------------------------------------------
+// Identity, which is optional and additive (ADR-0016). With no domain configured
+// nothing below is registered, the sign-in affordance hides itself, and the
+// application runs exactly as it did before identity existed.
+// ---------------------------------------------------------------------------
+var identitySettings = IdentitySettings.From(builder.Configuration);
+builder.Services.AddSingleton(identitySettings);
+
+if (identitySettings.IsConfigured)
+{
+    builder.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+        })
+        .AddCookie(options =>
+        {
+            options.ExpireTimeSpan = TimeSpan.FromDays(14);
+            options.SlidingExpiration = true;
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            // Over plain HTTP the cookie cannot be marked Secure, so local development is
+            // inherently weaker than production. Production must be HTTPS.
+            options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+        })
+        .AddOpenIdConnect(options =>
+        {
+            options.Authority = $"https://{identitySettings.Domain}/";
+            options.ClientId = identitySettings.ClientId!;
+            options.ClientSecret = identitySettings.ClientSecret;
+            options.ResponseType = "code";
+            options.UsePkce = true;
+
+            // The default scope for this provider omits the address we record on an order.
+            options.Scope.Clear();
+            options.Scope.Add("openid");
+            options.Scope.Add("profile");
+            options.Scope.Add("email");
+
+            options.CallbackPath = AccountEndpoints.CallbackPath;
+
+            // No access token and no refresh token are stored (ADR-0019). The profile is read once
+            // at sign-in so the name and email on an order are reliable.
+            options.SaveTokens = false;
+            options.GetClaimsFromUserInfoEndpoint = true;
+
+            options.TokenValidationParameters.NameClaimType = "name";
+
+            // The provider names its logout parameter returnTo, not post_logout_redirect_uri.
+            options.Events.OnRedirectToIdentityProviderForSignOut = context =>
+            {
+                var redirect = context.ProtocolMessage.PostLogoutRedirectUri;
+
+                if (!string.IsNullOrEmpty(redirect))
+                {
+                    context.ProtocolMessage.SetParameter("returnTo", redirect);
+                    context.ProtocolMessage.PostLogoutRedirectUri = null;
+                }
+
+                return Task.CompletedTask;
+            };
+        });
+}
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddHttpContextAccessor();
@@ -126,6 +195,17 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
+if (identitySettings.IsConfigured)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    // Mapped only when there is an identity provider, so an unconfigured deployment has no
+    // account routes at all.
+    AccountEndpoints.Map(app);
+}
+
 app.UseMiddleware<DraftTokenMiddleware>();
 app.UseAntiforgery();
 

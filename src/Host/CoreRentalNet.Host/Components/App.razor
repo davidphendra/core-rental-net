@@ -19,7 +19,7 @@
          Routes re-publishes it as a cascading value for the pages and layouts below.
          The at-sign is load-bearing: without it Razor passes the literal text "DraftToken", and every
          circuit then shares one draft. -->
-    <Routes @rendermode="InteractiveServer" DraftToken="@DraftToken" />
+    <Routes @rendermode="InteractiveServer" DraftToken="@DraftToken" Customer="Customer" />
     <script src="_framework/blazor.web.js"></script>
 </body>
 </html>
@@ -28,6 +28,12 @@
     /// <summary>Read during the initial request, because a circuit is not an HTTP request.</summary>
     public string DraftToken { get; private set; } = string.Empty;
 
+    /// <summary>Who is signed in, read from the same request for the same reason.</summary>
+    public CurrentCustomer Customer { get; private set; } = CurrentCustomer.Anonymous;
+
     protected override void OnInitialized()
-        => DraftToken = DraftTokenMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
+    {
+        DraftToken = DraftTokenMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
+        Customer = CurrentCustomer.FromClaims(HttpContextAccessor.HttpContext?.User);
+    }
 }
