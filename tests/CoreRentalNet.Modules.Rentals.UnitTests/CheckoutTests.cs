@@ -281,6 +281,9 @@ public sealed class CheckoutTests
         public Task<Rental?> FindByIdAsync(RentalId id, CancellationToken cancellationToken = default)
             => Task.FromResult<Rental?>(null);
 
+        public Task<IReadOnlyList<Rental>> ListSchedulableAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Rental>>([]);
+
         public Task AddAsync(Rental rental, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 

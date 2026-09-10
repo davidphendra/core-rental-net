@@ -1,38 +1,58 @@
 epic: e06-scheduler
 slice: 2
+status: complete
+completed: 2026-09-10
+verification: specs/verifications/E6-scheduler.md
+
 tasks:
   - id: E6-T1
-    title: Hosted service with injected TimeProvider; no Thread.Sleep, no DateTime.Now in Domain
+    title: The run takes a date rather than reading a clock; the hosted service owns the timer
     type: infra
-    status: pending
-    tests: [SC-10, ARC-06]
+    status: done
+    tests: [SC-10]
+    note: >
+      The hosted service waits with Task.Delay(interval, TimeProvider, token) and the run takes the
+      business date as an argument, so the whole loop is testable without waiting for real time.
+      The clock rule in the architecture tests now covers Application code too, not only Domain.
   - id: E6-T2
-    title: Delivery scheduling at lead time and activation on the delivery date
+    title: Delivery scheduling and activation
     type: application
-    status: pending
+    status: done
     tests: [SC-01, SC-02, SC-11]
   - id: E6-T3
-    title: Renewal — raise and settle the next invoice on the monthly anniversary
+    title: Renewal raised and settled when a period begins
     type: application
-    status: pending
+    status: done
     tests: [SC-03, CO-08]
   - id: E6-T4
-    title: Exactly-once renewal per period; safe when the service runs twice
+    title: Exactly once per period, including a repeated pass and a gap
     type: application
-    status: pending
+    status: done
     tests: [SC-04]
+    note: >
+      Renewals are worked out from the invoices that already exist and the period the date falls
+      in, so a repeated pass is a no-op and a gap catches up one invoice per period that started.
+      The unique index on rental and period is the backstop underneath that check.
   - id: E6-T5
-    title: Cancellation suppression and end-of-paid-period effective date, including a last-day request
+    title: Cancellation suppression and the end of the paid period
     type: application
-    status: pending
+    status: done
     tests: [SC-05, SC-06]
   - id: E6-T6
-    title: Period arithmetic from the stored anchor; 31st clamping and restoration
+    title: Period arithmetic from the stored anchor
     type: domain
-    status: pending
+    status: done
     tests: [SC-07, SC-08]
   - id: E6-T7
-    title: Business-date derivation at fixed +08:00
+    title: Business dates at a fixed +08:00
     type: domain
-    status: pending
+    status: done
     tests: [SC-09]
+
+found_while_building:
+  - "The pass saved only when the order itself had changed. Issuing an invoice does not touch the order, so a pass whose only work was billing wrote nothing, and every renewal was silently lost. Only the database-backed test could see it; the in-memory repository records an addition whether or not anything is saved."
+  - "An assertion that a pass with nothing to do must not write was asserting that bug. It now states the invariant that matters: the order and its invoices are unchanged."
+
+deviations:
+  - "One order that cannot advance is recorded as a failure and the pass continues, so a single bad order cannot stop the rest of the book from being billed or delivered."
+  - "Invoices per rental are read one rental at a time. With a demo-sized book that is fine, and it keeps the rule readable; it would need a projection before it met a large one."

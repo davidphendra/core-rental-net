@@ -64,7 +64,10 @@ public sealed class SourceLayoutTests
                 continue;
             }
 
-            foreach (var project in Directory.GetDirectories(directory, "*.Domain"))
+            // Domain and Application both: application code takes its date from the caller too,
+            // which is what makes the scheduler deterministic under test.
+            foreach (var project in Directory.GetDirectories(directory, "*.Domain")
+                         .Concat(Directory.GetDirectories(directory, "*.Application")))
             {
                 foreach (var file in Directory.GetFiles(project, "*.cs", SearchOption.AllDirectories))
                 {
@@ -87,7 +90,7 @@ public sealed class SourceLayoutTests
         }
 
         offenders.Should().BeEmpty(
-            "Domain code must take the time from an injected TimeProvider so tests can control it (ADR-0011)");
+            "code must take the time from an injected TimeProvider or from the caller so tests can control it (ADR-0011)");
     }
 
     private static IEnumerable<string> ExistingModules()

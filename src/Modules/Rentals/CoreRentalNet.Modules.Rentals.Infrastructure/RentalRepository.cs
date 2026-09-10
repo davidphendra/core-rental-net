@@ -22,6 +22,16 @@ public sealed class RentalRepository(RentalsContext context) : IRentalRepository
             .FirstOrDefaultAsync(rental => rental.WorkspaceId == workspaceId, cancellationToken)
             .ConfigureAwait(false);
 
+    public async Task<IReadOnlyList<Domain.Rental>> ListSchedulableAsync(CancellationToken cancellationToken = default)
+        => await context.Rentals
+            .Where(rental => rental.Status == RentalStatus.Paid
+                             || rental.Status == RentalStatus.DeliveryScheduled
+                             || rental.Status == RentalStatus.Active
+                             || rental.Status == RentalStatus.CancellationRequested)
+            .OrderBy(rental => rental.Number)
+            .ToArrayAsync(cancellationToken)
+            .ConfigureAwait(false);
+
     public async Task AddAsync(Domain.Rental rental, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(rental);

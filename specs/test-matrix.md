@@ -127,7 +127,7 @@ was never specified.
 | CO-12 | Checkout with an empty workspace | rejected server-side regardless of UI state | U | pending |
 | CO-13 | Request containing a price or total | ignored; server prices from the catalog | U,A | pending |
 | CO-14 | Order and invoice numbering | `CR-YYYY-NNNN`, `INV-YYYY-NNNN`, sequential | U | passing |
-| CO-15 | Scheduler never creates a duplicate invoice for a settled period | see SC-04 | U | pending |
+| CO-15 | Scheduler never creates a duplicate invoice for a settled period | see SC-04 | U | passing |
 
 ## Order confirmation
 
@@ -144,10 +144,10 @@ was never specified.
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
 | SC-01 | Time advances past the delivery lead time | delivery scheduled at the lead-time date | U | passing |
-| SC-02 | Clock reaches the delivery date | rental becomes `Active` | U | pending |
-| SC-03 | Monthly anniversary | next invoice raised **and settled exactly once** | U | pending |
-| SC-04 | Scheduler executes twice for the same period | no duplicate invoice | U | pending |
-| SC-05 | Cancellation requested | next invoice suppressed | U | pending |
+| SC-02 | Clock reaches the delivery date | rental becomes `Active` | U | passing |
+| SC-03 | Monthly anniversary | next invoice raised **and settled exactly once** | U | passing |
+| SC-04 | Scheduler executes twice for the same period | no duplicate invoice | U | passing |
+| SC-05 | Cancellation requested | next invoice suppressed | U | passing |
 | SC-06 | Cancellation effective date | end of the currently paid period, no refund | U | passing |
 | SC-07 | Order placed 31 January | periods `anchor.AddMonths(N)` → 28 Feb, 31 Mar, 30 Apr | U | passing |
 | SC-08 | Anchor stored once | no drift across twelve periods | U | passing |
@@ -189,6 +189,15 @@ was never specified.
 | SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | pending |
 | SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | pending |
 | SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | passing |
+
+## Notes recorded during E6
+
+- Every scheduler behaviour is tested by moving a clock, never by waiting. See
+  `specs/verifications/E6-scheduler.md`, which also records the bug that only the database
+  could show: the pass saved only when the order changed, and billing does not change the order,
+  so every renewal was silently dropped.
+- The clock rule (`ARC-06`) now covers Application code as well as Domain, because that is where
+  the schedule lives.
 
 ## Notes recorded during E5
 

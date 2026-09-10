@@ -19,6 +19,12 @@ internal sealed class InMemoryRentalRepository : IRentalRepository
     public Task<Domain.Rental?> FindByWorkspaceIdAsync(Guid workspaceId, CancellationToken cancellationToken = default)
         => Task.FromResult(rentals.FirstOrDefault(rental => rental.WorkspaceId == workspaceId));
 
+    public Task<IReadOnlyList<Domain.Rental>> ListSchedulableAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<Domain.Rental>>(rentals
+            .Where(rental => rental.Status is RentalStatus.Paid or RentalStatus.DeliveryScheduled
+                or RentalStatus.Active or RentalStatus.CancellationRequested)
+            .ToArray());
+
     public Task AddAsync(Domain.Rental rental, CancellationToken cancellationToken = default)
     {
         rentals.Add(rental);
