@@ -33,7 +33,8 @@ epics:
   - id: E1
     name: catalog
     slice: 1
-    status: ready
+    status: archived
+    note: archived 2026-09-10, awaiting product owner acceptance
   - id: E2
     name: workspace
     slice: 1
@@ -64,9 +65,8 @@ epics:
     status: pending
 
 next_action: >
-  Begin Slice 1 / epic E1 (catalog): create the solution scaffold, central
-  package management, BuildingBlocks, and the read-only Catalog module with
-  unit tests. No application code before the product owner confirms the specs
-  in this directory.
+  Begin epic E2 (workspace): the draft aggregate, the slot rule table, the quote,
+  SQLite persistence, and the draft cookie token. Adds BuildingBlocks.Application
+  and BuildingBlocks.Infrastructure, which E1 deferred.
 
-blocked_on: product owner review of specs/
+blocked_on: product owner review of E1 (archived, not yet accepted)

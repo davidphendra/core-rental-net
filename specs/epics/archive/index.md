@@ -10,4 +10,4 @@ what remains the product owner's call.
 
 | epic | completed | commit | tests | deliberately not done |
 |---|---|---|---|---|
-| _(none yet)_ | | | | |
+| **E1 catalog** | 2026-09-10 | `8b29e8f` | 69 passing — 46 unit, 12 integration against the real catalog file, 11 architecture | BuildingBlocks.Application/Infrastructure (errors, id generator, `ModuleDbContext`, SQLite setup) deferred to E2 where they have consumers and tests. Domain base types (`Entity`, `AggregateRoot`, `ValueObject`, `StronglyTypedId`) deferred to their first consumer. ARC-01/02/03 pass vacuously until E2 adds a DbContext and a second module. |
