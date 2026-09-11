@@ -4,7 +4,9 @@
 > every circuit shared one workspace (a Razor attribute-literal mistake in the draft token), so any
 > observation here that depended on per-browser drafts was measuring a shared draft. See
 > `E5-browser-walkthrough.md` for the corrected picture. The routing, gating and rendering
-> observations below still stand.
+> observations below still stand, with one exception: the store page no longer carries a row of
+> category tabs. It is a single listing of extras, as its design draws it, and categories are
+> browsed from the panel beside it.
 
 Run on 2026-09-10 against the real application, real SQLite file and a real HTTP server.
 Tests passing is not evidence that the thing works, so this records what was actually observed.

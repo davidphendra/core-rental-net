@@ -7,26 +7,33 @@
 
 <SelectionPanel />
 
-<section class="builder-main">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="/builder">Builder</a>
-        <span aria-hidden="true">&#8250;</span>
-        <span>Extras</span>
-        <span aria-hidden="true">&#8250;</span>
-        <span>Summary</span>
+@* The design's store is one listing of extras, and so is this. It used to carry a row of category
+   tabs as well; they are gone, because the design has no such row, because the panel beside them
+   already browses categories, and because the page's own heading and title are about extras. The
+   chevrons are drawn inline: the design sets them in an icon font, and a font that may not be
+   there is a font that leaves an empty box. *@
+<section class="flex-1 lg:ml-80 px-margin-mobile md:px-margin-desktop py-stack-lg min-h-screen pb-32 lg:pb-stack-lg">
+    <nav class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant mb-stack-md" aria-label="Breadcrumb">
+        <a class="hover:text-primary transition-colors" href="/builder">Builder</a>
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" />
+        </svg>
+        <a class="hover:text-primary transition-colors" href="/extras">Extras</a>
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 6l6 6-6 6" />
+        </svg>
+        <span class="text-primary font-bold">Summary</span>
     </nav>
 
-    <header class="stack-sm section-header">
-        <h1 class="display-lg primary-text">Add Your Bali Vibes</h1>
-        <p class="body-lg muted">
+    <header class="mb-stack-lg">
+        <h1 class="text-display-lg font-display-lg text-on-surface mb-2">Add Your Bali Vibes</h1>
+        <p class="text-body-lg font-body-lg text-on-surface-variant max-w-2xl">
             Elevate your workspace with premium extras. Enhance productivity and comfort with our
             curated selection of tropical tech lifestyle additions.
         </p>
     </header>
-
-    @* The designs draw this page as a single listing of extras. The tabs are an addition, so the
-       same page can also show what goes on the desk; remove them to match the mockup exactly. *@
-    <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
 
     @if (Session.Error is not null)
     {
@@ -37,7 +44,9 @@
         <p class="alert alert--info" role="status">@LastAdded added to your workspace.</p>
     }
 
-    <div class="grid-store">
+    @* grid-store carries no styling of its own: it is the marker the browser tests wait for on
+       this page, the same way workspace-stage marks the builder. *@
+    <div class="grid-store grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
         @foreach (var product in products)
         {
             <StoreProductCard Product="product" OnSelect="AddAsync" />
@@ -48,7 +57,6 @@
 @code {
     [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
 
-    private CatalogTab tab = CatalogTab.Extras;
     private IReadOnlyList<ProductListItem> products = [];
     private string? LastAdded;
 
@@ -59,17 +67,7 @@
             await Session.EnsureLoadedAsync(DraftToken);
         }
 
-        LoadProducts();
-    }
-
-    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
-
-    private Task SelectTabAsync(CatalogTab selected)
-    {
-        tab = selected;
-        LastAdded = null;
-        LoadProducts();
-        return Task.CompletedTask;
+        products = CatalogTabs.Load(CatalogTab.Extras, CatalogPage, CatalogGroup);
     }
 
     private async Task AddAsync(ProductListItem product)
