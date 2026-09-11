@@ -46,9 +46,8 @@
 
 @if (Session.Current is not null)
 {
-    <div class="floating-bar">
-        <MonthlyTotalBar View="Session.Current" OnReady="GoToReviewAsync" />
-    </div>
+    @* No wrapper: the bar positions itself, the way the design draws it. *@
+    <MonthlyTotalBar View="Session.Current" OnReady="GoToReviewAsync" />
 }
 
 <SlotPickerDialog @ref="picker" Candidates="pickerCandidates" Title="@pickerTitle"

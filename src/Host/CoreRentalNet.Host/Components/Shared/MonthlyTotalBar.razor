@@ -1,11 +1,20 @@
-@* The running total and the way out of the builder. Both are disabled until something is assigned. *@
-<div class="total-bar card">
-    <div class="total-bar__amount">
-        <span class="total-bar__caption label-sm uppercase">Monthly total</span>
-        <span class="headline-md">@View.Quote.MonthlySubtotal.ToDisplayString()<span class="total-bar__per label-md muted">/mo</span></span>
+@* The design's summary bar: a pill pinned near the bottom of the window, offset by ml-40 so it
+   sits over the content column rather than the middle of the whole window, carrying the running
+   total and the way out of the builder.
+
+   The design draws this button always ready. Here it stays shut until the workspace can be
+   rented, which is the one thing added to the design's markup: a native disabled button, which
+   the keyboard cannot reach, with the reason as its title. *@
+<div class="total-bar hidden lg:flex fixed bottom-8 left-1/2 transform -translate-x-1/2 ml-40 bg-surface-bright rounded-full shadow-ambient px-6 py-3 items-center gap-6 z-40 border border-surface-container-highest">
+    <div class="total-bar__amount flex flex-col">
+        <span class="text-[10px] text-outline uppercase tracking-wider font-bold">Monthly Total</span>
+        <span class="text-headline-md font-headline-md text-on-surface font-bold">@View.Quote.MonthlySubtotal.ToDisplayString()<span class="text-label-md font-label-md text-on-surface-variant">/mo</span></span>
     </div>
-    <span class="total-bar__divider" aria-hidden="true"></span>
-    <button type="button" class="button button--cta button--small"
+
+    <div class="w-px h-8 bg-surface-container-highest" aria-hidden="true"></div>
+
+    <button type="button"
+            class="bg-tertiary-container text-on-tertiary-container px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             disabled="@(!View.CanCheckout)"
             aria-disabled="@((!View.CanCheckout).ToString().ToLowerInvariant())"
             title="@(View.CanCheckout ? null : "Add an item to your workspace first")"

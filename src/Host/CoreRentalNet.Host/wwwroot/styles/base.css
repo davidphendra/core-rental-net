@@ -14,7 +14,11 @@ body {
   color: var(--on-surface);
   font-family: var(--font-body);
   font-size: var(--body-md-size);
-  line-height: var(--body-md-line);
+  /* A ratio, not a length, because that is what the design inherits. Tailwind's own preflight sets
+     a unitless 1.5 at the root, so a 10px caption with no line-height of its own comes out 15px
+     tall. A fixed 24px here is inherited as 24px by every small label that does not set its own,
+     which is what made the summary bar 9px too tall. */
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -146,9 +150,6 @@ button, input, textarea, select { font: inherit; color: inherit; }
 
 .picker-grid { display: grid; gap: var(--stack-md); grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .scroll-panel { flex: 1; overflow-y: auto; padding-top: var(--stack-md); border-top: 1px solid var(--outline-variant); }
-.floating-bar { position: fixed; bottom: var(--stack-lg); left: 50%; transform: translateX(-50%); z-index: 40; display: none; }
-@media (min-width: 1024px) { .floating-bar { margin-left: calc(var(--sidebar-width) / 2); } }
-@media (min-width: 1024px) { .floating-bar { display: block; } }
 .receipt { display: flex; flex-direction: column; gap: var(--stack-md); padding: var(--gutter); border-radius: var(--radius-2xl); background: var(--surface-container-lowest); border: 1px solid var(--surface-container); box-shadow: var(--shadow-1); }
 .line-item { display: flex; align-items: center; justify-content: space-between; gap: var(--stack-md); padding-block: 8px; }
 .line-item__media { width: 48px; height: 48px; flex: none; padding: 6px; border-radius: var(--radius); background: var(--surface-container-low); color: var(--primary); }
