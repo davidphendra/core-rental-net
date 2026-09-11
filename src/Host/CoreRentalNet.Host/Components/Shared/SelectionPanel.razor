@@ -1,5 +1,4 @@
 @inherits WorkspaceObserver
-@inject NavigationManager Navigation
 @inject GetCatalogPageHandler CatalogPage
 @inject GetCatalogGroupHandler CatalogGroup
 @* The docked panel the designs draw on both the builder and the store: browse a category,
@@ -15,6 +14,9 @@
 
     @* Refusals are surfaced by the page, beside the canvas they concern. One error surface, and
        it is where the customer is looking. *@
+    @* The catalog takes the rest of the panel. The design ends the panel with a link to the
+       summary; that link is not here, by request, so the room it used is the catalog's. The
+       floating bar is still the way out, and still closes until the workspace can be rented. *@
     <div class="flex-1 overflow-y-auto mt-4 border-t border-outline-variant pt-4 pr-2">
         <div class="grid grid-cols-2 gap-3">
             @foreach (var product in products)
@@ -23,14 +25,6 @@
             }
         </div>
     </div>
-
-    <a class="w-full py-3 rounded-xl font-bold mt-4 text-center transition-colors @(CanCheckout ? "bg-primary text-on-primary hover:bg-surface-tint" : "bg-surface-container text-on-surface-variant cursor-not-allowed opacity-60")" href="/review"
-       aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"
-       tabindex="@(CanCheckout ? 0 : -1)"
-       title="@(CanCheckout ? null : "Add an item to your workspace first")"
-       @onclick="GoToReviewAsync" @onclick:preventDefault="@(!CanCheckout)">
-        View Setup Summary
-    </a>
 </aside>
 
 @code {
@@ -38,8 +32,6 @@
 
     private CatalogTab tab = CatalogTab.Desks;
     private IReadOnlyList<ProductListItem> products = [];
-
-    private bool CanCheckout => Session.Current?.CanCheckout ?? false;
 
     protected override void OnInitialized() => LoadProducts();
 
@@ -61,15 +53,5 @@
         {
             await Session.AssignAsync(DraftToken, product.Sku);
         }
-    }
-
-    private Task GoToReviewAsync()
-    {
-        if (CanCheckout)
-        {
-            Navigation.NavigateTo("/review");
-        }
-
-        return Task.CompletedTask;
     }
 }

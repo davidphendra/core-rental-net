@@ -55,10 +55,45 @@ public sealed class WorkspacePresentationTests(HostFixture host, ITestOutputHelp
     {
         await GotoAsync("/builder");
 
-        var summary = Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "View Setup Summary" });
+        // This used to be the panel's link to the summary. The panel no longer has one, so the
+        // control that has to shut while the workspace is empty is the floating bar's.
+        var ready = Page.Locator(".total-bar button");
 
-        await Expect(summary).ToHaveAttributeAsync("aria-disabled", "true");
-        await Expect(summary).ToHaveAttributeAsync("tabindex", "-1");
-        await Expect(summary).ToHaveAttributeAsync("title", "Add an item to your workspace first");
+        await Expect(ready).ToHaveAttributeAsync("aria-disabled", "true");
+        await Expect(ready).ToHaveAttributeAsync("title", "Add an item to your workspace first");
+
+        // And it is checked by tabbing, not by reading tabindex: whether a disabled control can be
+        // reached is the browser's behaviour, and an attribute is only a claim about it.
+        var visited = new List<string>();
+        var reached = false;
+
+        for (var press = 0; press < 80; press++)
+        {
+            await Page.Keyboard.PressAsync("Tab");
+
+            var landed = await Page.EvaluateAsync<string>(
+                "() => { const el = document.activeElement; if (!el || el === document.body) return 'body';" +
+                " const name = typeof el.className === 'string' ? el.className : '';" +
+                " return el.tagName.toLowerCase() + '.' + name; }");
+
+            if (landed.Contains("button--cta", StringComparison.Ordinal))
+            {
+                reached = true;
+                break;
+            }
+
+            if (landed == "body")
+            {
+                break;
+            }
+
+            if (!visited.Contains(landed))
+            {
+                visited.Add(landed);
+            }
+        }
+
+        reached.Should().BeFalse("a disabled control must be somewhere the keyboard cannot land");
+        visited.Should().NotBeEmpty("the page must still have things to tab through, or this proves nothing");
     }
 }

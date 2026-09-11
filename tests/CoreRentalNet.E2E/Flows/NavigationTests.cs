@@ -16,10 +16,10 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
     {
         await GotoAsync("/builder");
 
-        var summary = Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "View Setup Summary" });
-        await Expect(summary).ToHaveAttributeAsync("aria-disabled", "true");
-        await Expect(summary).ToHaveAttributeAsync("tabindex", "-1");
-
+        // The panel no longer carries a link to the summary, so the floating bar is the only way
+        // out of the builder - and it is the thing that has to stay shut while the workspace is
+        // empty. Both halves are checked, because removing a way out is only safe if it is gone.
+        await Expect(Page.Locator("aside a[href=\'/review\']")).ToHaveCountAsync(0);
         await Expect(Page.Locator(".total-bar button")).ToBeDisabledAsync();
         await Expect(Page.Locator(".total-bar")).ToContainTextAsync("Rp0");
     }
@@ -39,10 +39,12 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
     {
         await AssignFirstProductAsync();
 
-        var summary = Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "View Setup Summary" });
-        await Expect(summary).ToHaveAttributeAsync("aria-disabled", "false");
-        await Expect(summary).ToHaveAttributeAsync("tabindex", "0");
-        await Expect(Page.Locator(".total-bar button")).ToBeEnabledAsync();
+        var ready = Page.Locator(".total-bar button");
+        await Expect(ready).ToBeEnabledAsync();
+
+        // And that it leads there. An enabled control is not the same as a working one.
+        await ready.ClickAsync();
+        await Expect(Page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/review"));
     }
 
     [Fact] // NAV-04
@@ -74,7 +76,7 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
 
         await Expect(Page.Locator("button.product-card").First).ToBeEnabledAsync();
 
-        var summary = Page.GetByRole(AriaRole.Link, new PageGetByRoleOptions { Name = "View Setup Summary" });
-        await Expect(summary).ToHaveAttributeAsync("aria-disabled", "true");
+        // A way back, and no way forward: nothing on the store leads to the summary.
+        await Expect(Page.Locator("aside a[href=\'/review\']")).ToHaveCountAsync(0);
     }
 }
