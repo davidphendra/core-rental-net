@@ -4,8 +4,8 @@ using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Commands;
 
-/// <summary>Sets a filled slot's quantity. Zero empties the slot.</summary>
-public sealed record ChangeQuantity(string DraftToken, SlotId Slot, int Quantity);
+/// <summary>Sets how many of one product a slot holds. Zero removes that product.</summary>
+public sealed record ChangeQuantity(string DraftToken, SlotId Slot, string Sku, int Quantity);
 
 public sealed class ChangeQuantityHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
 {
@@ -15,7 +15,7 @@ public sealed class ChangeQuantityHandler(IWorkspaceRepository repository, IDefi
 
         var workspace = await WorkspaceResolver.ResolveAsync(repository, command.DraftToken, cancellationToken).ConfigureAwait(false);
 
-        workspace.ChangeQuantity(command.Slot, command.Quantity);
+        workspace.ChangeQuantity(command.Slot, command.Sku, command.Quantity);
 
         await repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

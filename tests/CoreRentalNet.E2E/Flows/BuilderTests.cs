@@ -76,45 +76,47 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         await Expect(Page.Locator(".slot--chair.slot--filled")).ToHaveCountAsync(0);
     }
 
-    [Fact] // WS-10
-    public async Task The_stepper_stops_at_the_capacity_the_table_declares()
+    [Fact] // WS-07
+    public async Task The_monitor_row_offers_exactly_the_places_the_table_declares()
     {
         await GotoAsync("/builder");
-        await OpenSlotPickerAsync(".slot--monitor");
-        await PickFirstCandidateAsync();
-        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(1);
 
-        var plus = Page.Locator(".slot--monitor .stepper__button").Nth(1);
-        var minus = Page.Locator(".slot--monitor .stepper__button").Nth(0);
+        // Three places, from the slot table. A filled place stops inviting, so the row shows what is
+        // still free without the customer having to count.
+        await Expect(Page.Locator(".slot--monitor.slot--empty")).ToHaveCountAsync(3);
 
-        await plus.ClickAsync();
-        await plus.ClickAsync();
-        await Expect(Page.Locator(".slot--monitor .slot__quantity")).ToHaveTextAsync("×3");
+        for (var place = 0; place < 3; place++)
+        {
+            await OpenSlotPickerAsync(".slot--monitor");
+            await PickCandidateAsync(place);
 
-        await Expect(plus).ToBeDisabledAsync();
-        await Expect(minus).ToBeEnabledAsync();
+            await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(place + 1);
+        }
+
+        await Expect(Page.Locator(".slot--monitor.slot--empty")).ToHaveCountAsync(0);
     }
 
-    [Fact] // WS-04, WS-06
+    [Fact] // WS-08
     public async Task Adding_a_monitor_from_the_panel_when_the_slot_is_full_is_refused_visibly()
     {
         await GotoAsync("/builder");
-        await OpenSlotPickerAsync(".slot--monitor");
-        await PickFirstCandidateAsync();
 
-        var plus = Page.Locator(".slot--monitor .stepper__button").Nth(1);
-        await plus.ClickAsync();
-        await plus.ClickAsync();
-        await Expect(plus).ToBeDisabledAsync();
+        for (var place = 0; place < 3; place++)
+        {
+            await OpenSlotPickerAsync(".slot--monitor");
+            await PickCandidateAsync(place);
+        }
 
-        // The panel is still offering monitors, so the refusal has to be visible.
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
-        var monitorCard = Page.Locator("button.product-card", new PageLocatorOptions { HasTextString = "Ultrawide" });
-        await Expect(monitorCard).ToBeVisibleAsync();
-        await monitorCard.ClickAsync();
+        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(3);
+
+        // A fourth is refused, and the refusal is on the page rather than in a console. Every monitor
+        // in the catalog is named in inches, so the quote in this one is escaped.
+        await ChooseCategoryAsync("Accessories");
+        await Page.Locator("aside button.product-card")
+            .Filter(new LocatorFilterOptions { HasTextString = "Seminyak 32\" UHD" }).First.ClickAsync();
 
         await Expect(Page.Locator(".alert")).ToContainTextAsync("at most 3");
-        await Expect(Page.Locator(".slot--monitor .slot__quantity")).ToHaveTextAsync("×3");
+        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(3);
     }
 
     [Fact] // WS-08
@@ -130,20 +132,22 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
     }
 
     [Fact] // WS-09
-    public async Task The_stepper_minus_is_bounded_at_one_because_removal_has_its_own_control()
+    public async Task Each_monitor_box_is_removed_on_its_own()
     {
         await GotoAsync("/builder");
+
         await OpenSlotPickerAsync(".slot--monitor");
         await PickFirstCandidateAsync();
+
         await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(1);
+        await Expect(Page.Locator(".slot--monitor.slot--empty")).ToHaveCountAsync(2);
 
-        var minus = Page.Locator(".slot--monitor .stepper__button").Nth(0);
+        // Removing a box takes that one monitor away and leaves the row the size it was, so the
+        // canvas does not move under the customer as monitors come and go.
+        await Page.Locator(".slot--monitor.slot--filled .slot__remove").ClickAsync();
 
-        await Expect(minus).ToBeDisabledAsync();
-
-        // Emptying the slot is the multiply control's job, not a side effect of the minus.
-        await Page.Locator(".slot--monitor .slot__remove").ClickAsync();
-        await Expect(Page.Locator(".slot--monitor.slot--empty")).ToHaveCountAsync(1);
+        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".slot--monitor")).ToHaveCountAsync(3);
     }
 
     [Fact] // WS-11, WS-12
@@ -172,13 +176,15 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         await ChooseCategoryAsync("Desks");
         await Page.Locator("button.product-card").First.ClickAsync();
 
-        await OpenSlotPickerAsync(".slot--monitor");
-        await PickFirstCandidateAsync();
-        var plus = Page.Locator(".slot--monitor .stepper__button").Nth(1);
-        await plus.ClickAsync();
-        await plus.ClickAsync();
+        // Three monitors, and not the same one three times: the slot holds products, not a count.
+        for (var place = 0; place < 3; place++)
+        {
+            await OpenSlotPickerAsync(".slot--monitor");
+            await PickCandidateAsync(place);
+        }
 
-        await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(3);
-        await Expect(Page.Locator(".slot--monitor .slot__quantity")).ToHaveTextAsync("×3");
+        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(3);
+        await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(5);
     }
+
 }

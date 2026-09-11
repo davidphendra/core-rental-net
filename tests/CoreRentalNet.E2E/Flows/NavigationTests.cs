@@ -35,11 +35,17 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
     }
 
     [Fact] // NAV-06
-    public async Task Assigning_one_item_opens_the_way_out()
+    public async Task The_way_out_opens_on_a_desk_and_a_chair_and_not_before()
     {
-        await AssignFirstProductAsync();
+        await AssignFirstProductAsync("Chairs");
 
+        // One chair is not a workspace. The control stays shut and says which slot is missing.
         var ready = Page.Locator(".total-bar button");
+        await Expect(ready).ToBeDisabledAsync();
+        await Expect(ready).ToHaveAttributeAsync("title", "A desk is required before you can rent.");
+
+        await AssignADeskAndAChairAsync();
+
         await Expect(ready).ToBeEnabledAsync();
 
         // And that it leads there. An enabled control is not the same as a working one.

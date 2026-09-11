@@ -1,41 +1,27 @@
-@* One slot: the design's dashed invitation, or the thing that has taken it.
+@* One box on the stage: something standing there, or an invitation to add one.
 
-   The empty state is the design's, class for class, including the way its labels differ from slot
-   to slot - the monitor's label is a step larger than the lamp's, and a zone's sits beside its
-   icon rather than under it. The filled state has no design to copy: the design draws a table, a
-   chair and four empty invitations, and never shows what a rented monitor looks like. It is
-   therefore built from the palette and the shapes the design does use, and it is the only part of
-   this canvas that is mine.
+   The empty state is the design's, class for class, including the way its icon and its label differ
+   from slot to slot - the monitor's label is a step larger than the lamp's, and a zone's sits beside
+   its icon rather than under it.
 
-   Icons are drawn inline rather than set in an icon font, which is why they are sized with h-8/w-8
-   where the design sizes them with text-3xl: a font size means nothing to an SVG. *@
-@if (Slot.IsFilled)
+   A box is handed one item, or nothing, and never looks at the slot's other contents. That is what
+   lets three monitors stand side by side: one box, one monitor. *@
+@if (Item is not null)
 {
     <div class="slot @SlotCss.ClassFor(Slot.Slot) slot--filled @Position @FilledLayout">
-        @if (Slot.Quantity > 1)
-        {
-            <span class="slot__quantity absolute -top-2 -right-2 bg-primary text-on-primary rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold"
-                  aria-hidden="true">&times;@Slot.Quantity</span>
-        }
         @if (!ReadOnly)
         {
-            <button type="button" class="slot__remove" aria-label="@($"Remove {Slot.Name}")"
-                    @onclick="() => OnRemove.InvokeAsync(Slot.Slot)">&times;</button>
+            <button type="button" class="slot__remove" aria-label="@($"Remove one {Item.Name}")"
+                    @onclick="() => OnRemoveItem.InvokeAsync((Slot.Slot, Item.Sku))">&times;</button>
         }
         <div class="slot__media">
-            <ProductImage AltText="@(Slot.Name ?? Slot.DisplayName)" ImagePath="@Slot.ImagePath"
-                          ImageAvailable="@Slot.ImageAvailable" Glyph="@ProductGlyph.ForSlot(Slot.Slot)" />
+            <ProductImage AltText="@Item.Name" ImagePath="@Item.ImagePath"
+                          ImageAvailable="@Item.ImageAvailable" Glyph="@ProductGlyph.ForSlot(Slot.Slot)" />
         </div>
-        <span class="slot__name text-[10px] font-bold text-on-surface w-full truncate text-center">@Slot.Name</span>
-        @if (Slot.UnitMonthlyPrice is not null)
+        <span class="slot__name text-[10px] font-bold text-on-surface w-full truncate text-center">@Item.Name</span>
+        @if (Item.UnitMonthlyPrice is not null)
         {
-            <span class="slot__price text-[10px] text-on-surface-variant">@Slot.UnitMonthlyPrice.ToDisplayString()/mo</span>
-        }
-        @if (!ReadOnly && Slot.MaxQuantity > 1)
-        {
-            <QuantityStepper Quantity="@Slot.Quantity" MaxQuantity="@Slot.MaxQuantity"
-                             ItemName="@Slot.DisplayName" Label="@($"{Slot.DisplayName} quantity")"
-                             OnChange="@(value => OnQuantityChange.InvokeAsync((Slot.Slot, value)))" />
+            <span class="slot__price text-[10px] text-on-surface-variant">@Item.UnitMonthlyPrice.ToDisplayString()/mo</span>
         }
         @if (IsDesk)
         {
@@ -44,15 +30,33 @@
         }
     </div>
 }
+else if (IsDesk)
+{
+    @* The desk is the bar, and the bar is always there: the design draws the table whether or not a
+       desk has been chosen, so this is what "the desk image is always visible" means. Empty, it
+       invites a click in place, and the legs stand under it either way. *@
+    <button type="button"
+            class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty @Position bg-[#e8cdb4] border border-[#d2b496] rounded-md shadow-sm flex items-center justify-center gap-1 cursor-pointer group"
+            disabled="@ReadOnly"
+            @onclick="() => OnPick.InvokeAsync(Slot.Slot)">
+        <svg class="h-3 w-3 text-on-surface-variant group-hover:text-primary transition-colors" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="@ProductGlyph.PathFor("plus")" />
+        </svg>
+        <span class="text-[10px] font-label-sm text-on-surface-variant group-hover:text-primary">@EmptyLabel</span>
+        <span class="absolute top-full left-4 w-4 h-32 bg-[#d2b496] rounded-b-sm" aria-hidden="true"></span>
+        <span class="absolute top-full right-4 w-4 h-32 bg-[#d2b496] rounded-b-sm" aria-hidden="true"></span>
+    </button>
+}
 else
 {
-    @* An empty slot invites a click; on the review preview it only shows its shape. *@
+    @* An empty box invites a click; on the review preview it only shows its shape. *@
     <button type="button" class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty @Position @EmptyLayout"
             disabled="@ReadOnly"
             @onclick="() => OnPick.InvokeAsync(Slot.Slot)">
         <svg class="@EmptyIconSize text-outline @EmptyIconTone" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="@ProductGlyph.PathFor("plus")" />
+            <path d="@ProductGlyph.PathFor(ProductGlyph.ForSlot(Slot.Slot))" />
         </svg>
         <span class="@EmptyLabelClass">@EmptyLabel</span>
     </button>
@@ -61,7 +65,10 @@ else
 @code {
     [Parameter, EditorRequired] public AssignableSlot Slot { get; set; } = default!;
 
-    /// <summary>The design's classes for where this slot sits, from <see cref="SlotCss"/>.</summary>
+    /// <summary>The one thing in this box, or null when the box is empty.</summary>
+    [Parameter] public AssignableItem? Item { get; set; }
+
+    /// <summary>The design's classes for where this box sits and how big it is.</summary>
     [Parameter, EditorRequired] public string Position { get; set; } = string.Empty;
 
     /// <summary>True on the review preview, where the canvas is shown but not edited.</summary>
@@ -69,19 +76,12 @@ else
 
     [Parameter] public EventCallback<SlotId> OnPick { get; set; }
 
-    [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
-
-    [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+    /// <summary>Removes one unit of one product from a slot.</summary>
+    [Parameter] public EventCallback<(SlotId Slot, string Sku)> OnRemoveItem { get; set; }
 
     private bool IsDesk => Slot.Slot == SlotId.Desk;
 
-    private bool IsZone => Slot.Slot is SlotId.CoffeeStation or SlotId.RelaxZone;
-
     /// <summary>A filled desk is a table top, so its contents lie in a row along it.</summary>
-    /// <remarks>
-    /// The card's own colours are the design's classes rather than a rule in slots.css, because
-    /// that stylesheet is loaded after the generated one and would win any argument over them.
-    /// </remarks>
     private string FilledLayout => IsDesk
         ? "bg-[#e8cdb4] border border-[#d2b496] rounded-md shadow-sm flex items-center justify-between gap-2 px-2"
         : "bg-surface-container-lowest border border-surface-container-highest shadow-ambient flex flex-col items-center justify-center gap-1 p-1";

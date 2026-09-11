@@ -65,8 +65,12 @@ public sealed class WorkspaceSession(
     public Task RemoveAsync(string draftToken, SlotId slot, CancellationToken cancellationToken = default)
         => MutateAsync(() => remover.HandleAsync(new RemoveAssignment(draftToken, slot), cancellationToken));
 
-    public Task SetQuantityAsync(string draftToken, SlotId slot, int quantity, CancellationToken cancellationToken = default)
-        => MutateAsync(() => quantityChanger.HandleAsync(new ChangeQuantity(draftToken, slot, quantity), cancellationToken));
+    /// <summary>
+    /// Sets how many of one product a slot holds. Zero removes it, which is how a single box on the
+    /// canvas is taken away when the same product stands in more than one.
+    /// </summary>
+    public Task SetQuantityAsync(string draftToken, SlotId slot, string sku, int quantity, CancellationToken cancellationToken = default)
+        => MutateAsync(() => quantityChanger.HandleAsync(new ChangeQuantity(draftToken, slot, sku, quantity), cancellationToken));
 
     public Task SetDeliveryAddressAsync(string draftToken, string? address, CancellationToken cancellationToken = default)
         => MutateAsync(() => addressSetter.HandleAsync(new SetDeliveryAddress(draftToken, address), cancellationToken));

@@ -82,6 +82,19 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
     // ---------------------------------------------------------------- builder
 
     /// <summary>
+    /// A workspace that can be rented. A desk and a chair are mandatory, so anything about checkout
+    /// has to start from one rather than from a single item.
+    /// </summary>
+    protected async Task AssignADeskAndAChairAsync()
+    {
+        await AssignFirstProductAsync("Desks");
+        await ChooseCategoryAsync("Chairs");
+        await Page.Locator("button.product-card").First.ClickAsync();
+
+        await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(2);
+    }
+
+    /// <summary>
     /// Chooses a category tab. The tabs are icons only, so they are addressed by their accessible
     /// name, which is what a screen reader announces and is the only thing left to go on.
     /// </summary>
@@ -106,14 +119,37 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
         await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(1);
     }
 
-    protected async Task OpenSlotPickerAsync(string slotClass)
+    protected async Task OpenSlotPickerAsync(string slotClass, Position? at = null)
     {
-        await Page.Locator($"{slotClass}.slot--empty").ClickAsync();
+        // The monitor slot holds three boxes, so "the empty box for this slot" is the first one.
+        var box = Page.Locator($"{slotClass}.slot--empty").First;
+
+        // The chair stands in front of the desk, so the middle of a narrow desk box belongs to the
+        // chair. A caller that means the desk clicks where the desk is actually visible.
+        if (at is null)
+        {
+            await box.ClickAsync();
+        }
+        else
+        {
+            await box.ClickAsync(new LocatorClickOptions { Position = at });
+        }
+
         await Expect(Page.Locator("dialog[open] .picker")).ToBeVisibleAsync();
     }
 
-    protected Task PickFirstCandidateAsync()
-        => Page.Locator("dialog[open] button.product-card").First.ClickAsync();
+    /// <summary>
+    /// Picks a candidate from the open picker and waits for the dialog to go. Without the wait the
+    /// next click can land on a dialog that is still on its way out, which looks like an unclickable
+    /// canvas rather than a race.
+    /// </summary>
+    protected async Task PickCandidateAsync(int index)
+    {
+        await Page.Locator("dialog[open] button.product-card").Nth(index).ClickAsync();
+        await Expect(Page.Locator("dialog[open]")).ToHaveCountAsync(0);
+    }
+
+    protected Task PickFirstCandidateAsync() => PickCandidateAsync(0);
 
     // ---------------------------------------------------------------- review and checkout
 

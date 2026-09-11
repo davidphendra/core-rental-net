@@ -35,8 +35,8 @@
            them in a flex column looks harmless and is not: an auto margin on the cross axis cancels
            the stretch, so the zone grid is sized by its content (608px instead of the 880 it has),
            and the wrapper's own gap is added on top of the design's section spacing. *@
-        <SlotCanvas View="Session.Current" OnPick="OpenPickerAsync" OnRemove="RemoveAsync" OnQuantityChange="ChangeQuantityAsync" />
-        <ZoneList View="Session.Current" OnPick="OpenPickerAsync" OnRemove="RemoveAsync" OnQuantityChange="ChangeQuantityAsync" />
+        <SlotCanvas View="Session.Current" OnPick="OpenPickerAsync" OnRemoveItem="RemoveItemAsync" />
+        <ZoneList View="Session.Current" OnPick="OpenPickerAsync" OnRemoveItem="RemoveItemAsync" />
     }
 
     @* The docked panel is not on screen on a phone, so the categories become a row of chips that
@@ -100,20 +100,22 @@
         await Session.AssignAsync(DraftToken, product.Sku);
     }
 
-    private async Task RemoveAsync(SlotId slot)
+    /// <summary>
+    /// Takes one box off the canvas. A box is one unit of one product, so this lowers that product's
+    /// count by one, and the domain drops the product when the count reaches zero.
+    /// </summary>
+    private async Task RemoveItemAsync((SlotId Slot, string Sku) box)
     {
-        if (!string.IsNullOrEmpty(DraftToken))
+        if (string.IsNullOrEmpty(DraftToken) || Session.Current is null)
         {
-            await Session.RemoveAsync(DraftToken, slot);
+            return;
         }
-    }
 
-    private async Task ChangeQuantityAsync((SlotId Slot, int Quantity) change)
-    {
-        if (!string.IsNullOrEmpty(DraftToken))
-        {
-            await Session.SetQuantityAsync(DraftToken, change.Slot, change.Quantity);
-        }
+        var item = Session.Current.Slots
+            .First(slot => slot.Slot == box.Slot)
+            .Items.First(candidate => candidate.Sku == box.Sku);
+
+        await Session.SetQuantityAsync(DraftToken, box.Slot, box.Sku, item.Quantity - 1);
     }
 
     private async Task OpenPickerAsync(SlotId slot)

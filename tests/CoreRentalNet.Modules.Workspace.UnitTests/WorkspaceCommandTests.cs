@@ -28,7 +28,7 @@ public sealed class WorkspaceCommandTests
 
         var view = await handler.HandleAsync(new AssignProduct(context.Token, "cfe0001"));
 
-        workspace.AssignmentFor(SlotId.CoffeeStation)!.Sku.Should().Be("CFE0001");
+        workspace.AssignmentsFor(SlotId.CoffeeStation).Single().Sku.Should().Be("CFE0001");
         view.Slots.Single(slot => slot.Slot == SlotId.CoffeeStation).IsFilled.Should().BeTrue();
     }
 
@@ -92,7 +92,7 @@ public sealed class WorkspaceCommandTests
         var view = await new RemoveAssignmentHandler(context.Repository, Catalog())
             .HandleAsync(new RemoveAssignment(context.Token, SlotId.Plant));
 
-        workspace.AssignmentFor(SlotId.Plant).Should().BeNull();
+        workspace.AssignmentsFor(SlotId.Plant).Should().BeEmpty();
         view.IsEmpty.Should().BeTrue();
         context.Repository.SaveCount.Should().Be(2);
     }
@@ -106,9 +106,9 @@ public sealed class WorkspaceCommandTests
             .HandleAsync(new AssignProduct(context.Token, "MON0001", 2));
 
         await new ChangeQuantityHandler(context.Repository, Catalog())
-            .HandleAsync(new ChangeQuantity(context.Token, SlotId.Monitor, 0));
+            .HandleAsync(new ChangeQuantity(context.Token, SlotId.Monitor, "MON0001", 0));
 
-        workspace.AssignmentFor(SlotId.Monitor).Should().BeNull();
+        workspace.AssignmentsFor(SlotId.Monitor).Should().BeEmpty();
     }
 
     [Fact] // WS-10
@@ -120,9 +120,9 @@ public sealed class WorkspaceCommandTests
             .HandleAsync(new AssignProduct(context.Token, "MON0001"));
 
         await new ChangeQuantityHandler(context.Repository, Catalog())
-            .HandleAsync(new ChangeQuantity(context.Token, SlotId.Monitor, 3));
+            .HandleAsync(new ChangeQuantity(context.Token, SlotId.Monitor, "MON0001", 3));
 
-        workspace.AssignmentFor(SlotId.Monitor)!.Quantity.Should().Be(3);
+        workspace.AssignmentsFor(SlotId.Monitor).Single().Quantity.Should().Be(3);
     }
 
     [Fact] // ADDR-04
@@ -151,9 +151,19 @@ public sealed class WorkspaceCommandTests
 
         await assign.HandleAsync(new AssignProduct(context.Token, "CHA0001"));
 
+        var chaired = await read.HandleAsync(new GetWorkspace(context.Token));
+
+        // A chair on its own is not a workspace: the desk is missing, and the view says which slot
+        // it is rather than leaving the customer to guess why the way out is shut.
+        chaired.CanCheckout.Should().BeFalse();
+        chaired.BlockingReason.Should().Contain("desk");
+
+        await assign.HandleAsync(new AssignProduct(context.Token, "DSK0001"));
+
         var view = await read.HandleAsync(new GetWorkspace(context.Token));
 
         view.CanCheckout.Should().BeTrue();
+        view.BlockingReason.Should().BeNull();
         view.DeliveryAddress.Should().BeNull("an address is required by checkout but not to fill a workspace");
         view.Slots.Should().HaveCount(7);
     }
@@ -176,7 +186,9 @@ public sealed class WorkspaceCommandTests
 public sealed class StartDraftTests
 {
     private static TestCatalog Catalog()
-        => new TestCatalog().Add("CHA0001", 400000m, CatalogCategory.Chair, null);
+        => new TestCatalog()
+            .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
+            .Add("DSK0001", 800000m, CatalogCategory.Desk, null);
 
     [Fact] // DR-07
     public async Task Starting_a_draft_creates_exactly_one_and_is_idempotent()
@@ -214,11 +226,13 @@ public sealed class StartDraftTests
 
         await new AssignProductHandler(context.Repository, catalog)
             .HandleAsync(new AssignProduct(context.Token, "CHA0001"));
+        await new AssignProductHandler(context.Repository, catalog)
+            .HandleAsync(new AssignProduct(context.Token, "DSK0001"));
 
         var read = await new GetWorkspaceHandler(context.Repository, catalog)
             .HandleAsync(new GetWorkspace(context.Token));
 
-        read.TotalUnits.Should().Be(1);
+        read.TotalUnits.Should().Be(2);
         read.CanCheckout.Should().BeTrue();
     }
 }

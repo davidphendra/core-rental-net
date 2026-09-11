@@ -35,7 +35,9 @@ internal sealed class DraftEntityTypeConfiguration : IEntityTypeConfiguration<Do
         {
             assignments.ToTable("Workspace_SlotAssignment");
             assignments.WithOwner().HasForeignKey("DraftId");
-            assignments.HasKey("DraftId", nameof(SlotAssignment.Slot));
+            // A slot is identified by the product it holds as well as by itself: three monitors need
+            // not be the same monitor, so one slot may hold several rows (matrix WS-14).
+            assignments.HasKey("DraftId", nameof(SlotAssignment.Slot), nameof(SlotAssignment.Sku));
             assignments.Property(assignment => assignment.Slot).HasConversion<int>().IsRequired();
             assignments.Property(assignment => assignment.Sku).HasMaxLength(32).IsRequired();
             assignments.Property(assignment => assignment.Quantity).IsRequired();

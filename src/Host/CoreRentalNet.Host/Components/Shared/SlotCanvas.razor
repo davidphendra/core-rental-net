@@ -1,24 +1,34 @@
 @* The stage, and the seven positions the design draws on it.
 
-   The design is a picture of one workspace - a table, a chair, an empty place for a monitor, a
-   lamp and a plant - so the positions are fixed rather than computed. What is not fixed is what
-   stands in them: this renders whatever the workspace actually holds. The zones that sit below
-   the stage are ZoneList's, not this component's. *@
+   The design is a picture of one workspace - a table, a chair, an empty place for a monitor, a lamp
+   and a plant - so the positions are fixed rather than computed. What is not fixed is what stands in
+   them, and a position may hold more than one thing: the three monitors stand side by side in a row,
+   one box each, which is also why a single monitor lands exactly where the design draws it. *@
 <div class="workspace-stage relative w-full max-w-4xl mx-auto h-[500px] bg-surface-bright rounded-[2rem] shadow-ambient border border-surface-container-high p-8 flex flex-col items-center justify-center overflow-hidden">
     <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
          style="background-image: radial-gradient(#006767 1px, transparent 1px); background-size: 24px 24px;"></div>
 
     <div class="scene relative w-full max-w-2xl h-64 flex flex-col items-center justify-end z-10">
-        @foreach (var slot in SceneSlots(AccessorySlots))
+        @* Three places for monitors, side by side. One box on its own is centred where the design
+           centres its single monitor slot. *@
+        <div class="@SlotCss.StagePositionFor(SlotId.Monitor) w-full flex justify-center gap-3 z-10">
+            @foreach (var box in MonitorBoxes)
+            {
+                <SlotView Slot="SlotOf(SlotId.Monitor)" Item="@box" Position="@SlotCss.BoxSizeFor(SlotId.Monitor)"
+                          OnPick="OnPick" OnRemoveItem="OnRemoveItem" ReadOnly="ReadOnly" />
+            }
+        </div>
+
+        @foreach (var slot in SceneSlots(SlotId.Lamp, SlotId.Plant))
         {
-            <SlotView Slot="slot" Position="@SlotCss.StagePositionFor(slot.Slot)" OnPick="OnPick"
-                      OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
+            <SlotView Slot="slot" Item="@slot.Items.FirstOrDefault()" Position="@PlacementOf(slot)"
+                      OnPick="OnPick" OnRemoveItem="OnRemoveItem" ReadOnly="ReadOnly" />
         }
 
-        @foreach (var slot in SceneSlots(BelowBarSlots))
+        @foreach (var slot in SceneSlots(SlotId.Desk, SlotId.Chair))
         {
-            <SlotView Slot="slot" Position="@SlotCss.StagePositionFor(slot.Slot)" OnPick="OnPick"
-                      OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
+            <SlotView Slot="slot" Item="@slot.Items.FirstOrDefault()" Position="@PlacementOf(slot)"
+                      OnPick="OnPick" OnRemoveItem="OnRemoveItem" ReadOnly="ReadOnly" />
         }
     </div>
 </div>
@@ -30,19 +40,44 @@
 
     [Parameter] public EventCallback<SlotId> OnPick { get; set; }
 
-    [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
+    /// <summary>Removes one unit of one product from a slot.</summary>
+    [Parameter] public EventCallback<(SlotId Slot, string Sku)> OnRemoveItem { get; set; }
 
-    [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+    /// <summary>
+    /// The monitor places, in order: one box per monitor the workspace holds, and an invitation for
+    /// each place still free. There are always as many boxes as the slot accepts units, so the row
+    /// neither grows nor shrinks as monitors are added.
+    /// </summary>
+    private IEnumerable<AssignableItem?> MonitorBoxes
+    {
+        get
+        {
+            var slot = SlotOf(SlotId.Monitor);
+            var boxes = new List<AssignableItem?>();
 
-    /// <summary>Above and beside the desk. Enumerated as data so a slot cannot be forgotten.</summary>
-    private static readonly SlotId[] AccessorySlots = [SlotId.Monitor, SlotId.Lamp, SlotId.Plant];
+            foreach (var item in slot.Items)
+            {
+                for (var unit = 0; unit < item.Quantity; unit++)
+                {
+                    boxes.Add(item);
+                }
+            }
 
-    /// <summary>The desk itself rests on the bar, with the chair in front of it.</summary>
-    private static readonly SlotId[] BelowBarSlots = [SlotId.Desk, SlotId.Chair];
+            while (boxes.Count < slot.MaxQuantity)
+            {
+                boxes.Add(null);
+            }
+
+            return boxes;
+        }
+    }
 
     private IEnumerable<AssignableSlot> SceneSlots(params SlotId[] slots)
         => slots.Select(SlotOf);
 
     private AssignableSlot SlotOf(SlotId slot)
         => View.Slots.First(candidate => candidate.Slot == slot);
+
+    private static string PlacementOf(AssignableSlot slot)
+        => $"{SlotCss.StagePositionFor(slot.Slot)} {SlotCss.BoxSizeFor(slot.Slot)}";
 }

@@ -58,9 +58,16 @@ public sealed class MobileViewportTests(HostFixture host, ITestOutputHelper outp
     private async Task AssignThroughTheCanvasAsync()
     {
         await GotoAsync("/builder");
+
+        // A desk and a chair are mandatory, so a phone has to fill all three before the way out opens.
         await OpenSlotPickerAsync(".slot--monitor");
         await PickFirstCandidateAsync();
-        await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(1);
+        await OpenSlotPickerAsync(".slot--desk", new Position { X = 40, Y = 14 });
+        await PickFirstCandidateAsync();
+        await OpenSlotPickerAsync(".slot--chair");
+        await PickFirstCandidateAsync();
+
+        await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(3);
     }
 
     [Fact] // NAV-06

@@ -2,10 +2,10 @@ using CoreRentalNet.BuildingBlocks.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Domain;
 
-/// <summary>What a slot is called and how many units it accepts.</summary>
+/// <summary>What a slot is called, how many units it accepts, and whether it must be filled.</summary>
 public sealed record SlotRule
 {
-    public SlotRule(SlotId slot, string displayName, int maxQuantity)
+    public SlotRule(SlotId slot, string displayName, int maxQuantity, bool isMandatory = false)
     {
         if (maxQuantity < 1)
         {
@@ -15,6 +15,7 @@ public sealed record SlotRule
         Slot = slot;
         DisplayName = Guard.NotEmpty(displayName, "Slot display name", 40);
         MaxQuantity = maxQuantity;
+        IsMandatory = isMandatory;
     }
 
     public SlotId Slot { get; }
@@ -22,6 +23,9 @@ public sealed record SlotRule
     public string DisplayName { get; }
 
     public int MaxQuantity { get; }
+
+    /// <summary>A workspace cannot be rented without one of these.</summary>
+    public bool IsMandatory { get; }
 }
 
 /// <summary>
@@ -32,8 +36,8 @@ public static class SlotRules
 {
     private static readonly SlotRule[] Rules =
     [
-        new(SlotId.Desk, "Desk", 1),
-        new(SlotId.Chair, "Chair", 1),
+        new(SlotId.Desk, "Desk", 1, isMandatory: true),
+        new(SlotId.Chair, "Chair", 1, isMandatory: true),
         new(SlotId.Monitor, "Monitor", 3),
         new(SlotId.Lamp, "Lamp", 1),
         new(SlotId.Plant, "Plant", 1),
@@ -42,6 +46,9 @@ public static class SlotRules
     ];
 
     public static IReadOnlyList<SlotRule> All => Rules;
+
+    /// <summary>The slots a workspace must hold something in before it can be rented.</summary>
+    public static IReadOnlyList<SlotRule> Mandatory => [.. Rules.Where(rule => rule.IsMandatory)];
 
     public static SlotRule For(SlotId slot)
     {

@@ -58,6 +58,8 @@ was never specified.
 | id | scenario | expected | layer | status |
 |---|---|---|---|---|
 | SLOT-01 | Slot table | Desk 1, Chair 1, Monitor 3, Lamp 1, Plant 1, Coffee 1, Relax 1 | U | passing |
+| SLOT-02 | Monitor places on the canvas | three boxes side by side; each removed on its own | E | passing |
+| SLOT-03 | The desk | the bar is drawn whether or not a desk is chosen | E | passing |
 | SLOT-02 | Maximum assignable units | 9 | U | passing |
 | SLOT-03 | Zone derivation | only subcategories present in the catalog produce a zone | U | passing |
 | SLOT-04 | Zone list rendered | Coffee Station and Relax Zone only | U,E | passing (observed by running it; automated in E7) |
@@ -82,6 +84,8 @@ was never specified.
 | WS-12 | Catalog price changes between reads | quote reflects the new price | U | passing |
 | WS-13 | Draft references a SKU absent from the catalog | validation error and a visible message — never a 500, never a silent drop | U,I | passing |
 | WS-14 | Draft stores no price column | schema assertion | A | passing |
+| WS-15 | A second monitor of another model | both stay in the slot; it holds products, not a count | U,E | passing |
+| WS-16 | Desk and chair | mandatory: checkout shut without them, the reason naming the slot | U,E | passing |
 
 ## Draft persistence and the cookie token (ADR-0007)
 

@@ -67,7 +67,7 @@ public sealed class AccessibilityTests(HostFixture host, ITestOutputHelper outpu
     [Fact] // UI-04
     public async Task The_dialog_is_native_so_the_keyboard_rules_come_from_the_browser()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
         await FillAddressAsync();
 

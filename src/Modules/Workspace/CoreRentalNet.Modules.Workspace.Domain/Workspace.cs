@@ -3,8 +3,7 @@ using CoreRentalNet.BuildingBlocks.Domain;
 namespace CoreRentalNet.Modules.Workspace.Domain;
 
 /// <summary>
-/// The customer's draft: which slots are filled, how many units each holds, and where it
-/// should be delivered.
+/// The customer's draft: what each slot holds and where it should be delivered.
 /// </summary>
 /// <remarks>
 /// This is the authority for what the workspace contains. Every total shown to the customer
@@ -55,23 +54,24 @@ public sealed class Workspace
 
     public static Workspace CreateNew(WorkspaceId id, string draftTokenHash) => new(id, draftTokenHash);
 
-    public SlotAssignment? AssignmentFor(SlotId slot)
-    {
-        foreach (var assignment in assignments)
-        {
-            if (assignment.Slot == slot)
-            {
-                return assignment;
-            }
-        }
+    /// <summary>Everything a slot holds, in the order it was added.</summary>
+    public IReadOnlyList<SlotAssignment> AssignmentsFor(SlotId slot)
+        => [.. assignments.Where(assignment => assignment.Slot == slot)];
 
-        return null;
-    }
+    /// <summary>Whether every slot that must hold something does.</summary>
+    public bool HasEveryMandatorySlot => SlotRules.Mandatory.All(rule => AssignmentsFor(rule.Slot).Count > 0);
 
     /// <summary>
-    /// Adds units to a slot. A single-capacity slot is replaced; a multi-capacity slot
-    /// accumulates and refuses to exceed its capacity rather than silently replacing.
+    /// Adds units of a product to a slot.
     /// </summary>
+    /// <remarks>
+    /// A slot that holds one thing holds one thing, so choosing another replaces it: that is what
+    /// makes the desk, the chair and the four single-unit zones behave as pickers rather than stacks.
+    ///
+    /// A slot that holds several holds them side by side. The same product adds units; a different
+    /// product is added beside it rather than replacing what is already there; and the slot's
+    /// capacity is the total it will accept, however it is divided (matrix WS-14).
+    /// </remarks>
     public void Assign(SlotId slot, string sku, int quantity = 1)
     {
         EnsureNotConverted();
@@ -83,32 +83,30 @@ public sealed class Workspace
 
         var rule = SlotRules.For(slot);
         var normalizedSku = Guard.NotEmpty(sku, "SKU", 32).ToUpperInvariant();
-        var existing = AssignmentFor(slot);
-
-        if (existing is null)
-        {
-            assignments.Add(new SlotAssignment(slot, normalizedSku, quantity));
-            Touch();
-            return;
-        }
 
         if (rule.MaxQuantity == 1)
         {
-            assignments.Remove(existing);
+            assignments.RemoveAll(assignment => assignment.Slot == slot);
             assignments.Add(new SlotAssignment(slot, normalizedSku, 1));
             Touch();
             return;
         }
 
-        var wanted = existing.Quantity + quantity;
+        var existing = Find(slot, normalizedSku);
+        var held = HeldIn(slot) - (existing?.Quantity ?? 0);
+        var wanted = (existing?.Quantity ?? 0) + quantity;
 
-        if (wanted > rule.MaxQuantity)
+        if (held + wanted > rule.MaxQuantity)
         {
             throw new DomainRuleViolationException(
-                $"The {rule.DisplayName} slot holds at most {rule.MaxQuantity} units, and {existing.Quantity} {(existing.Quantity == 1 ? "is" : "are")} already assigned.");
+                $"The {rule.DisplayName} slot holds at most {rule.MaxQuantity} units, and {held} {(held == 1 ? "is" : "are")} already assigned.");
         }
 
-        assignments.Remove(existing);
+        if (existing is not null)
+        {
+            assignments.Remove(existing);
+        }
+
         assignments.Add(new SlotAssignment(slot, normalizedSku, wanted));
         Touch();
     }
@@ -118,20 +116,33 @@ public sealed class Workspace
     {
         EnsureNotConverted();
 
-        var existing = AssignmentFor(slot);
-
-        if (existing is null)
+        if (assignments.RemoveAll(assignment => assignment.Slot == slot) == 0)
         {
             return false;
         }
 
-        assignments.Remove(existing);
         Touch();
         return true;
     }
 
-    /// <summary>Sets the quantity of a filled slot. Zero empties it.</summary>
-    public void ChangeQuantity(SlotId slot, int quantity)
+    /// <summary>Removes one product from a slot, leaving the rest. False when it was not there.</summary>
+    public bool Remove(SlotId slot, string sku)
+    {
+        EnsureNotConverted();
+
+        var normalizedSku = Guard.NotEmpty(sku, "SKU", 32).ToUpperInvariant();
+
+        if (assignments.RemoveAll(assignment => assignment.Slot == slot && assignment.Sku == normalizedSku) == 0)
+        {
+            return false;
+        }
+
+        Touch();
+        return true;
+    }
+
+    /// <summary>Sets how many of one product a slot holds. Zero removes that product.</summary>
+    public void ChangeQuantity(SlotId slot, string sku, int quantity)
     {
         EnsureNotConverted();
 
@@ -140,8 +151,10 @@ public sealed class Workspace
             throw new DomainRuleViolationException($"Quantity cannot be negative, but was {quantity}.");
         }
 
-        var existing = AssignmentFor(slot)
-            ?? throw new DomainRuleViolationException($"The {SlotRules.For(slot).DisplayName} slot is empty, so its quantity cannot change.");
+        var rule = SlotRules.For(slot);
+        var normalizedSku = Guard.NotEmpty(sku, "SKU", 32).ToUpperInvariant();
+        var existing = Find(slot, normalizedSku)
+            ?? throw new DomainRuleViolationException($"The {rule.DisplayName} slot does not hold {normalizedSku}, so its quantity cannot change.");
 
         if (quantity == 0)
         {
@@ -150,16 +163,16 @@ public sealed class Workspace
             return;
         }
 
-        var rule = SlotRules.For(slot);
+        var others = HeldIn(slot) - existing.Quantity;
 
-        if (quantity > rule.MaxQuantity)
+        if (others + quantity > rule.MaxQuantity)
         {
             throw new DomainRuleViolationException(
-                $"The {rule.DisplayName} slot holds at most {rule.MaxQuantity} units, but {quantity} was requested.");
+                $"The {rule.DisplayName} slot holds at most {rule.MaxQuantity} units, but {others + quantity} were requested.");
         }
 
         assignments.Remove(existing);
-        assignments.Add(new SlotAssignment(slot, existing.Sku, quantity));
+        assignments.Add(new SlotAssignment(slot, normalizedSku, quantity));
         Touch();
     }
 
@@ -226,6 +239,34 @@ public sealed class Workspace
         {
             throw new DomainRuleViolationException("A workspace that has been turned into an order can no longer be changed.");
         }
+    }
+
+    private SlotAssignment? Find(SlotId slot, string sku)
+    {
+        foreach (var assignment in assignments)
+        {
+            if (assignment.Slot == slot && assignment.Sku == sku)
+            {
+                return assignment;
+            }
+        }
+
+        return null;
+    }
+
+    private int HeldIn(SlotId slot)
+    {
+        var held = 0;
+
+        foreach (var assignment in assignments)
+        {
+            if (assignment.Slot == slot)
+            {
+                held += assignment.Quantity;
+            }
+        }
+
+        return held;
     }
 
     private void Touch() => Version++;

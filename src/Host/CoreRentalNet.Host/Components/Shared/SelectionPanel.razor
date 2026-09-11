@@ -45,7 +45,7 @@
     }
 
     private bool IsAssigned(string sku)
-        => Session.Current?.Slots.Any(slot => slot.Sku == sku) == true;
+        => Session.Current?.Slots.Any(slot => slot.Holds(sku)) == true;
 
     private async Task AssignAsync(ProductListItem product)
     {

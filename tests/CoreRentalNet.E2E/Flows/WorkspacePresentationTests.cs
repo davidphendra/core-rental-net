@@ -29,12 +29,15 @@ public sealed class WorkspacePresentationTests(HostFixture host, ITestOutputHelp
     {
         await GotoAsync("/builder");
 
-        foreach (var slot in new[] { "desk", "chair", "monitor", "lamp", "plant" })
+        foreach (var slot in new[] { "desk", "chair", "lamp", "plant" })
         {
             await Expect(Page.Locator($".scene .slot--{slot}")).ToHaveCountAsync(1);
         }
 
-        await Expect(Page.Locator(".scene .slot")).ToHaveCountAsync(5);
+        // The monitor holds up to three units, and the canvas draws a box for every place it has, so
+        // the row stays the same size as monitors come and go.
+        await Expect(Page.Locator(".scene .slot--monitor")).ToHaveCountAsync(3);
+        await Expect(Page.Locator(".scene .slot")).ToHaveCountAsync(7);
     }
 
     [Fact] // ADDR-06
@@ -60,7 +63,7 @@ public sealed class WorkspacePresentationTests(HostFixture host, ITestOutputHelp
         var ready = Page.Locator(".total-bar button");
 
         await Expect(ready).ToHaveAttributeAsync("aria-disabled", "true");
-        await Expect(ready).ToHaveAttributeAsync("title", "Add an item to your workspace first");
+        await Expect(ready).ToHaveAttributeAsync("title", "A desk and a chair are required before you can rent.");
 
         // And it is checked by tabbing, not by reading tabindex: whether a disabled control can be
         // reached is the browser's behaviour, and an attribute is only a claim about it.

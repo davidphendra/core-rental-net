@@ -33,8 +33,8 @@ public sealed class WorkspacePersistenceTests
         var loaded = await new WorkspaceRepository(read).FindByTokenAsync(DraftToken.FromRawToken(RawToken));
 
         loaded.Should().NotBeNull();
-        loaded!.AssignmentFor(SlotId.Chair)!.Sku.Should().Be("CHA449AGLBB0");
-        loaded.AssignmentFor(SlotId.Monitor)!.Quantity.Should().Be(2);
+        loaded!.AssignmentsFor(SlotId.Chair).Single().Sku.Should().Be("CHA449AGLBB0");
+        loaded.AssignmentsFor(SlotId.Monitor).Single().Quantity.Should().Be(2);
         loaded.DeliveryAddress.Should().Be("Villa Lotus, Canggu");
         loaded.TotalUnits.Should().Be(3);
         loaded.State.Should().Be(DraftState.Draft);
@@ -152,8 +152,8 @@ public sealed class WorkspacePersistenceTests
 
         await using var verify = database.CreateContext();
         var winner = await new WorkspaceRepository(verify).FindByTokenAsync(token);
-        winner!.AssignmentFor(SlotId.Chair).Should().NotBeNull("the first writer's change must be the one that survived");
-        winner.AssignmentFor(SlotId.Monitor).Should().BeNull("the second writer must not have silently overwritten it");
+        winner!.AssignmentsFor(SlotId.Chair).Should().NotBeEmpty("the first writer's change must be the one that survived");
+        winner.AssignmentsFor(SlotId.Monitor).Should().BeEmpty("the second writer must not have silently overwritten it");
     }
 
     [Fact]
@@ -193,6 +193,6 @@ public sealed class WorkspacePersistenceTests
 
         var stored = await new WorkspaceRepository(context).FindByTokenAsync(DraftToken.FromRawToken(RawToken));
         stored!.State.Should().Be(DraftState.Converted);
-        stored.AssignmentFor(SlotId.Chair).Should().NotBeNull();
+        stored.AssignmentsFor(SlotId.Chair).Should().NotBeEmpty();
     }
 }

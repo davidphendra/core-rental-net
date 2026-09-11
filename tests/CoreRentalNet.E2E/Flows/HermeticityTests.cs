@@ -14,7 +14,7 @@ public sealed class HermeticityTests(HostFixture host, ITestOutputHelper output)
     [Fact] // UI-06
     public async Task A_whole_funnel_reaches_nothing_but_the_application()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/extras");
         await GotoAsync("/review");
         await FillAddressAsync();

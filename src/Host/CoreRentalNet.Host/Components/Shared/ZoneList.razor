@@ -5,7 +5,7 @@
     {
         <section class="flex flex-col items-center">
             <h3 class="text-label-md font-label-md text-on-surface bg-surface-container-highest px-4 py-1 rounded-full mb-4">@slot.DisplayName</h3>
-            <SlotView Slot="slot" Position="w-full h-24" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" />
+            <SlotView Slot="slot" Item="@slot.Items.FirstOrDefault()" Position="w-full h-24" OnPick="OnPick" OnRemoveItem="OnRemoveItem" />
         </section>
     }
 </div>
@@ -17,7 +17,6 @@
 
     [Parameter] public EventCallback<SlotId> OnPick { get; set; }
 
-    [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
-
-    [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+    /// <summary>Removes one unit of one product from a slot.</summary>
+    [Parameter] public EventCallback<(SlotId Slot, string Sku)> OnRemoveItem { get; set; }
 }

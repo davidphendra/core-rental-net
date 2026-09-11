@@ -106,17 +106,20 @@ public sealed class WorkspaceQuoteTests
     [Fact]
     public void The_view_lists_every_slot_including_the_empty_ones()
     {
-        var catalog = new TestCatalog().Add("CHA0001", 400000m, CatalogCategory.Chair, null);
+        var catalog = new TestCatalog()
+            .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
+            .Add("DSK0001", 800000m, CatalogCategory.Desk, null);
         var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
         workspace.Assign(SlotId.Chair, "CHA0001");
+        workspace.Assign(SlotId.Desk, "DSK0001");
 
         var view = WorkspaceViewFactory.Build(workspace, catalog);
 
         view.Slots.Should().HaveCount(7);
         view.Slots.Single(slot => slot.Slot == SlotId.Chair).IsFilled.Should().BeTrue();
-        view.Slots.Single(slot => slot.Slot == SlotId.Desk).IsFilled.Should().BeFalse();
+        view.Slots.Single(slot => slot.Slot == SlotId.Plant).IsFilled.Should().BeFalse("every slot is listed, filled or not");
         view.CanCheckout.Should().BeTrue();
-        view.TotalUnits.Should().Be(1);
+        view.TotalUnits.Should().Be(2);
     }
 
     [Fact]

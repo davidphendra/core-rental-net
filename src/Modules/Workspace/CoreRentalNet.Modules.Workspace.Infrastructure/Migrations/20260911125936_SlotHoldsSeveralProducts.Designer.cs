@@ -3,6 +3,7 @@ using System;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CoreRentalNet.Modules.Workspace.Infrastructure.Migrations
 {
     [DbContext(typeof(WorkspaceContext))]
-    partial class WorkspaceContextModelSnapshot : ModelSnapshot
+    [Migration("20260911125936_SlotHoldsSeveralProducts")]
+    partial class SlotHoldsSeveralProducts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");

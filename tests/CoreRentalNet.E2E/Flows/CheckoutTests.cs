@@ -12,7 +12,7 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
     [Fact] // CO-01
     public async Task Renting_opens_a_dialog_that_says_nothing_is_charged()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
         await FillAddressAsync();
 
@@ -25,7 +25,7 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
     [Fact] // CO-02, CO-03, CO-04
     public async Task The_confirm_control_follows_the_phrase_and_nothing_else()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
         await FillAddressAsync();
         await OpenDemoDialogAsync();
@@ -42,7 +42,7 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
     [Fact] // CO-05
     public async Task Cancelling_leaves_the_workspace_exactly_as_it_was()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
         await FillAddressAsync();
         var before = await Page.Locator(".receipt").InnerTextAsync();
@@ -59,7 +59,7 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
     [Fact] // ADDR-01
     public async Task Renting_without_an_address_is_refused_inside_the_dialog()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
 
         await OpenDemoDialogAsync();
@@ -73,7 +73,7 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
     [Fact] // CO-06, CO-07, CO-10, ORD-01, ORD-03, ORD-05
     public async Task Confirming_places_the_order_empties_the_cart_and_shows_the_order()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         var cookieBefore = (await Page.Context.CookiesAsync()).Single(cookie => cookie.Name == "corerental.draft").Value;
 
         await GotoAsync("/review");
@@ -132,7 +132,7 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
     [Fact] // ORD-02, SEC-06
     public async Task A_guessed_link_discloses_nothing()
     {
-        await AssignFirstProductAsync();
+        await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
         await FillAddressAsync();
         await OpenDemoDialogAsync();

@@ -13,23 +13,14 @@ public static class WorkspaceViewFactory
 
         var quote = WorkspaceQuoter.Quote(workspace, prices);
 
+        // One item per product the slot holds, priced from the quote rather than from the assignment:
+        // a product that has left the catalog has no price, and saying so is the quote's job.
         var slots = SlotRules.All
-            .Select(rule =>
-            {
-                var assignment = workspace.AssignmentFor(rule.Slot);
-                var line = quote.Lines.FirstOrDefault(candidate => candidate.Slot == rule.Slot);
-
-                return new AssignableSlot(
-                    rule.Slot,
-                    rule.DisplayName,
-                    rule.MaxQuantity,
-                    assignment?.Sku,
-                    line is null || !line.IsAvailable ? null : line.Name,
-                    assignment?.Quantity ?? 0,
-                    line?.UnitMonthlyPrice,
-                    line is null || !line.IsAvailable ? null : line.ImagePath,
-                    line is not null && line.IsAvailable && line.ImageAvailable);
-            })
+            .Select(rule => new AssignableSlot(
+                rule.Slot,
+                rule.DisplayName,
+                rule.MaxQuantity,
+                [.. workspace.AssignmentsFor(rule.Slot).Select(assignment => ItemFor(assignment, quote))]))
             .ToArray();
 
         return new WorkspaceView(
@@ -40,6 +31,24 @@ public static class WorkspaceViewFactory
             workspace.DeliveryAddress,
             workspace.TotalUnits,
             workspace.IsEmpty,
-            quote);
+            quote,
+            [.. SlotRules.Mandatory
+                .Where(rule => workspace.AssignmentsFor(rule.Slot).Count == 0)
+                .Select(rule => rule.DisplayName)]);
+    }
+
+    private static AssignableItem ItemFor(SlotAssignment assignment, WorkspaceQuote quote)
+    {
+        var line = quote.Lines.FirstOrDefault(candidate => candidate.Sku == assignment.Sku);
+
+        return line is null || !line.IsAvailable
+            ? new AssignableItem(assignment.Sku, assignment.Sku, assignment.Quantity, null, null, false)
+            : new AssignableItem(
+                assignment.Sku,
+                line.Name,
+                assignment.Quantity,
+                line.UnitMonthlyPrice,
+                line.ImagePath,
+                line.ImageAvailable);
     }
 }

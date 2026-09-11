@@ -17,7 +17,7 @@
             class="bg-tertiary-container text-on-tertiary-container px-6 py-2 rounded-full font-bold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             disabled="@(!View.CanCheckout)"
             aria-disabled="@((!View.CanCheckout).ToString().ToLowerInvariant())"
-            title="@(View.CanCheckout ? null : "Add an item to your workspace first")"
+            title="@(View.CanCheckout ? null : View.BlockingReason)"
             @onclick="OnReady">
         Ready to Rent?
     </button>

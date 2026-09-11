@@ -47,7 +47,7 @@ public sealed class WorkspaceIsolationTests(HostFixture host, ITestOutputHelper 
             await otherPage.Locator("button.product-card").First.ClickAsync();
             await Expect(otherPage.Locator(".slot--filled")).ToHaveCountAsync(1);
 
-            await AssignFirstProductAsync();
+            await AssignADeskAndAChairAsync();
             await GotoAsync("/review");
             await FillAddressAsync();
             await OpenDemoDialogAsync();
