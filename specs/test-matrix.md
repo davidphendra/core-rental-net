@@ -40,6 +40,8 @@ was never specified.
 | STORE-04 | Remembered category | survives a page load in a session cookie | E | passing |
 | STORE-05 | Remembered name the catalog does not know | ignored, falls back to desks | E | passing |
 | STORE-06 | Switching category | the page does not move and the confirmation stays | E | passing |
+| REV-01 | The review page's markup | no parameter is shown by name; the address box holds the address or nothing | A,E | passing |
+| REV-02 | A refused item | refused where it happened; the delivery address does not carry the refusal | E | passing |
 
 ## Money (ADR-0004)
 

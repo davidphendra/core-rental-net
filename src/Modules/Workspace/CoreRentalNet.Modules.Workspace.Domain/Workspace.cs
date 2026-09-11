@@ -93,13 +93,14 @@ public sealed class Workspace
         }
 
         var existing = Find(slot, normalizedSku);
-        var held = HeldIn(slot) - (existing?.Quantity ?? 0);
         var wanted = (existing?.Quantity ?? 0) + quantity;
 
-        if (held + wanted > rule.MaxQuantity)
+        // What the slot holds is what the message says it holds: counting only the other products
+        // reported "2 are already assigned" of a slot already holding three.
+        if (HeldIn(slot) + quantity > rule.MaxQuantity)
         {
             throw new DomainRuleViolationException(
-                $"The {rule.DisplayName} slot holds at most {rule.MaxQuantity} units, and {held} {(held == 1 ? "is" : "are")} already assigned.");
+                $"The {rule.DisplayName} slot holds at most {rule.MaxQuantity} units, and already holds {HeldIn(slot)}.");
         }
 
         if (existing is not null)

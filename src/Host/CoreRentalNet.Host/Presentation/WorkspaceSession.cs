@@ -75,6 +75,31 @@ public sealed class WorkspaceSession(
     public Task SetDeliveryAddressAsync(string draftToken, string? address, CancellationToken cancellationToken = default)
         => MutateAsync(() => addressSetter.HandleAsync(new SetDeliveryAddress(draftToken, address), cancellationToken));
 
+    /// <summary>
+    /// Saves the address and hands any refusal back to the caller instead of leaving it on the
+    /// session, where the next page would show it as though it belonged to something else.
+    /// </summary>
+    public async Task<string?> TrySetDeliveryAddressAsync(string draftToken, string? address, CancellationToken cancellationToken = default)
+    {
+        Error = null;
+
+        try
+        {
+            Current = await addressSetter.HandleAsync(new SetDeliveryAddress(draftToken, address), cancellationToken);
+            return null;
+        }
+        catch (DomainRuleViolationException exception)
+        {
+            Error = null;
+            return exception.Message;
+        }
+        catch (NotFoundException exception)
+        {
+            Error = null;
+            return exception.Message;
+        }
+    }
+
     public void ClearError() => Error = null;
 
     private async Task MutateAsync(Func<Task<WorkspaceView>> operation)

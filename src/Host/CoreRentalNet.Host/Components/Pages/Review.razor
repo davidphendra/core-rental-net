@@ -91,8 +91,11 @@
                         </p>
                     }
 
-                    <DeliveryAddressField Address="Session.Current.DeliveryAddress"
-                                          Error="Session.Error"
+                    @* The at-signs are load-bearing: a string parameter given a bare value takes
+                       the words as text, so Address="Session.Current.DeliveryAddress" would put that
+                       sentence in the box. *@
+                    <DeliveryAddressField Address="@Session.Current.DeliveryAddress"
+                                          Error="@AddressError"
                                           OnSave="SaveAddressAsync" />
 
                     <TotalsBlock Subtotal="@Session.Current.Quote.MonthlySubtotal" DeliveryFee="@Rentals.DeliveryFee" />
@@ -125,6 +128,7 @@
 
     private DemoConfirmDialog? dialog;
     private string? CheckoutError;
+    private string? AddressError;
 
     private async Task OpenConfirmationAsync()
     {
@@ -183,6 +187,10 @@
 
         await Session.EnsureLoadedAsync(DraftToken);
 
+        // Whatever refused on the builder or the store was refused there. This page has no business
+        // showing it under the delivery address, so it does not travel this far.
+        Session.ClearError();
+
         // An empty workspace has nothing to review, so send the customer back to the builder.
         if (Session.IsEmpty)
         {
@@ -190,11 +198,16 @@
         }
     }
 
+    /// <summary>
+    /// Saves the address and keeps the answer here, because a refused address is about the address:
+    /// the field that asked for it shows it, rather than it becoming the session's error for
+    /// whatever happens to look at that next.
+    /// </summary>
     private async Task SaveAddressAsync(string? address)
     {
         if (!string.IsNullOrEmpty(DraftToken))
         {
-            await Session.SetDeliveryAddressAsync(DraftToken, address);
+            AddressError = await Session.TrySetDeliveryAddressAsync(DraftToken, address);
         }
     }
 }
