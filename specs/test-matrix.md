@@ -39,6 +39,7 @@ was never specified.
 | STORE-03 | Choosing a category | the listing is replaced, not appended to | E | passing |
 | STORE-04 | Remembered category | survives a page load in a session cookie | E | passing |
 | STORE-05 | Remembered name the catalog does not know | ignored, falls back to desks | E | passing |
+| STORE-06 | Switching category | the page does not move and the confirmation stays | E | passing |
 
 ## Money (ADR-0004)
 

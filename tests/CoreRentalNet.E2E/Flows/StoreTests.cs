@@ -52,6 +52,28 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
         await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(10);
     }
 
+    [Fact] // STORE-06
+    public async Task Switching_category_does_not_move_the_page_or_drop_the_confirmation()
+    {
+        await GotoAsync("/extras");
+
+        await Page.Locator("button.product-card").First.ClickAsync();
+        await Expect(Page.Locator(".alert--info")).ToContainTextAsync("added to your workspace");
+
+        var before = await Page.Locator(".grid-store").EvaluateAsync<double>("grid => grid.getBoundingClientRect().top");
+
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs" }).ClickAsync();
+        await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
+
+        // The confirmation is about what was added, not about the category. Dropping it moved
+        // everything below it 48px up, and the grid was standing exactly where the customer left it.
+        await Expect(Page.Locator(".alert--info")).ToContainTextAsync("added to your workspace");
+
+        var after = await Page.Locator(".grid-store").EvaluateAsync<double>("grid => grid.getBoundingClientRect().top");
+
+        after.Should().Be(before, "switching category must not move the products the customer is looking at");
+    }
+
     [Fact] // STORE-05
     public async Task A_remembered_category_the_catalog_does_not_know_is_ignored()
     {
