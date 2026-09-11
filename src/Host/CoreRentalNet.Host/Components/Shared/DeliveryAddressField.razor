@@ -1,16 +1,38 @@
-@* Saved on blur, not on every keystroke: the write happens once per edit (matrix ADDR-04). *@
-<div class="field @(Error is null ? null : "field--invalid")">
-    <label for="delivery-address">Delivery Location</label>
-    <textarea id="delivery-address" rows="2" maxlength="200"
-              placeholder="e.g., Villa Lotus, Canggu..."
-              value="@Address"
-              aria-describedby="delivery-address-hint"
-              aria-invalid="@((Error is not null).ToString().ToLowerInvariant())"
-              @onchange="OnChangedAsync"></textarea>
-    <span class="field__hint" id="delivery-address-hint">Where should we assemble your setup?</span>
+@* Saved on blur, not on every keystroke: the write happens once per edit (matrix ADDR-04).
+
+   The design's field, class for class. Its hint is described rather than shown: the design draws no
+   hint under this field, and one more line of text would change the page's height, so the words
+   stay available to a screen reader and out of the layout. The error state is this application's
+   own - the design has no error state to copy, because nothing in it can fail. *@
+<div class="mt-4 pt-4 border-t border-surface-variant flex flex-col gap-2">
+    <label class="text-label-md font-label-md text-on-surface" for="delivery-address">Delivery Location</label>
+
+    <div class="relative">
+        <div class="absolute top-0 left-0 pl-3 pt-3 pointer-events-none">
+            <svg class="h-5 w-5 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11 M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+            </svg>
+        </div>
+
+        @* Two lines, which is a requirement and not a preference: an address is written on two lines
+           and the value's newlines are normalised before storage (matrix ADDR-05, ADDR-06). The
+           design draws this field on one line, so it stands 24px taller here than in the design.
+           The pin is aligned to the first line rather than to the middle of the box. The onchange
+           event is the blur, which is where the address is saved. *@
+        <textarea id="delivery-address" rows="2" maxlength="200"
+                  class="w-full bg-surface-container-low border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-lg pl-10 pr-4 py-3 text-body-md font-body-md text-on-surface outline-none transition-colors"
+                  placeholder="e.g., Villa Lotus, Canggu..."
+                  aria-describedby="delivery-address-hint"
+                  aria-invalid="@((Error is not null).ToString().ToLowerInvariant())"
+                  @onchange="OnChangedAsync">@Address</textarea>
+    </div>
+
+    <span class="sr-only" id="delivery-address-hint">Where should we assemble your setup?</span>
+
     @if (Error is not null)
     {
-        <span class="field__error" role="alert">@Error</span>
+        <span class="alert" role="alert">@Error</span>
     }
 </div>
 

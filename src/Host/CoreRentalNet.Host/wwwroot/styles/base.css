@@ -156,12 +156,6 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .line-list { display: flex; flex-direction: column; gap: 2px; }
 .two-column { display: flex; flex-direction: column; gap: var(--gutter); align-items: flex-start; }
 @media (min-width: 1024px) { .two-column { flex-direction: row; gap: var(--stack-lg); } .two-column__wide { flex: 3; } .two-column__narrow { flex: 2; } }
-.zone-tiles { display: grid; gap: var(--stack-sm); grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (min-width: 768px) { .zone-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-.zone-tile { display: flex; flex-direction: column; align-items: center; gap: var(--stack-sm); padding: var(--stack-sm); text-align: center; border: 1px solid var(--outline-variant); border-radius: var(--radius-lg); background: var(--surface); }
-.zone-tile--empty { opacity: 0.6; }
-.zone-tile__glyph { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-full); background: var(--secondary-container); color: var(--on-secondary-container); }
-.zone-tile--empty .zone-tile__glyph { background: var(--surface-container-high); color: var(--on-surface-variant); }
 .step__badge { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: var(--radius-full); background: var(--surface); border: 1px solid var(--surface-variant, var(--surface-container)); box-shadow: var(--shadow-1); font-family: var(--font-display); font-size: var(--headline-md-size); font-weight: 700; color: var(--primary); }
 
 /* Utilities used by more than one screen */

@@ -126,7 +126,9 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
 
     protected async Task OpenDemoDialogAsync()
     {
-        await Page.Locator(".receipt").GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Rent This Setup" }).ClickAsync();
+        // The design puts the way to rent outside the summary card, at the width of the column, so it is
+        // found on the page rather than inside the card.
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Rent This Setup" }).ClickAsync();
         await Expect(Page.Locator("dialog[open]")).ToBeVisibleAsync();
     }
 

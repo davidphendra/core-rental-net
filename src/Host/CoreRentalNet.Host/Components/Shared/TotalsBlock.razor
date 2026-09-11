@@ -1,18 +1,22 @@
-@* Subtotal, the one-time delivery and setup charge, and what is due today. *@
-<dl class="totals">
-    <div class="totals__row">
-        <dt class="body-md muted">Subtotal</dt>
-        <dd class="body-md">@Subtotal.ToDisplayString()/mo</dd>
+@* Subtotal, the one-time delivery and setup charge, and what is due today, in the design's own
+   markup - a definition list rather than the design's divs and spans, because it is a list of
+   terms and their amounts, and the design's classes carry the look either way. *@
+<dl class="mt-6 pt-4 border-t border-dashed border-outline-variant flex flex-col gap-2">
+    <div class="flex justify-between text-body-md font-body-md text-on-surface-variant">
+        <dt>Subtotal</dt>
+        <dd>@Subtotal.ToDisplayString()/mo</dd>
     </div>
-    <div class="totals__row">
-        <dt class="body-md muted">Delivery &amp; Setup (one-time)</dt>
-        <dd class="body-md">@DeliveryFee.ToDisplayString()</dd>
+
+    <div class="flex justify-between text-body-md font-body-md text-on-surface-variant">
+        <dt>Delivery &amp; Setup (One-time)</dt>
+        <dd>@DeliveryFee.ToDisplayString()</dd>
     </div>
-    <div class="totals__row totals__row--grand">
-        <dt class="headline-md">Grand Total</dt>
-        <dd class="totals__grand">
-            <span class="headline-md primary-text">@GrandTotal.ToDisplayString()</span>
-            <span class="label-sm muted">First month due today</span>
+
+    <div class="flex justify-between items-center mt-2 pt-2 border-t border-surface-variant">
+        <dt class="text-headline-md font-headline-md text-on-surface">Grand Total</dt>
+        <dd class="flex flex-col items-end">
+            <span class="text-headline-md font-headline-md text-primary">@GrandTotal.ToDisplayString()</span>
+            <span class="text-label-sm font-label-sm text-on-surface-variant">First month due today</span>
         </dd>
     </div>
 </dl>

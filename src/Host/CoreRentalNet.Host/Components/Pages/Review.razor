@@ -5,95 +5,117 @@
 @inject NavigationManager Navigation
 <PageTitle>Review Your Workspace — Core Rental</PageTitle>
 
-<section class="section">
-    <div class="container stack-lg">
-        <div class="stack-sm">
-            <h1 class="headline-lg">Review Your Workspace</h1>
-            <p class="body-md muted">Confirm your setup details and schedule delivery.</p>
-        </div>
+@* The design's review page: a preview of the workspace beside the order summary that becomes an
+   order. Everything here is the design's, class for class, with two things deliberately absent.
+   The two badges the design floats over its preview - "Air Conditioned", "High-Speed" - describe
+   the photograph in the mockup and say nothing this application knows about a workspace, so they
+   would be invented claims. And the note under the button names a payment provider this demo does
+   not use, which would be a false statement on a page where money is not taken at all; its own
+   note says what happens instead. *@
+<section class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg md:py-section-gap pb-32 md:pb-stack-lg">
+    <div class="flex flex-col mb-stack-lg">
+        <h1 class="text-headline-lg-mobile md:text-headline-lg font-headline-lg-mobile md:font-headline-lg text-on-surface mb-unit">Review Your Workspace</h1>
+        <p class="text-on-surface-variant">Confirm your setup details and schedule delivery.</p>
+    </div>
 
-                @if (CheckoutError is not null)
-        {
-            <p class="alert" role="alert">@CheckoutError</p>
-        }
+    @if (CheckoutError is not null)
+    {
+        <p class="alert" role="alert">@CheckoutError</p>
+    }
 
-        @if (Session.Current is null)
-        {
-            <p class="body-md muted">Loading your workspace…</p>
-        }
-        else
-        {
-            <div class="two-column">
-                <div class="two-column__wide stack-md">
-                    <div class="card card--flat stack-md panel">
-                        <h2 class="headline-md">Your setup</h2>
-                        <SlotCanvas View="Session.Current" ReadOnly />
-                    </div>
-                    <div class="zone-tiles">
-                        @foreach (var slot in Session.Current.Slots.Where(slot => slot.Slot is SlotId.CoffeeStation or SlotId.RelaxZone))
+    @if (Session.Current is null)
+    {
+        <p class="text-body-md font-body-md text-on-surface-variant">Loading your workspace…</p>
+    }
+    else
+    {
+        <div class="flex flex-col lg:flex-row gap-gutter lg:gap-stack-lg items-start">
+            <div class="w-full lg:w-3/5 flex flex-col gap-stack-md">
+                <div class="bg-surface-bright rounded-2xl shadow-sm border border-surface-variant overflow-hidden flex flex-col h-full relative group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none"></div>
+                    <SlotCanvas View="Session.Current" ReadOnly />
+                </div>
+
+                @* The zones the design names, in the state this workspace has them in. *@
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-stack-sm">
+                    @foreach (var slot in Session.Current.Slots.Where(slot => slot.Slot is SlotId.CoffeeStation or SlotId.RelaxZone))
+                    {
+                        <div class="bg-surface rounded-xl p-stack-sm border border-outline-variant/30 flex flex-col items-center justify-center gap-2 text-center tropical-hover">
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center @(slot.IsFilled ? "bg-secondary-container text-on-secondary-container" : "bg-surface-container-high text-on-surface-variant opacity-50")">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="@ProductGlyph.PathFor(ProductGlyph.ForSlot(slot.Slot))" />
+                                </svg>
+                            </div>
+                            <span class="text-label-sm font-label-sm text-on-surface-variant @(slot.IsFilled ? null : "opacity-60")">
+                                @(slot.IsFilled ? slot.DisplayName : $"{slot.DisplayName} (Empty)")
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="w-full lg:w-2/5 flex flex-col gap-stack-md">
+                @* receipt carries no styling: it is the marker the browser tests wait for on this page. *@
+                <div class="receipt bg-surface rounded-2xl shadow-sm border border-surface-variant p-gutter flex flex-col relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <h2 class="text-headline-md font-headline-md text-primary mb-stack-md border-b border-surface-variant pb-4">Order Summary</h2>
+
+                    <div class="flex flex-col gap-stack-sm mb-stack-md">
+                        @foreach (var line in Session.Current.Quote.Lines)
                         {
-                            <div class="zone-tile @(slot.IsFilled ? null : "zone-tile--empty")">
-                                <span class="zone-tile__glyph" aria-hidden="true">@SlotLabel(slot)</span>
-                                <span class="label-sm">@(slot.IsFilled ? slot.DisplayName : $"{slot.DisplayName} (Empty)")</span>
+                            <div class="flex justify-between items-center py-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+                                        <ProductImage AltText="@line.Name" ImagePath="@line.ImagePath"
+                                                      ImageAvailable="@line.ImageAvailable"
+                                                      Glyph="@ProductGlyph.ForSlot(line.Slot)" />
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="text-label-md font-label-md text-on-surface">@line.Name</span>
+                                        <span class="text-label-sm font-label-sm text-on-surface-variant">Qty: @line.Quantity</span>
+                                    </div>
+                                </div>
+                                <span class="text-body-md font-body-md font-semibold text-on-surface">
+                                    @(line.LineMonthlyTotal is null ? "unavailable" : $"{line.LineMonthlyTotal.ToDisplayString()}/mo")
+                                </span>
                             </div>
                         }
                     </div>
-                </div>
 
-                <div class="two-column__narrow stack-md">
-                    <div class="receipt">
-                        <h2 class="headline-md primary-text">Order Summary</h2>
-
-                        <ul class="line-list list-reset">
-                            @foreach (var line in Session.Current.Quote.Lines)
-                            {
-                                <li class="line-item">
-                                    <span class="row">
-                                        <span class="line-item__media">
-                                            <ProductImage AltText="@line.Name" ImagePath="@line.ImagePath"
-                                                          ImageAvailable="@line.ImageAvailable"
-                                                          Glyph="@ProductGlyph.ForSlot(line.Slot)" />
-                                        </span>
-                                        <span class="stack-sm">
-                                            <span class="label-md">@line.Name</span>
-                                            <span class="label-sm muted">Qty: @line.Quantity</span>
-                                        </span>
-                                    </span>
-                                    <span class="body-md">
-                                        @(line.LineMonthlyTotal is null ? "unavailable" : $"{line.LineMonthlyTotal.ToDisplayString()}/mo")
-                                    </span>
-                                </li>
-                            }
-                        </ul>
-
-                        @if (Session.Current.Quote.HasUnavailableLines)
-                        {
-                            <p class="alert" role="alert">
-                                An item in your workspace is no longer in the catalog. Remove it before renting.
-                            </p>
-                        }
-
-                        <DeliveryAddressField Address="Session.Current.DeliveryAddress"
-                                              Error="Session.Error"
-                                              OnSave="SaveAddressAsync" />
-
-                        <TotalsBlock Subtotal="@Session.Current.Quote.MonthlySubtotal" DeliveryFee="@Rentals.DeliveryFee" />
-
-                        <button type="button" class="button button--cta"
-                                disabled="@(!Session.Current.CanCheckout)"
-                                aria-disabled="@((!Session.Current.CanCheckout).ToString().ToLowerInvariant())"
-                                title="@(Session.Current.CanCheckout ? null : "Resolve the items in your workspace first")"
-                                @onclick="OpenConfirmationAsync">
-                            Rent This Setup
-                        </button>
-                        <p class="label-sm muted text-center">
-                            Demo checkout — no payment is taken.
+                    @if (Session.Current.Quote.HasUnavailableLines)
+                    {
+                        <p class="alert" role="alert">
+                            An item in your workspace is no longer in the catalog. Remove it before renting.
                         </p>
-                    </div>
+                    }
+
+                    <DeliveryAddressField Address="Session.Current.DeliveryAddress"
+                                          Error="Session.Error"
+                                          OnSave="SaveAddressAsync" />
+
+                    <TotalsBlock Subtotal="@Session.Current.Quote.MonthlySubtotal" DeliveryFee="@Rentals.DeliveryFee" />
                 </div>
+
+                @* The design puts the way to rent outside the summary card, at the width of the column,
+                   rather than inside it at the width of the card's text. *@
+                <button type="button"
+                        class="w-full bg-tertiary-container hover:bg-tertiary-fixed-dim text-on-tertiary-container text-body-lg font-body-lg font-bold py-4 px-6 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled="@(!Session.Current.CanCheckout)"
+                        aria-disabled="@((!Session.Current.CanCheckout).ToString().ToLowerInvariant())"
+                        title="@(Session.Current.CanCheckout ? null : "Resolve the items in your workspace first")"
+                        @onclick="OpenConfirmationAsync">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 4h2l2.4 12h11.2l2.4-8H6 M10 20a1 1 0 1 0 2 0 1 1 0 0 0-2 0 M16 20a1 1 0 1 0 2 0 1 1 0 0 0-2 0" />
+                    </svg>
+                    Rent This Setup
+                </button>
+                <p class="text-center text-label-sm font-label-sm text-on-surface-variant mt-2">Demo checkout — no payment is taken.</p>
             </div>
-        }
-    </div>
+        </div>
+    }
 </section>
 
 <DemoConfirmDialog @ref="dialog" Error="@CheckoutError" OnConfirm="ConfirmAsync" OnDismissed="DismissAsync" />
@@ -175,13 +197,4 @@
             await Session.SetDeliveryAddressAsync(DraftToken, address);
         }
     }
-
-    private static string SlotLabel(AssignableSlot slot) => slot.Slot switch
-    {
-        SlotId.CoffeeStation => "☕",
-        SlotId.RelaxZone => "☁",
-        SlotId.Plant => "❀",
-        SlotId.Monitor => "▭",
-        _ => "•",
-    };
 }
