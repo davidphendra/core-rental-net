@@ -8,10 +8,10 @@
 
 <SelectionPanel />
 
-<section class="builder-main">
-    <div class="stack-md text-center">
-        <h1 class="display-lg primary-text">Design Your Workspace!</h1>
-        <p class="body-lg outline-text">Create your perfect setup</p>
+<section class="flex-1 min-w-0 lg:ml-80 w-full px-margin-mobile lg:px-margin-desktop py-stack-lg pb-32">
+    <div class="text-center mb-section-gap">
+        <h1 class="text-headline-lg-mobile lg:text-display-lg font-display-lg text-primary mb-2">Design Your Workspace!</h1>
+        <p class="text-body-lg font-body-lg text-outline">Create Your Perfect Setup</p>
     </div>
 
     @if (EmptyNotice)
@@ -39,17 +39,7 @@
 
     @* The docked panel is not on screen on a phone, so the categories become a row of chips that
        open the picker already filtered, which is the same thing the panel does on a desktop. *@
-    <div class="chip-row" aria-label="Categories, mobile">
-        @foreach (var candidate in CatalogTabs.All)
-        {
-            var current = candidate;
-            <button type="button" class="chip @(mobileTab == current ? null : "chip--outline")"
-                    aria-pressed="@((mobileTab == current).ToString().ToLowerInvariant())"
-                    @onclick="() => OpenCategoryAsync(current)">
-                @CatalogTabs.LabelFor(current)
-            </button>
-        }
-    </div>
+    <CategoryChips Selected="mobileTab" OnSelect="OpenCategoryAsync" />
 </section>
 
 @if (Session.Current is not null)

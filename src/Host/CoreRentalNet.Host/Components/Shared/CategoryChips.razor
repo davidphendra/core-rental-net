@@ -1,0 +1,29 @@
+@* What the design shows on a phone instead of the panel: the same four categories as a scrolling
+   row of pills. Only the three in the design are drawn there, but a fourth costs nothing and the
+   panel offers four. *@
+<div class="lg:hidden flex overflow-x-auto gap-2 mb-6 no-scrollbar pb-2" data-testid="category-chips"
+     aria-label="Product categories">
+    @foreach (var tab in CatalogTabs.All)
+    {
+        var current = tab;
+        <button type="button" class="@PlacementFor(current)"
+                aria-pressed="@((Selected == current).ToString().ToLowerInvariant())"
+                @onclick="() => OnSelect.InvokeAsync(current)">
+            <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="@ProductGlyph.PathFor(CatalogTabs.GlyphFor(current))" />
+            </svg>
+            @CatalogTabs.LabelFor(current)
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CatalogTab Selected { get; set; }
+
+    [Parameter] public EventCallback<CatalogTab> OnSelect { get; set; }
+
+    private string PlacementFor(CatalogTab tab) => Selected == tab
+        ? "px-4 py-2 rounded-full bg-primary-container text-on-primary-container text-label-md font-label-md whitespace-nowrap flex items-center gap-2"
+        : "px-4 py-2 rounded-full bg-surface-container text-on-surface-variant text-label-md font-label-md whitespace-nowrap flex items-center gap-2 border border-outline-variant";
+}

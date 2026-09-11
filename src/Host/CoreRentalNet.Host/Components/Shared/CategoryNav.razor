@@ -1,0 +1,28 @@
+@* The panel navigation, from specs/design/interactive_builder/code.html, classes unchanged.
+   The design writes these as links; they are buttons here, because choosing one swaps the list
+   beside it rather than going anywhere. *@
+<nav class="flex flex-col gap-2 flex-1" aria-label="Product categories">
+    @foreach (var tab in CatalogTabs.All)
+    {
+        var current = tab;
+        <button type="button" class="@PlacementFor(current)"
+                aria-current="@((Selected == current).ToString().ToLowerInvariant())"
+                @onclick="() => OnSelect.InvokeAsync(current)">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="@ProductGlyph.PathFor(CatalogTabs.GlyphFor(current))" />
+            </svg>
+            @CatalogTabs.LabelFor(current)
+        </button>
+    }
+</nav>
+
+@code {
+    [Parameter, EditorRequired] public CatalogTab Selected { get; set; }
+
+    [Parameter] public EventCallback<CatalogTab> OnSelect { get; set; }
+
+    private string PlacementFor(CatalogTab tab) => Selected == tab
+        ? "bg-primary-container text-on-primary-container rounded-xl flex items-center gap-stack-sm p-stack-md scale-95 transition-transform duration-150 text-label-md font-label-md"
+        : "text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md hover:bg-secondary-container text-label-md font-label-md transition-colors";
+}

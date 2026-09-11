@@ -3,9 +3,7 @@
 <AppHeader />
 <!-- data-interactive flips to true when the circuit is attached. Prerendered HTML says
          false, which is how the browser suite knows a click will be handled. -->
-<main class="app-main" id="main" data-interactive="@(RendererInfo.IsInteractive.ToString().ToLowerInvariant())">
-    <div class="builder-shell">
-        @Body
-    </div>
+<main class="flex flex-1 w-full max-w-container-max mx-auto relative" id="main" data-interactive="@(RendererInfo.IsInteractive.ToString().ToLowerInvariant())">
+    @Body
 </main>
 <MobileBottomNav />

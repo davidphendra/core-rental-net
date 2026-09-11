@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Xunit;
 
@@ -129,6 +130,90 @@ public sealed class DesignTokenTests
             tokens.Should().Contain(token, "the spacing and shape scale comes from the design's config");
         }
     }
+
+    /// <summary>
+    /// A class name that is not in the generated stylesheet renders as nothing at all, and it does
+    /// so silently. This is not hypothetical: the markup was ported to the design's classes and the
+    /// stylesheet was not rebuilt, so the panel, the chips and the page column were all laid out by
+    /// default browser styling, and nothing said so.
+    /// </summary>
+    [Fact] // UI-01
+    public void Every_class_the_markup_takes_from_a_design_is_generated()
+    {
+        var available = ClassSelectorNames(File.ReadAllText(
+            RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "wwwroot", "styles", "tailwind.css")));
+
+        var designed = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var design in Directory.GetFiles(
+            RepoRoot.Combine("specs", "design"), "code.html", SearchOption.AllDirectories))
+        {
+            designed.UnionWith(ClassAttributesIn(StripBlocks(File.ReadAllText(design))));
+        }
+
+        var missing = new List<string>();
+
+        foreach (var file in Directory.GetFiles(
+            Path.Combine(HostRoot, "Components"), "*.razor", SearchOption.AllDirectories))
+        {
+            missing.AddRange(WordsIn(QuotedLiterals(File.ReadAllText(file)))
+                .Where(designed.Contains)
+                .Where(name => !Markers.Contains(name))
+                .Where(name => !available.Contains(name))
+                .Order(StringComparer.Ordinal)
+                .Select(name => name + " in " + Path.GetFileName(file)));
+        }
+
+        missing.Should().BeEmpty("a design class missing from the stylesheet draws nothing at all");
+    }
+
+    /// <summary>
+    /// Tailwind marker classes carry no rule of their own - they exist only to be referred to by a
+    /// group-hover or peer-focus variant in a compound selector, so their absence is correct.
+    /// </summary>
+    private static readonly HashSet<string> Markers = new(["group", "peer"], StringComparer.Ordinal);
+
+    /// <summary>
+    /// The class selectors a stylesheet defines, with their escapes removed. A selector arrives
+    /// wearing its state, as in hover:bg-primary:hover, and the trailing state is not part of the
+    /// class name, so both readings are recorded.
+    /// </summary>
+    private static HashSet<string> ClassSelectorNames(string css)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (Match match in Regex.Matches(css.Replace("\\", string.Empty), @"\.([-A-Za-z0-9_\[\]()/#%:]+)"))
+        {
+            var name = match.Groups[1].Value;
+            names.Add(name);
+            names.Add(Regex.Replace(name, ":(" + States + ")$", string.Empty));
+        }
+
+        return names;
+    }
+
+    /// <summary>The states a selector can wear, which are not part of the name it selects.</summary>
+    private const string States =
+        "hover|focus|focus-visible|focus-within|active|visited|disabled|checked|placeholder|"
+        + "before|after|first-child|last-child|only-child|not\\([^)]*\\)";
+
+    /// <summary>The classes written into class attributes, which is how a design names its shapes.</summary>
+    private static IEnumerable<string> ClassAttributesIn(string html)
+        => Regex.Matches(html, "class=\"([^\"]*)\"", RegexOptions.Singleline)
+            .SelectMany(match => match.Groups[1].Value.Split([' ', '\t', '\r', '\n'], StringSplitOptions.RemoveEmptyEntries));
+
+    /// <summary>Every double-quoted literal, so a class list held in a field is checked too.</summary>
+    private static string QuotedLiterals(string razor)
+        => string.Join(' ', Regex.Matches(razor, "\"([^\"]*)\"", RegexOptions.Singleline).Select(m => m.Groups[1].Value));
+
+    /// <summary>The class-like words in a piece of text.</summary>
+    private static HashSet<string> WordsIn(string text)
+        => Regex.Split(text, @"\s+")
+            .Where(word => Regex.IsMatch(word, @"^[a-z][-A-Za-z0-9_\[\]()/#%:]*$"))
+            .ToHashSet(StringComparer.Ordinal);
+
+    /// <summary>The designs' own style and script blocks are not markup and their classes are not ours.</summary>
+    private static string StripBlocks(string html)
+        => Regex.Replace(html, @"<(style|script)[^>]*>.*?</\1>", string.Empty, RegexOptions.Singleline);
 
     private static IEnumerable<string> FilesToCheck()
         => Directory.GetFiles(Path.Combine(HostRoot, "wwwroot", "styles"), "*.css")

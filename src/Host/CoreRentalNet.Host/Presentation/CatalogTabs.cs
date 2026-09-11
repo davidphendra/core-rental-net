@@ -32,6 +32,16 @@ public static class CatalogTabs
         _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, "Unknown catalog tab."),
     };
 
+    /// <summary>The icon the design gives each entry.</summary>
+    public static string GlyphFor(CatalogTab tab) => tab switch
+    {
+        CatalogTab.Chairs => "chair",
+        CatalogTab.Desks => "desk",
+        CatalogTab.Accessories => "keyboard",
+        CatalogTab.Extras => "beach_access",
+        _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, "Unknown catalog tab."),
+    };
+
     /// <summary>
     /// Chairs and Desks are whole categories; Accessories and Extras are the two groupings that
     /// split the Accessory category by subcategory.

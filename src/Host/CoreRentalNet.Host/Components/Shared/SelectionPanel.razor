@@ -5,13 +5,13 @@
 @* The docked panel the designs draw on both the builder and the store: browse a category,
    assign an item, and leave for the summary. It keeps its own browsing state, because what it
    shows has nothing to do with what the page beside it is doing. *@
-<aside class="builder-aside" aria-label="Selection panel">
-    <div class="stack-sm">
-        <h2 class="headline-md primary-text">Selection Panel</h2>
-        <p class="label-md muted">Build your setup</p>
+<aside class="hidden lg:flex flex-col gap-stack-md p-gutter fixed left-0 top-20 h-[calc(100vh-80px)] bg-surface-container-low shadow-sm w-80 z-40" aria-label="Selection panel">
+    <div class="mb-4">
+        <h2 class="text-headline-md font-headline-md text-primary font-extrabold">Selection Panel</h2>
+        <p class="text-on-surface-variant text-label-md font-label-md mt-1">Build your setup</p>
     </div>
 
-    <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
+    <CategoryNav Selected="tab" OnSelect="SelectTabAsync" />
 
     @* Refusals are surfaced by the page, beside the canvas they concern. One error surface, and
        it is where the customer is looking. *@
@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <a class="button @(CanCheckout ? "button--primary" : "button--ghost")" href="/review"
+    <a class="w-full py-3 rounded-xl font-bold mt-4 text-center transition-colors @(CanCheckout ? "bg-primary text-on-primary hover:bg-surface-tint" : "bg-surface-container text-on-surface-variant cursor-not-allowed opacity-60")" href="/review"
        aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"
        tabindex="@(CanCheckout ? 0 : -1)"
        title="@(CanCheckout ? null : "Add an item to your workspace first")"

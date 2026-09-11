@@ -29,7 +29,7 @@ public sealed class MobileViewportTests(HostFixture host, ITestOutputHelper outp
     {
         await GotoAsync("/builder");
 
-        var chips = Page.Locator(".chip-row .chip");
+        var chips = Page.Locator("[data-testid='category-chips'] button");
         var count = await chips.CountAsync();
         Assert.True(count >= 4, $"expected the four categories as chips, found {count}");
 

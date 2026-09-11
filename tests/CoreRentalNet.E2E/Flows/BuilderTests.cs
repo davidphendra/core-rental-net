@@ -106,7 +106,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         await Expect(plus).ToBeDisabledAsync();
 
         // The panel is still offering monitors, so the refusal has to be visible.
-        await Page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
         var monitorCard = Page.Locator("button.product-card", new PageLocatorOptions { HasTextString = "Ultrawide" });
         await Expect(monitorCard).ToBeVisibleAsync();
         await monitorCard.ClickAsync();
@@ -164,7 +164,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
     {
         await GotoAsync("/builder");
         await Page.Locator("button.product-card").First.ClickAsync();
-        var desks = Page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Desks" });
+        var desks = Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desks" });
         await desks.ClickAsync();
         await Page.Locator("button.product-card").First.ClickAsync();
 
