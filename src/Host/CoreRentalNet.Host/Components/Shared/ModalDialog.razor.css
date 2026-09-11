@@ -1,9 +1,0 @@
-/* Level 2: glass, a blur and a soft edge, never a heavy dark shadow. */
-.modal {
-  padding: 0; border: 0; border-radius: var(--radius-lg);
-  background: var(--glass); backdrop-filter: blur(var(--backdrop-blur));
-  box-shadow: var(--shadow-3); max-width: min(32rem, calc(100vw - 2rem)); color: var(--on-surface);
-}
-.modal::backdrop { background: var(--scrim); }
-.modal__panel { display: flex; flex-direction: column; gap: var(--stack-md); padding: var(--gutter); }
-.modal__actions { display: flex; justify-content: flex-end; gap: var(--stack-sm); }

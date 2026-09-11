@@ -1,13 +1,17 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JavaScript
 @* Native <dialog>: focus trapping, Esc and an inert background come for free (ADR-0012). *@
-<dialog @ref="element" class="modal" @onclose="HandleClosedAsync" aria-labelledby="@TitleId">
-    <div class="modal__panel">
-        <h2 class="headline-md" id="@TitleId">@Title</h2>
+@* The frame is the design's classes rather than a scoped stylesheet. A .razor.css file is served
+   in a bundle App.razor does not link, so anything written in one silently never loads - which is
+   how this dialog came to have no padding at all. The classes below are kept as hooks: the browser
+   tests find the panel and its actions by them. *@
+<dialog @ref="element" class="modal w-full max-w-lg rounded-2xl border border-surface-variant bg-surface-bright shadow-ambient backdrop:bg-on-surface/40" @onclose="HandleClosedAsync" aria-labelledby="@TitleId">
+    <div class="modal__panel flex flex-col gap-stack-md p-gutter">
+        <h2 class="text-headline-md font-headline-md text-primary" id="@TitleId">@Title</h2>
         <div class="modal__body">@ChildContent</div>
         @if (Actions is not null)
         {
-            <div class="modal__actions">@Actions</div>
+            <div class="modal__actions flex justify-end gap-stack-sm">@Actions</div>
         }
     </div>
 </dialog>

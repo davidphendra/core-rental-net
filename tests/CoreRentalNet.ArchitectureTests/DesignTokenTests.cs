@@ -260,4 +260,25 @@ public sealed class DesignTokenTests
 
         return false;
     }
+
+    /// <summary>
+    /// Styling is the design's classes or the shared stylesheets, never a component's own file.
+    /// </summary>
+    /// <remarks>
+    /// Blazor serves every <c>.razor.css</c> in one bundle, and App.razor does not link it. A scoped
+    /// stylesheet is therefore styling that is compiled, served and never applied - which is how the
+    /// confirmation dialog came to have no padding. Linking the bundle is the other way to satisfy
+    /// this; it is not the one this application chose, and this test says so rather than leaving the
+    /// next person to discover it.
+    /// </remarks>
+    [Fact] // UI-10
+    public void No_component_carries_a_stylesheet_of_its_own()
+    {
+        var host = RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "Components");
+
+        var scoped = Directory.GetFiles(host, "*.razor.css", SearchOption.AllDirectories);
+
+        scoped.Should().BeEmpty(
+            "a scoped stylesheet is never loaded: use the design's classes, or the stylesheets App.razor links");
+    }
 }

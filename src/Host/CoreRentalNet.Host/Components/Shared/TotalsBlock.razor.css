@@ -1,5 +1,0 @@
-.totals { display: flex; flex-direction: column; gap: var(--stack-sm); margin: 0; }
-.totals__row { display: flex; align-items: center; justify-content: space-between; gap: var(--stack-md); }
-.totals__row dd { margin: 0; }
-.totals__row--grand { margin-top: var(--stack-sm); padding-top: var(--stack-sm); border-top: 1px solid var(--surface-container); }
-.totals__grand { display: flex; flex-direction: column; align-items: flex-end; }
