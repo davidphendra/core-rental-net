@@ -1,5 +1,5 @@
 /* Tropical Tech. Every value here comes from the theme configuration inside
-   specs/design/*/code.html, which is the single source of truth for the palette, the type scale,
+   specs/design/<page>/code.html, which is the single source of truth for the palette, the type scale,
    the spacing scale and the shape scale. Nothing else in the app may hardcode a colour, a radius,
    a spacing or a font size. */
 

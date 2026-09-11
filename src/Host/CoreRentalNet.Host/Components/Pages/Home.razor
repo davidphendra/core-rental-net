@@ -96,42 +96,46 @@
     </div>
 </section>
 
-<section class="section section--tonal" id="how-it-works">
-    <div class="container stack-lg">
-        <div class="stack-sm text-center section-header">
-            <h2 class="headline-lg">How it Works</h2>
-            <p class="body-lg muted hero__lede step__lede">From concept to comfort in three steps.</p>
+@* The same treatment: the design's class strings, with inline SVG where it used an icon font. *@
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-container-low" id="how-it-works">
+    <div class="max-w-container-max mx-auto">
+        <div class="text-center mb-16">
+            <h2 class="text-headline-lg font-headline-lg text-on-surface mb-4">How it Works</h2>
+            <p class="text-body-lg text-on-surface-variant max-w-2xl mx-auto">From concept to comfort in three simple steps.</p>
         </div>
 
-        <ol class="steps list-reset">
-            <span class="steps__connector" aria-hidden="true"></span>
-            <li class="step">
-                <span class="step__badge">
-                    <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 10-10M12 8l4 4M14 6l4 4M6 18l-2 2 4-1z" /></svg>
-                </span>
-                <h3 class="headline-md">1. Design</h3>
-                <p class="body-md muted">Mix and match ergonomic chairs, desks and tropical accessories on the canvas.</p>
-            </li>
-            <li class="step">
-                <span class="step__badge step__badge--accent">
-                    <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18l-2 8H5zM5 6 4 3H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" /></svg>
-                </span>
-                <h3 class="headline-md">2. Rent</h3>
-                <p class="body-md muted">Month to month, and you can cancel any time. The first month is due when you confirm.</p>
-            </li>
-            <li class="step">
-                <span class="step__badge step__badge--calm">
-                    <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 20c2-4 4-6 6-6s4 2 6 6M4 17l4 3M20 17l-4 3" /></svg>
-                </span>
-                <h3 class="headline-md">3. Work</h3>
-                <p class="body-md muted">We deliver and assemble at your villa. You focus on the deep work.</p>
-            </li>
-        </ol>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter relative">
+            <div class="hidden md:block absolute top-[50px] left-[15%] right-[15%] h-[2px] bg-outline-variant z-0 border-t-2 border-dashed border-outline-variant"></div>
+
+            <div class="relative z-10 flex flex-col items-center text-center group">
+                <div class="w-24 h-24 bg-surface rounded-full shadow-[0_4px_20px_rgb(0,103,103,0.08)] flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-surface-variant">
+                    <svg class="h-10 w-10 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 10-10M12 8l4 4M14 6l4 4M6 18l-2 2 4-1z" /></svg>
+                </div>
+                <h3 class="text-headline-md font-headline-md text-on-surface mb-2">1. Design</h3>
+                <p class="text-body-md text-on-surface-variant">Use our builder to mix and match ergonomic chairs, desks, and tropical accessories.</p>
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center text-center group">
+                <div class="w-24 h-24 bg-surface rounded-full shadow-[0_4px_20px_rgb(0,103,103,0.08)] flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-surface-variant">
+                    <svg class="h-10 w-10 text-tertiary-container" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18l-2 8H5zM5 6 4 3H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" /></svg>
+                </div>
+                <h3 class="text-headline-md font-headline-md text-on-surface mb-2">2. Rent</h3>
+                <p class="text-body-md text-on-surface-variant">Month to month, and you can cancel any time. The first month is due when you confirm.</p>
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center text-center group">
+                <div class="w-24 h-24 bg-surface rounded-full shadow-[0_4px_20px_rgb(0,103,103,0.08)] flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-300 border border-surface-variant">
+                    <svg class="h-10 w-10 text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 20c2-4 4-6 6-6s4 2 6 6M4 17l4 3M20 17l-4 3" /></svg>
+                </div>
+                <h3 class="text-headline-md font-headline-md text-on-surface mb-2">3. Work</h3>
+                <p class="text-body-md text-on-surface-variant">We deliver and assemble directly to your villa. You just focus on deep work.</p>
+            </div>
+        </div>
     </div>
 </section>
 
-@* The design leaves room for the fixed bottom navigation on a phone. *@
-<div class="page-bottom-spacer" aria-hidden="true"></div>
+@* Room for the fixed bottom navigation, exactly as the design leaves it. *@
+<div class="h-24 lg:hidden"></div>
 
 @code {
     private IReadOnlyList<ProductListItem> featured = [];

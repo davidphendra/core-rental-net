@@ -177,9 +177,6 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .zone-tile--empty { opacity: 0.6; }
 .zone-tile__glyph { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-full); background: var(--secondary-container); color: var(--on-secondary-container); }
 .zone-tile--empty .zone-tile__glyph { background: var(--surface-container-high); color: var(--on-surface-variant); }
-.steps { display: grid; gap: var(--gutter); grid-template-columns: 1fr; }
-@media (min-width: 768px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.step { display: flex; flex-direction: column; align-items: center; gap: var(--stack-md); text-align: center; }
 .step__badge { display: inline-flex; align-items: center; justify-content: center; width: 96px; height: 96px; border-radius: var(--radius-full); background: var(--surface); border: 1px solid var(--surface-variant, var(--surface-container)); box-shadow: var(--shadow-1); font-family: var(--font-display); font-size: var(--headline-md-size); font-weight: 700; color: var(--primary); }
 .breadcrumb { display: flex; align-items: center; gap: 6px; color: var(--on-surface-variant); font-family: var(--font-label); font-size: var(--label-md-size); }
 
@@ -195,7 +192,4 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .section-header { margin-bottom: var(--stack-lg); }
 
 /* A tonal band, as the "How it Works" section is drawn. */
-.section--tonal { background: var(--surface-container-low); }
 /* Room for the fixed bottom navigation, which would otherwise cover the last section on a phone. */
-.page-bottom-spacer { height: 6rem; }
-@media (min-width: 1024px) { .page-bottom-spacer { display: none; } }
