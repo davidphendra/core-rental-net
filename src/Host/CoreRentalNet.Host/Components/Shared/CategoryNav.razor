@@ -1,18 +1,21 @@
-@* The panel navigation, from specs/design/interactive_builder/code.html, classes unchanged.
-   The design writes these as links; they are buttons here, because choosing one swaps the list
-   beside it rather than going anywhere. *@
-<nav class="flex flex-col gap-2 flex-1" aria-label="Product categories">
+@* The panel's category tabs. The design stacks these down the sidebar with their names beside the
+   icons; this is the arrangement asked for instead, so it is a deliberate difference: one row
+   across the top of the panel, icons only, desks first. The palette, the shape and the active
+   state are still the design's. Each tab keeps its name as the accessible name, so it is still
+   announced as "Desks" and can still be found by that name. *@
+<nav class="flex gap-2" aria-label="Product categories">
     @foreach (var tab in CatalogTabs.All)
     {
         var current = tab;
         <button type="button" class="@PlacementFor(current)"
-                aria-current="@((Selected == current).ToString().ToLowerInvariant())"
+                aria-pressed="@((Selected == current).ToString().ToLowerInvariant())"
+                aria-label="@CatalogTabs.LabelFor(current)"
+                title="@CatalogTabs.LabelFor(current)"
                 @onclick="() => OnSelect.InvokeAsync(current)">
             <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="@ProductGlyph.PathFor(CatalogTabs.GlyphFor(current))" />
             </svg>
-            @CatalogTabs.LabelFor(current)
         </button>
     }
 </nav>
@@ -23,6 +26,6 @@
     [Parameter] public EventCallback<CatalogTab> OnSelect { get; set; }
 
     private string PlacementFor(CatalogTab tab) => Selected == tab
-        ? "bg-primary-container text-on-primary-container rounded-xl flex items-center gap-stack-sm p-stack-md scale-95 transition-transform duration-150 text-label-md font-label-md"
-        : "text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center gap-stack-sm p-stack-md hover:bg-secondary-container text-label-md font-label-md transition-colors";
+        ? "bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center p-3 scale-95 transition-transform duration-150"
+        : "text-on-surface-variant hover:bg-surface-variant rounded-xl flex items-center justify-center p-3 hover:bg-secondary-container transition-colors";
 }

@@ -36,7 +36,7 @@
 @code {
     [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
 
-    private CatalogTab tab = CatalogTab.Chairs;
+    private CatalogTab tab = CatalogTab.Desks;
     private IReadOnlyList<ProductListItem> products = [];
 
     private bool CanCheckout => Session.Current?.CanCheckout ?? false;

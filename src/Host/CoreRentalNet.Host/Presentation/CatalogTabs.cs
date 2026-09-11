@@ -17,8 +17,8 @@ public static class CatalogTabs
 {
     public static IReadOnlyList<CatalogTab> All { get; } =
     [
-        CatalogTab.Chairs,
         CatalogTab.Desks,
+        CatalogTab.Chairs,
         CatalogTab.Accessories,
         CatalogTab.Extras,
     ];

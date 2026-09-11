@@ -81,9 +81,27 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
 
     // ---------------------------------------------------------------- builder
 
-    protected async Task AssignFirstProductAsync()
+    /// <summary>
+    /// Chooses a category tab. The tabs are icons only, so they are addressed by their accessible
+    /// name, which is what a screen reader announces and is the only thing left to go on.
+    /// </summary>
+    protected Task ChooseCategoryAsync(string name)
+        => Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name }).ClickAsync();
+
+    /// <summary>
+    /// Assigns the first item of a category. Tests that care which kind of item they got say so:
+    /// one that inherits whatever category happens to be open breaks the moment the order changes,
+    /// which is what happened when desks became the first tab.
+    /// </summary>
+    protected async Task AssignFirstProductAsync(string? category = null)
     {
         await GotoAsync("/builder");
+
+        if (category is not null)
+        {
+            await ChooseCategoryAsync(category);
+        }
+
         await Page.Locator("button.product-card").First.ClickAsync();
         await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(1);
     }

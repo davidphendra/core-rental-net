@@ -17,6 +17,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         await GotoAsync("/builder");
         await Expect(Page.Locator(".workspace-stage")).ToBeVisibleAsync();
 
+        await ChooseCategoryAsync("Chairs");
         await Page.Locator("button.product-card").First.ClickAsync();
 
         await Expect(Page.Locator(".slot--chair.slot--filled")).ToHaveCountAsync(1);
@@ -27,6 +28,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
     public async Task Choosing_another_chair_replaces_the_first_one()
     {
         await GotoAsync("/builder");
+        await ChooseCategoryAsync("Chairs");
         var cards = Page.Locator("button.product-card");
 
         await cards.First.ClickAsync();
@@ -118,7 +120,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
     [Fact] // WS-08
     public async Task The_remove_control_empties_the_slot()
     {
-        await AssignFirstProductAsync();
+        await AssignFirstProductAsync("Chairs");
 
         await Page.Locator(".slot--chair .slot__remove").ClickAsync();
 
@@ -163,9 +165,11 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
     public async Task A_workspace_can_hold_a_desk_a_chair_and_three_monitors()
     {
         await GotoAsync("/builder");
+
+        await ChooseCategoryAsync("Chairs");
         await Page.Locator("button.product-card").First.ClickAsync();
-        var desks = Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Desks" });
-        await desks.ClickAsync();
+
+        await ChooseCategoryAsync("Desks");
         await Page.Locator("button.product-card").First.ClickAsync();
 
         await OpenSlotPickerAsync(".slot--monitor");
