@@ -1,0 +1,46 @@
+@* The panel card, from specs/design/interactive_builder/code.html, with its classes unchanged.
+   Two deliberate differences: the root is a button rather than a clickable div, because a div is
+   invisible to a keyboard; and the icon font is replaced by inline SVG, so nothing external is
+   requested. text-left restores the alignment a button would otherwise centre. *@
+<button type="button"
+        class="product-card text-left cursor-pointer transition-all group @Placement"
+        aria-pressed="@(IsSelected.ToString().ToLowerInvariant())"
+        aria-label="@($"Add {Product.Name} to your workspace")"
+        @onclick="() => OnSelect.InvokeAsync(Product)">
+    @if (IsSelected)
+    {
+        <div class="absolute -top-2 -right-2 bg-primary text-on-primary rounded-full w-5 h-5 flex items-center justify-center">
+            <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 13 4 4 10-10" /></svg>
+        </div>
+    }
+
+    <div class="h-24 w-full bg-surface-container rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+        @if (Product.ImageAvailable && !string.IsNullOrWhiteSpace(Product.ImagePath))
+        {
+            <img class="object-cover w-full h-full group-hover:scale-105 transition-transform" src="@Product.ImagePath" alt="@Product.Name" loading="lazy" />
+        }
+        else
+        {
+            @* No image file exists for most of the catalogue. The design never draws that case, so
+               this is a deliberate placeholder: the same box, with the glyph centred in it. *@
+            <svg class="w-1/2 h-1/2 text-primary-container" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="@Product.Name">
+                <path d="@ProductGlyph.PathFor(ProductGlyph.ForProduct(Product.Category, Product.SubCategory))" />
+            </svg>
+        }
+    </div>
+
+    <h4 class="text-label-sm font-label-sm text-on-surface font-bold">@Product.Name</h4>
+    <p class="text-[10px] text-on-surface-variant mt-1">+@Product.MonthlyPrice.ToDisplayString()/mo</p>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public ProductListItem Product { get; set; } = default!;
+
+    [Parameter] public bool IsSelected { get; set; }
+
+    [Parameter] public EventCallback<ProductListItem> OnSelect { get; set; }
+
+    private string Placement => IsSelected
+        ? "bg-surface-container-lowest rounded-xl p-3 border-2 border-primary relative"
+        : "bg-surface-container-lowest rounded-xl p-3 border border-surface-variant hover:border-primary-container hover:-translate-y-1";
+}

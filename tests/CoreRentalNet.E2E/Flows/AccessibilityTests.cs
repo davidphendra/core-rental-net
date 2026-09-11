@@ -112,7 +112,9 @@ public sealed class AccessibilityTests(HostFixture host, ITestOutputHelper outpu
     {
         await GotoAsync("/extras");
 
-        var placeholders = Page.Locator(".product-image__glyph");
+        // Deliberately not tied to a class the component happens to use: what matters is that a
+        // product with no image file is drawn rather than left as a broken image.
+        var placeholders = Page.Locator("svg[role='img']");
 
         (await placeholders.CountAsync()).Should().BeGreaterThan(0, "most catalog images were never shipped");
 

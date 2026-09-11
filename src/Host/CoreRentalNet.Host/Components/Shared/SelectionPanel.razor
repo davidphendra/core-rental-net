@@ -15,11 +15,11 @@
 
     @* Refusals are surfaced by the page, beside the canvas they concern. One error surface, and
        it is where the customer is looking. *@
-    <div class="scroll-panel">
-        <div class="picker-grid">
+    <div class="flex-1 overflow-y-auto mt-4 border-t border-outline-variant pt-4 pr-2">
+        <div class="grid grid-cols-2 gap-3">
             @foreach (var product in products)
             {
-                <ProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AssignAsync" />
+                <BuilderProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AssignAsync" />
             }
         </div>
     </div>

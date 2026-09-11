@@ -11,7 +11,7 @@
             @foreach (var product in Candidates)
             {
                 var candidate = product;
-                <ProductCard Product="candidate" OnSelect="() => PickAsync(candidate)" />
+                <BuilderProductCard Product="candidate" OnSelect="() => PickAsync(candidate)" />
             }
         }
     </div>
