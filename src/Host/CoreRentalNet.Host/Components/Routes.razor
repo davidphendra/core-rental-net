@@ -1,5 +1,6 @@
 <CascadingValue Name="Customer" Value="Customer">
 <CascadingValue Name="DraftToken" Value="DraftToken">
+<CascadingValue Name="StoreCategory" Value="StoreCategory">
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(MarketingLayout)" />
@@ -17,6 +18,7 @@
 </Router>
 </CascadingValue>
 </CascadingValue>
+</CascadingValue>
 
 @code {
     /// <summary>
@@ -27,4 +29,7 @@
 
     /// <summary>Published beside the draft token, for the same reason and by the same mechanism.</summary>
     [Parameter] public CurrentCustomer Customer { get; set; } = CurrentCustomer.Anonymous;
+
+    /// <summary>The store's remembered category, desks when nothing was remembered.</summary>
+    [Parameter] public CatalogTab StoreCategory { get; set; } = CatalogTab.Desks;
 }

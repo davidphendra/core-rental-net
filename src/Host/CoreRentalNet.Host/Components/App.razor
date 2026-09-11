@@ -20,7 +20,8 @@
          Routes re-publishes it as a cascading value for the pages and layouts below.
          The at-sign is load-bearing: without it Razor passes the literal text "DraftToken", and every
          circuit then shares one draft. -->
-    <Routes @rendermode="InteractiveServer" DraftToken="@DraftToken" Customer="Customer" />
+    <Routes @rendermode="InteractiveServer" DraftToken="@DraftToken" Customer="Customer" StoreCategory="@StoreCategory" />
+    <script src="js/store.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 </html>
@@ -32,9 +33,16 @@
     /// <summary>Who is signed in, read from the same request for the same reason.</summary>
     public CurrentCustomer Customer { get; private set; } = CurrentCustomer.Anonymous;
 
+    /// <summary>
+    /// The store's category as it was left, resolved from the cookie the browser wrote. Read here
+    /// rather than in the component, because reading it later would render the wrong category first.
+    /// </summary>
+    public CatalogTab StoreCategory { get; private set; } = CatalogTab.Desks;
+
     protected override void OnInitialized()
     {
         DraftToken = TokenEventHandlerMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
         Customer = CurrentCustomer.FromClaims(HttpContextAccessor.HttpContext?.User);
+        StoreCategory = StoreCategoryPreference.Read(HttpContextAccessor.HttpContext?.Request.Cookies);
     }
 }

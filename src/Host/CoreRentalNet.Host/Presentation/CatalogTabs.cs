@@ -43,6 +43,19 @@ public static class CatalogTabs
     };
 
     /// <summary>
+    /// The tab a remembered name refers to, or desks when the name is missing or unknown.
+    /// </summary>
+    /// <remarks>
+    /// The name arrives in a cookie, which is to say from the browser, so it is compared against the
+    /// four tabs rather than trusted. Comparing names rather than parsing numbers keeps a stray "3"
+    /// from selecting the third tab.
+    /// </remarks>
+    public static CatalogTab FromName(string? name)
+        => Enum.GetNames<CatalogTab>().Contains(name, StringComparer.Ordinal)
+            ? Enum.Parse<CatalogTab>(name!)
+            : CatalogTab.Desks;
+
+    /// <summary>
     /// Chairs and Desks are whole categories; Accessories and Extras are the two groupings that
     /// split the Accessory category by subcategory.
     /// </summary>

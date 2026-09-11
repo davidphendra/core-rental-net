@@ -1,0 +1,35 @@
+@* The store's category tabs, above the catalog they filter.
+
+   The design's store page has no such row - it is one listing of extras - so this is an addition,
+   drawn in the design's own language: a pill per category, its icon and its name on it, the chosen
+   one filled with the primary container. Pills rather than the selection panel's icon buttons,
+   because this row is wide enough to say the names; the panel is 272px and cannot.
+
+   Shown at every width: on a phone the panel is gone, and this is the only way to change category
+   on this page. *@
+<div class="flex flex-wrap gap-2 mb-stack-lg" role="group" aria-label="Product categories">
+    @foreach (var tab in CatalogTabs.All)
+    {
+        var current = tab;
+        <button type="button" class="@PlacementFor(current)"
+                aria-pressed="@((Selected == current).ToString().ToLowerInvariant())"
+                @onclick="() => OnSelect.InvokeAsync(current)">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="@ProductGlyph.PathFor(CatalogTabs.GlyphFor(current))" />
+            </svg>
+            @CatalogTabs.LabelFor(current)
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public CatalogTab Selected { get; set; }
+
+    [Parameter] public EventCallback<CatalogTab> OnSelect { get; set; }
+
+    private string PlacementFor(CatalogTab tab) => (Selected == tab
+        ? "bg-primary-container text-on-primary-container"
+        : "bg-surface-container-highest text-on-surface-variant hover:bg-surface-container-high")
+        + " flex items-center gap-2 px-4 py-2 rounded-full text-label-md font-label-md font-bold transition-colors";
+}

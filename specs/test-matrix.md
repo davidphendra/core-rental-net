@@ -31,6 +31,15 @@ was never specified.
 | CAT-13 | Catalog exposes no mutation API | verified by architecture test on public surface | A | passing |
 | CAT-14 | Catalog file contains a duplicate SKU (any casing) | rejected with the offending SKU named | I | passing |
 
+## Store page (the catalog, one category at a time)
+| ID | Scenario | Expected | Level | Status |
+|---|---|---|---|---|
+| STORE-01 | First visit | opens on desks, and only desks are loaded | E | passing |
+| STORE-02 | The page itself | no selection panel; the catalog is the page | E | passing |
+| STORE-03 | Choosing a category | the listing is replaced, not appended to | E | passing |
+| STORE-04 | Remembered category | survives a page load in a session cookie | E | passing |
+| STORE-05 | Remembered name the catalog does not know | ignored, falls back to desks | E | passing |
+
 ## Money (ADR-0004)
 
 | id | scenario | expected | layer | status |

@@ -1,25 +1,32 @@
 @page "/extras"
 @layout BuilderLayout
 @inject WorkspaceSession Session
+@inject IJSRuntime JS
 @inject GetCatalogPageHandler CatalogPage
 @inject GetCatalogGroupHandler CatalogGroup
-<PageTitle>Accessory Store — Core Rental</PageTitle>
+<PageTitle>Store — Core Rental</PageTitle>
 
-<SelectionPanel />
+@* The design's store page carries a selection panel on the left and lists extras. Neither is here
+   any more.
 
-@* The design's store is one listing of extras, and so is this. It used to carry a row of category
-   tabs as well; they are gone, because the design has no such row, because the panel beside them
-   already browses categories, and because the page's own heading and title are about extras. The
-   chevrons are drawn inline: the design sets them in an icon font, and a font that may not be
-   there is a font that leaves an empty box. *@
-<section class="flex-1 lg:ml-80 px-margin-mobile md:px-margin-desktop py-stack-lg min-h-screen pb-32 lg:pb-stack-lg">
+   The panel is gone because the page's own cards already do what it did - they add to the workspace
+   - and because the row of pills above the catalog now chooses the category. That also gives back
+   the 320px the panel reserved, and the grid spends it on a fourth column.
+
+   The words are a deliberate deviation: the design's copy is about extras, and this page opens on
+   desks. The heading stays, because it fits any category; the title, the subtitle and the
+   breadcrumb now say what the page is.
+
+   One category is loaded at a time, the one remembered for the session, and desks when the session
+   remembers nothing. *@
+<section class="flex-1 px-margin-mobile md:px-margin-desktop py-stack-lg min-h-screen pb-32 lg:pb-stack-lg">
     <nav class="flex items-center gap-2 text-label-md font-label-md text-on-surface-variant mb-stack-md" aria-label="Breadcrumb">
         <a class="hover:text-primary transition-colors" href="/builder">Builder</a>
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 6l6 6-6 6" />
         </svg>
-        <a class="hover:text-primary transition-colors" href="/extras">Extras</a>
+        <a class="hover:text-primary transition-colors" href="/extras">Store</a>
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 6l6 6-6 6" />
@@ -30,10 +37,11 @@
     <header class="mb-stack-lg">
         <h1 class="text-display-lg font-display-lg text-on-surface mb-2">Add Your Bali Vibes</h1>
         <p class="text-body-lg font-body-lg text-on-surface-variant max-w-2xl">
-            Elevate your workspace with premium extras. Enhance productivity and comfort with our
-            curated selection of tropical tech lifestyle additions.
+            Build your setup from desks, chairs, accessories and extras. Every item rents month to month.
         </p>
     </header>
+
+    <StoreCategoryPills Selected="tab" OnSelect="SelectAsync" />
 
     @if (Session.Error is not null)
     {
@@ -44,9 +52,9 @@
         <p class="alert alert--info" role="status">@LastAdded added to your workspace.</p>
     }
 
-    @* grid-store carries no styling of its own: it is the marker the browser tests wait for on
-       this page, the same way workspace-stage marks the builder. *@
-    <div class="grid-store grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+    @* grid-store carries no styling of its own: it is the marker the browser tests wait for on this
+       page, the same way workspace-stage marks the builder. *@
+    <div class="grid-store grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
         @foreach (var product in products)
         {
             <StoreProductCard Product="product" OnSelect="AddAsync" />
@@ -57,17 +65,35 @@
 @code {
     [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
 
+    /// <summary>Already resolved from the cookie on the request; desks if nothing was remembered.</summary>
+    [CascadingParameter(Name = "StoreCategory")] public CatalogTab StoreCategory { get; set; } = CatalogTab.Desks;
+
+    private CatalogTab tab = CatalogTab.Desks;
     private IReadOnlyList<ProductListItem> products = [];
     private string? LastAdded;
 
     protected override async Task OnInitializedAsync()
     {
+        tab = StoreCategory;
+
         if (!string.IsNullOrEmpty(DraftToken))
         {
             await Session.EnsureLoadedAsync(DraftToken);
         }
 
-        products = CatalogTabs.Load(CatalogTab.Extras, CatalogPage, CatalogGroup);
+        LoadProducts();
+    }
+
+    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
+
+    private async Task SelectAsync(CatalogTab selected)
+    {
+        tab = selected;
+        LastAdded = null;
+        LoadProducts();
+
+        // The browser writes the cookie. See StoreCategoryPreference for why it cannot be written here.
+        await JS.InvokeVoidAsync(StoreCategoryPreference.RememberFunction, tab.ToString());
     }
 
     private async Task AddAsync(ProductListItem product)
