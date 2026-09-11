@@ -1,10 +1,21 @@
-@* One slot on the canvas: an empty invitation, or an item with its controls. *@
+@* One slot: the design's dashed invitation, or the thing that has taken it.
+
+   The empty state is the design's, class for class, including the way its labels differ from slot
+   to slot - the monitor's label is a step larger than the lamp's, and a zone's sits beside its
+   icon rather than under it. The filled state has no design to copy: the design draws a table, a
+   chair and four empty invitations, and never shows what a rented monitor looks like. It is
+   therefore built from the palette and the shapes the design does use, and it is the only part of
+   this canvas that is mine.
+
+   Icons are drawn inline rather than set in an icon font, which is why they are sized with h-8/w-8
+   where the design sizes them with text-3xl: a font size means nothing to an SVG. *@
 @if (Slot.IsFilled)
 {
-    <div class="slot @SlotCss.ClassFor(Slot.Slot) slot--filled">
+    <div class="slot @SlotCss.ClassFor(Slot.Slot) slot--filled @Position @FilledLayout">
         @if (Slot.Quantity > 1)
         {
-            <span class="slot__quantity" aria-hidden="true">&times;@Slot.Quantity</span>
+            <span class="slot__quantity absolute -top-2 -right-2 bg-primary text-on-primary rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold"
+                  aria-hidden="true">&times;@Slot.Quantity</span>
         }
         @if (!ReadOnly)
         {
@@ -15,10 +26,10 @@
             <ProductImage AltText="@(Slot.Name ?? Slot.DisplayName)" ImagePath="@Slot.ImagePath"
                           ImageAvailable="@Slot.ImageAvailable" Glyph="@ProductGlyph.ForSlot(Slot.Slot)" />
         </div>
-        <span class="slot__name label-sm">@Slot.Name</span>
+        <span class="slot__name text-[10px] font-bold text-on-surface w-full truncate text-center">@Slot.Name</span>
         @if (Slot.UnitMonthlyPrice is not null)
         {
-            <span class="slot__price">@Slot.UnitMonthlyPrice.ToDisplayString()/mo</span>
+            <span class="slot__price text-[10px] text-on-surface-variant">@Slot.UnitMonthlyPrice.ToDisplayString()/mo</span>
         }
         @if (!ReadOnly && Slot.MaxQuantity > 1)
         {
@@ -26,25 +37,32 @@
                              ItemName="@Slot.DisplayName" Label="@($"{Slot.DisplayName} quantity")"
                              OnChange="@(value => OnQuantityChange.InvokeAsync((Slot.Slot, value)))" />
         }
-    </div>
-}
-else if (ReadOnly)
-{
-    <div class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty slot--static">
-        <span class="label-sm">@EmptyLabel</span>
+        @if (IsDesk)
+        {
+            <span class="absolute top-full left-4 w-4 h-32 bg-[#d2b496] rounded-b-sm" aria-hidden="true"></span>
+            <span class="absolute top-full right-4 w-4 h-32 bg-[#d2b496] rounded-b-sm" aria-hidden="true"></span>
+        }
     </div>
 }
 else
 {
-    <button type="button" class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty"
+    @* An empty slot invites a click; on the review preview it only shows its shape. *@
+    <button type="button" class="slot @SlotCss.ClassFor(Slot.Slot) slot--empty @Position @EmptyLayout"
+            disabled="@ReadOnly"
             @onclick="() => OnPick.InvokeAsync(Slot.Slot)">
-        <span class="slot__plus" aria-hidden="true">&plus;</span>
-        <span class="label-sm">@EmptyLabel</span>
+        <svg class="@EmptyIconSize text-outline @EmptyIconTone" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="@ProductGlyph.PathFor("plus")" />
+        </svg>
+        <span class="@EmptyLabelClass">@EmptyLabel</span>
     </button>
 }
 
 @code {
     [Parameter, EditorRequired] public AssignableSlot Slot { get; set; } = default!;
+
+    /// <summary>The design's classes for where this slot sits, from <see cref="SlotCss"/>.</summary>
+    [Parameter, EditorRequired] public string Position { get; set; } = string.Empty;
 
     /// <summary>True on the review preview, where the canvas is shown but not edited.</summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -54,6 +72,47 @@ else
     [Parameter] public EventCallback<SlotId> OnRemove { get; set; }
 
     [Parameter] public EventCallback<(SlotId Slot, int Quantity)> OnQuantityChange { get; set; }
+
+    private bool IsDesk => Slot.Slot == SlotId.Desk;
+
+    private bool IsZone => Slot.Slot is SlotId.CoffeeStation or SlotId.RelaxZone;
+
+    /// <summary>A filled desk is a table top, so its contents lie in a row along it.</summary>
+    /// <remarks>
+    /// The card's own colours are the design's classes rather than a rule in slots.css, because
+    /// that stylesheet is loaded after the generated one and would win any argument over them.
+    /// </remarks>
+    private string FilledLayout => IsDesk
+        ? "bg-[#e8cdb4] border border-[#d2b496] rounded-md shadow-sm flex items-center justify-between gap-2 px-2"
+        : "bg-surface-container-lowest border border-surface-container-highest shadow-ambient flex flex-col items-center justify-center gap-1 p-1";
+
+    /// <summary>The design stacks an invitation inside the stage; a zone and the desk lie flat.</summary>
+    private string EmptyLayout => Slot.Slot switch
+    {
+        SlotId.CoffeeStation or SlotId.RelaxZone =>
+            "slot-empty flex items-center justify-center cursor-pointer hover:bg-surface-container-low group",
+        SlotId.Desk =>
+            "slot-empty flex items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors group",
+        _ =>
+            "slot-empty flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-low transition-colors group",
+    };
+
+    private string EmptyIconSize => Slot.Slot == SlotId.Monitor ? "h-8 w-8" : "h-6 w-6";
+
+    private string EmptyIconTone => Slot.Slot switch
+    {
+        SlotId.Monitor => "mb-1 group-hover:text-primary transition-colors",
+        SlotId.CoffeeStation or SlotId.RelaxZone => "mr-2 group-hover:text-primary",
+        SlotId.Desk => "mr-2 group-hover:text-primary transition-colors",
+        _ => "mb-1 group-hover:text-primary transition-colors",
+    };
+
+    private string EmptyLabelClass => Slot.Slot switch
+    {
+        SlotId.Monitor or SlotId.CoffeeStation or SlotId.RelaxZone =>
+            "text-label-sm font-label-sm text-outline group-hover:text-primary",
+        _ => "text-[10px] font-label-sm text-outline group-hover:text-primary text-center",
+    };
 
     private string EmptyLabel => Slot.Slot switch
     {

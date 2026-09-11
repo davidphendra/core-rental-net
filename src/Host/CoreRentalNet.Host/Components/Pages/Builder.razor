@@ -31,10 +31,12 @@
 
     @if (Session.Current is not null)
     {
-        <div class="stack-lg">
-            <SlotCanvas View="Session.Current" OnPick="OpenPickerAsync" OnRemove="RemoveAsync" OnQuantityChange="ChangeQuantityAsync" />
-            <ZoneList View="Session.Current" OnPick="OpenPickerAsync" OnRemove="RemoveAsync" OnQuantityChange="ChangeQuantityAsync" />
-        </div>
+        @* The stage and the zones are siblings in the design, and they stay siblings here. Wrapping
+           them in a flex column looks harmless and is not: an auto margin on the cross axis cancels
+           the stretch, so the zone grid is sized by its content (608px instead of the 880 it has),
+           and the wrapper's own gap is added on top of the design's section spacing. *@
+        <SlotCanvas View="Session.Current" OnPick="OpenPickerAsync" OnRemove="RemoveAsync" OnQuantityChange="ChangeQuantityAsync" />
+        <ZoneList View="Session.Current" OnPick="OpenPickerAsync" OnRemove="RemoveAsync" OnQuantityChange="ChangeQuantityAsync" />
     }
 
     @* The docked panel is not on screen on a phone, so the categories become a row of chips that

@@ -7,7 +7,8 @@ namespace CoreRentalNet.Host.Presentation;
 /// </summary>
 /// <remarks>
 /// This is the only place the UI translates a slot into geometry, and it translates it into a
-/// class name, not into coordinates. The coordinates live in <c>slots.css</c> (ADR-0008).
+/// class name, not into coordinates. The classes are the design's own, copied from its markup,
+/// which places the seven positions absolutely instead of laying them out (ADR-0008).
 /// </remarks>
 public static class SlotCss
 {
@@ -21,5 +22,20 @@ public static class SlotCss
         SlotId.CoffeeStation => "slot--coffee-station",
         SlotId.RelaxZone => "slot--relax-zone",
         _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "No CSS class is defined for this slot."),
+    };
+
+    /// <summary>Where a slot sits on the stage, in the design's own classes.</summary>
+    /// <remarks>
+    /// The monitor hangs from the top centre; the lamp and the plant stand at the right; the desk
+    /// spans the width with the chair in front of it, half below the stage's inner box.
+    /// </remarks>
+    public static string StagePositionFor(SlotId slot) => slot switch
+    {
+        SlotId.Monitor => "absolute top-0 left-1/2 -translate-x-1/2 w-48 h-32",
+        SlotId.Lamp => "absolute bottom-8 right-40 w-24 h-24",
+        SlotId.Plant => "absolute bottom-8 right-12 w-24 h-24",
+        SlotId.Desk => "w-full h-8 relative z-0",
+        SlotId.Chair => "absolute -bottom-16 left-1/2 -translate-x-1/2 w-32 h-40 z-20",
+        _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "A zone is laid out by the grid, not positioned."),
     };
 }

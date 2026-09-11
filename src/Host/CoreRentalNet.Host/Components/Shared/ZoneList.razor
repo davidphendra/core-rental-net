@@ -1,10 +1,11 @@
-@* The zones that sit below the scene. Only zones the catalog can actually fill are rendered. *@
-<div class="zone-list">
+@* The zones that sit below the stage, in the design's four-column grid. Only zones the catalog
+   can actually fill are rendered. *@
+<div class="zone-list mt-section-gap grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-4xl mx-auto">
     @foreach (var slot in View.Slots.Where(slot => ZoneIds.Contains(slot.Slot)))
     {
-        <section class="zone stack-sm">
-            <h3 class="label-md chip chip--neutral">@slot.DisplayName</h3>
-            <SlotView Slot="slot" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" />
+        <section class="flex flex-col items-center">
+            <h3 class="text-label-md font-label-md text-on-surface bg-surface-container-highest px-4 py-1 rounded-full mb-4">@slot.DisplayName</h3>
+            <SlotView Slot="slot" Position="w-full h-24" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" />
         </section>
     }
 </div>

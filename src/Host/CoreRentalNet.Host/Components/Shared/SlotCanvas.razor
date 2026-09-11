@@ -1,19 +1,24 @@
-@* The scene. Geometry is in slots.css; this component only decides what each slot holds. *@
-<div class="workspace-stage">
-    <div class="scene">
+@* The stage, and the seven positions the design draws on it.
+
+   The design is a picture of one workspace - a table, a chair, an empty place for a monitor, a
+   lamp and a plant - so the positions are fixed rather than computed. What is not fixed is what
+   stands in them: this renders whatever the workspace actually holds. The zones that sit below
+   the stage are ZoneList's, not this component's. *@
+<div class="workspace-stage relative w-full max-w-4xl mx-auto h-[500px] bg-surface-bright rounded-[2rem] shadow-ambient border border-surface-container-high p-8 flex flex-col items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
+         style="background-image: radial-gradient(#006767 1px, transparent 1px); background-size: 24px 24px;"></div>
+
+    <div class="scene relative w-full max-w-2xl h-64 flex flex-col items-center justify-end z-10">
         @foreach (var slot in SceneSlots(AccessorySlots))
         {
-            <SlotView Slot="slot" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
+            <SlotView Slot="slot" Position="@SlotCss.StagePositionFor(slot.Slot)" OnPick="OnPick"
+                      OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
         }
-
-        <div class="scene__desk">
-            <span class="scene__leg scene__leg--left" aria-hidden="true"></span>
-            <span class="scene__leg scene__leg--right" aria-hidden="true"></span>
-        </div>
 
         @foreach (var slot in SceneSlots(BelowBarSlots))
         {
-            <SlotView Slot="slot" OnPick="OnPick" OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
+            <SlotView Slot="slot" Position="@SlotCss.StagePositionFor(slot.Slot)" OnPick="OnPick"
+                      OnRemove="OnRemove" OnQuantityChange="OnQuantityChange" ReadOnly="ReadOnly" />
         }
     </div>
 </div>

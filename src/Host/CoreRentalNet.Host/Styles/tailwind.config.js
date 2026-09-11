@@ -2,7 +2,14 @@
 // specs/design/moni_s_workspace_home/code.html. This file is the single source of the
 // palette, the type scale, the spacing scale and the shape scale.
 module.exports = {
-  content: ["../Components/**/*.razor", "../wwwroot/**/*.html"],
+  // Presentation holds the class names the UI builds from data - a slot becomes a position there -
+  // so it is scanned like markup. A class written where the stylesheet cannot see it reaches the
+  // browser with no rule behind it, and the layout falls back to the browser's own defaults.
+  content: [
+    "../Components/**/*.razor",
+    "../Presentation/**/*.cs",
+    "../wwwroot/**/*.html",
+  ],
   plugins: [require("@tailwindcss/container-queries"), require("@tailwindcss/forms")],
   darkMode: "class",
             theme: {
