@@ -42,6 +42,36 @@ Two things worth knowing:
   serves its stylesheets, fonts and product images from the project directory, so starting the
   built assembly from somewhere else gives you a working page with no styling.
 
+### Signing in — optional
+
+The funnel works entirely without an account. Signing in is additive: it puts your name and email
+on the order and gives you a list of your own orders.
+
+**With nothing configured, identity is simply off** — no sign-in link, no account routes, and the
+application behaves exactly as described above. To turn it on against your own Auth0 tenant:
+
+1. In the Auth0 dashboard, create an application of type **Regular Web Application**.
+2. Register these URLs (the port is pinned, so they stay valid):
+   - Allowed Callback URLs: `http://localhost:5199/account/callback`
+   - Allowed Logout URLs: `http://localhost:5199/`
+3. Paste the **Domain** and **Client ID** into
+   `src/Host/CoreRentalNet.Host/appsettings.Development.json` under `Auth0`.
+4. Keep the **client secret** out of every file:
+
+   ```bash
+   dotnet user-secrets set "Auth0:ClientSecret" "<your-secret>" \
+     --project src/Host/CoreRentalNet.Host
+   ```
+
+5. Run the app and use the sign-in link in the header.
+
+A test fails the build if a client secret ever appears in a committed configuration file.
+
+For any other environment, set `Auth0__Domain`, `Auth0__ClientId` and `Auth0__ClientSecret` as
+environment variables or application settings, and register that environment's own callback and
+logout URLs in the tenant. Sign-in requires **HTTPS** outside development, because the
+authentication cookie cannot be marked `Secure` over plain HTTP.
+
 ### Start over
 
 The catalog is read once at startup and the database is disposable:
