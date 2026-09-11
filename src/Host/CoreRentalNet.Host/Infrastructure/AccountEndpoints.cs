@@ -14,6 +14,12 @@ public static class AccountEndpoints
 {
     public const string CallbackPath = "/account/callback";
 
+    /// <summary>
+    /// Where the provider sends the browser after signing out, which the handler then redirects
+    /// from. This is the second URL the tenant has to be told about.
+    /// </summary>
+    public const string SignedOutCallbackPath = "/account/signed-out";
+
     public static void Map(WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);

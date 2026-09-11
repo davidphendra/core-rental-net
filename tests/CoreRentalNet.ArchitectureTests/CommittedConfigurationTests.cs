@@ -59,10 +59,21 @@ public sealed class CommittedConfigurationTests
         auth0.TryGetProperty("ClientSecret", out _).Should().BeFalse("there is nowhere in a committed file for it");
     }
 
+    [Fact] // AUTH-08
+    public void The_one_file_allowed_to_hold_a_local_secret_is_gitignored()
+    {
+        var ignore = File.ReadAllText(Path.Combine(RepoRoot.Path, ".gitignore"));
+
+        ignore.Should().Contain("appsettings.Local.json",
+            "otherwise the exclusion below would quietly become a hole");
+    }
+
     private static IEnumerable<string> ConfigurationFiles()
         => Directory.GetFiles(RepoRoot.Combine("src"), "appsettings*.json", SearchOption.AllDirectories)
             .Where(file => !file.Contains("/obj/", StringComparison.Ordinal)
-                           && !file.Contains("/bin/", StringComparison.Ordinal));
+                           && !file.Contains("/bin/", StringComparison.Ordinal))
+            // The one sanctioned exception, and the test above proves it is not committed.
+            .Where(file => !file.EndsWith("appsettings.Local.json", StringComparison.Ordinal));
 
     private static IEnumerable<string?> FindKeys(JsonElement element, string key)
     {

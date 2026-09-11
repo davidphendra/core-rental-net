@@ -26,6 +26,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Loaded last so it wins, and gitignored so a developer's own tenant details and secret never
+// have to live in a tracked file. appsettings.Development.json stays as the empty template.
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
+
 // ---------------------------------------------------------------------------
 // Identity, which is optional and additive (ADR-0016). With no domain configured
 // nothing below is registered, the sign-in affordance hides itself, and the
@@ -69,6 +73,12 @@ if (identitySettings.IsConfigured)
             options.Scope.Add("email");
 
             options.CallbackPath = AccountEndpoints.CallbackPath;
+
+            // Where the provider returns the browser after signing out. The handler then sends it
+            // on to the application. The default is /signout-callback-oidc, which has to be
+            // registered in the tenant just the same; naming it here keeps every identity route
+            // under /account and makes the URL to register obvious.
+            options.SignedOutCallbackPath = AccountEndpoints.SignedOutCallbackPath;
 
             // No access token and no refresh token are stored (ADR-0019). The profile is read once
             // at sign-in so the name and email on an order are reliable.

@@ -51,19 +51,26 @@ on the order and gives you a list of your own orders.
 application behaves exactly as described above. To turn it on against your own Auth0 tenant:
 
 1. In the Auth0 dashboard, create an application of type **Regular Web Application**.
-2. Register these URLs (the port is pinned, so they stay valid):
-   - Allowed Callback URLs: `http://localhost:5199/account/callback`
-   - Allowed Logout URLs: `http://localhost:5199/`
-3. Paste the **Domain** and **Client ID** into
-   `src/Host/CoreRentalNet.Host/appsettings.Development.json` under `Auth0`.
-4. Keep the **client secret** out of every file:
+2. Register these URLs (the port is pinned, so they stay valid). Both are required: the second
+   is where the provider returns the browser *after* signing out, not the application's home page.
+   - **Allowed Callback URLs:** `http://localhost:5199/account/callback`
+   - **Allowed Logout URLs:** `http://localhost:5199/account/signed-out`
+3. Put your **Domain**, **Client ID** and **Client secret** in
+   `src/Host/CoreRentalNet.Host/appsettings.Local.json`, which is **gitignored** and loaded last:
 
-   ```bash
-   dotnet user-secrets set "Auth0:ClientSecret" "<your-secret>" \
-     --project src/Host/CoreRentalNet.Host
+   ```json
+   { "Auth0": { "Domain": "…", "ClientId": "…", "ClientSecret": "…" } }
    ```
 
+   `appsettings.Development.json` stays as the tracked, empty template. Anything set here can
+   also come from user secrets or environment variables instead — a test fails the build if a
+   secret ever appears in a file that is committed.
+
 5. Run the app and use the sign-in link in the header.
+
+**Signing out takes one extra click.** Because no identity token is kept (ADR-0019), the provider
+cannot be told who is signing out and asks for confirmation before ending its own session. That is
+the provider's screen, not ours.
 
 A test fails the build if a client secret ever appears in a committed configuration file.
 
