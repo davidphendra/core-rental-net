@@ -87,19 +87,6 @@ if (identitySettings.IsConfigured)
 
             options.TokenValidationParameters.NameClaimType = "name";
 
-            // The provider names its logout parameter returnTo, not post_logout_redirect_uri.
-            options.Events.OnRedirectToIdentityProviderForSignOut = context =>
-            {
-                var redirect = context.ProtocolMessage.PostLogoutRedirectUri;
-
-                if (!string.IsNullOrEmpty(redirect))
-                {
-                    context.ProtocolMessage.SetParameter("returnTo", redirect);
-                    context.ProtocolMessage.PostLogoutRedirectUri = null;
-                }
-
-                return Task.CompletedTask;
-            };
         });
 }
 

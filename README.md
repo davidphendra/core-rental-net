@@ -55,6 +55,8 @@ application behaves exactly as described above. To turn it on against your own A
    is where the provider returns the browser *after* signing out, not the application's home page.
    - **Allowed Callback URLs:** `http://localhost:5199/account/callback`
    - **Allowed Logout URLs:** `http://localhost:5199/account/signed-out`
+     — at **Account Settings → Advanced → Allowed Logout URLs**, which is a *tenant* setting, not
+     the application's own settings page. The provider says so itself when it is missing.
 3. Put your **Domain**, **Client ID** and **Client secret** in
    `src/Host/CoreRentalNet.Host/appsettings.Local.json`, which is **gitignored** and loaded last:
 
