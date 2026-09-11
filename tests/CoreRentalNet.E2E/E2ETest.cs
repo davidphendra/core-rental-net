@@ -65,7 +65,7 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
     {
         "/builder" => ".workspace-stage",
         "/review" => ".receipt",
-        "/extras" => ".grid-cards",
+        "/extras" => ".grid-store",
         _ => "#main",
     };
 

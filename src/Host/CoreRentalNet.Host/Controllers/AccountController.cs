@@ -1,17 +1,24 @@
-using System.Security.Claims;
-using CoreRentalNet.Host.Presentation;
+using CoreRentalNet.Host.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
-namespace CoreRentalNet.Host.Infrastructure;
+namespace CoreRentalNet.Host.Controllers;
 
 /// <summary>
 /// The only HTTP surface this application has, and the only place it can be: a circuit has no
 /// <c>HttpContext</c>, so it cannot challenge, set a cookie or redirect (ADR-0017).
 /// </summary>
-public static class AccountEndpoints
+/// <remarks>
+/// Written as endpoint mappings rather than an MVC controller on purpose. It is the whole of the
+/// application's controller layer, the two routes are redirects with no input to bind and no body
+/// to render, and an <c>MvcController</c> would bring the model binding and filter pipeline into an
+/// application that otherwise has none (ADR-0012). Converting it is a small change if the project
+/// ever grows real endpoints.
+/// </remarks>
+public static class AccountController
 {
+    /// <summary>Where the identity provider returns the browser after signing in.</summary>
     public const string CallbackPath = "/account/callback";
 
     /// <summary>
@@ -20,11 +27,18 @@ public static class AccountEndpoints
     /// </summary>
     public const string SignedOutCallbackPath = "/account/signed-out";
 
-    public static void Map(WebApplication app)
+    /// <summary>
+    /// Maps the two routes a customer can reach under <c>/account</c>. The callback paths above are
+    /// deliberately absent: the authentication handler owns those and the middleware answers them
+    /// before routing is reached, so an endpoint here would be dead code.
+    /// </summary>
+    public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
-        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(endpoints);
 
-        app.MapGet("/account/login", (string? returnUrl, HttpContext context) =>
+        var account = endpoints.MapGroup("/account");
+
+        account.MapGet("login", (string? returnUrl) =>
         {
             var destination = LocalUrl.Sanitise(returnUrl);
 
@@ -33,7 +47,7 @@ public static class AccountEndpoints
                 [OpenIdConnectDefaults.AuthenticationScheme]);
         });
 
-        app.MapGet("/account/logout", (HttpContext context) =>
+        account.MapGet("logout", () =>
         {
             // Signing out of the cookie alone would leave the provider's own session alive, so on a
             // shared computer the next click would silently sign the same person back in.
@@ -42,31 +56,4 @@ public static class AccountEndpoints
                 [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
         });
     }
-}
-
-/// <summary>
-/// Keeps the login page from becoming an open redirect.
-/// </summary>
-/// <remarks>
-/// This is the framework's own rule: a local URL starts with a single forward slash, and not with
-/// two, and not with a backslash that a browser might treat as one.
-/// </remarks>
-internal static class LocalUrl
-{
-    public static string Sanitise(string? candidate, string fallback = "/")
-    {
-        if (string.IsNullOrWhiteSpace(candidate))
-        {
-            return fallback;
-        }
-
-        var url = candidate.Trim();
-
-        return IsLocal(url) ? url : fallback;
-    }
-
-    public static bool IsLocal(string? url)
-        => !string.IsNullOrEmpty(url)
-           && url[0] == '/'
-           && (url.Length == 1 || (url[1] != '/' && url[1] != '\\'));
 }

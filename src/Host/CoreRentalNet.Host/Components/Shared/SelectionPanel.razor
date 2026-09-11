@@ -1,0 +1,75 @@
+@inherits WorkspaceObserver
+@inject NavigationManager Navigation
+@inject GetCatalogPageHandler CatalogPage
+@inject GetCatalogGroupHandler CatalogGroup
+@* The docked panel the designs draw on both the builder and the store: browse a category,
+   assign an item, and leave for the summary. It keeps its own browsing state, because what it
+   shows has nothing to do with what the page beside it is doing. *@
+<aside class="builder-aside" aria-label="Selection panel">
+    <div class="stack-sm">
+        <h2 class="headline-md primary-text">Selection Panel</h2>
+        <p class="label-md muted">Build your setup</p>
+    </div>
+
+    <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
+
+    @* Refusals are surfaced by the page, beside the canvas they concern. One error surface, and
+       it is where the customer is looking. *@
+    <div class="scroll-panel">
+        <div class="picker-grid">
+            @foreach (var product in products)
+            {
+                <ProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AssignAsync" />
+            }
+        </div>
+    </div>
+
+    <a class="button @(CanCheckout ? "button--primary" : "button--ghost")" href="/review"
+       aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"
+       tabindex="@(CanCheckout ? 0 : -1)"
+       title="@(CanCheckout ? null : "Add an item to your workspace first")"
+       @onclick="GoToReviewAsync" @onclick:preventDefault="@(!CanCheckout)">
+        View Setup Summary
+    </a>
+</aside>
+
+@code {
+    [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
+
+    private CatalogTab tab = CatalogTab.Chairs;
+    private IReadOnlyList<ProductListItem> products = [];
+
+    private bool CanCheckout => Session.Current?.CanCheckout ?? false;
+
+    protected override void OnInitialized() => LoadProducts();
+
+    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
+
+    private Task SelectTabAsync(CatalogTab selected)
+    {
+        tab = selected;
+        LoadProducts();
+        return Task.CompletedTask;
+    }
+
+    private bool IsAssigned(string sku)
+        => Session.Current?.Slots.Any(slot => slot.Sku == sku) == true;
+
+    private async Task AssignAsync(ProductListItem product)
+    {
+        if (!string.IsNullOrEmpty(DraftToken))
+        {
+            await Session.AssignAsync(DraftToken, product.Sku);
+        }
+    }
+
+    private Task GoToReviewAsync()
+    {
+        if (CanCheckout)
+        {
+            Navigation.NavigateTo("/review");
+        }
+
+        return Task.CompletedTask;
+    }
+}

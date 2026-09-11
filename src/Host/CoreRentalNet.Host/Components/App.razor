@@ -8,6 +8,7 @@
     <title>Core Rental — your Bali office, delivered</title>
     <link rel="stylesheet" href="styles/tokens.css" />
     <link rel="stylesheet" href="styles/fonts.css" />
+    <link rel="stylesheet" href="styles/tailwind.css" />
     <link rel="stylesheet" href="styles/base.css" />
     <link rel="stylesheet" href="styles/slots.css" />
     <HeadOutlet />
@@ -33,7 +34,7 @@
 
     protected override void OnInitialized()
     {
-        DraftToken = DraftTokenMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
+        DraftToken = TokenEventHandlerMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
         Customer = CurrentCustomer.FromClaims(HttpContextAccessor.HttpContext?.User);
     }
 }

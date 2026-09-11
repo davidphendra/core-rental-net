@@ -1,41 +1,12 @@
 @page "/builder"
 @layout BuilderLayout
-@inject WorkspaceSession Session
+@inherits WorkspaceObserver
 @inject GetCatalogPageHandler CatalogPage
 @inject GetCatalogGroupHandler CatalogGroup
 @inject NavigationManager Navigation
 <PageTitle>Workspace Builder — Core Rental</PageTitle>
 
-<aside class="builder-aside" aria-label="Selection panel">
-    <div class="stack-sm">
-        <h2 class="headline-md primary-text">Selection Panel</h2>
-        <p class="label-md muted">Build your setup</p>
-    </div>
-
-    <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
-
-    @if (SelectionError is not null)
-    {
-        <p class="alert" role="alert">@SelectionError</p>
-    }
-
-    <div class="scroll-panel">
-        <div class="picker-grid">
-            @foreach (var product in products)
-            {
-                <ProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AssignAsync" />
-            }
-        </div>
-    </div>
-
-    <a class="button @(CanCheckout ? "button--primary" : "button--ghost")" href="/review"
-       aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"
-       tabindex="@(CanCheckout ? 0 : -1)"
-       title="@(CanCheckout ? null : "Add an item to your workspace first")"
-       @onclick="GoToReviewAsync" @onclick:preventDefault="@(!CanCheckout)">
-        View Setup Summary
-    </a>
-</aside>
+<SelectionPanel />
 
 <section class="builder-main">
     <div class="stack-md text-center">
@@ -53,6 +24,11 @@
         <p class="alert" role="alert">@Session.Error</p>
     }
 
+    @if (SelectionError is not null)
+    {
+        <p class="alert" role="alert">@SelectionError</p>
+    }
+
     @if (Session.Current is not null)
     {
         <div class="stack-lg">
@@ -61,13 +37,15 @@
         </div>
     }
 
+    @* The docked panel is not on screen on a phone, so the categories become a row of chips that
+       open the picker already filtered, which is the same thing the panel does on a desktop. *@
     <div class="chip-row" aria-label="Categories, mobile">
         @foreach (var candidate in CatalogTabs.All)
         {
             var current = candidate;
-            <button type="button" class="chip @(tab == current ? null : "chip--outline")"
-                    aria-pressed="@((tab == current).ToString().ToLowerInvariant())"
-                    @onclick="() => SelectTabAsync(current)">
+            <button type="button" class="chip @(mobileTab == current ? null : "chip--outline")"
+                    aria-pressed="@((mobileTab == current).ToString().ToLowerInvariant())"
+                    @onclick="() => OpenCategoryAsync(current)">
                 @CatalogTabs.LabelFor(current)
             </button>
         }
@@ -90,11 +68,10 @@
     [Parameter, SupplyParameterFromQuery(Name = "empty")] public bool EmptyNotice { get; set; }
 
     private SlotPickerDialog? picker;
-    private CatalogTab tab = CatalogTab.Chairs;
-    private IReadOnlyList<ProductListItem> products = [];
     private IReadOnlyList<ProductListItem> pickerCandidates = [];
     private string pickerTitle = "Choose an item";
     private string? SelectionError;
+    private CatalogTab mobileTab = CatalogTab.Chairs;
 
     private bool CanCheckout => Session.Current?.CanCheckout ?? false;
 
@@ -105,21 +82,22 @@
             await Session.EnsureLoadedAsync(DraftToken);
         }
 
-        LoadProducts();
     }
 
-    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
-
-    private async Task SelectTabAsync(CatalogTab selected)
+    /// <summary>What a phone gets instead of the panel: the category's products, to pick from.</summary>
+    private async Task OpenCategoryAsync(CatalogTab selected)
     {
-        tab = selected;
         SelectionError = null;
-        LoadProducts();
-        await Task.CompletedTask;
-    }
+        mobileTab = selected;
 
-    private bool IsAssigned(string sku)
-        => Session.Current?.Slots.Any(slot => slot.Sku == sku) == true;
+        pickerCandidates = CatalogTabs.Load(selected, CatalogPage, CatalogGroup);
+        pickerTitle = CatalogTabs.LabelFor(selected);
+
+        if (picker is not null && pickerCandidates.Count > 0)
+        {
+            await picker.ShowAsync();
+        }
+    }
 
     private async Task AssignAsync(ProductListItem product)
     {

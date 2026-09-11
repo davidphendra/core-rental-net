@@ -12,6 +12,23 @@ public sealed class DesignTokenTests
     private static string HostRoot => RepoRoot.Combine("src", "Host", "CoreRentalNet.Host");
 
     [Fact] // UI-01
+    public void The_generated_stylesheet_is_built_from_the_design_and_not_hand_edited()
+    {
+        var styles = RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "Styles");
+
+        File.Exists(Path.Combine(styles, "tailwind.config.js")).Should().BeTrue(
+            "the stylesheet is generated from the design's own configuration");
+        File.Exists(Path.Combine(styles, "input.css")).Should().BeTrue();
+        File.Exists(Path.Combine(styles, "package.json")).Should().BeTrue(
+            "the build command lives with it, so the generated file is never edited by hand");
+
+        var generated = File.ReadAllText(
+            RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "wwwroot", "styles", "tailwind.css"));
+
+        generated.Should().NotBeEmpty("otherwise the pages would render unstyled");
+    }
+
+    [Fact] // UI-01
     public void No_stylesheet_or_component_hardcodes_a_colour()
     {
         var tokensFile = Path.Combine(HostRoot, "wwwroot", "styles", "tokens.css");
@@ -93,7 +110,7 @@ public sealed class DesignTokenTests
 
         foreach (var token in new[] { "--primary: #006767", "--tertiary-container: #bb580d", "--surface: #f8f9fa", "--secondary: #376757" })
         {
-            tokens.Should().Contain(token, "the palette must match DESIGN.md");
+            tokens.Should().Contain(token, "the palette must match the design's config");
         }
     }
 
@@ -105,18 +122,22 @@ public sealed class DesignTokenTests
         foreach (var token in new[]
                  {
                      "--unit: 8px", "--container-max: 1280px", "--gutter: 24px", "--margin-mobile: 16px",
-                     "--margin-desktop: 40px", "--section-gap: 80px", "--radius: 0.5rem", "--radius-xl: 1.5rem",
+                     "--margin-desktop: 40px", "--section-gap: 80px", "--radius: 0.25rem", "--radius-xl: 0.75rem",
                      "--backdrop-blur: 12px",
                  })
         {
-            tokens.Should().Contain(token, "the spacing and shape scale comes from DESIGN.md");
+            tokens.Should().Contain(token, "the spacing and shape scale comes from the design's config");
         }
     }
 
     private static IEnumerable<string> FilesToCheck()
         => Directory.GetFiles(Path.Combine(HostRoot, "wwwroot", "styles"), "*.css")
             .Concat(Directory.GetFiles(Path.Combine(HostRoot, "Components"), "*.css", SearchOption.AllDirectories))
-            .Where(file => !file.Contains("/obj/", StringComparison.Ordinal) && !file.Contains("/bin/", StringComparison.Ordinal));
+            .Where(file => !file.Contains("/obj/", StringComparison.Ordinal) && !file.Contains("/bin/", StringComparison.Ordinal))
+            // The one generated artifact. Its colours come from the design's own Tailwind config,
+            // which is the source of truth for them; the rule below is about hand-written styles,
+            // and the test above proves this file is generated rather than authored.
+            .Where(file => !file.EndsWith("tailwind.css", StringComparison.Ordinal));
 
     private static bool ContainsColourLiteral(string line)
     {

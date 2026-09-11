@@ -11,7 +11,7 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// (ADR-0007). The resolved raw token is placed in <c>HttpContext.Items</c> so the root
 /// component can hand it to the interactive tree without reading the cookie again.
 /// </remarks>
-public sealed class DraftTokenMiddleware(RequestDelegate next)
+public sealed class TokenEventHandlerMiddleware(RequestDelegate next)
 {
     public const string CookieName = "corerental.draft";
 

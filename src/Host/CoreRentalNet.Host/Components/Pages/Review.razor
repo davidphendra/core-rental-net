@@ -138,7 +138,7 @@
             // cart. That needs a full page load: a circuit cannot set a cookie.
             var url = result.WasAlreadyPlaced
                 ? $"/orders/{result.RentalNumber}"
-                : $"/orders/{result.RentalNumber}?t={Uri.EscapeDataString(result.RawAccessToken)}&{DraftTokenMiddleware.RotateQueryKey}=1";
+                : $"/orders/{result.RentalNumber}?t={Uri.EscapeDataString(result.RawAccessToken)}&{TokenEventHandlerMiddleware.RotateQueryKey}=1";
 
             Navigation.NavigateTo(url, forceLoad: true);
         }

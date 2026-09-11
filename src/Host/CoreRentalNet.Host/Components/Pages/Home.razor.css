@@ -1,4 +1,27 @@
-.hero__card { position: absolute; width: 14rem; padding: var(--stack-md); display: flex; flex-direction: column; gap: var(--stack-sm); }
-.hero__card:nth-child(1) { top: 8%; right: 8%; }
-.hero__card:nth-child(2) { bottom: 3%; left: 6%; transform: rotate(-2deg); }
-.hero__card-media { height: 9rem; }
+/* Layout taken from specs/design/moni_s_workspace_home/code.html. */
+
+.glyph { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* The hero is ported and styled by Tailwind from the design's own config. */
+
+.steps { position: relative; display: grid; gap: var(--gutter); grid-template-columns: 1fr; }
+.steps__connector { display: none; }
+@media (min-width: 768px) {
+  .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* The dashed line the design draws behind the three circles. */
+  .steps__connector { display: block; position: absolute; top: 50px; left: 15%; right: 15%; height: 2px; border-top: 2px dashed var(--outline-variant); }
+}
+
+.step { display: flex; flex-direction: column; align-items: center; gap: var(--stack-sm); text-align: center; position: relative; }
+.step__lede { margin-inline: auto; }
+.step__badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 6rem; height: 6rem; margin-bottom: var(--stack-md);
+  border-radius: var(--radius-full); background: var(--surface);
+  border: 1px solid var(--surface-container); box-shadow: var(--shadow-1);
+  color: var(--primary); transition: transform 300ms;
+}
+.step__badge .glyph { width: 2rem; height: 2rem; }
+.step:hover .step__badge { transform: translateY(-0.5rem); }
+.step__badge--accent { color: var(--tertiary-container); }
+.step__badge--calm { color: var(--secondary); }

@@ -1,51 +1,47 @@
 @page "/extras"
+@layout BuilderLayout
 @inject WorkspaceSession Session
 @inject GetCatalogPageHandler CatalogPage
 @inject GetCatalogGroupHandler CatalogGroup
 <PageTitle>Accessory Store — Core Rental</PageTitle>
 
-<section class="section">
-    <div class="container stack-lg">
-        <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="/builder">Builder</a>
-            <span aria-hidden="true">&rsaquo;</span>
-            <span>Extras</span>
-            <span aria-hidden="true">&rsaquo;</span>
-            <span>Summary</span>
-        </nav>
+<SelectionPanel />
 
-        <div class="stack-sm">
-            <h1 class="headline-lg">Add Your Bali Vibes</h1>
-            <p class="body-lg muted">
-                Elevate your workspace with premium extras. Enhance productivity and comfort with our
-                curated selection of tropical tech lifestyle additions.
-            </p>
-        </div>
+<section class="builder-main">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/builder">Builder</a>
+        <span aria-hidden="true">&#8250;</span>
+        <span>Extras</span>
+        <span aria-hidden="true">&#8250;</span>
+        <span>Summary</span>
+    </nav>
 
-        <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
+    <header class="stack-sm section-header">
+        <h1 class="display-lg primary-text">Add Your Bali Vibes</h1>
+        <p class="body-lg muted">
+            Elevate your workspace with premium extras. Enhance productivity and comfort with our
+            curated selection of tropical tech lifestyle additions.
+        </p>
+    </header>
 
-        @if (Session.Error is not null)
+    @* The designs draw this page as a single listing of extras. The tabs are an addition, so the
+       same page can also show what goes on the desk; remove them to match the mockup exactly. *@
+    <CategoryTabs Selected="tab" OnSelect="SelectTabAsync" />
+
+    @if (Session.Error is not null)
+    {
+        <p class="alert" role="alert">@Session.Error</p>
+    }
+    else if (LastAdded is not null)
+    {
+        <p class="alert alert--info" role="status">@LastAdded added to your workspace.</p>
+    }
+
+    <div class="grid-store">
+        @foreach (var product in products)
         {
-            <p class="alert" role="alert">@Session.Error</p>
+            <ProductCard Product="product" Detailed OnSelect="AddAsync" />
         }
-        else if (LastAdded is not null)
-        {
-            <p class="alert alert--info" role="status">@LastAdded added to your workspace.</p>
-        }
-
-        <div class="grid-cards">
-            @foreach (var product in products)
-            {
-                <ProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AddAsync" />
-            }
-        </div>
-
-        <div class="row">
-            <a class="button button--ghost" href="/builder">Back to the builder</a>
-            <a class="button button--primary" href="/review"
-               aria-disabled="@(Session.IsEmpty.ToString().ToLowerInvariant())"
-               tabindex="@(Session.IsEmpty ? -1 : 0)">View Setup Summary</a>
-        </div>
     </div>
 </section>
 
@@ -68,16 +64,13 @@
 
     private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
 
-    private async Task SelectTabAsync(CatalogTab selected)
+    private Task SelectTabAsync(CatalogTab selected)
     {
         tab = selected;
         LastAdded = null;
         LoadProducts();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
-
-    private bool IsAssigned(string sku)
-        => Session.Current?.Slots.Any(slot => slot.Sku == sku) == true;
 
     private async Task AddAsync(ProductListItem product)
     {

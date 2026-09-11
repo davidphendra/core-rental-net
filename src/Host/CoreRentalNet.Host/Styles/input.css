@@ -1,0 +1,10 @@
+/* Compiled locally from the design's config. No CDN: the page reaches nothing external. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hand-written classes the design carries alongside its Tailwind utilities. */
+.bg-pattern {
+            background-image: radial-gradient(var(--tw-colors-outline-variant) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }

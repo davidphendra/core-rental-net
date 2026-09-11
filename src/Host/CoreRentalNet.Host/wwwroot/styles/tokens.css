@@ -1,5 +1,7 @@
-/* Tropical Tech — every value here comes from specs/design/tropical_tech/DESIGN.md.
-   Nothing else in the app may hardcode a colour, radius, spacing or font size. */
+/* Tropical Tech. Every value here comes from the theme configuration inside
+   specs/design/*/code.html, which is the single source of truth for the palette, the type scale,
+   the spacing scale and the shape scale. Nothing else in the app may hardcode a colour, a radius,
+   a spacing or a font size. */
 
 :root {
   /* Colour */
@@ -64,12 +66,16 @@
   --margin-desktop: 40px;
   --container-max: 1280px;
 
-  /* Shapes */
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  /* Shapes. Taken from the borderRadius config inside specs/design/**/code.html, which is the
+     source of truth. Note that it disagrees with DESIGN.md's prose scale, which is roughly double
+     these values: building from that made every control twice as round as the mockups. */
+  --radius-sm: 0.125rem;
+  --radius: 0.25rem;          /* rounded      */
+  --radius-md: 0.375rem;      /* rounded-md   */
+  --radius-lg: 0.5rem;        /* rounded-lg   */
+  --radius-xl: 0.75rem;       /* rounded-xl   */
+  --radius-2xl: 1rem;         /* rounded-2xl  */
+  --radius-canvas: 2rem;      /* rounded-[2rem], the builder canvas */
   --radius-full: 9999px;
 
   /* Elevation: tonal layers and ambient shadows tinted with the primary teal */

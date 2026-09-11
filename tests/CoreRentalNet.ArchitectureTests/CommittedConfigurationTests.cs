@@ -59,6 +59,31 @@ public sealed class CommittedConfigurationTests
         auth0.TryGetProperty("ClientSecret", out _).Should().BeFalse("there is nowhere in a committed file for it");
     }
 
+    [Fact] // AUTH-01
+    public void The_local_settings_file_is_loaded_in_development_and_nowhere_else()
+    {
+        // Whichever file loads it, rather than a file named in advance: the guard moved to
+        // Composition/LocalSettings.cs when the composition root was split, and a test pinned to a
+        // path would have to be edited every time the code moved.
+        var source = Directory
+            .GetFiles(RepoRoot.Combine("src", "Host", "CoreRentalNet.Host"), "*.cs", SearchOption.AllDirectories)
+            .Where(file => !file.Contains("/obj/", StringComparison.Ordinal) && !file.Contains("/bin/", StringComparison.Ordinal))
+            .Single(file => File.ReadAllText(file).Contains("appsettings.Local.json", StringComparison.Ordinal));
+
+        var program = File.ReadAllText(source);
+
+        var guard = program.IndexOf("if (builder.Environment.IsDevelopment())", StringComparison.Ordinal);
+        var load = program.IndexOf("appsettings.Local.json", StringComparison.Ordinal);
+
+        guard.Should().BeGreaterThanOrEqualTo(0, "the local file has to be guarded by an environment check");
+        load.Should().BeGreaterThan(guard, "the file must be loaded inside that guard, not before it");
+
+        // And inside it rather than after it: no closing brace may appear in between.
+        var between = program[guard..load];
+        between.Should().Contain("{").And.NotContain(
+            "}", "otherwise the guard has already ended and the file is loaded unconditionally");
+    }
+
     [Fact] // AUTH-08
     public void The_one_file_allowed_to_hold_a_local_secret_is_gitignored()
     {

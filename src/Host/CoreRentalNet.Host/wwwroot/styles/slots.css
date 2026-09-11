@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--stack-lg);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-canvas);
   border: 1px solid var(--surface-container-high);
   background: var(--surface-bright);
   overflow: hidden;
@@ -137,3 +137,7 @@
 /* Shown on the review preview: the shape of an empty slot without inviting a click. */
 .slot--static { cursor: default; }
 .slot--static:hover { background: transparent; border-color: var(--outline-variant); color: var(--outline); }
+
+/* The zones sit in a four-column row in the design, with the used ones centred in it. */
+@media (min-width: 1024px) { .zone-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.zone { align-items: center; }

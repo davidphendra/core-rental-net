@@ -86,7 +86,7 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .chip--outline { background: transparent; border: 1px solid var(--outline-variant); color: var(--on-surface-variant); }
 .chip--glass { background: var(--glass); backdrop-filter: blur(var(--backdrop-blur)); color: var(--primary); border: 1px solid var(--surface-container-highest); }
 
-.card { background: var(--surface-container-lowest); border-radius: var(--radius-xl); border: 1px solid var(--surface-container-highest); box-shadow: var(--shadow-1); }
+.card { background: var(--surface-container-lowest); border-radius: var(--radius-2xl); border: 1px solid var(--surface-container-highest); box-shadow: var(--shadow-1); }
 .card--flat { box-shadow: none; }
 .card--interactive { cursor: pointer; transition: transform 150ms, box-shadow 150ms, border-color 150ms; }
 .card--interactive:hover { transform: translateY(-3px); box-shadow: var(--shadow-2); }
@@ -163,8 +163,9 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .chip-row::-webkit-scrollbar { display: none; }
 .scroll-panel { flex: 1; overflow-y: auto; padding-top: var(--stack-md); border-top: 1px solid var(--outline-variant); }
 .floating-bar { position: fixed; bottom: var(--stack-lg); left: 50%; transform: translateX(-50%); z-index: 40; display: none; }
+@media (min-width: 1024px) { .floating-bar { margin-left: calc(var(--sidebar-width) / 2); } }
 @media (min-width: 1024px) { .floating-bar { display: block; } }
-.receipt { display: flex; flex-direction: column; gap: var(--stack-md); padding: var(--gutter); border-radius: var(--radius-xl); background: var(--surface-container-lowest); border: 1px solid var(--surface-container); box-shadow: var(--shadow-1); }
+.receipt { display: flex; flex-direction: column; gap: var(--stack-md); padding: var(--gutter); border-radius: var(--radius-2xl); background: var(--surface-container-lowest); border: 1px solid var(--surface-container); box-shadow: var(--shadow-1); }
 .line-item { display: flex; align-items: center; justify-content: space-between; gap: var(--stack-md); padding-block: 8px; }
 .line-item__media { width: 48px; height: 48px; flex: none; padding: 6px; border-radius: var(--radius); background: var(--surface-container-low); color: var(--primary); }
 .line-list { display: flex; flex-direction: column; gap: 2px; }
@@ -176,10 +177,6 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .zone-tile--empty { opacity: 0.6; }
 .zone-tile__glyph { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-full); background: var(--secondary-container); color: var(--on-secondary-container); }
 .zone-tile--empty .zone-tile__glyph { background: var(--surface-container-high); color: var(--on-surface-variant); }
-.hero { position: relative; display: grid; gap: var(--gutter); align-items: center; }
-@media (min-width: 768px) { .hero { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.hero__scene { position: relative; height: 320px; }
-@media (min-width: 768px) { .hero__scene { height: 520px; } }
 .steps { display: grid; gap: var(--gutter); grid-template-columns: 1fr; }
 @media (min-width: 768px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .step { display: flex; flex-direction: column; align-items: center; gap: var(--stack-md); text-align: center; }
@@ -190,3 +187,15 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .text-center { text-align: center; }
 .list-reset { list-style: none; margin: 0; padding: 0; }
 .panel { padding: var(--gutter); }
+
+/* Store listing. The design draws three columns, but only at the widest breakpoint. */
+.grid-store { display: grid; gap: var(--gutter); grid-template-columns: 1fr; }
+@media (min-width: 768px) { .grid-store { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .grid-store { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.section-header { margin-bottom: var(--stack-lg); }
+
+/* A tonal band, as the "How it Works" section is drawn. */
+.section--tonal { background: var(--surface-container-low); }
+/* Room for the fixed bottom navigation, which would otherwise cover the last section on a phone. */
+.page-bottom-spacer { height: 6rem; }
+@media (min-width: 1024px) { .page-bottom-spacer { display: none; } }

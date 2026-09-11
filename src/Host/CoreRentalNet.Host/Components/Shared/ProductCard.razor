@@ -1,5 +1,7 @@
-@* One catalog item. Clicking it assigns it; the slot is decided by the domain, not the customer. *@
-<button type="button" class="product-card @(IsSelected ? "product-card--selected" : null)"
+@* One catalog item. It is a button, not a decorated container: a click means "add this", and a
+   div would be invisible to a keyboard. The detailed form is the store's card, where the designs
+   show a description and an explicit action beneath the image. *@
+<button type="button" class="product-card @(Detailed ? "product-card--detailed" : null) @(IsSelected ? "product-card--selected" : null)"
         aria-pressed="@(IsSelected.ToString().ToLowerInvariant())"
         aria-label="@($"Add {Product.Name} to your workspace")"
         @onclick="() => OnSelect.InvokeAsync(Product)">
@@ -7,18 +9,39 @@
     {
         <span class="product-card__check" aria-hidden="true">&#10003;</span>
     }
-    <div class="product-card__media">
+
+    <div class="product-card__media @(Detailed ? "product-card__media--tall" : null)">
         <ProductImage AltText="@Product.Name" ImagePath="@Product.ImagePath" ImageAvailable="@Product.ImageAvailable"
                       Glyph="@ProductGlyph.ForProduct(Product.Category, Product.SubCategory)" />
+        @if (Product.IsFeatured)
+        {
+            <span class="product-card__badge">Popular</span>
+        }
     </div>
-    <span class="product-card__name label-sm">@Product.Name</span>
-    <span class="product-card__price">+@Product.MonthlyPrice.ToDisplayString()/mo</span>
+
+    @if (Detailed)
+    {
+        <span class="row-between product-card__heading">
+            <span class="body-md product-card__name">@Product.Name</span>
+            <PriceTag Value="@Product.MonthlyPrice" />
+        </span>
+        <span class="product-card__description body-md">@Product.Description</span>
+        <span class="product-card__action">Add to Setup</span>
+    }
+    else
+    {
+        <span class="product-card__name label-sm">@Product.Name</span>
+        <span class="product-card__price">+@Product.MonthlyPrice.ToDisplayString()/mo</span>
+    }
 </button>
 
 @code {
     [Parameter, EditorRequired] public ProductListItem Product { get; set; } = default!;
 
     [Parameter] public bool IsSelected { get; set; }
+
+    /// <summary>The store's card: taller image, a description, and a visible action.</summary>
+    [Parameter] public bool Detailed { get; set; }
 
     [Parameter] public EventCallback<ProductListItem> OnSelect { get; set; }
 }

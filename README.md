@@ -64,9 +64,14 @@ application behaves exactly as described above. To turn it on against your own A
    { "Auth0": { "Domain": "…", "ClientId": "…", "ClientSecret": "…" } }
    ```
 
-   `appsettings.Development.json` stays as the tracked, empty template. Anything set here can
-   also come from user secrets or environment variables instead — a test fails the build if a
-   secret ever appears in a file that is committed.
+   `appsettings.Development.json` stays as the tracked, empty template, and **the local file is
+   read in development only** — a deployed environment ignores it entirely, so a stray copy cannot
+   override production settings. A test holds that guard in place, and another fails the build if a
+   secret appears in a file that is committed.
+
+   Precedence in development, lowest to highest: `appsettings.json` → `appsettings.Development.json`
+   → user secrets → environment variables → **`appsettings.Local.json`**. The local file is loaded
+   last, so on a developer's machine it is the final word — which is the point of it.
 
 5. Run the app and use the sign-in link in the header.
 

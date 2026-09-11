@@ -18,6 +18,11 @@ src/**/App_Data/*
 *.db-shm
 *.db-wal
 
+# The stylesheet build is development-time only and its output is committed, so the tooling
+# itself is never committed.
+node_modules/
+package-lock.json
+
 # Playwright
 playwright-report/
 test-results/
