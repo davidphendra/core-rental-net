@@ -57,6 +57,11 @@ public sealed class ReviewPageTests(HostFixture host, ITestOutputHelper output) 
     {
         await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
+
+        // The button waits for an address now, and these two are about what happens after it: the
+        // confirmation dialog and the phrase in it.
+        await FillAddressAsync();
+
         await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Rent This Setup" }).ClickAsync();
         await Expect(Page.Locator("dialog[open]")).ToBeVisibleAsync();
 
@@ -88,6 +93,11 @@ public sealed class ReviewPageTests(HostFixture host, ITestOutputHelper output) 
     {
         await AssignADeskAndAChairAsync();
         await GotoAsync("/review");
+
+        // The button waits for an address now, and these two are about what happens after it: the
+        // confirmation dialog and the phrase in it.
+        await FillAddressAsync();
+
         await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Rent This Setup" }).ClickAsync();
         await Expect(Page.Locator("dialog[open]")).ToBeVisibleAsync();
 
@@ -104,5 +114,40 @@ public sealed class ReviewPageTests(HostFixture host, ITestOutputHelper output) 
         // copy were the whole line.
         weights[0].Should().Be(400, "the words around the phrase are regular");
         weights[1].Should().BeGreaterThanOrEqualTo(700, "and the phrase itself is what stands out");
+    }
+
+    [Fact] // REV-05
+    public async Task The_way_to_rent_waits_for_a_delivery_address()
+    {
+        await AssignADeskAndAChairAsync();
+        await GotoAsync("/review");
+
+        var rent = Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Rent This Setup" });
+
+        // The workspace is rentable - a desk and a chair - so what is missing is the address, and the
+        // button says so rather than letting the customer find out at the last step.
+        await Expect(rent).ToBeDisabledAsync();
+        await Expect(rent).ToHaveAttributeAsync("aria-disabled", "true");
+        await Expect(rent).ToHaveAttributeAsync("title", "Enter a delivery address before you rent.");
+
+        // Typed the way a customer types it, and then reached for: no blur has happened, so nothing is
+        // stored yet, and the button is open all the same. Waiting for the blur would be waiting for a
+        // click that cannot happen, because the button the customer is aiming at is the disabled one.
+        await Page.Locator("#delivery-address").PressSequentiallyAsync("Villa Lotus, Canggu");
+        await Expect(rent).ToBeEnabledAsync();
+        await Expect(rent).ToHaveAttributeAsync("aria-disabled", "false");
+
+        // And it stops claiming the address is missing, which an enabled button must not say.
+        await Expect(rent).Not.ToHaveAttributeAsync("title", "Enter a delivery address before you rent.");
+
+        // One click: it saves what is in the field and opens the confirmation.
+        await rent.ClickAsync();
+        await Expect(Page.Locator("dialog[open]")).ToBeVisibleAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        // And what was typed is what was stored, which is why the click saves it.
+        await Page.ReloadAsync();
+        await Expect(Page.Locator("#delivery-address")).ToHaveValueAsync("Villa Lotus, Canggu");
     }
 }

@@ -48,6 +48,18 @@ public sealed class PlaceOrderTests
                 "Villa Lotus, Canggu");
     }
 
+    [Theory] // ADDR-01
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task An_order_without_a_delivery_address_is_refused(string address)
+    {
+        var fixture = new Fixture();
+
+        var placing = async () => await fixture.Service.PlaceAsync(Fixture.Request() with { DeliveryAddress = address });
+
+        await placing.Should().ThrowAsync<DomainRuleViolationException>().WithMessage("*delivery address*");
+    }
+
     [Fact] // CO-06, CO-07
     public async Task Placing_an_order_creates_it_and_settles_the_first_month()
     {

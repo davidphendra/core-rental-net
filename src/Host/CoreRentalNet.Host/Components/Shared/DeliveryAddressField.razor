@@ -1,4 +1,7 @@
 @* Saved on blur, not on every keystroke: the write happens once per edit (matrix ADDR-04).
+   It also reports what has been typed, without saving it, because the way to rent is shut until the
+   address is there - and a button that waits only for the blur cannot be clicked to cause one. The
+   page saves what is in the field when that button is used, so what was typed is what is stored.
 
    The design's field, class for class. Its hint is described rather than shown: the design draws no
    hint under this field, and one more line of text would change the page's height, so the words
@@ -25,7 +28,7 @@
                   placeholder="e.g., Villa Lotus, Canggu..."
                   aria-describedby="delivery-address-hint"
                   aria-invalid="@((Error is not null).ToString().ToLowerInvariant())"
-                  @onchange="OnChangedAsync">@Address</textarea>
+                  @onchange="OnChangedAsync" @oninput="OnTypedAsync">@Address</textarea>
     </div>
 
     <span class="sr-only" id="delivery-address-hint">Where should we assemble your setup?</span>
@@ -43,6 +46,12 @@
 
     [Parameter] public EventCallback<string?> OnSave { get; set; }
 
+    /// <summary>What has been typed, before any of it is saved. Saving stays on the blur.</summary>
+    [Parameter] public EventCallback<string?> OnTyped { get; set; }
+
     private Task OnChangedAsync(ChangeEventArgs args)
         => OnSave.InvokeAsync(args.Value as string);
+
+    private Task OnTypedAsync(ChangeEventArgs args)
+        => OnTyped.InvokeAsync(args.Value as string);
 }

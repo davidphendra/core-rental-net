@@ -56,20 +56,6 @@ public sealed class CheckoutTests(HostFixture host, ITestOutputHelper output) : 
         await Expect(Page.Locator("#delivery-address")).ToHaveValueAsync("Villa Lotus, Canggu");
     }
 
-    [Fact] // ADDR-01
-    public async Task Renting_without_an_address_is_refused_inside_the_dialog()
-    {
-        await AssignADeskAndAChairAsync();
-        await GotoAsync("/review");
-
-        await OpenDemoDialogAsync();
-        await Page.Locator("#demo-confirmation").FillAsync("this is a demo");
-        await DialogConfirmButton.ClickAsync();
-
-        await Expect(Page.Locator("dialog[open]")).ToContainTextAsync("delivery address");
-        await Expect(Page).Not.ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/orders/"));
-    }
-
     [Fact] // CO-06, CO-07, CO-10, ORD-01, ORD-03, ORD-05
     public async Task Confirming_places_the_order_empties_the_cart_and_shows_the_order()
     {
