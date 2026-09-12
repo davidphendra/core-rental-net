@@ -72,17 +72,16 @@ public sealed class CanvasLayoutTests(HostFixture host, ITestOutputHelper output
           const desk = document.querySelector('.slot--desk').getBoundingClientRect();
           const name = document.querySelector('.slot--desk .slot__name').getBoundingClientRect();
           const price = document.querySelector('.slot--desk .slot__price').getBoundingClientRect();
-          const picture = document.querySelector('.slot--desk .slot__media').getBoundingClientRect();
           return [Math.round((name.left + name.width / 2) - (desk.left + desk.width / 2)),
                   Math.round(desk.right - price.right),
-                  Math.round(picture.width)];
+                  document.querySelectorAll('.slot--desk .slot__media, .slot--desk img, .slot--desk svg').length];
         }");
 
         // The name is not centred on what is left of the desk once the picture and the price have
         // taken their share, which is what it used to be: it sat 100px right of the desk's middle.
         measured[0].Should().BeInRange(-1, 1, "the name is centred on the desk");
         measured[1].Should().BeInRange(0, 12, "the price sits at the desk's right end");
-        measured[2].Should().BeLessThanOrEqualTo(32, "and the desk's picture is a mark at the left, not a band behind the name");
+        measured[2].Should().Be(0, "and the desk draws no picture of itself: the bar and its legs are the picture");
     }
 
     [Fact] // LAYOUT-05

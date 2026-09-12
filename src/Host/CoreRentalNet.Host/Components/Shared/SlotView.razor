@@ -14,10 +14,16 @@
             <button type="button" class="slot__remove" aria-label="@($"Remove one {Item.Name}")"
                     @onclick="() => OnRemoveItem.InvokeAsync((Slot.Slot, Item.Sku))">&times;</button>
         }
-        <div class="slot__media">
-            <ProductImage AltText="@Item.Name" ImagePath="@Item.ImagePath"
-                          ImageAvailable="@Item.ImageAvailable" Glyph="@ProductGlyph.ForSlot(Slot.Slot)" />
-        </div>
+        @* A selected desk shows no picture of itself: what a desk looks like is the bar and the two
+           legs it is already drawn with, and a photograph inside a bar one line high has nothing to
+           say. The catalogue still shows one, where choosing a desk is what the picture is for. *@
+        @if (!IsDesk)
+        {
+            <div class="slot__media">
+                <ProductImage AltText="@Item.Name" ImagePath="@Item.ImagePath"
+                              ImageAvailable="@Item.ImageAvailable" Glyph="@ProductGlyph.ForSlot(Slot.Slot)" />
+            </div>
+        }
         <span class="slot__name text-[10px] font-bold text-on-surface w-full truncate text-center">@Item.Name</span>
         @if (Item.UnitMonthlyPrice is not null)
         {
