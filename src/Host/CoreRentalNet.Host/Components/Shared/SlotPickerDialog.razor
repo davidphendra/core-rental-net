@@ -23,10 +23,9 @@
    loads, so nothing capped it: ten candidates stood taller than the window. *@
 <ModalDialog @ref="dialog" Title="@Title" OnClosed="HandleClosedAsync">
     <ChildContent>
-        <div class="field mb-6">
-            <label class="sr-only" for="picker-search">Search these products by name</label>
-            <input id="picker-search" type="search" autocomplete="off" placeholder="Search by name"
-                   value="@query" @oninput="OnQueryChanged" />
+        <div class="mb-6">
+            <SearchField Id="picker-search" Label="Search these products by name"
+                         Value="@query" ValueChanged="SetQueryAsync" />
         </div>
 
         @if (products.Count == 0)
@@ -103,10 +102,13 @@
 
     public Task CloseAsync() => dialog?.CloseAsync() ?? Task.CompletedTask;
 
-    private void OnQueryChanged(ChangeEventArgs args)
+    /// <summary>Typed into the field, or cleared by its control: either way, ask the catalog again.</summary>
+    private Task SetQueryAsync(string value)
     {
-        query = args.Value?.ToString() ?? string.Empty;
+        query = value;
         Load();
+
+        return Task.CompletedTask;
     }
 
     private void Load() => products = CatalogPage.Handle(request with { Search = query });

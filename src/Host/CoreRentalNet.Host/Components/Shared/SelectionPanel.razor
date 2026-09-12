@@ -25,11 +25,8 @@
        summary; that link is not here, by request, so the room it used is the catalog's. The
        floating bar is still the way out, and still closes until the workspace can be rented. *@
     <div class="flex-1 min-h-0 flex flex-col gap-6 mt-4 pt-4">
-        <div class="field">
-            <label class="sr-only" for="panel-search">Search these products by name</label>
-            <input id="panel-search" type="search" autocomplete="off" placeholder="Search by name"
-                   value="@query" @oninput="OnQueryChanged" />
-        </div>
+        <SearchField Id="panel-search" Label="Search these products by name"
+                     Value="@query" ValueChanged="SetQueryAsync" />
 
         <div class="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-stack-md">
             @if (products.Count == 0)
@@ -94,10 +91,16 @@
         return Task.CompletedTask;
     }
 
-    private void OnQueryChanged(ChangeEventArgs args)
+    /// <summary>
+    /// The one way the query changes: typed into the field, or cleared by its control. Either way the
+    /// catalog is asked again, because the filtering is the query's to do.
+    /// </summary>
+    private Task SetQueryAsync(string value)
     {
-        query = args.Value?.ToString() ?? string.Empty;
+        query = value;
         Load();
+
+        return Task.CompletedTask;
     }
 
     private bool IsAssigned(string sku)

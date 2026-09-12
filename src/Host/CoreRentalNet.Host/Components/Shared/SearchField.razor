@@ -1,0 +1,38 @@
+@* A search field, and the control that empties it again.
+
+   The clear control is ours rather than the browser's. A search input in Chromium has one of its own,
+   but it is a WebKit pseudo-element: it cannot be labelled, cannot be reached from a keyboard, cannot
+   be styled - and Tailwind's reset suppresses it anyway. This one is a real button, so it is announced
+   and tabbable, and it appears only when there is something to clear.
+
+   Both surfaces use this component so that the panel's field and the picker's behave alike; each keeps
+   its own query, because what each searches is its own list. *@
+<div class="field search">
+    <label class="sr-only" for="@Id">@Label</label>
+    <input id="@Id" type="search" autocomplete="off" placeholder="Search by name"
+           value="@Value" @oninput="OnTypedAsync" />
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <button type="button" class="search__clear" aria-label="Clear the search" @onclick="ClearAsync">
+            &times;
+        </button>
+    }
+</div>
+
+@code {
+    /// <summary>What the field is called for anyone who cannot see the placeholder.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = "Search by name";
+
+    /// <summary>The field's id, which is also what its label points at.</summary>
+    [Parameter, EditorRequired] public string Id { get; set; } = "search";
+
+    [Parameter] public string Value { get; set; } = string.Empty;
+
+    /// <summary>Raised with the text on every keystroke, and with nothing when cleared.</summary>
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    private Task OnTypedAsync(ChangeEventArgs args)
+        => ValueChanged.InvokeAsync(args.Value?.ToString() ?? string.Empty);
+
+    private Task ClearAsync() => ValueChanged.InvokeAsync(string.Empty);
+}

@@ -149,4 +149,52 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         measured[0].Should().Be(0, "nothing draws a line between the categories and the field");
         measured[1].Should().BeGreaterThanOrEqualTo(20, "and whatever the field draws inside it has room");
     }
+
+    [Fact] // CAT-49
+    public async Task The_panels_search_can_be_emptied_by_its_own_control()
+    {
+        await GotoAsync("/builder");
+        await ChooseCategoryAsync("Accessories");
+        await Expect(PanelCards).ToHaveCountAsync(42);
+
+        var clear = Panel.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Clear the search" });
+
+        // It is a real button with a name, which is the point of drawing it ourselves: the browser's
+        // own cancel button cannot be labelled or reached from a keyboard.
+        await Expect(clear).ToHaveCountAsync(0);
+
+        await Page.Locator("#panel-search").FillAsync("lamp");
+        await Expect(PanelCards).ToHaveCountAsync(6);
+        await Expect(clear).ToHaveCountAsync(1);
+
+        // The text keeps clear of the control on that side.
+        (await Page.Locator("#panel-search").EvaluateAsync<double>("i => parseFloat(getComputedStyle(i).paddingRight)"))
+            .Should().BeGreaterThanOrEqualTo(32);
+
+        await clear.ClickAsync();
+
+        await Expect(Page.Locator("#panel-search")).ToHaveValueAsync(string.Empty);
+        await Expect(PanelCards).ToHaveCountAsync(42);
+    }
+
+    [Fact] // CAT-50
+    public async Task The_pickers_search_can_be_emptied_by_its_own_control()
+    {
+        await GotoAsync("/builder");
+        await OpenSlotPickerAsync(".slot--chair");
+        await Expect(PickerCards).ToHaveCountAsync(10);
+
+        var clear = Page.Locator("dialog[open]")
+            .GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Clear the search" });
+
+        await Expect(clear).ToHaveCountAsync(0);
+
+        await Page.Locator("#picker-search").FillAsync("seminyak");
+        await Expect(PickerCards).ToHaveCountAsync(1);
+
+        await clear.ClickAsync();
+
+        await Expect(Page.Locator("#picker-search")).ToHaveValueAsync(string.Empty);
+        await Expect(PickerCards).ToHaveCountAsync(10);
+    }
 }
