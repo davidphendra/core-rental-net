@@ -1,13 +1,22 @@
-@* Opens already filtered to the slot that was clicked, so the choice is always valid, and fetches
-   nothing itself: the page hands it the products of the one group that slot accepts.
+@inject GetCatalogPageHandler CatalogPage
+@* Opens already filtered to the slot that was clicked, so the choice is always valid.
 
-   Its search belongs to it alone. It narrows what this dialog is showing and knows nothing about
-   the panel's search, which narrows the panel.
+   The query to ask arrives as an argument to ShowAsync rather than as a parameter, because a
+   parameter is not there yet when it is needed: Blazor applies a child's parameters when the parent
+   re-renders, which happens after the handler that set them has returned. As a parameter this read
+   the previous request and offered the whole catalog.
 
-   Products are grouped by subcategory only when they span more than one, which happens on a phone,
-   where the category chips open this dialog with a whole category in it. The design's dialog had a
-   60vh cap on this list, in a scoped stylesheet this application never loads, so nothing capped it:
-   ten candidates stood taller than the window. *@
+   It asks the catalog itself, once when it opens and once per keystroke, so the search is a query
+   rather than a filter over a list the page happened to hand it. What the slot accepts arrives as
+   the query to ask, which is why the same component serves a slot's own kind of thing and, on a
+   phone, a whole category.
+
+   Its search belongs to it alone: it narrows what this dialog is showing and knows nothing about the
+   panel's search, which narrows the panel, and each empties at its own moment.
+
+   Products are grouped by subcategory only when they span more than one, which is the phone case.
+   The design's dialog had a 60vh cap on this list, in a scoped stylesheet this application never
+   loads, so nothing capped it: ten candidates stood taller than the window. *@
 <ModalDialog @ref="dialog" Title="@Title" OnClosed="HandleClosedAsync">
     <ChildContent>
         <div class="field">
@@ -16,7 +25,7 @@
                    value="@query" @oninput="OnQueryChanged" />
         </div>
 
-        @if (visible.Count == 0)
+        @if (products.Count == 0)
         {
             <p class="body-md muted">@EmptyMessage</p>
         }
@@ -49,9 +58,9 @@
 
 @code {
     private ModalDialog? dialog;
+    private IReadOnlyList<ProductListItem> products = [];
+    private GetCatalogPage request = new();
     private string query = string.Empty;
-
-    [Parameter, EditorRequired] public IReadOnlyList<ProductListItem> Candidates { get; set; } = [];
 
     [Parameter, EditorRequired] public string Title { get; set; } = "Choose an item";
 
@@ -59,8 +68,8 @@
 
     [Parameter] public EventCallback OnDismissed { get; set; }
 
-    /// <summary>What the slot's products narrow to under the search field, in their subcategories.</summary>
-    private IReadOnlyList<CatalogGroup> Groups => AccessoryGroups.Of(visible);
+    /// <summary>What the catalog answered, in its subcategories.</summary>
+    private IReadOnlyList<CatalogGroup> Groups => AccessoryGroups.Of(products);
 
     /// <summary>
     /// Headings only where there is more than one kind of thing to tell apart. A slot's own picker
@@ -69,23 +78,34 @@
     /// </summary>
     private bool ShowHeadings => Groups.Count > 1;
 
-    /// <summary>What the slot's products narrow to under the search field.</summary>
-    private IReadOnlyList<ProductListItem> visible => CatalogSearch.Matching(Candidates, query);
-
-    private string EmptyMessage => Candidates.Count == 0
+    private string EmptyMessage => string.IsNullOrWhiteSpace(query)
         ? "Nothing in the catalog fits this slot."
         : $"Nothing here is named \"{query.Trim()}\".";
 
-    /// <summary>Opens with an empty search, so a second visit does not inherit the first one's.</summary>
-    public Task ShowAsync()
+    /// <summary>
+    /// Opens on what the slot accepts, with an empty search, so a second visit does not inherit the
+    /// first one's.
+    /// </summary>
+    public Task ShowAsync(GetCatalogPage query)
     {
-        query = string.Empty;
+        ArgumentNullException.ThrowIfNull(query);
+
+        request = query;
+        this.query = string.Empty;
+        Load();
+
         return dialog?.ShowAsync() ?? Task.CompletedTask;
     }
 
     public Task CloseAsync() => dialog?.CloseAsync() ?? Task.CompletedTask;
 
-    private void OnQueryChanged(ChangeEventArgs args) => query = args.Value?.ToString() ?? string.Empty;
+    private void OnQueryChanged(ChangeEventArgs args)
+    {
+        query = args.Value?.ToString() ?? string.Empty;
+        Load();
+    }
+
+    private void Load() => products = CatalogPage.Handle(request with { Search = query });
 
     private async Task PickAsync(ProductListItem product)
     {

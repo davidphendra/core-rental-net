@@ -32,7 +32,7 @@
         </div>
 
         <div class="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-stack-md">
-            @if (visible.Count == 0)
+            @if (products.Count == 0)
             {
                 <p class="body-md muted">@EmptyMessage</p>
             }
@@ -40,7 +40,7 @@
             {
                 @* One section per subcategory, headings only where a subcategory has a name to
                    show: desks and chairs arrive as one unlabelled group. *@
-                @foreach (var group in AccessoryGroups.Of(visible))
+                @foreach (var group in AccessoryGroups.Of(products))
                 {
                     <section class="flex flex-col gap-3">
                         @if (group.Label.Length > 0)
@@ -64,32 +64,41 @@
     [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
 
     private CatalogTab tab = CatalogTab.Desks;
+
+    /// <summary>What the tab is showing: the catalog's answer for this category and this search.</summary>
     private IReadOnlyList<ProductListItem> products = [];
+
     private string query = string.Empty;
 
-    protected override void OnInitialized() => LoadProducts();
+    protected override void OnInitialized() => Load();
 
-    /// <summary>What the tab's products narrow to under the search field.</summary>
-    private IReadOnlyList<ProductListItem> visible => CatalogSearch.Matching(products, query);
-
-    private string EmptyMessage => products.Count == 0
+    private string EmptyMessage => string.IsNullOrWhiteSpace(query)
         ? "Nothing in this category."
         : $"Nothing here is named \"{query.Trim()}\".";
 
-    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage);
+    /// <summary>
+    /// The filtering is the query's, not the panel's: the panel decides nothing about what matches,
+    /// it asks the catalog and shows what comes back.
+    /// </summary>
+    private void Load() => products = CatalogTabs.Load(tab, CatalogPage, query);
 
     private Task SelectTabAsync(CatalogTab selected)
     {
         tab = selected;
-        LoadProducts();
 
-        // Otherwise a search that matched nothing in the last tab would hide this one's products.
+        // Emptied before the query, so a search that matched nothing in the last tab cannot hide
+        // this one's products.
         query = string.Empty;
+        Load();
 
         return Task.CompletedTask;
     }
 
-    private void OnQueryChanged(ChangeEventArgs args) => query = args.Value?.ToString() ?? string.Empty;
+    private void OnQueryChanged(ChangeEventArgs args)
+    {
+        query = args.Value?.ToString() ?? string.Empty;
+        Load();
+    }
 
     private bool IsAssigned(string sku)
         => Session.Current?.Slots.Any(slot => slot.Holds(sku)) == true;

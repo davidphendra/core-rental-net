@@ -27,13 +27,7 @@ public static class CatalogTabs
         CatalogTab.Accessories,
     ];
 
-    public static string LabelFor(CatalogTab tab) => tab switch
-    {
-        CatalogTab.Desks => "Desks",
-        CatalogTab.Chairs => "Chairs",
-        CatalogTab.Accessories => "Accessories",
-        _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, "Unknown catalog tab."),
-    };
+    public static string LabelFor(CatalogTab tab) => CatalogLabels.ForCategory(CategoryFor(tab));
 
     /// <summary>The icon the design gives each entry.</summary>
     public static string GlyphFor(CatalogTab tab) => tab switch
@@ -75,10 +69,14 @@ public static class CatalogTabs
     }
 
     /// <summary>Everything a tab shows, in one query for one category.</summary>
-    public static IReadOnlyList<ProductListItem> Load(CatalogTab tab, GetCatalogPageHandler pageHandler)
+    /// <param name="search">What the customer typed, or null for the whole tab.</param>
+    public static IReadOnlyList<ProductListItem> Load(
+        CatalogTab tab,
+        GetCatalogPageHandler pageHandler,
+        string? search = null)
     {
         ArgumentNullException.ThrowIfNull(pageHandler);
 
-        return pageHandler.Handle(new GetCatalogPage(Category: CategoryFor(tab)));
+        return pageHandler.Handle(new GetCatalogPage(Category: CategoryFor(tab), Search: search));
     }
 }

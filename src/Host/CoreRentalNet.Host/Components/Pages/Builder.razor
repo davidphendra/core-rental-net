@@ -49,8 +49,7 @@
     <MonthlyTotalBar View="Session.Current" OnReady="GoToReviewAsync" />
 }
 
-<SlotPickerDialog @ref="picker" Candidates="pickerCandidates" Title="@pickerTitle"
-                  OnPick="AssignAsync" OnDismissed="ClearPicker" />
+<SlotPickerDialog @ref="picker" Title="@pickerTitle" OnPick="AssignAsync" />
 
 @code {
     [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
@@ -58,7 +57,6 @@
     [Parameter, SupplyParameterFromQuery(Name = "empty")] public bool EmptyNotice { get; set; }
 
     private SlotPickerDialog? picker;
-    private IReadOnlyList<ProductListItem> pickerCandidates = [];
     private string pickerTitle = "Choose an item";
     private string? SelectionError;
     private CatalogTab mobileTab = CatalogTab.Desks;
@@ -80,13 +78,23 @@
         SelectionError = null;
         mobileTab = selected;
 
-        pickerCandidates = CatalogTabs.Load(selected, CatalogPage);
+        var request = new GetCatalogPage(Category: CatalogTabs.CategoryFor(selected));
         pickerTitle = CatalogTabs.LabelFor(selected);
 
-        if (picker is not null && pickerCandidates.Count > 0)
+        if (picker is null)
         {
-            await picker.ShowAsync();
+            return;
         }
+
+        // Asked here as well, so that a category with nothing in it can be said out loud; the picker
+        // asks again itself, once per keystroke, so that the search reaches the query.
+        if (CatalogPage.Handle(request).Count == 0)
+        {
+            SelectionError = "Nothing in the catalog fits that category.";
+            return;
+        }
+
+        await picker.ShowAsync(request);
     }
 
     private async Task AssignAsync(ProductListItem product)
@@ -124,22 +132,23 @@
         // One query, for the kind of thing the clicked box holds: the desk asks for desks, an
         // accessory slot for its own subcategory. This used to load all four category entries and
         // filter the result down, so opening a box for six lamps asked the catalog for everything.
-        pickerCandidates = SlotCatalog.ForSlot(CatalogPage.Handle(SlotCatalog.QueryFor(slot)), slot);
+        var request = SlotCatalog.QueryFor(slot);
         pickerTitle = $"Choose a {Session.Current!.Slots.First(s => s.Slot == slot).DisplayName}";
 
-        if (pickerCandidates.Count == 0)
+        if (picker is null)
+        {
+            return;
+        }
+
+        if (CatalogPage.Handle(request).Count == 0)
         {
             SelectionError = "Nothing in the catalog fits that slot.";
             return;
         }
 
-        if (picker is not null)
-        {
-            await picker.ShowAsync();
-        }
+        await picker.ShowAsync(request);
     }
 
-    private void ClearPicker() => pickerCandidates = [];
 
     private Task GoToReviewAsync()
     {
