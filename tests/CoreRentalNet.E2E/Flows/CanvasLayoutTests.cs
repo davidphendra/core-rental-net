@@ -143,7 +143,8 @@ public sealed class CanvasLayoutTests(HostFixture host, ITestOutputHelper output
             const style = getComputedStyle(button);
             const onTop = document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2));
             return [Math.round(r.left) + ',' + Math.round(r.top), style.display, style.visibility, style.opacity,
-                    onTop === button ? 'on top' : 'covered'];
+                    onTop === button ? 'on top' : 'covered',
+                    button.offsetParent === button.closest('.slot--monitor').parentElement ? 'its own box' : 'shared'];
           });
         }");
 
@@ -160,6 +161,11 @@ public sealed class CanvasLayoutTests(HostFixture host, ITestOutputHelper output
             control[2].Should().Be("visible");
             control[3].Should().Be("1");
             control[4].Should().Be("on top", "the control is the element a click at its centre would reach");
+
+            // The structural half, and the one that was actually wrong twice: an absolutely positioned
+            // control lands in its nearest positioned ancestor, so each one has to belong to its own
+            // card's box. Three controls on three shared corners are three controls at one place.
+            control[5].Should().Be("its own box", "the control is anchored to its own card, not to the row");
         }
 
         // And each one removes its own monitor rather than the slot as a whole.

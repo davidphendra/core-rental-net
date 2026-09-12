@@ -20,8 +20,16 @@
         <div class="@SlotCss.StagePositionFor(SlotId.Monitor) w-full flex justify-center gap-3 z-10">
             @foreach (var box in MonitorBoxes)
             {
-                <SlotView Slot="SlotOf(SlotId.Monitor)" Item="@box" Position="@SlotCss.BoxSizeFor(SlotId.Monitor)"
-                          OnPick="OnPick" OnRemoveItem="OnRemoveItem" ReadOnly="ReadOnly" />
+                @* One box, one wrapper, and the wrapper is what positions: a remove control is placed at
+                   its own card's corner by finding the nearest positioned ancestor, so without this all
+                   three find the row instead and stand on the same spot - one control for three
+                   monitors, which is what a customer sees. It is here rather than in a stylesheet on
+                   purpose: a rule was doing this job, and a rule can be missing from the stylesheet a
+                   browser is holding, which is a defect that looks exactly like a defect in the code. *@
+                <div class="relative">
+                    <SlotView Slot="SlotOf(SlotId.Monitor)" Item="@box" Position="@SlotCss.BoxSizeFor(SlotId.Monitor)"
+                              OnPick="OnPick" OnRemoveItem="OnRemoveItem" ReadOnly="ReadOnly" />
+                </div>
             }
         </div>
 
