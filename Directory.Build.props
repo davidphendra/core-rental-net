@@ -18,4 +18,13 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <!-- The version the footer displays. A release pipeline passes the tag it is building, e.g.
+       dotnet build -p:Version=${TAG#v}; a build with no such argument keeps this floor, which is
+       what an unreleased build shows. The SDK would otherwise append the commit hash to the
+       informational version, and the footer is a version rather than a build fingerprint. -->
+  <PropertyGroup>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
 </Project>

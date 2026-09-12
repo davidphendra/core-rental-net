@@ -2,10 +2,15 @@
    sits over the content column rather than the middle of the whole window, carrying the running
    total and the way out of the builder.
 
+   It clears the footer by the design's own 32px, measured from the footer rather than from the
+   window: the footer is not in any design, and lifting the pill is the only way both can own the
+   bottom edge without one covering the other. That is the one measurement on this page which no
+   longer matches the design, and it is deliberate.
+
    The design draws this button always ready. Here it stays shut until the workspace can be
    rented, which is the one thing added to the design's markup: a native disabled button, which
    the keyboard cannot reach, with the reason as its title. *@
-<div class="total-bar hidden lg:flex fixed bottom-8 left-1/2 transform -translate-x-1/2 ml-40 bg-surface-bright rounded-full shadow-ambient px-6 py-3 items-center gap-6 z-40 border border-surface-container-highest">
+<div class="total-bar hidden lg:flex fixed bottom-[calc(var(--footer-height)_+_2rem)] left-1/2 transform -translate-x-1/2 ml-40 bg-surface-bright rounded-full shadow-ambient px-6 py-3 items-center gap-6 z-40 border border-surface-container-highest">
     <div class="total-bar__amount flex flex-col">
         <span class="text-[10px] text-outline uppercase tracking-wider font-bold">Monthly Total</span>
         <span class="text-headline-md font-headline-md text-on-surface font-bold">@View.Quote.MonthlySubtotal.ToDisplayString()<span class="text-label-md font-label-md text-on-surface-variant">/mo</span></span>
