@@ -1,9 +1,30 @@
+@* The authorization state is published for everything below, because the router enforces the page's
+   [Authorize] itself: an interactive circuit navigates without leaving the page, so it never reaches
+   the middleware that answers a first request, and the policy would have a hole in it exactly where a
+   customer moves around the application. *@
+<CascadingAuthenticationState>
 <CascadingValue Name="Customer" Value="Customer">
 <CascadingValue Name="DraftToken" Value="DraftToken">
 <CascadingValue Name="StoreCategory" Value="StoreCategory">
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(MarketingLayout)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MarketingLayout)">
+            @* Two different people, and one answer for each: a guest is sent to sign in, and an
+               account that is already signed in but not entitled is told so. Sending the second one to
+               sign in would be a loop, since signing in again changes nothing about the claim. *@
+            <NotAuthorized>
+                <LayoutView Layout="typeof(MarketingLayout)">
+                    @if (context.User.Identity?.IsAuthenticated == true)
+                    {
+                        <AccessRefused />
+                    }
+                    else
+                    {
+                        <SignInRedirect />
+                    }
+                </LayoutView>
+            </NotAuthorized>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
     <NotFound>
@@ -19,6 +40,7 @@
 </CascadingValue>
 </CascadingValue>
 </CascadingValue>
+</CascadingAuthenticationState>
 
 @code {
     /// <summary>

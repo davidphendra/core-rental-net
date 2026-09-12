@@ -1,0 +1,27 @@
+@inject NavigationManager Navigation
+@* Where a guest waits, if a guest ever waits here.
+
+   A request that arrives without a session never reaches this: the authorization middleware answers it
+   with a redirect to the sign-in address before the page is rendered. What this covers is the other
+   way in - a navigation made inside the running application - and that one never passes through the
+   middleware, because it never leaves the page. The navigation it makes is forced for the same
+   reason: a soft one would be handled by the circuit it is already in and would arrive straight back
+   here. *@
+@if (!RendererInfo.IsInteractive)
+{
+    <p class="body-lg muted">Taking you to sign in.</p>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (!RendererInfo.IsInteractive)
+        {
+            return;
+        }
+
+        Navigation.NavigateTo(
+            SignInUrl.For(new Uri(Navigation.Uri).PathAndQuery),
+            forceLoad: true);
+    }
+}

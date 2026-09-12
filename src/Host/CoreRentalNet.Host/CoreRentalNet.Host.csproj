@@ -1,5 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <ItemGroup>
+    <!-- The authorization pieces stay internal - nothing outside the application needs them - and the
+         rule they enforce is still tested directly rather than through a browser. -->
+    <InternalsVisibleTo Include="CoreRentalNet.Host.Tests" />
+  </ItemGroup>
+
   <PropertyGroup>
     <RootNamespace>CoreRentalNet.Host</RootNamespace>
     <UserSecretsId>f8dee84b-dfca-4aa3-befc-6914cd1a1d8f</UserSecretsId>

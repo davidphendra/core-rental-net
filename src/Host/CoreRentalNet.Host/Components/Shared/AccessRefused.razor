@@ -1,0 +1,13 @@
+@* A signed-in account without catalog access.
+
+   Deliberately not a sign-in link: the customer is already signed in, so offering to sign them in
+   again is a loop, and what is missing is a permission rather than a session. Signing out is the way
+   out, and it is the same address the header uses, so the two cannot drift apart. *@
+<div class="container section stack-md">
+    <h1 class="headline-lg">No access to the builder</h1>
+    <p class="body-lg muted">
+        Your account is signed in, but it does not carry catalog access. Ask whoever administers
+        accounts for this demonstration to grant it, or sign in as an account that has it.
+    </p>
+    <a class="button button--primary" href="@AccountController.SignOutPath" data-enhance-nav="false">Sign out</a>
+</div>

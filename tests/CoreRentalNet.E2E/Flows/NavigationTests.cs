@@ -100,4 +100,16 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
         await bag.ClickAsync();
         await Expect(Page.Locator(".receipt")).ToBeVisibleAsync();
     }
+
+    [Fact] // AUTH-16
+    public async Task With_no_identity_provider_configured_the_builder_stays_open()
+    {
+        // This suite runs the application exactly as it ships: no Auth0 configuration. The policy says
+        // what that means - no provider, so no reader to check - and the builder is a demonstration's
+        // builder. Refusing every request here would break the demo, not protect it.
+        await GotoAsync("/builder");
+
+        await Expect(Page.Locator(".workspace-stage")).ToBeVisibleAsync();
+        await Expect(Page.Locator("aside[aria-label='Selection panel']")).ToBeVisibleAsync();
+    }
 }

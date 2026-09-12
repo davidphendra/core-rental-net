@@ -32,11 +32,18 @@ internal static class ApplicationPipeline
                 context.Context.Response.Headers.CacheControl = "no-cache",
         });
 
+        // Authorization answers every request, not only the ones with a provider: the catalog policy
+        // has something to say when identity is unconfigured too, which is that there is no reader to
+        // check. Authentication is still registered only when there is somewhere to authenticate.
         if (identity.IsConfigured)
         {
             app.UseAuthentication();
-            app.UseAuthorization();
+        }
 
+        app.UseAuthorization();
+
+        if (identity.IsConfigured)
+        {
             // Mapped only when there is an identity provider, so an unconfigured deployment has no
             // account routes at all.
             AccountController.MapEndpoints(app);

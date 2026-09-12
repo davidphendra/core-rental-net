@@ -141,6 +141,13 @@ public sealed class HostFixture : IAsyncLifetime
         startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
         startInfo.Environment["ASPNETCORE_URLS"] = BaseUrl;
         startInfo.Environment["Sqlite__DatabasePath"] = Path.Combine(workingDirectory!, "e2e.db");
+
+        // Identity off, explicitly and by configuration rather than by having no credentials.
+        // Development loads appsettings.Local.json, that file is loaded last so it wins over the
+        // environment, and on a machine that has real Auth0 credentials the catalog gate would then be
+        // live for every test - which is how nine of them failed before this line existed. The suite
+        // has to run the application the way it ships, not the way one laptop is configured.
+        startInfo.Environment["Auth0__Enabled"] = "false";
         startInfo.Environment["Rentals__SchedulerIntervalMinutes"] = "1";
         startInfo.Environment["Logging__LogLevel__Default"] = "Warning";
 

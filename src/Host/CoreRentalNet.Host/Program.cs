@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddLocalDevelopmentSettings();
 
 var identity = builder.AddOptionalIdentity();
+builder.AddCatalogAuthorization();
 builder.AddPresentation();
 
 builder.AddSqliteDatabase();

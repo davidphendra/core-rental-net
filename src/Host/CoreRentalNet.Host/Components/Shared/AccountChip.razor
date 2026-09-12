@@ -11,13 +11,13 @@
             @* Enhanced navigation fetches the target and swaps it in. These two are redirects to the
                identity provider, so they must be left to the browser: a fetch cannot follow a
                cross-origin redirect, and the click would simply do nothing. *@
-            <a class="app-header__link" href="/account/logout" data-enhance-nav="false">Sign out</a>
+            <a class="app-header__link" href="@AccountController.SignOutPath" data-enhance-nav="false">Sign out</a>
         </span>
     }
     else
     {
         <a class="app-header__link" data-enhance-nav="false"
-           href="@($"/account/login?returnUrl={Uri.EscapeDataString(ReturnUrl)}")">Sign in</a>
+           href="@SignInUrl.For(ReturnUrl)">Sign in</a>
     }
 }
 

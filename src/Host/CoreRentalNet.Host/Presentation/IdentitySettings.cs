@@ -12,12 +12,26 @@ namespace CoreRentalNet.Host.Presentation;
 /// </remarks>
 public sealed record IdentitySettings
 {
-    private IdentitySettings(string? domain, string? clientId, string? clientSecret)
+    private IdentitySettings(bool enabled, string? domain, string? clientId, string? clientSecret)
     {
+        Enabled = enabled;
         Domain = domain;
         ClientId = clientId;
         ClientSecret = clientSecret;
     }
+
+    /// <summary>
+    /// Whether this deployment signs anyone in at all, whatever credentials it happens to hold.
+    /// </summary>
+    /// <remarks>
+    /// On unless configuration says otherwise, because the safe direction for a switch like this is the
+    /// one that keeps the gate closed. It exists for two reasons: so that running the demonstration
+    /// without identity is something a deployment says out loud rather than something that happens by
+    /// leaving credentials out, and so that the browser suite can run the application the way it ships
+    /// even on a machine whose local settings file holds real credentials - which is the difference
+    /// between a hermetic suite and one that changes behaviour with the developer's laptop.
+    /// </remarks>
+    public bool Enabled { get; }
 
     public string? Domain { get; }
 
@@ -27,13 +41,14 @@ public sealed record IdentitySettings
 
     /// <summary>True only when there is enough configuration to authenticate at all.</summary>
     public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(Domain) && !string.IsNullOrWhiteSpace(ClientId);
+        Enabled && !string.IsNullOrWhiteSpace(Domain) && !string.IsNullOrWhiteSpace(ClientId);
 
     public static IdentitySettings From(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
         return new IdentitySettings(
+            !string.Equals(configuration["Auth0:Enabled"]?.Trim(), "false", StringComparison.OrdinalIgnoreCase),
             configuration["Auth0:Domain"]?.Trim(),
             configuration["Auth0:ClientId"]?.Trim(),
             configuration["Auth0:ClientSecret"]?.Trim());

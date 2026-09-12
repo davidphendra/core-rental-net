@@ -27,6 +27,11 @@ public static class AccountController
     /// </summary>
     public const string SignedOutCallbackPath = "/account/signed-out";
 
+    /// <summary>The address that starts a sign-in, and the one that ends a session.</summary>
+    public const string SignInPath = "/account/login";
+
+    public const string SignOutPath = "/account/logout";
+
     /// <summary>
     /// Maps the two routes a customer can reach under <c>/account</c>. The callback paths above are
     /// deliberately absent: the authentication handler owns those and the middleware answers them

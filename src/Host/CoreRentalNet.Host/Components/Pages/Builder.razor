@@ -1,5 +1,6 @@
 @page "/builder"
 @layout BuilderLayout
+@attribute [Authorize(Policy = CatalogPolicy.Name)]
 @inherits WorkspaceObserver
 @inject GetCatalogPageHandler CatalogPage
 @inject NavigationManager Navigation

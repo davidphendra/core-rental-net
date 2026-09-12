@@ -17,6 +17,7 @@ internal static class IdentityRegistration
 
         var settings = IdentitySettings.From(builder.Configuration);
         builder.Services.AddSingleton(settings);
+        builder.Services.AddSingleton(CatalogReadClaim.From(builder.Configuration));
 
         if (!settings.IsConfigured)
         {
@@ -40,6 +41,12 @@ internal static class IdentityRegistration
                 options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
                     ? CookieSecurePolicy.SameAsRequest
                     : CookieSecurePolicy.Always;
+
+                // Where a challenge sends a customer who is not signed in, and what the return address
+                // is called - our own route, so that the middleware's redirect and the links the
+                // application writes are the same address twice over rather than two similar ones.
+                options.LoginPath = AccountController.SignInPath;
+                options.ReturnUrlParameter = "returnUrl";
             })
             .AddOpenIdConnect(options =>
             {
