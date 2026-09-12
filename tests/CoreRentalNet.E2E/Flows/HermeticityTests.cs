@@ -81,4 +81,19 @@ public sealed class HermeticityTests(HostFixture host, ITestOutputHelper output)
         var status = await Page.EvaluateAsync<int>("async () => (await fetch('/builder')).status");
         status.Should().Be(200, "the browser talks to the server directly");
     }
+
+    [Fact] // UI-12
+    public async Task A_stylesheet_is_never_served_without_the_browser_being_told_to_check_again()
+    {
+        await GotoAsync("/");
+
+        var response = await Page.APIRequest.GetAsync($"{BaseUrl}/styles/slots.css");
+
+        // Without a Cache-Control a browser applies heuristic freshness - a fraction of the file's age -
+        // and reuses what it holds without asking. The canvas fix that gave each monitor its own remove
+        // control was reported as not working for exactly that reason: the browser handed back the
+        // previous stylesheet. Asking first costs a 304.
+        response.Headers.Should().ContainKey("cache-control");
+        response.Headers["cache-control"].Should().Contain("no-cache");
+    }
 }

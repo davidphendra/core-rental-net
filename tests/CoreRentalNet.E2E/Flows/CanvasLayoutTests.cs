@@ -137,17 +137,34 @@ public sealed class CanvasLayoutTests(HostFixture host, ITestOutputHelper output
 
         await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(3);
 
-        var corners = await Page.EvaluateAsync<double[]>(@"() => {
+        var controls = await Page.EvaluateAsync<string[][]>(@"() => {
           return [...document.querySelectorAll('.slot--monitor .slot__remove')].map(button => {
             const r = button.getBoundingClientRect();
-            return Math.round(r.left) + ',' + Math.round(r.top);
+            const style = getComputedStyle(button);
+            const onTop = document.elementFromPoint(Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2));
+            return [Math.round(r.left) + ',' + Math.round(r.top), style.display, style.visibility, style.opacity,
+                    onTop === button ? 'on top' : 'covered'];
           });
         }");
 
         // They were all anchored to the row's wrapper rather than to their own card, so all three sat
-        // on one corner and the customer saw a single control for three monitors.
-        corners.Should().HaveCount(3);
-        corners.Distinct().Should().HaveCount(3, "each monitor has a remove control of its own");
+        // on one corner and the customer saw a single control for three monitors. A corner is not
+        // enough to assert on its own: a control that is off the card, hidden, or underneath another
+        // is a control nobody can use, so each one is checked where a click would land.
+        controls.Should().HaveCount(3);
+        controls.Select(control => control[0]).Distinct().Should().HaveCount(3, "one control per monitor");
+
+        foreach (var control in controls)
+        {
+            control[1].Should().NotBe("none");
+            control[2].Should().Be("visible");
+            control[3].Should().Be("1");
+            control[4].Should().Be("on top", "the control is the element a click at its centre would reach");
+        }
+
+        // And each one removes its own monitor rather than the slot as a whole.
+        await Page.Locator(".slot--monitor .slot__remove").Nth(1).ClickAsync();
+        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(2);
     }
 
     [Fact] // LAYOUT-08
