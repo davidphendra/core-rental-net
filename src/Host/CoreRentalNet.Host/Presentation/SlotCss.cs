@@ -50,12 +50,13 @@ public static class SlotCss
     /// <summary>How big a box holding this slot is drawn.</summary>
     /// <remarks>
     /// A monitor is drawn wide and shallow, and three of them stand side by side in the width the
-    /// design gives one. They are smaller than the design's box, at the owner's request, which is also
-    /// what leaves room between the row and the desk below it.
+    /// design gives one. They are smaller than the design's box, at the owner's request - first to
+    /// stand clear of the desk, then to leave room under the row for the lamp and the plant, whose
+    /// cards used to begin on exactly the line the row ended on.
     /// </remarks>
     public static string BoxSizeFor(SlotId slot) => slot switch
     {
-        SlotId.Monitor => "w-40 h-28",
+        SlotId.Monitor => "w-40 h-24",
         SlotId.Lamp or SlotId.Plant or SlotId.Chair => "w-24 h-24",
         SlotId.Desk => "w-full h-8",
         _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "A zone is sized by the grid, not by a box."),

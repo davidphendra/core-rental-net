@@ -99,4 +99,28 @@ public sealed class CanvasLayoutTests(HostFixture host, ITestOutputHelper output
 
         gap.Should().BeGreaterThanOrEqualTo(20, "the products do not start against the search field");
     }
+
+    [Fact] // LAYOUT-06
+    public async Task The_lamp_and_the_plant_stand_clear_of_the_row_above_them()
+    {
+        await GotoAsync("/builder");
+
+        var gaps = await Page.EvaluateAsync<double[]>(@"() => {
+          const rect = el => el.getBoundingClientRect();
+          const rowBottom = Math.max(...[...document.querySelectorAll('.slot--monitor')].map(m => rect(m).bottom));
+          const desk = rect(document.querySelector('.slot--desk'));
+          return [...['.slot--lamp', '.slot--plant']].flatMap(selector => {
+            if (typeof selector !== 'string') { return []; }
+            const card = rect(document.querySelector(selector));
+            return [Math.round(card.top - rowBottom), Math.round(desk.top - card.bottom)];
+          });
+        }");
+
+        // The cards used to begin on exactly the line the monitor row ended on.
+        gaps.Should().HaveCount(4);
+        gaps[0].Should().BeGreaterThanOrEqualTo(16, "the lamp clears the row above it");
+        gaps[1].Should().BeGreaterThanOrEqualTo(16, "and the desk below it");
+        gaps[2].Should().BeGreaterThanOrEqualTo(16, "the plant clears the row above it");
+        gaps[3].Should().BeGreaterThanOrEqualTo(16, "and the desk below it");
+    }
 }
