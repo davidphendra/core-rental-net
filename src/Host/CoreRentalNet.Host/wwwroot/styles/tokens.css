@@ -96,8 +96,9 @@
   --header-height: 80px;
 
   /* Measured rather than derived: the bottom nav's own box at a 390px viewport, its padding and
-     label included. The footer clears the nav on small screens, and the summary pill clears the
-     footer, which is why both live here beside the header's height. */
+     label included. The footer clears the nav on small screens; the footer's own height is what the
+     selection panel stops above and what the builder's summary pill is offset by, which is why both
+     live here beside the header's height. */
   --bottom-nav-height: 62px;
   --footer-height: 48px;
 

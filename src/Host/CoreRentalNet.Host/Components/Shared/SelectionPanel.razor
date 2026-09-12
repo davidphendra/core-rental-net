@@ -1,10 +1,15 @@
 @inherits WorkspaceObserver
 @inject GetCatalogPageHandler CatalogPage
 @inject GetCatalogGroupHandler CatalogGroup
-@* The docked panel the designs draw on both the builder and the store: browse a category,
-   assign an item, and leave for the summary. It keeps its own browsing state, because what it
-   shows has nothing to do with what the page beside it is doing. *@
-<aside class="hidden lg:flex flex-col gap-stack-md p-gutter fixed left-0 top-20 h-[calc(100vh-80px)] bg-surface-container-low shadow-sm w-80 z-40" aria-label="Selection panel">
+@* The docked panel the designs draw on the builder: browse a category, assign an item, and leave
+   for the summary. It keeps its own browsing state, because what it shows has nothing to do with
+   what the page beside it is doing.
+
+   The design runs the panel to the foot of the window. Every page now ends with the footer, so the
+   panel stops above it instead of covering the version: its height is the window less the header
+   and the footer. That is a deliberate deviation from the design, whose panel ran the full 100vh
+   less the header, and it is the only number here that no longer matches. *@
+<aside class="hidden lg:flex flex-col gap-stack-md p-gutter fixed left-0 top-20 h-[calc(100vh-80px-var(--footer-height))] bg-surface-container-low shadow-sm w-80 z-40" aria-label="Selection panel">
     <div class="mb-4">
         <h2 class="text-headline-md font-headline-md text-primary font-extrabold">Selection Panel</h2>
         <p class="text-on-surface-variant text-label-md font-label-md mt-1">Build your setup</p>

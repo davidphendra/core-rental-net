@@ -2,12 +2,11 @@
 
    None of the four designs draws a footer, so this is a deliberate addition to them, recorded here
    rather than silently. Its styling is the header's instead of a new vocabulary - the same
-   --surface, --on-surface-variant and label-sm - so the two ends of a page read as a pair.
+   --surface, --on-surface-variant and label-sm - so the two ends of a page read as a pair, and it
+   carries no separator: the footer is the page's own end rather than a band across it.
 
-   On the builder there is a pinned 320px panel over the left of the window, and the version there
-   is centred on the content column rather than the window. That is a rule in base.css which
-   follows the panel itself, because the store page shares the builder's layout without having a
-   panel. *@
+   It is the same on every page, including the builder, where the selection panel stops above it
+   rather than sitting over it. Nothing here has to know which page it is on. *@
 <footer class="app-footer" aria-label="Version">
     <div class="container app-footer__inner">
         <span class="app-footer__version">@AppVersion.Current</span>

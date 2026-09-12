@@ -64,20 +64,21 @@ public sealed class FooterTests(HostFixture host, ITestOutputHelper output) : E2
 
     [Theory] // FOOT-03
     [InlineData("/")]
+    [InlineData("/builder")]
     [InlineData("/extras")]
-    public async Task Without_a_panel_the_version_is_centred_on_the_window(string path)
+    public async Task The_version_is_centred_on_the_window_on_every_page(string path)
     {
         await GotoAsync(path);
 
         var page_ = await Page.Locator("footer.app-footer").EvaluateAsync<double[]>(FooterGeometry);
 
-        // The store shares the builder's layout, so this is what catches an offset that should not
-        // apply there: an offset footer would put the version in the middle of the content column.
+        // Including the builder, whose panel covers the left of the window: the panel stops above
+        // the footer rather than beside it, so there is nothing there to centre around.
         (page_[4] - page_[5] / 2).Should().BeInRange(-1, 1, "the version is centred on the window");
     }
 
     [Fact] // FOOT-04
-    public async Task On_the_builder_the_pill_and_the_version_share_the_content_column()
+    public async Task On_the_builder_the_pill_clears_the_footer_and_the_panel_stops_above_it()
     {
         await AssignADeskAndAChairAsync();
         await GotoAsync("/builder");
@@ -90,14 +91,15 @@ public sealed class FooterTests(HostFixture host, ITestOutputHelper output) : E2
         var geometry = await Page.EvaluateAsync<double[]>(@"() => {
           const pill = document.querySelector('.total-bar').getBoundingClientRect();
           const footer = document.querySelector('footer.app-footer').getBoundingClientRect();
-          const version = document.querySelector('.app-footer__version').getBoundingClientRect();
+          const panel = document.querySelector('aside').getBoundingClientRect();
           return [Math.round(footer.top - pill.bottom),
-                  Math.round(pill.left + pill.width / 2),
-                  Math.round(version.left + version.width / 2)];
+                  Math.round(pill.left - panel.right),
+                  Math.round(panel.bottom - footer.top)];
         }");
 
         geometry[0].Should().Be(32, "the pill keeps the design's 32px gap, measured from the footer rather than the window");
-        geometry[1].Should().Be(geometry[2], "both are centred on the content column, clear of the panel");
+        geometry[1].Should().BeGreaterThanOrEqualTo(0, "the pill floats over the content column, clear of the panel");
+        geometry[2].Should().Be(0, "the panel stops exactly where the footer begins, so the version is never covered");
     }
 
     [Fact] // FOOT-05
@@ -144,5 +146,12 @@ public sealed class FooterTests(HostFixture host, ITestOutputHelper output) : E2
         styles[0].Should().Be(styles[1], "the footer's surface is the header's");
         styles[2].Should().Be(styles[3], "its text is the muted colour the header's links use");
         styles[4].Should().Be(styles[5], "and the same label face");
+
+        // Nothing separates it from the page above: no rule, no different surface. The footer is
+        // the page's end rather than a band across it.
+        var border = await Page.Locator("footer.app-footer")
+            .EvaluateAsync<double>("f => parseFloat(getComputedStyle(f).borderTopWidth)");
+
+        border.Should().Be(0, "the footer is seamless with the page above it");
     }
 }

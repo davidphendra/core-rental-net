@@ -144,12 +144,13 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .bottom-nav__item:disabled { opacity: 0.4; cursor: not-allowed; }
 .bottom-nav__glyph { font-size: 20px; line-height: 1; }
 
-/* The foot of the page: the header's surface and type, so the two ends of every page read as a pair,
-   plus the separating rule that the header has no need of. The height is the token the builder's
-   summary pill is offset by. */
+/* The foot of the page: the header's surface and type, so the two ends of every page read as a
+   pair. Nothing separates it from the page above - no rule, no different surface - because the
+   footer is the page's own end rather than a band across it. The height is the token the
+   selection panel and the builder's summary pill are both measured against. */
 .app-footer {
   display: flex; align-items: center; height: var(--footer-height);
-  background: var(--surface); border-top: 1px solid var(--outline-variant);
+  background: var(--surface);
 }
 .app-footer__inner { text-align: center; }
 .app-footer__version {
@@ -160,15 +161,6 @@ button, input, textarea, select { font: inherit; color: inherit; }
 /* The workspace nav is fixed over the last stretch of the page on small screens; without this the
    version sits underneath it. Only the footer moves, so no other page's layout changes. */
 @media (max-width: 1023px) { .app-footer { margin-bottom: var(--bottom-nav-height); } }
-
-/* The builder pins a 320px panel over the left of the window for its whole height, so the footer's
-   visible width there begins after it and the version is centred on what can be seen - the rule the
-   summary pill above it already follows. The offset follows the panel rather than the layout,
-   because the store page shares this layout and renders no panel. Below lg the panel is hidden,
-   which is why this sits inside the same breakpoint as its visibility. */
-@media (min-width: 1024px) {
-  body:has(main > aside) .app-footer__inner { margin-left: var(--sidebar-width); }
-}
 
 @media (min-width: 1024px) {
   .builder-aside { display: flex; flex-direction: column; gap: var(--stack-md); width: var(--sidebar-width); flex: 0 0 var(--sidebar-width); padding: var(--gutter); border-right: 1px solid var(--surface-container); }
