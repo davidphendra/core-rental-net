@@ -1,20 +1,46 @@
-@* Opens already filtered to the slot that was clicked, so the choice is always valid. *@
+@* Opens already filtered to the slot that was clicked, so the choice is always valid, and fetches
+   nothing itself: the page hands it the products of the one group that slot accepts.
+
+   Its search belongs to it alone. It narrows what this dialog is showing and knows nothing about
+   the panel's search, which narrows the panel.
+
+   Products are grouped by subcategory only when they span more than one, which happens on a phone,
+   where the category chips open this dialog with a whole category in it. The design's dialog had a
+   60vh cap on this list, in a scoped stylesheet this application never loads, so nothing capped it:
+   ten candidates stood taller than the window. *@
 <ModalDialog @ref="dialog" Title="@Title" OnClosed="HandleClosedAsync">
     <ChildContent>
-    <div class="picker">
-        @if (Candidates.Count == 0)
+        <div class="field">
+            <label class="sr-only" for="picker-search">Search these products by name</label>
+            <input id="picker-search" type="search" autocomplete="off" placeholder="Search by name"
+                   value="@query" @oninput="OnQueryChanged" />
+        </div>
+
+        @if (visible.Count == 0)
         {
-            <p class="body-md muted">Nothing in the catalog fits this slot.</p>
+            <p class="body-md muted">@EmptyMessage</p>
         }
         else
         {
-            @foreach (var product in Candidates)
-            {
-                var candidate = product;
-                <BuilderProductCard Product="candidate" OnSelect="() => PickAsync(candidate)" />
-            }
+            <div class="picker max-h-[60vh] overflow-y-auto flex flex-col gap-stack-lg pr-1">
+                @foreach (var group in Groups)
+                {
+                    <section class="flex flex-col gap-3">
+                        @if (ShowHeadings && group.Label.Length > 0)
+                        {
+                            <h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">@group.Label</h3>
+                        }
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach (var product in group.Products)
+                            {
+                                var candidate = product;
+                                <BuilderProductCard Product="candidate" OnSelect="() => PickAsync(candidate)" />
+                            }
+                        </div>
+                    </section>
+                }
+            </div>
         }
-    </div>
     </ChildContent>
     <Actions>
         <button type="button" class="button button--ghost" @onclick="CloseAsync">Cancel</button>
@@ -23,6 +49,7 @@
 
 @code {
     private ModalDialog? dialog;
+    private string query = string.Empty;
 
     [Parameter, EditorRequired] public IReadOnlyList<ProductListItem> Candidates { get; set; } = [];
 
@@ -32,9 +59,33 @@
 
     [Parameter] public EventCallback OnDismissed { get; set; }
 
-    public Task ShowAsync() => dialog?.ShowAsync() ?? Task.CompletedTask;
+    /// <summary>What the slot's products narrow to under the search field, in their subcategories.</summary>
+    private IReadOnlyList<CatalogGroup> Groups => AccessoryGroups.Of(visible);
+
+    /// <summary>
+    /// Headings only where there is more than one kind of thing to tell apart. A slot's own picker
+    /// holds one subcategory, so it draws none; the category chips on a phone open this same dialog
+    /// with a whole category in it, and that is where a heading earns its place.
+    /// </summary>
+    private bool ShowHeadings => Groups.Count > 1;
+
+    /// <summary>What the slot's products narrow to under the search field.</summary>
+    private IReadOnlyList<ProductListItem> visible => CatalogSearch.Matching(Candidates, query);
+
+    private string EmptyMessage => Candidates.Count == 0
+        ? "Nothing in the catalog fits this slot."
+        : $"Nothing here is named \"{query.Trim()}\".";
+
+    /// <summary>Opens with an empty search, so a second visit does not inherit the first one's.</summary>
+    public Task ShowAsync()
+    {
+        query = string.Empty;
+        return dialog?.ShowAsync() ?? Task.CompletedTask;
+    }
 
     public Task CloseAsync() => dialog?.CloseAsync() ?? Task.CompletedTask;
+
+    private void OnQueryChanged(ChangeEventArgs args) => query = args.Value?.ToString() ?? string.Empty;
 
     private async Task PickAsync(ProductListItem product)
     {

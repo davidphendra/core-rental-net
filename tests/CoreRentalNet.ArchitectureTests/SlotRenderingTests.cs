@@ -21,6 +21,21 @@ public sealed class SlotRenderingTests
     private static readonly SlotId[] StageSlots = [SlotId.Desk, SlotId.Chair, SlotId.Monitor, SlotId.Lamp, SlotId.Plant];
 
     /// <summary>
+    /// The one slot whose positioning the design does not get to decide, and why.
+    /// </summary>
+    /// <remarks>
+    /// The design draws the chair tucked under the desk: 64px below it and 160px tall, which covers
+    /// the desk's own 32px bar - the only place a desk can be clicked from, so the desk could not be
+    /// added at all. At the owner's request it now stops at the desk's baseline, which is one
+    /// chair-height down, and is the lamp's size. Its classes are still checked for a rule in the
+    /// generated stylesheet, so a class that reaches the browser doing nothing still fails here.
+    /// </remarks>
+    private static readonly Dictionary<SlotId, string[]> PositionedDeliberately = new()
+    {
+        [SlotId.Chair] = ["-bottom-24"],
+    };
+
+    /// <summary>
     /// The positions SlotCss names, read out of the file that names them. Reading the source rather
     /// than calling the method keeps this test free of a reference to the application.
     /// </summary>
@@ -88,7 +103,13 @@ public sealed class SlotRenderingTests
 
             foreach (var token in tokens)
             {
-                Design.Should().Contain(token, $"slot {slot} is positioned with '{token}', which the design does not use");
+                var deliberate = PositionedDeliberately.TryGetValue(slot, out var allowed) && allowed.Contains(token);
+
+                if (!deliberate)
+                {
+                    Design.Should().Contain(token, $"slot {slot} is positioned with '{token}', which the design does not use");
+                }
+
                 Generated.Should().Contain(CssSelector(token), $"'{token}' has no rule in the generated stylesheet, so it does nothing");
             }
         }

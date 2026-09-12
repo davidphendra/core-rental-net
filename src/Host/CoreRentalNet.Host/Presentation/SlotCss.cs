@@ -35,7 +35,12 @@ public static class SlotCss
         SlotId.Lamp => "absolute bottom-8 right-40",
         SlotId.Plant => "absolute bottom-8 right-12",
         SlotId.Desk => "relative z-0",
-        SlotId.Chair => "absolute -bottom-16 left-1/2 -translate-x-1/2 z-20",
+        // The chair used to sit tucked under the desk, 64px below it and 160px tall - tall enough to
+        // cover the desk's own 32px bar, which is the one place a desk can be clicked from. So the
+        // desk could not be added at all. It now stops at the desk's baseline, one chair-height
+        // below, and is the lamp's size, so neither box ever covers the other. The design draws the
+        // chair tucked in; this is a deliberate difference from it.
+        SlotId.Chair => "absolute -bottom-24 left-1/2 -translate-x-1/2 z-20",
         _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "A zone is laid out by the grid, not positioned."),
     };
 
@@ -47,9 +52,8 @@ public static class SlotCss
     public static string BoxSizeFor(SlotId slot) => slot switch
     {
         SlotId.Monitor => "w-48 h-32",
-        SlotId.Lamp or SlotId.Plant => "w-24 h-24",
+        SlotId.Lamp or SlotId.Plant or SlotId.Chair => "w-24 h-24",
         SlotId.Desk => "w-full h-8",
-        SlotId.Chair => "w-32 h-40",
         _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "A zone is sized by the grid, not by a box."),
     };
 }

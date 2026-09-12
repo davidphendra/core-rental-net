@@ -24,7 +24,6 @@ internal static class CatalogRegistration
 
         builder.Services.AddScoped<GetFeaturedProductsHandler>();
         builder.Services.AddScoped<GetCatalogPageHandler>();
-        builder.Services.AddScoped<GetCatalogGroupHandler>();
     }
 }
 

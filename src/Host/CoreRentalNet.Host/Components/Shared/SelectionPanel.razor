@@ -1,6 +1,5 @@
 @inherits WorkspaceObserver
 @inject GetCatalogPageHandler CatalogPage
-@inject GetCatalogGroupHandler CatalogGroup
 @* The docked panel the designs draw on the builder: browse a category, assign an item, and leave
    for the summary. It keeps its own browsing state, because what it shows has nothing to do with
    what the page beside it is doing.
@@ -8,7 +7,10 @@
    It keeps the height its design gives it - the window less the header, to the foot of the window -
    and the footer scrolls behind it. Shortening it by the footer's height instead left a strip of
    page showing beneath it while the page scrolled, with the panel's edge holding still beside it;
-   the footer has no border and the page's own surface, so there is nothing to see behind it. *@
+   the footer has no border and the page's own surface, so there is nothing to see behind it.
+
+   Its search is its own, and belongs to the tab rather than to the panel: it narrows what the tab
+   is showing, is emptied when another tab is chosen, and knows nothing about the picker's search. *@
 <aside class="hidden lg:flex flex-col gap-stack-md p-gutter fixed left-0 top-20 h-[calc(100vh-80px)] bg-surface-container-low shadow-sm w-80 z-40" aria-label="Selection panel">
     <div class="mb-4">
         <h2 class="text-headline-md font-headline-md text-primary font-extrabold">Selection Panel</h2>
@@ -22,11 +24,37 @@
     @* The catalog takes the rest of the panel. The design ends the panel with a link to the
        summary; that link is not here, by request, so the room it used is the catalog's. The
        floating bar is still the way out, and still closes until the workspace can be rented. *@
-    <div class="flex-1 overflow-y-auto mt-4 border-t border-outline-variant pt-4 pr-2">
-        <div class="grid grid-cols-2 gap-3">
-            @foreach (var product in products)
+    <div class="flex-1 min-h-0 flex flex-col gap-3 mt-4 border-t border-outline-variant pt-4">
+        <div class="field">
+            <label class="sr-only" for="panel-search">Search these products by name</label>
+            <input id="panel-search" type="search" autocomplete="off" placeholder="Search by name"
+                   value="@query" @oninput="OnQueryChanged" />
+        </div>
+
+        <div class="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-stack-md">
+            @if (visible.Count == 0)
             {
-                <BuilderProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AssignAsync" />
+                <p class="body-md muted">@EmptyMessage</p>
+            }
+            else
+            {
+                @* One section per subcategory, headings only where a subcategory has a name to
+                   show: desks and chairs arrive as one unlabelled group. *@
+                @foreach (var group in AccessoryGroups.Of(visible))
+                {
+                    <section class="flex flex-col gap-3">
+                        @if (group.Label.Length > 0)
+                        {
+                            <h3 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">@group.Label</h3>
+                        }
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach (var product in group.Products)
+                            {
+                                <BuilderProductCard Product="product" IsSelected="@IsAssigned(product.Sku)" OnSelect="AssignAsync" />
+                            }
+                        </div>
+                    </section>
+                }
             }
         </div>
     </div>
@@ -37,17 +65,31 @@
 
     private CatalogTab tab = CatalogTab.Desks;
     private IReadOnlyList<ProductListItem> products = [];
+    private string query = string.Empty;
 
     protected override void OnInitialized() => LoadProducts();
 
-    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
+    /// <summary>What the tab's products narrow to under the search field.</summary>
+    private IReadOnlyList<ProductListItem> visible => CatalogSearch.Matching(products, query);
+
+    private string EmptyMessage => products.Count == 0
+        ? "Nothing in this category."
+        : $"Nothing here is named \"{query.Trim()}\".";
+
+    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage);
 
     private Task SelectTabAsync(CatalogTab selected)
     {
         tab = selected;
         LoadProducts();
+
+        // Otherwise a search that matched nothing in the last tab would hide this one's products.
+        query = string.Empty;
+
         return Task.CompletedTask;
     }
+
+    private void OnQueryChanged(ChangeEventArgs args) => query = args.Value?.ToString() ?? string.Empty;
 
     private bool IsAssigned(string sku)
         => Session.Current?.Slots.Any(slot => slot.Holds(sku)) == true;

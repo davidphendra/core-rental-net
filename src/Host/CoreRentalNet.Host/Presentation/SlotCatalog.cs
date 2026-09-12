@@ -1,5 +1,6 @@
 using CoreRentalNet.Modules.Catalog.Application.Catalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
+using CoreRentalNet.Modules.Catalog.Application.Queries;
 using CoreRentalNet.Modules.Workspace.Application.Catalog;
 using CoreRentalNet.Modules.Workspace.Domain;
 
@@ -12,4 +13,28 @@ public static class SlotCatalog
         => products
             .Where(product => CatalogSlotMapping.SlotFor(product.Category, product.SubCategory) == slot)
             .ToArray();
+
+    /// <summary>
+    /// The one query that answers <see cref="ForSlot"/>, which is the inverse of the same mapping.
+    /// </summary>
+    /// <remarks>
+    /// A clicked slot asks the catalog for its own kind of thing and nothing else: the desk asks for
+    /// desks, and the lamp asks for the lamp subcategory - six lamps rather than the whole accessory
+    /// category. Before this, opening any box loaded every category in the catalog and filtered the
+    /// result down, which is four queries to show six lamps.
+    /// </remarks>
+    public static GetCatalogPage QueryFor(SlotId slot) => slot switch
+    {
+        SlotId.Desk => new GetCatalogPage(Category: CatalogCategory.Desk),
+        SlotId.Chair => new GetCatalogPage(Category: CatalogCategory.Chair),
+        SlotId.Monitor => Accessories(CatalogSubCategory.Monitor),
+        SlotId.Lamp => Accessories(CatalogSubCategory.Lamp),
+        SlotId.Plant => Accessories(CatalogSubCategory.Plant),
+        SlotId.CoffeeStation => Accessories(CatalogSubCategory.Coffee),
+        SlotId.RelaxZone => Accessories(CatalogSubCategory.Beanbag),
+        _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "No catalog query answers for this slot."),
+    };
+
+    private static GetCatalogPage Accessories(CatalogSubCategory subCategory)
+        => new(Category: CatalogCategory.Accessory, SubCategory: subCategory);
 }

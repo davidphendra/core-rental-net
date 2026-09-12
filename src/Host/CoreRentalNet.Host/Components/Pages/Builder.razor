@@ -2,7 +2,6 @@
 @layout BuilderLayout
 @inherits WorkspaceObserver
 @inject GetCatalogPageHandler CatalogPage
-@inject GetCatalogGroupHandler CatalogGroup
 @inject NavigationManager Navigation
 <PageTitle>Workspace Builder — Core Rental</PageTitle>
 
@@ -81,7 +80,7 @@
         SelectionError = null;
         mobileTab = selected;
 
-        pickerCandidates = CatalogTabs.Load(selected, CatalogPage, CatalogGroup);
+        pickerCandidates = CatalogTabs.Load(selected, CatalogPage);
         pickerTitle = CatalogTabs.LabelFor(selected);
 
         if (picker is not null && pickerCandidates.Count > 0)
@@ -122,13 +121,10 @@
     {
         SelectionError = null;
 
-        var catalog = CatalogTabs.Load(CatalogTab.Accessories, CatalogPage, CatalogGroup)
-            .Concat(CatalogTabs.Load(CatalogTab.Extras, CatalogPage, CatalogGroup))
-            .Concat(CatalogTabs.Load(CatalogTab.Chairs, CatalogPage, CatalogGroup))
-            .Concat(CatalogTabs.Load(CatalogTab.Desks, CatalogPage, CatalogGroup))
-            .ToArray();
-
-        pickerCandidates = SlotCatalog.ForSlot(catalog, slot);
+        // One query, for the kind of thing the clicked box holds: the desk asks for desks, an
+        // accessory slot for its own subcategory. This used to load all four category entries and
+        // filter the result down, so opening a box for six lamps asked the catalog for everything.
+        pickerCandidates = SlotCatalog.ForSlot(CatalogPage.Handle(SlotCatalog.QueryFor(slot)), slot);
         pickerTitle = $"Choose a {Session.Current!.Slots.First(s => s.Slot == slot).DisplayName}";
 
         if (pickerCandidates.Count == 0)

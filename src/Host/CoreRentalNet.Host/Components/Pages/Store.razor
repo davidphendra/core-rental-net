@@ -3,7 +3,6 @@
 @inject WorkspaceSession Session
 @inject IJSRuntime JS
 @inject GetCatalogPageHandler CatalogPage
-@inject GetCatalogGroupHandler CatalogGroup
 <PageTitle>Store — Core Rental</PageTitle>
 
 @* The design's store page carries a selection panel on the left and lists extras. Neither is here
@@ -37,7 +36,7 @@
     <header class="mb-stack-lg">
         <h1 class="text-display-lg font-display-lg text-on-surface mb-2">Add Your Bali Vibes</h1>
         <p class="text-body-lg font-body-lg text-on-surface-variant max-w-2xl">
-            Build your setup from desks, chairs, accessories and extras. Every item rents month to month.
+            Build your setup from desks, chairs and accessories. Every item rents month to month.
         </p>
     </header>
 
@@ -52,12 +51,26 @@
         <p class="alert alert--info" role="status">@LastAdded added to your workspace.</p>
     }
 
-    @* grid-store carries no styling of its own: it is the marker the browser tests wait for on this
-       page, the same way workspace-stage marks the builder. *@
-    <div class="grid-store grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
-        @foreach (var product in products)
+    @* One section per subcategory, with a heading only where there is a name to show: desks and
+       chairs come back as one unlabelled group, accessories as five labelled ones. The gap is between
+       the groups rather than after each of them, so a category that is one kind of thing has no
+       spacing to show for it. grid-store carries no styling of its own: it is the marker the browser
+       tests wait for on this page, the same way workspace-stage marks the builder. *@
+    <div class="flex flex-col gap-stack-lg">
+        @foreach (var group in AccessoryGroups.Of(products))
         {
-            <StoreProductCard Product="product" OnSelect="AddAsync" />
+            <section class="flex flex-col gap-stack-md">
+                @if (group.Label.Length > 0)
+                {
+                    <h2 class="text-headline-md font-headline-md text-on-surface">@group.Label</h2>
+                }
+                <div class="grid-store grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
+                    @foreach (var product in group.Products)
+                    {
+                        <StoreProductCard Product="product" OnSelect="AddAsync" />
+                    }
+                </div>
+            </section>
         }
     </div>
 </section>
@@ -84,7 +97,7 @@
         LoadProducts();
     }
 
-    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage, CatalogGroup);
+    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage);
 
     private async Task SelectAsync(CatalogTab selected)
     {

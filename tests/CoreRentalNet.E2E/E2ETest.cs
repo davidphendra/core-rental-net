@@ -119,21 +119,19 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
         await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(1);
     }
 
-    protected async Task OpenSlotPickerAsync(string slotClass, Position? at = null)
+    /// <summary>
+    /// Clicks an empty box on the canvas and waits for its picker.
+    /// </summary>
+    /// <remarks>
+    /// This used to take a position to click at, because the chair stood over the middle of the
+    /// desk's box and the middle of a desk belonged to the chair - so a caller that meant the desk
+    /// had to say where the desk was visible. The chair now stops at the desk's baseline, so the
+    /// middle of every box belongs to that box.
+    /// </remarks>
+    protected async Task OpenSlotPickerAsync(string slotClass)
     {
         // The monitor slot holds three boxes, so "the empty box for this slot" is the first one.
-        var box = Page.Locator($"{slotClass}.slot--empty").First;
-
-        // The chair stands in front of the desk, so the middle of a narrow desk box belongs to the
-        // chair. A caller that means the desk clicks where the desk is actually visible.
-        if (at is null)
-        {
-            await box.ClickAsync();
-        }
-        else
-        {
-            await box.ClickAsync(new LocatorClickOptions { Position = at });
-        }
+        await Page.Locator($"{slotClass}.slot--empty").First.ClickAsync();
 
         await Expect(Page.Locator("dialog[open] .picker")).ToBeVisibleAsync();
     }

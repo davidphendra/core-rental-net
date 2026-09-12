@@ -30,49 +30,25 @@ public sealed class CatalogQueryTests
         page.Should().OnlyContain(item => item.SubCategory == CatalogSubCategory.Coffee);
     }
 
-    [Fact] // CAT-06
-    public void The_extras_grouping_is_coffee_and_beanbag_only()
-    {
-        var extras = new GetCatalogGroupHandler(SampleCatalog.Snapshot())
-            .Handle(new GetCatalogGroup(CatalogGrouping.Extras));
-
-        extras.Should().HaveCount(2);
-        extras.Select(item => item.SubCategory).Should().BeEquivalentTo([CatalogSubCategory.Coffee, CatalogSubCategory.Beanbag]);
-    }
-
-    [Fact] // CAT-07
-    public void The_accessories_grouping_is_monitor_lamp_and_plant_only()
-    {
-        var accessories = new GetCatalogGroupHandler(SampleCatalog.Snapshot())
-            .Handle(new GetCatalogGroup(CatalogGrouping.Accessories));
-
-        accessories.Should().HaveCount(3);
-        accessories.Select(item => item.SubCategory).Should().BeEquivalentTo(
-            [CatalogSubCategory.Monitor, CatalogSubCategory.Lamp, CatalogSubCategory.Plant]);
-    }
-
-    [Fact] // CAT-07
-    public void The_two_groupings_are_disjoint_and_together_cover_the_accessory_category()
-    {
-        var handler = new GetCatalogGroupHandler(SampleCatalog.Snapshot());
-        var catalog = SampleCatalog.Snapshot();
-
-        var accessories = handler.Handle(new GetCatalogGroup(CatalogGrouping.Accessories));
-        var extras = handler.Handle(new GetCatalogGroup(CatalogGrouping.Extras));
-
-        accessories.Select(item => item.Sku)
-            .Should().NotIntersectWith(extras.Select(item => item.Sku));
-
-        (accessories.Count + extras.Count).Should().Be(catalog.ByCategory(ProductCategory.Accessory).Count);
-    }
-
     [Fact] // CAT-04
-    public void The_accessory_category_is_broader_than_the_accessories_grouping()
+    public void The_accessory_category_is_every_subcategory_the_accessory_entry_shows()
     {
         var catalog = SampleCatalog.Snapshot();
 
-        new GetCatalogPageHandler(catalog).Handle(new GetCatalogPage(Category: CatalogCategory.Accessory))
-            .Should().HaveCount(5);
+        // One entry now carries all five kinds of accessory, which is the invariant the panel's
+        // grouping rests on: a kind missing here would be missing from the tab as well.
+        var accessories = new GetCatalogPageHandler(catalog)
+            .Handle(new GetCatalogPage(Category: CatalogCategory.Accessory));
+
+        accessories.Should().HaveCount(5);
+        accessories.Select(item => item.SubCategory).Should().BeEquivalentTo(
+        [
+            CatalogSubCategory.Monitor,
+            CatalogSubCategory.Lamp,
+            CatalogSubCategory.Plant,
+            CatalogSubCategory.Coffee,
+            CatalogSubCategory.Beanbag,
+        ]);
     }
 
     [Fact] // CAT-08

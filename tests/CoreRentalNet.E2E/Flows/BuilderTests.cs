@@ -187,4 +187,20 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(5);
     }
 
+    [Fact] // SLOT-14
+    public async Task The_desk_can_be_clicked_where_the_desk_is()
+    {
+        await GotoAsync("/builder");
+
+        // The chair stood over the middle of the desk's box, so this click used to land on the chair
+        // and the desk could not be added at all. The picker is opened by clicking the desk's own
+        // box, in its middle, with no position hint to work around anything.
+        await OpenSlotPickerAsync(".slot--desk");
+        await Expect(Page.Locator("dialog[open] button.product-card")).ToHaveCountAsync(10);
+
+        await PickFirstCandidateAsync();
+
+        await Expect(Page.Locator(".slot--desk.slot--filled")).ToHaveCountAsync(1);
+        await Expect(Page.Locator(".slot--desk.slot--empty")).ToHaveCountAsync(0);
+    }
 }

@@ -19,9 +19,9 @@ public sealed class MobileViewportTests(HostFixture host, ITestOutputHelper outp
         await GotoAsync("/builder");
 
         await Expect(Page.Locator(".bottom-nav")).ToBeVisibleAsync();
-        await Expect(Page.Locator(".builder-aside")).ToBeHiddenAsync();
+        await Expect(Page.Locator("aside[aria-label='Selection panel']")).ToBeHiddenAsync();
         // The running total lives in the flow on a phone rather than in a floating bar.
-        await Expect(Page.Locator(".floating-bar")).ToBeHiddenAsync();
+        await Expect(Page.Locator(".total-bar")).ToBeHiddenAsync();
     }
 
     [Fact] // UI-07
@@ -31,7 +31,7 @@ public sealed class MobileViewportTests(HostFixture host, ITestOutputHelper outp
 
         var chips = Page.Locator("[data-testid='category-chips'] button");
         var count = await chips.CountAsync();
-        Assert.True(count >= 4, $"expected the four categories as chips, found {count}");
+        Assert.Equal(3, count);
 
         await Expect(chips.First).ToBeVisibleAsync();
     }
@@ -62,7 +62,7 @@ public sealed class MobileViewportTests(HostFixture host, ITestOutputHelper outp
         // A desk and a chair are mandatory, so a phone has to fill all three before the way out opens.
         await OpenSlotPickerAsync(".slot--monitor");
         await PickFirstCandidateAsync();
-        await OpenSlotPickerAsync(".slot--desk", new Position { X = 40, Y = 14 });
+        await OpenSlotPickerAsync(".slot--desk");
         await PickFirstCandidateAsync();
         await OpenSlotPickerAsync(".slot--chair");
         await PickFirstCandidateAsync();
