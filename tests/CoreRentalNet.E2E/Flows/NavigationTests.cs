@@ -64,17 +64,6 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
         await Expect(Page.Locator(".alert--info")).ToContainTextAsync("before reviewing");
     }
 
-    [Fact] // NAV-07
-    public async Task The_shopping_bag_is_decorative()
-    {
-        await GotoAsync("/");
-
-        var bag = Page.Locator(".app-header__icon");
-
-        (await bag.EvaluateAsync<string>("element => element.tagName")).Should().Be("SPAN");
-        await Expect(bag).ToHaveAttributeAsync("aria-label", "Shopping bag, decorative");
-    }
-
     [Fact] // NAV-02
     public async Task The_store_offers_a_way_back_without_offering_a_way_forward()
     {
@@ -84,5 +73,31 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
 
         // A way back, and no way forward: nothing on the store leads to the summary.
         await Expect(Page.Locator("aside a[href=\'/review\']")).ToHaveCountAsync(0);
+    }
+
+    [Fact] // NAV-07
+    public async Task The_bag_in_the_header_opens_on_a_desk_and_a_chair_and_not_before()
+    {
+        await GotoAsync("/builder");
+
+        var bag = Page.Locator("a.app-header__icon");
+
+        await Expect(bag).ToHaveAttributeAsync("aria-disabled", "true");
+        await Expect(bag).ToHaveAttributeAsync("tabindex", "-1");
+
+        // It stays where it is while the workspace cannot be rented, which is what aria-disabled is
+        // claiming: a disabled control that still navigates is worse than no control at all.
+        await bag.ClickAsync(new LocatorClickOptions { Force = true });
+        await Task.Delay(400);
+        Page.Url.Should().EndWith("/builder");
+
+        await AssignADeskAndAChairAsync();
+        await GotoAsync("/builder");
+
+        await Expect(bag).ToHaveAttributeAsync("aria-disabled", "false");
+        await Expect(bag).ToHaveAttributeAsync("tabindex", "0");
+
+        await bag.ClickAsync();
+        await Expect(Page.Locator(".receipt")).ToBeVisibleAsync();
     }
 }

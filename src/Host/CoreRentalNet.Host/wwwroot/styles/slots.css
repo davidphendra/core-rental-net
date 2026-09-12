@@ -8,6 +8,11 @@
 
    The coordinates that used to live here as custom properties are gone; SlotCss names them. */
 
+/* A monitor's box sits in a row inside a wrapper that carries the position, so the wrapper is the
+   positioned element these cards are in - and a remove control anchored to its own card would anchor
+   to that wrapper instead, which put all three of them on the same corner. One corner per monitor. */
+.slot--monitor { position: relative; }
+
 /* The picture of a product, filling whatever room its position leaves. */
 .slot__media {
   flex: 1 1 auto;

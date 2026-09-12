@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Playwright;
+using static Microsoft.Playwright.Assertions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -122,5 +123,76 @@ public sealed class CanvasLayoutTests(HostFixture host, ITestOutputHelper output
         gaps[1].Should().BeGreaterThanOrEqualTo(16, "and the desk below it");
         gaps[2].Should().BeGreaterThanOrEqualTo(16, "the plant clears the row above it");
         gaps[3].Should().BeGreaterThanOrEqualTo(16, "and the desk below it");
+    }
+
+    [Fact] // LAYOUT-07
+    public async Task Each_monitor_carries_its_own_remove_control()
+    {
+        await GotoAsync("/builder");
+
+        for (var unit = 0; unit < 3; unit++)
+        {
+            await OpenSlotPickerAsync(".slot--monitor");
+            await PickFirstCandidateAsync();
+        }
+
+        await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(3);
+
+        var corners = await Page.EvaluateAsync<double[]>(@"() => {
+          return [...document.querySelectorAll('.slot--monitor .slot__remove')].map(button => {
+            const r = button.getBoundingClientRect();
+            return Math.round(r.left) + ',' + Math.round(r.top);
+          });
+        }");
+
+        // They were all anchored to the row's wrapper rather than to their own card, so all three sat
+        // on one corner and the customer saw a single control for three monitors.
+        corners.Should().HaveCount(3);
+        corners.Distinct().Should().HaveCount(3, "each monitor has a remove control of its own");
+    }
+
+    [Fact] // LAYOUT-08
+    public async Task A_photographed_product_stays_inside_its_picture()
+    {
+        await GotoAsync("/builder");
+        await OpenSlotPickerAsync(".slot--coffee-station");
+
+        // The photographs are on disk for a few products, this one among them; a drawn placeholder
+        // would not exercise what the picture does with its own pixels.
+        var cards = Page.Locator("dialog[open] button.product-card");
+        var withAPhotograph = -1;
+
+        for (var index = 0; index < await cards.CountAsync(); index++)
+        {
+            if (await cards.Nth(index).Locator("img").CountAsync() > 0)
+            {
+                withAPhotograph = index;
+                break;
+            }
+        }
+
+        withAPhotograph.Should().BeGreaterThanOrEqualTo(0, "the coffee machines include a photographed one");
+        await cards.Nth(withAPhotograph).ClickAsync();
+        await Expect(Page.Locator("dialog[open]")).ToHaveCountAsync(0);
+
+        var measured = await Page.EvaluateAsync<double[]>(@"() => {
+          const rect = el => el.getBoundingClientRect();
+          const overlap = (a, b) => {
+            const x = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+            const y = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+            return Math.round(x * y);
+          };
+          const card = document.querySelector('.zone-list .slot--coffee-station');
+          const picture = rect(card.querySelector('img'));
+          const media = rect(card.querySelector('.slot__media'));
+          return [Math.round(picture.right - media.right), Math.round(picture.bottom - media.bottom),
+                  overlap(picture, rect(card.querySelector('.slot__name'))),
+                  overlap(picture, rect(card.querySelector('.slot__price')))];
+        }");
+
+        measured[0].Should().BeLessThanOrEqualTo(0, "the picture does not leave its box sideways");
+        measured[1].Should().BeLessThanOrEqualTo(0, "nor downwards");
+        measured[2].Should().Be(0, "and it does not stand over the name");
+        measured[3].Should().Be(0, "nor over the price");
     }
 }

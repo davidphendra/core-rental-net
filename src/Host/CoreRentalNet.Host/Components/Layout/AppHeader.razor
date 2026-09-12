@@ -1,4 +1,12 @@
-@* Decorative bag icon: the mockups draw it, and nothing in this application needs it to do work. *@
+@inherits WorkspaceObserver
+@inject NavigationManager Navigation
+@* The bag in the header takes the customer to their summary, and stays shut until the workspace can
+   actually be rented - a desk and a chair, which is what the domain calls mandatory. It was drawn as
+   decoration and did nothing. It now follows the rule the floating bar and the phone's Rent button
+   already follow, so all three agree about when a rental is possible.
+
+   It redraws when the workspace changes, which is why it watches it: the header is outside the page,
+   so nothing else would tell it that a desk was just added. *@
 <header class="app-header">
     <div class="container app-header__inner">
         <a class="app-header__brand" href="/">Core Rental</a>
@@ -9,11 +17,33 @@
         </nav>
         <span class="row">
             <AccountChip ReturnUrl="/" />
-            <span class="app-header__icon" role="img" aria-label="Shopping bag, decorative">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                <path d="M6 8h12l-1 12H7z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" />
-            </svg>
-            </span>
+            <a class="app-header__icon" href="/review"
+               aria-label="@(CanCheckout ? "Rent your workspace" : "Rent your workspace, once a desk and a chair are chosen")"
+               aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"
+               tabindex="@(CanCheckout ? 0 : -1)"
+               title="@BlockingReason"
+               @onclick="GoToReviewAsync" @onclick:preventDefault="@(!CanCheckout)">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <path d="M6 8h12l-1 12H7z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" />
+                </svg>
+            </a>
         </span>
     </div>
 </header>
+
+@code {
+    private bool CanCheckout => Session.Current?.CanCheckout ?? false;
+
+    /// <summary>Why the bag is shut, in the domain's own words, or null when it is open.</summary>
+    private string? BlockingReason => CanCheckout
+        ? null
+        : Session.Current?.BlockingReason ?? "Add a desk and a chair to rent your workspace.";
+
+    private void GoToReviewAsync()
+    {
+        if (CanCheckout)
+        {
+            Navigation.NavigateTo("/review");
+        }
+    }
+}

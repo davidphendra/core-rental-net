@@ -132,4 +132,21 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await Expect(Page.Locator("section:has(.grid-store) h2")).ToHaveTextAsync(
             ["Monitors", "Lamps", "Plants", "Coffee Machines", "Bean bags"]);
     }
+
+    [Fact] // CAT-48
+    public async Task The_panels_search_field_has_no_rule_above_it_and_room_below_it()
+    {
+        await GotoAsync("/builder");
+
+        var measured = await Page.EvaluateAsync<double[]>(@"() => {
+          const input = document.querySelector('#panel-search');
+          const wrapper = input.parentElement.parentElement;
+          const list = input.parentElement.nextElementSibling;
+          return [parseFloat(getComputedStyle(wrapper).borderTopWidth),
+                  Math.round(list.getBoundingClientRect().top - input.getBoundingClientRect().bottom)];
+        }");
+
+        measured[0].Should().Be(0, "nothing draws a line between the categories and the field");
+        measured[1].Should().BeGreaterThanOrEqualTo(20, "and whatever the field draws inside it has room");
+    }
 }
