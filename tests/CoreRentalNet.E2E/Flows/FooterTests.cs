@@ -78,7 +78,7 @@ public sealed class FooterTests(HostFixture host, ITestOutputHelper output) : E2
     }
 
     [Fact] // FOOT-04
-    public async Task On_the_builder_the_pill_clears_the_footer_and_the_panel_stops_above_it()
+    public async Task On_the_builder_the_panel_reaches_the_foot_of_the_window_and_the_footer_passes_behind_it()
     {
         await AssignADeskAndAChairAsync();
         await GotoAsync("/builder");
@@ -91,15 +91,25 @@ public sealed class FooterTests(HostFixture host, ITestOutputHelper output) : E2
         var geometry = await Page.EvaluateAsync<double[]>(@"() => {
           const pill = document.querySelector('.total-bar').getBoundingClientRect();
           const footer = document.querySelector('footer.app-footer').getBoundingClientRect();
+          const version = document.querySelector('.app-footer__version').getBoundingClientRect();
           const panel = document.querySelector('aside').getBoundingClientRect();
+          const corner = document.elementFromPoint(160, window.innerHeight - 20);
           return [Math.round(footer.top - pill.bottom),
                   Math.round(pill.left - panel.right),
-                  Math.round(panel.bottom - footer.top)];
+                  Math.round(panel.bottom - window.innerHeight),
+                  Math.round(version.left - panel.right),
+                  corner && corner.closest('aside') ? 1 : 0];
         }");
 
         geometry[0].Should().Be(32, "the pill keeps the design's 32px gap, measured from the footer rather than the window");
         geometry[1].Should().BeGreaterThanOrEqualTo(0, "the pill floats over the content column, clear of the panel");
-        geometry[2].Should().Be(0, "the panel stops exactly where the footer begins, so the version is never covered");
+
+        // The panel keeps the height its design gives it, so it runs to the foot of the window and
+        // leaves no strip of page showing beside the footer: the footer scrolls behind it, and the
+        // version is far enough right to stay clear.
+        geometry[2].Should().Be(0, "the panel reaches the foot of the window");
+        geometry[3].Should().BeGreaterThanOrEqualTo(0, "the version is clear of the panel, so it is never covered");
+        geometry[4].Should().Be(1, "the bottom-left corner belongs to the panel, not to the page scrolling past");
     }
 
     [Fact] // FOOT-05

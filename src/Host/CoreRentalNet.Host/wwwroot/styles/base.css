@@ -146,8 +146,8 @@ button, input, textarea, select { font: inherit; color: inherit; }
 
 /* The foot of the page: the header's surface and type, so the two ends of every page read as a
    pair. Nothing separates it from the page above - no rule, no different surface - because the
-   footer is the page's own end rather than a band across it. The height is the token the
-   selection panel and the builder's summary pill are both measured against. */
+   footer is the page's own end rather than a band across it. Its height is the token the builder's
+   summary pill is offset by. */
 .app-footer {
   display: flex; align-items: center; height: var(--footer-height);
   background: var(--surface);
