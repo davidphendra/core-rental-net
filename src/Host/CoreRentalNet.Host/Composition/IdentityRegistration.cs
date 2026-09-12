@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Components.Pages;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Presentation;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -47,6 +48,10 @@ internal static class IdentityRegistration
                 // application writes are the same address twice over rather than two similar ones.
                 options.LoginPath = AccountController.SignInPath;
                 options.ReturnUrlParameter = "returnUrl";
+
+                // And where a signed-in account that is refused gets sent. The default is a path this
+                // application does not serve, which is a blank 404 where an explanation belongs.
+                options.AccessDeniedPath = AccessDenied.Path;
             })
             .AddOpenIdConnect(options =>
             {

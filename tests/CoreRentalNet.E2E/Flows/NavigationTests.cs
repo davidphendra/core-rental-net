@@ -112,4 +112,15 @@ public sealed class NavigationTests(HostFixture host, ITestOutputHelper output) 
         await Expect(Page.Locator(".workspace-stage")).ToBeVisibleAsync();
         await Expect(Page.Locator("aside[aria-label='Selection panel']")).ToBeVisibleAsync();
     }
+
+    [Fact] // AUTH-17
+    public async Task The_page_a_refused_account_lands_on_explains_itself()
+    {
+        // Signing in to reach it needs a real account, so the destination is checked directly - it is
+        // where the cookie options send a refused account, and a blank page there was the defect.
+        await GotoAsync("/access-denied");
+
+        await Expect(Page.Locator("h1")).ToContainTextAsync("No access to the builder");
+        await Expect(Page.Locator("a[href='/account/logout']")).ToBeVisibleAsync();
+    }
 }

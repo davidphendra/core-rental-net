@@ -31,6 +31,18 @@ public sealed class AuthorizationGateTests
         routes.Should().Contain("CascadingAuthenticationState");
     }
 
+    [Fact] // AUTH-16
+    public void A_refused_account_is_sent_to_a_page_that_exists()
+    {
+        // The default for this is /Account/AccessDenied, which nothing here serves: measured, a
+        // signed-in account without the claim landed on a blank 404 instead of being told anything.
+        Source("Composition", "IdentityRegistration.cs")
+            .Should().Contain("options.AccessDeniedPath = AccessDenied.Path");
+
+        Source("Components", "Pages", "AccessDenied.razor")
+            .Should().Contain("@page \"/access-denied\"");
+    }
+
     [Fact] // AUTH-15
     public void Nothing_but_the_policy_says_what_entitles_a_reader()
     {
