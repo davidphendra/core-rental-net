@@ -21,18 +21,24 @@ public sealed class SlotRenderingTests
     private static readonly SlotId[] StageSlots = [SlotId.Desk, SlotId.Chair, SlotId.Monitor, SlotId.Lamp, SlotId.Plant];
 
     /// <summary>
-    /// The one slot whose positioning the design does not get to decide, and why.
+    /// The slots whose positioning the design does not get to decide, and why.
     /// </summary>
     /// <remarks>
     /// The design draws the chair tucked under the desk: 64px below it and 160px tall, which covers
     /// the desk's own 32px bar - the only place a desk can be clicked from, so the desk could not be
-    /// added at all. At the owner's request it now stops at the desk's baseline, which is one
-    /// chair-height down, and is the lamp's size. Its classes are still checked for a rule in the
-    /// generated stylesheet, so a class that reaches the browser doing nothing still fails here.
+    /// added at all. At the owner's request it now stops at the desk's baseline, one chair-height
+    /// down, is the lamp's size, and hangs a further 16px clear of the desk. The design also stands
+    /// both the lamp and the plant on the right of the desk, a hand's width apart; the lamp now stands
+    /// at the left of it, so the two ends balance, and both sit a little above the desk.
+    ///
+    /// Their classes are still checked for a rule in the generated stylesheet, so a class that reaches
+    /// the browser doing nothing still fails here.
     /// </remarks>
     private static readonly Dictionary<SlotId, string[]> PositionedDeliberately = new()
     {
-        [SlotId.Chair] = ["-bottom-24"],
+        [SlotId.Chair] = ["-bottom-28"],
+        [SlotId.Lamp] = ["bottom-12", "left-12"],
+        [SlotId.Plant] = ["bottom-12"],
     };
 
     /// <summary>

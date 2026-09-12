@@ -3,8 +3,14 @@
    The design is a picture of one workspace - a table, a chair, an empty place for a monitor, a lamp
    and a plant - so the positions are fixed rather than computed. What is not fixed is what stands in
    them, and a position may hold more than one thing: the three monitors stand side by side in a row,
-   one box each, which is also why a single monitor lands exactly where the design draws it. *@
-<div class="workspace-stage relative w-full max-w-4xl mx-auto h-[500px] bg-surface-bright rounded-[2rem] shadow-ambient border border-surface-container-high p-8 flex flex-col items-center justify-center overflow-hidden">
+   one box each, which is also why a single monitor lands where the design draws it.
+
+   The stage is taller than the design's 500px and carries more room beneath its contents, at the
+   owner's request: the box is the design's picture, and the chair hanging in front of the desk had
+   only 26px under it before it met the edge. The extra padding is on the bottom rather than spread
+   evenly, because the scene is centred - padding on both ends would move the monitors down by half
+   of what was added, which is not what the room was for. *@
+<div class="workspace-stage relative w-full max-w-4xl mx-auto h-[540px] bg-surface-bright rounded-[2rem] shadow-ambient border border-surface-container-high p-8 pb-20 flex flex-col items-center justify-center overflow-hidden">
     <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
          style="background-image: radial-gradient(#006767 1px, transparent 1px); background-size: 24px 24px;"></div>
 

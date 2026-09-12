@@ -14,12 +14,16 @@
    Its search belongs to it alone: it narrows what this dialog is showing and knows nothing about the
    panel's search, which narrows the panel, and each empties at its own moment.
 
+   The field carries its own margin rather than relying on the dialog's spacing: the body of a dialog
+   is one flat block, so the panel's gap never applies between what is inside it, and the products used
+   to start against the bottom edge of the field with nothing between them at all.
+
    Products are grouped by subcategory only when they span more than one, which is the phone case.
    The design's dialog had a 60vh cap on this list, in a scoped stylesheet this application never
    loads, so nothing capped it: ten candidates stood taller than the window. *@
 <ModalDialog @ref="dialog" Title="@Title" OnClosed="HandleClosedAsync">
     <ChildContent>
-        <div class="field">
+        <div class="field mb-6">
             <label class="sr-only" for="picker-search">Search these products by name</label>
             <input id="picker-search" type="search" autocomplete="off" placeholder="Search by name"
                    value="@query" @oninput="OnQueryChanged" />

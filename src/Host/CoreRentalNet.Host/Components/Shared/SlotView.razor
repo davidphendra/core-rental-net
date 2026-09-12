@@ -21,7 +21,7 @@
         <span class="slot__name text-[10px] font-bold text-on-surface w-full truncate text-center">@Item.Name</span>
         @if (Item.UnitMonthlyPrice is not null)
         {
-            <span class="slot__price text-[10px] text-on-surface-variant">@Item.UnitMonthlyPrice.ToDisplayString()/mo</span>
+            <span class="slot__price text-[10px] text-on-surface-variant @PricePlacement">@Item.UnitMonthlyPrice.ToDisplayString()/mo</span>
         }
         @if (IsDesk)
         {
@@ -85,6 +85,14 @@ else
     private string FilledLayout => IsDesk
         ? "bg-[#e8cdb4] border border-[#d2b496] rounded-md shadow-sm flex items-center justify-between gap-2 px-2"
         : "bg-surface-container-lowest border border-surface-container-highest shadow-ambient flex flex-col items-center justify-center gap-1 p-1";
+
+    /// <summary>
+    /// On the desk the price is pinned to the right end, so that the desk's name is centred on the
+    /// desk rather than on what is left of it. Measured before this: the name sat 100px right of the
+    /// desk's middle, because the price was taking a share of the bar. The picture is pinned to the
+    /// left the same way, in slots.css, which owns what the inside of a slot looks like.
+    /// </summary>
+    private string PricePlacement => IsDesk ? "absolute right-2" : string.Empty;
 
     /// <summary>The design stacks an invitation inside the stage; a zone and the desk lie flat.</summary>
     private string EmptyLayout => Slot.Slot switch

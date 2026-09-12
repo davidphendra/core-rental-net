@@ -18,6 +18,20 @@
   justify-content: center;
 }
 
+/* On the desk the picture is a small mark at the left end of the bar, out of the flow and out of the
+   way: .slot__media above stretches to fill its parent, which in a one-line bar left the desk's name
+   centred on nothing. Pinning it here rather than in the markup is deliberate - this file is loaded
+   after the generated stylesheet, so a width set there loses to the rule above. */
+.slot--desk .slot__media {
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 1.5rem;
+  flex: none;
+  min-height: 0;
+}
+
 .slot__media img,
 .slot__media svg {
   max-width: 100%;
