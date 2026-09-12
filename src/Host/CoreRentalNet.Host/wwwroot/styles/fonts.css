@@ -1,6 +1,13 @@
 /* Self-hosted so the demo renders in the design system's own faces without asking a
    third-party host for them on every page load. Both families are licensed under the
-   SIL Open Font License, which permits this. Files are latin subsets. */
+   SIL Open Font License, which permits this. Files are latin subsets.
+
+   Every weight declared here is a file of its own, and that is not a detail: these were once
+   duplicated - Manrope-600 and Manrope-700 were the same bytes, as were all three Plus Jakarta
+   Sans files - so the whole application rendered one face per family whatever weight it asked for.
+   A weight with no file of its own falls back to the nearest one, so regular text came out as
+   semibold, and emphasis on top of it was invisible. There is a browser test that renders the same
+   words at each declared weight and fails if any two of them come out the same width. */
 
 @font-face {
   font-family: "Plus Jakarta Sans";
@@ -24,6 +31,14 @@
   font-weight: 700;
   font-display: swap;
   src: url("/fonts/PlusJakartaSans-700.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Manrope-400.woff2") format("woff2");
 }
 
 @font-face {
