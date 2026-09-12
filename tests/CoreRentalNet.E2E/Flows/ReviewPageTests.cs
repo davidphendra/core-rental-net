@@ -82,4 +82,27 @@ public sealed class ReviewPageTests(HostFixture host, ITestOutputHelper output) 
         (await dialog.EvaluateAsync<double>("d => parseFloat(getComputedStyle(d).borderTopLeftRadius)"))
             .Should().BeGreaterThan(0, "the panel has corners");
     }
+
+    [Fact] // REV-04
+    public async Task Only_the_phrase_to_type_is_emphasised_in_the_confirmation()
+    {
+        await AssignADeskAndAChairAsync();
+        await GotoAsync("/review");
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Rent This Setup" }).ClickAsync();
+        await Expect(Page.Locator("dialog[open]")).ToBeVisibleAsync();
+
+        var weights = await Page.EvaluateAsync<double[]>(@"() => {
+          const field = document.querySelector('#demo-confirmation').closest('.field');
+          const prompt = field.querySelector('.field__prompt');
+          const phrase = prompt.querySelector('strong');
+          const weight = element => parseInt(getComputedStyle(element).fontWeight, 10);
+          return [weight(prompt), weight(phrase)];
+        }");
+
+        // "Type ... to confirm" is the instruction; the phrase is the thing to type. The label's own
+        // weight made both bold, so the customer could not tell which words to copy - and the words to
+        // copy were the whole line.
+        weights[0].Should().Be(400, "the words around the phrase are regular");
+        weights[1].Should().BeGreaterThanOrEqualTo(700, "and the phrase itself is what stands out");
+    }
 }

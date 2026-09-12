@@ -100,6 +100,11 @@ button, input, textarea, select { font: inherit; color: inherit; }
 
 .field { display: flex; flex-direction: column; gap: var(--stack-sm); width: 100%; }
 .field > label { font-family: var(--font-label); font-size: var(--label-md-size); font-weight: 700; }
+/* A label whose instruction contains the very words to copy - the confirmation phrase - says so by
+   leaving the instruction regular and emphasising only the phrase. The weight has to be set on an
+   element of its own rather than on the label, because a label's own rule would inherit down to the
+   emphasis as well and make the whole line bold, which is how it read before. */
+.field__prompt { font-weight: 400; }
 .field input, .field textarea {
   width: 100%; padding: 12px 16px; border-radius: var(--radius-lg);
   background: var(--surface-container-low); border: 1px solid var(--outline-variant);

@@ -6,7 +6,10 @@
             thing checkout needs is your acknowledgement.
         </p>
         <div class="field">
-            <label for="demo-confirmation">Type <strong>@DemoConfirmation.Phrase</strong> to confirm</label>
+            @* Only the phrase is emphasised. The label's own weight is 700, which made the emphasis
+               invisible and the whole line read as the sentence to type - so the wrapper takes it back
+               down to regular, and the <strong> inside is the only bold thing left. *@
+            <label for="demo-confirmation"><span class="field__prompt">Type <strong>@DemoConfirmation.Phrase</strong> to confirm</span></label>
             <input id="demo-confirmation" type="text" autocomplete="off" spellcheck="false"
                    value="@typed"
                    aria-describedby="demo-confirmation-hint"
