@@ -1,0 +1,120 @@
+@implements IAsyncDisposable
+@inject IdentitySettings Identity
+@inject IJSRuntime JavaScript
+@* Sign-in, or the account menu. Absent entirely when no identity provider is configured.
+
+   The menu is a disclosure rather than an ARIA menu, because its items are ordinary links: a
+   button that owns the open state, a panel below it, and Tab walking through what is inside. That
+   needs no arrow-key handling to be correct, and the panel is not rendered while it is shut, so
+   nothing inside it can be reached by a keyboard that cannot see it.
+
+   The initials are drawn instead of the provider's picture, so no page load reaches a third party
+   (ADR-0016). The click that lands outside the menu, and Escape, are the two events a circuit
+   cannot see for itself, so a small script reports them back. *@
+@if (Identity.IsConfigured)
+{
+    @if (Customer.IsSignedIn)
+    {
+        <div class="account-menu" @ref="element">
+            <button type="button"
+                    class="account-menu__trigger app-header__icon"
+                    aria-haspopup="true"
+                    aria-expanded="@(open ? "true" : "false")"
+                    aria-controls="@PanelId"
+                    aria-label="Account menu for @Customer.DisplayName"
+                    @onclick="ToggleAsync">
+                <span class="account-menu__initials" aria-hidden="true">@Customer.Initials</span>
+            </button>
+            @if (open)
+            {
+                <div class="account-menu__panel" id="@PanelId">
+                    <a class="account-menu__item" href="@Profile.Path" @onclick="CloseAsync">Profile</a>
+                    @* Enhanced navigation fetches the target and swaps it in. Sign-out is a redirect
+                       to the identity provider, so it must be left to the browser: a fetch cannot
+                       follow a cross-origin redirect, and the click would simply do nothing. *@
+                    <a class="account-menu__item" href="@AccountController.SignOutPath"
+                       data-enhance-nav="false" @onclick="CloseAsync">Sign out</a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <a class="app-header__link" data-enhance-nav="false"
+           href="@SignInUrl.For(ReturnUrl)">Sign in</a>
+    }
+}
+
+@code {
+    private ElementReference element;
+    private IJSObjectReference? module;
+    private DotNetObjectReference<AccountMenu>? self;
+    private bool open;
+
+    [CascadingParameter(Name = "Customer")] public CurrentCustomer Customer { get; set; } = CurrentCustomer.Anonymous;
+
+    [Parameter] public string ReturnUrl { get; set; } = "/";
+
+    private string PanelId { get; } = $"account-menu-{Guid.NewGuid():N}";
+
+    private Task ToggleAsync() => SetOpenAsync(!open);
+
+    /// <summary>Closes the menu when a link inside it is taken, before the navigation runs.</summary>
+    private Task CloseAsync() => SetOpenAsync(false);
+
+    /// <summary>Called by the script for a pointer that landed elsewhere, or for Escape.</summary>
+    [JSInvokable]
+    public async Task CloseFromScriptAsync()
+    {
+        await SetOpenAsync(false);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SetOpenAsync(bool value)
+    {
+        if (open == value)
+        {
+            return;
+        }
+
+        open = value;
+
+        try
+        {
+            module ??= await JavaScript.InvokeAsync<IJSObjectReference>("import", "./js/account-menu.js");
+
+            if (open)
+            {
+                self ??= DotNetObjectReference.Create(this);
+                await module.InvokeVoidAsync("watch", element, self);
+            }
+            else
+            {
+                await module.InvokeVoidAsync("unwatch", element);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone, so there is no document left to listen on. Nothing to undo.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            try
+            {
+                await module.InvokeVoidAsync("unwatch", element);
+                await module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Best effort: the page is unloading and the listeners go with it.
+            }
+        }
+
+        self?.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

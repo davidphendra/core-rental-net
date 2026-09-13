@@ -72,7 +72,7 @@ public static class CatalogTabs
     /// <param name="search">What the customer typed, or null for the whole tab.</param>
     public static IReadOnlyList<ProductListItem> Load(
         CatalogTab tab,
-        GetCatalogPageHandler pageHandler,
+        IGetCatalogPage pageHandler,
         string? search = null)
     {
         ArgumentNullException.ThrowIfNull(pageHandler);

@@ -56,21 +56,8 @@ public sealed class RentalScheduler(
         List<RentalScheduleAction> actions,
         CancellationToken cancellationToken)
     {
-        // Paid: the setup is on its way.
-        if (rental.Status == RentalStatus.Paid)
-        {
-            rental.ScheduleDelivery(DeliveryPolicy.ScheduledFor(rental.PlacedOn));
-            actions.Add(new RentalScheduleAction(rental.Number.Value, ScheduleActionKind.DeliveryScheduled));
-        }
-
-        // Delivered: the months start running from the scheduled date.
-        if (rental.Status == RentalStatus.DeliveryScheduled
-            && rental.DeliveryScheduledFor is { } scheduled
-            && scheduled <= asOf)
-        {
-            rental.Activate(asOf);
-            actions.Add(new RentalScheduleAction(rental.Number.Value, ScheduleActionKind.Activated));
-        }
+        ScheduleDelivery(rental, actions);
+        ActivateIfDue(rental, asOf, actions);
 
         // Live: every period that has begun is billed once, and settled immediately because payment
         // cannot fail here.
@@ -79,14 +66,47 @@ public sealed class RentalScheduler(
             await InvoiceStartedPeriodsAsync(rental, asOf, actions, cancellationToken).ConfigureAwait(false);
         }
 
-        // Cancelled: the equipment goes back when the paid month is over.
-        if (rental.Status == RentalStatus.CancellationRequested
-            && rental.EndsOn is { } endsOn
-            && endsOn <= asOf)
+        EndIfDue(rental, asOf, actions);
+    }
+
+    /// <summary>Paid: the setup is on its way.</summary>
+    private static void ScheduleDelivery(Domain.Rental rental, List<RentalScheduleAction> actions)
+    {
+        if (rental.Status != RentalStatus.Paid)
         {
-            rental.End(asOf);
-            actions.Add(new RentalScheduleAction(rental.Number.Value, ScheduleActionKind.Ended));
+            return;
         }
+
+        rental.ScheduleDelivery(DeliveryPolicy.ScheduledFor(rental.PlacedOn));
+        actions.Add(new RentalScheduleAction(rental.Number.Value, ScheduleActionKind.DeliveryScheduled));
+    }
+
+    /// <summary>Delivered: the months start running from the scheduled date.</summary>
+    private static void ActivateIfDue(Domain.Rental rental, DateOnly asOf, List<RentalScheduleAction> actions)
+    {
+        if (rental.Status != RentalStatus.DeliveryScheduled
+            || rental.DeliveryScheduledFor is not { } scheduled
+            || scheduled > asOf)
+        {
+            return;
+        }
+
+        rental.Activate(asOf);
+        actions.Add(new RentalScheduleAction(rental.Number.Value, ScheduleActionKind.Activated));
+    }
+
+    /// <summary>Cancelled: the equipment goes back when the paid month is over.</summary>
+    private static void EndIfDue(Domain.Rental rental, DateOnly asOf, List<RentalScheduleAction> actions)
+    {
+        if (rental.Status != RentalStatus.CancellationRequested
+            || rental.EndsOn is not { } endsOn
+            || endsOn > asOf)
+        {
+            return;
+        }
+
+        rental.End(asOf);
+        actions.Add(new RentalScheduleAction(rental.Number.Value, ScheduleActionKind.Ended));
     }
 
     private async Task InvoiceStartedPeriodsAsync(

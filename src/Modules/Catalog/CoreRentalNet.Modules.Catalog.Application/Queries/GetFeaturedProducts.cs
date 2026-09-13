@@ -6,7 +6,13 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries;
 /// <summary>The products the Home page's featured cards show, driven by the popular badge.</summary>
 public sealed record GetFeaturedProducts;
 
-public sealed class GetFeaturedProductsHandler(IProductCatalog catalog)
+/// <summary>The featured products, as the home page asks for them.</summary>
+public interface IGetFeaturedProducts
+{
+    IReadOnlyList<ProductListItem> Handle(GetFeaturedProducts query);
+}
+
+public sealed class GetFeaturedProductsHandler(IProductCatalog catalog) : IGetFeaturedProducts
 {
     public IReadOnlyList<ProductListItem> Handle(GetFeaturedProducts query)
     {

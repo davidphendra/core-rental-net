@@ -12,11 +12,16 @@
         <a class="app-header__brand" href="/">Core Rental</a>
         <nav class="app-header__nav" aria-label="Main">
             <NavLink class="app-header__link" href="/" Match="NavLinkMatch.All">Home</NavLink>
-            <NavLink class="app-header__link" href="/builder">Workspace Builder</NavLink>
+            @* The affordance follows the entitlement. The page enforces the same rule for anyone who
+               arrives by another door (the home page, the store, a bookmark); this only avoids
+               offering a destination the application is about to refuse. *@
+            <AuthorizeView Policy="@CatalogPolicy.Name">
+                <NavLink class="app-header__link" href="/builder">Workspace Builder</NavLink>
+            </AuthorizeView>
             <NavLink class="app-header__link" href="/extras">Accessory Store</NavLink>
         </nav>
         <span class="row">
-            <AccountChip ReturnUrl="/" />
+            <AccountMenu ReturnUrl="/" />
             <a class="app-header__icon" href="/review"
                aria-label="@(CanCheckout ? "Rent your workspace" : "Rent your workspace, once a desk and a chair are chosen")"
                aria-disabled="@((!CanCheckout).ToString().ToLowerInvariant())"

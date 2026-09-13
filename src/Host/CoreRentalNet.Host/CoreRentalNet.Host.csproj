@@ -12,7 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Auth0's wrapper is the integration point (ADR-0016); the OpenID Connect handler it wraps
+         is referenced directly because the session policy is applied on that handler. -->
+    <PackageReference Include="Auth0.AspNetCore.Authentication" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <!-- An access token is read for its permissions, so its token type is a direct dependency. -->
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
   </ItemGroup>
 
   <ItemGroup>

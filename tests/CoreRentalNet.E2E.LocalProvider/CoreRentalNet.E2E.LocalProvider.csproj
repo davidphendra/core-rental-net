@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.E2E.LocalProvider</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Started as a process by the browser suite. It is not a test project itself; it is the
+         provider the suite's real OIDC handshake runs against (ADR-0020). -->
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Signing the provider's own tokens, with the same type the application already reads an
+         access token's permissions through. -->
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+  </ItemGroup>
+
+</Project>

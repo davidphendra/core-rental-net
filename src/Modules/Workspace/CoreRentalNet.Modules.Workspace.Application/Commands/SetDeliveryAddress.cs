@@ -6,7 +6,13 @@ namespace CoreRentalNet.Modules.Workspace.Application.Commands;
 
 public sealed record SetDeliveryAddress(string DraftToken, string? Address);
 
-public sealed class SetDeliveryAddressHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
+/// <summary>Records where the workspace behind a draft token should be delivered.</summary>
+public interface ISetDeliveryAddress
+{
+    Task<WorkspaceView> HandleAsync(SetDeliveryAddress command, CancellationToken cancellationToken = default);
+}
+
+public sealed class SetDeliveryAddressHandler(IWorkspaceRepository repository, IDefineProductPrices prices) : ISetDeliveryAddress
 {
     public async Task<WorkspaceView> HandleAsync(SetDeliveryAddress command, CancellationToken cancellationToken = default)
     {

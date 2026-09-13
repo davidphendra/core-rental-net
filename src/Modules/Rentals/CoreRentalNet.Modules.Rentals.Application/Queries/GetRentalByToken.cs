@@ -13,7 +13,13 @@ public sealed record GetRentalByToken(string AccessToken);
 /// Returns null for an unknown token rather than throwing, and takes no order number, so there is
 /// nothing to enumerate: guessing a number discloses nothing (matrix ORD-02, SEC-06).
 /// </remarks>
-public sealed class GetRentalByTokenHandler(IRentalRepository rentals, TimeProvider clock)
+/// <summary>The order a token opens, or nothing when the token matches none.</summary>
+public interface IGetRentalByToken
+{
+    Task<RentalView?> HandleAsync(GetRentalByToken query, CancellationToken cancellationToken = default);
+}
+
+public sealed class GetRentalByTokenHandler(IRentalRepository rentals, TimeProvider clock) : IGetRentalByToken
 {
     public async Task<RentalView?> HandleAsync(GetRentalByToken query, CancellationToken cancellationToken = default)
     {

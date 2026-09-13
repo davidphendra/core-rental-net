@@ -197,4 +197,23 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await Expect(Page.Locator("#picker-search")).ToHaveValueAsync(string.Empty);
         await Expect(PickerCards).ToHaveCountAsync(10);
     }
+
+    [Fact] // CAT-51
+    public async Task Removing_a_box_on_the_canvas_clears_the_panels_selection()
+    {
+        await GotoAsync("/builder");
+
+        // Assign from the panel, so its own card is the one shown as selected.
+        var card = PanelCards.Filter(new LocatorFilterOptions { HasTextString = "Canggu Bamboo" });
+        await card.ClickAsync();
+        await Expect(card).ToHaveAttributeAsync("aria-pressed", "true");
+
+        // Then take it off the canvas, which the panel did not do. The panel has to hear about it:
+        // overriding OnInitialized without calling the base left it subscribed to nothing, so the
+        // card stayed selected after the workspace no longer held the product.
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Remove one Canggu Bamboo" })
+            .ClickAsync();
+
+        await Expect(card).ToHaveAttributeAsync("aria-pressed", "false");
+    }
 }

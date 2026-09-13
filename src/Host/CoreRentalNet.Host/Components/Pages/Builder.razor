@@ -2,7 +2,7 @@
 @layout BuilderLayout
 @attribute [Authorize(Policy = CatalogPolicy.Name)]
 @inherits WorkspaceObserver
-@inject GetCatalogPageHandler CatalogPage
+@inject IGetCatalogPage CatalogPage
 @inject NavigationManager Navigation
 <PageTitle>Workspace Builder — Core Rental</PageTitle>
 

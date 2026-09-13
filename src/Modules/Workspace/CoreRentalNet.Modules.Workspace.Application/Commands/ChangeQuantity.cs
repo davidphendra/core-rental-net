@@ -7,7 +7,13 @@ namespace CoreRentalNet.Modules.Workspace.Application.Commands;
 /// <summary>Sets how many of one product a slot holds. Zero removes that product.</summary>
 public sealed record ChangeQuantity(string DraftToken, SlotId Slot, string Sku, int Quantity);
 
-public sealed class ChangeQuantityHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
+/// <summary>Sets how many of one product a slot holds; zero removes it.</summary>
+public interface IChangeQuantity
+{
+    Task<WorkspaceView> HandleAsync(ChangeQuantity command, CancellationToken cancellationToken = default);
+}
+
+public sealed class ChangeQuantityHandler(IWorkspaceRepository repository, IDefineProductPrices prices) : IChangeQuantity
 {
     public async Task<WorkspaceView> HandleAsync(ChangeQuantity command, CancellationToken cancellationToken = default)
     {

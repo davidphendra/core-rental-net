@@ -1,6 +1,6 @@
 @page "/orders/{Number}"
-@inject GetRentalByTokenHandler RentalReader
-@inject GetInvoicesByTokenHandler InvoiceReader
+@inject IGetRentalByToken RentalReader
+@inject IGetInvoicesByToken InvoiceReader
 <PageTitle>@($"Order {Number} — Core Rental")</PageTitle>
 
 <section class="section">

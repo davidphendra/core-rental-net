@@ -44,6 +44,14 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        /* The workspace stage's dotted paper, in the design's own colour. A class rather than a style
+           attribute because an inline style cannot be admitted by a Content Security Policy without
+           allowing every inline style, which is the weakness the policy exists to remove. */
+        .scene-pattern {
+            background-image: radial-gradient(#006767 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
 
 /* moni_s_workspace_home */
 .bg-pattern {

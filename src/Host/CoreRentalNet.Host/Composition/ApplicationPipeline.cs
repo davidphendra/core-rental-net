@@ -18,7 +18,15 @@ internal static class ApplicationPipeline
         {
             app.UseExceptionHandler("/error", createScopeForErrors: true);
             app.UseHsts();
+            // HSTS tells a browser to come back over HTTPS; this sends it there the first time. A
+            // deployment with no HTTPS port configured logs a warning and does not redirect, so this
+            // cannot turn a working host into a loop.
+            app.UseHttpsRedirection();
         }
+
+        // First, so every response carries the policy - the pages and the assets behind them alike.
+        // What the policy is, and why it is written strictly, is stated once in the middleware.
+        app.UseMiddleware<SecurityHeadersMiddleware>();
 
         // Revalidate, always. Without this the response carries an ETag and a Last-Modified but no
         // Cache-Control, so a browser applies heuristic freshness - a fraction of the file's age - and
@@ -49,7 +57,7 @@ internal static class ApplicationPipeline
             AccountController.MapEndpoints(app);
         }
 
-        app.UseMiddleware<TokenEventHandlerMiddleware>();
+        app.UseMiddleware<DraftTokenMiddleware>();
         app.UseAntiforgery();
     }
 }

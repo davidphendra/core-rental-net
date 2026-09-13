@@ -6,7 +6,14 @@ namespace CoreRentalNet.Modules.Rentals.Application.Queries;
 public sealed record GetInvoicesByToken(string AccessToken);
 
 /// <summary>Every invoice raised for the order behind a token, oldest first.</summary>
-public sealed class GetInvoicesByTokenHandler(IRentalRepository rentals, IInvoiceRepository invoices)
+public interface IGetInvoicesByToken
+{
+    Task<IReadOnlyList<InvoiceView>> HandleAsync(
+        GetInvoicesByToken query,
+        CancellationToken cancellationToken = default);
+}
+
+public sealed class GetInvoicesByTokenHandler(IRentalRepository rentals, IInvoiceRepository invoices) : IGetInvoicesByToken
 {
     public async Task<IReadOnlyList<InvoiceView>> HandleAsync(
         GetInvoicesByToken query,

@@ -43,7 +43,9 @@ internal static class RentalsRegistration
             builder.Configuration.GetValue("Rentals:SchedulerIntervalMinutes", 60)));
         builder.Services.AddHostedService<RenewalSchedulerHostedService>();
 
-        builder.Services.AddScoped<GetRentalByTokenHandler>();
-        builder.Services.AddScoped<GetInvoicesByTokenHandler>();
+        // By the operation, not by the handler's own type: the page asks for an order and its
+        // invoices, and how they are assembled is the application's business.
+        builder.Services.AddScoped<IGetRentalByToken, GetRentalByTokenHandler>();
+        builder.Services.AddScoped<IGetInvoicesByToken, GetInvoicesByTokenHandler>();
     }
 }

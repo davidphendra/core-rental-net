@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Application.Queries;
 using CoreRentalNet.Modules.Catalog.Domain;
@@ -22,8 +23,16 @@ internal static class CatalogRegistration
         builder.Services.AddSingleton<IProductCatalog>(catalog);
         builder.Services.AddSingleton<IDefineProductPrices>(new DefineProductPrices(catalog));
 
-        builder.Services.AddScoped<GetFeaturedProductsHandler>();
-        builder.Services.AddScoped<GetCatalogPageHandler>();
+        // Registered by the operation each one performs, not by its own type: the UI reaches the
+        // application through the interface, so how the page is produced stays the application's
+        // business and the handler's name never reaches a component.
+        builder.Services.AddScoped<IGetFeaturedProducts, GetFeaturedProductsHandler>();
+        builder.Services.AddScoped<IGetCatalogPage, GetCatalogPageHandler>();
+
+        // Each component gets its own browsing state, which is why this is transient: a shared browser
+        // would make the panel's category and the store's the same category.
+        builder.Services.AddTransient(services => new CatalogBrowser(
+            (tab, query) => CatalogTabs.Load(tab, services.GetRequiredService<IGetCatalogPage>(), query)));
     }
 }
 

@@ -15,7 +15,7 @@ namespace CoreRentalNet.Host.Components.Shared;
 public abstract class WorkspaceObserver : ComponentBase, IDisposable
 {
     [Inject]
-    protected WorkspaceSession Session { get; set; } = default!;
+    protected IWorkspaceSession Session { get; set; } = default!;
 
     protected override void OnInitialized() => Session.Changed += OnWorkspaceChanged;
 

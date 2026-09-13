@@ -1,17 +1,9 @@
-@* A product image, or a deliberate placeholder when no image file exists. *@
+@* A product image, or a deliberate placeholder when no image file exists, in the framed box the
+   design gives it. The choice between the two belongs to ProductVisual; this is only the box, so a
+   caller that draws its own box (a store or builder card) uses ProductVisual directly. *@
 <div class="product-image @CssClass">
-    @if (ImageAvailable && !string.IsNullOrWhiteSpace(ImagePath))
-    {
-        <img src="@ImagePath" alt="@AltText" loading="lazy" />
-    }
-    else
-    {
-        <svg class="product-image__glyph" viewBox="0 0 24 24" role="img" aria-label="@AltText" focusable="false">
-            <path d="@ProductGlyph.PathFor(Glyph)"
-                  fill="none" stroke="currentColor" stroke-width="1.4"
-                  stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-    }
+    <ProductVisual AltText="@AltText" ImagePath="@ImagePath" ImageAvailable="@ImageAvailable"
+                  Glyph="@Glyph" GlyphClass="product-image__glyph" />
 </div>
 
 @code {

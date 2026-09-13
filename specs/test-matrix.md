@@ -181,6 +181,9 @@ was never specified.
 | ARC-04 | Domain purity | Domain references no EF Core or ASP.NET type | A | passing |
 | ARC-05 | Absent plumbing | no mediator, no event bus, no outbox package referenced | A | passing |
 | ARC-06 | Time access | `TimeProvider` used everywhere; no `DateTime.Now`/`UtcNow` in Domain | A | passing |
+| ARC-07 | What a component may depend on | the operation's interface, never an Application handler's concrete type (ADR-0023) | A | passing |
+| ARC-08 | Inline code in a component | no inline style attribute and no inline script block, so `style-src 'self'` can be enforced (ADR-0024) | A | passing |
+| ARC-09 | Where a component loads from | no component names an absolute http(s) resource, so the policy admits one origin (ADR-0024) | A | passing |
 
 ## UI, tokens and accessibility (ADR-0012)
 
@@ -205,6 +208,9 @@ was never specified.
 | SEC-04 | Payments | no card, provider or webhook code exists anywhere | A | passing |
 | SEC-05 | Draft token from one browser | cannot read or mutate another browser's draft | E | passing |
 | SEC-06 | Order enumeration | guessing an order number without a token discloses nothing | E | passing |
+| SEC-07 | The content security policy | delivered as a header, enforcing, admitting this origin only; no `unsafe-inline`, no `unsafe-eval` | E | passing |
+| SEC-08 | A full load, an interactive circuit and a catalogue request | the browser reports no policy violation | E | passing |
+| SEC-09 | The companion headers | `nosniff`, `no-referrer`, and a permissions policy that grants nothing | E | passing |
 
 ## Authentication (ADR-0016 to ADR-0020)
 
@@ -212,13 +218,13 @@ was never specified.
 |---|---|---|---|---|
 | AUTH-01 | No identity configuration at all | OIDC is not registered, the sign-in affordance is hidden, every guest route works | I,E | pending |
 | AUTH-02 | The application starts with no `Auth0:Domain` | it boots and serves the funnel; identity is not required to run | E | pending |
-| AUTH-03 | Selecting sign-in | a redirect to the authority's authorization endpoint, carrying the return URL | E | pending |
-| AUTH-04 | Completing the handshake | an authentication cookie is issued and the customer is signed in | E | pending |
-| AUTH-05 | Selecting sign-out | the cookie is cleared and the browser is sent to the authority's logout endpoint | E | pending |
-| AUTH-06 | A local return URL | honoured after sign-in | I,E | pending |
+| AUTH-03 | Selecting sign-in | a redirect to the authority's authorization endpoint, carrying the return URL | E | passing |
+| AUTH-04 | Completing the handshake | an authentication cookie is issued and the customer is signed in | E | passing |
+| AUTH-05 | Selecting sign-out | the cookie is cleared and the browser is sent to the authority's logout endpoint | E | passing |
+| AUTH-06 | A local return URL | honoured after sign-in | I,E | passing |
 | AUTH-07 | A non-local return URL | refused, so the login page cannot be an open redirect | U,I | pending |
 | AUTH-08 | Every committed configuration file | contains no client secret | A | pending |
-| AUTH-09 | What is persisted after sign-in | no access token and no refresh token anywhere | U,A | pending |
+| AUTH-09 | What is persisted after sign-in | the ID token and the access token are kept in the session cookie; no refresh token is stored | U,A | pending |
 | AUTH-10 | The authentication cookie | `HttpOnly`, `SameSite=Lax`, and `Secure` in production | I | pending |
 | AUTH-11 | A signed-in checkout | the order records the subject, email and name as at that moment | U,I | pending |
 | AUTH-12 | A guest checkout | the order records no customer, and its link still opens it | U,I | pending |
@@ -226,14 +232,23 @@ was never specified.
 | AUTH-14 | One customer requesting another's order by number | nothing, and no data disclosed | U,I | pending |
 | AUTH-15 | An order detail page | opens by ownership, and by token for a guest | U,I,E | pending |
 | AUTH-16 | The sign-in affordance | present in the header and at the review step, and absent when unconfigured | E | pending |
-| AUTH-17 | The browser suite | drives a real OIDC handshake against a local provider, with no interception | E | pending |
-| AUTH-18 | Production with the local provider enabled | the application refuses to start | A | pending |
-| AUTH-19 | Real tenant credentials present | the opt-in test validates the tenant configuration; skipped otherwise | I | pending |
+| AUTH-17 | The browser suite | drives a real OIDC handshake against a local provider, with no interception | E | passing |
+| AUTH-18 | Production with the local provider enabled | the application refuses to start | E | passing |
+| AUTH-19 | Real tenant credentials present | the opt-in test validates the tenant configuration; skipped otherwise | E | passing |
 | AUTH-20 | Signing in with a workspace in progress | the draft survives the round trip | E | pending |
 | AUTH-21 | Signing out | the draft and any confirmation link are left alone | E | pending |
 | AUTH-22 | A tab left open past the cookie expiry | keeps the circuit's authentication context, as recorded in ADR-0019 | E | pending |
-| AUTH-23 | A signed-in header | initials are drawn, and no image is fetched from the identity provider | E | pending |
-| AUTH-24 | A signed-in journey | reaches nothing but the application, exactly as the guest journey does | E | pending |
+| AUTH-23 | A signed-in header | initials are drawn, and no image is fetched from the identity provider | E | passing |
+| AUTH-24 | A signed-in journey | reaches nothing but the application, exactly as the guest journey does | E | passing |
+| AUTH-25 | What the identity provider says about an account | the standard and the short claim names are both read; the name is built from the OIDC name parts, and an email in `name` is passed over rather than shown as a name | U | passing |
+| AUTH-26 | The account's role | read from the access token's role permission (`manager:role` → `Manager`, the name before `:role`, capitalised), and from the namespaced claim an Action may emit (the configured one, or any claim ending `/roles`); no role leaves the line honest rather than saying `Customer` | U,E | passing |
+| AUTH-27 | The account menu's links | Profile points at the profile page's own address, and sign-out at the account endpoint | A | passing |
+| AUTH-28 | The profile page's content | shows the account's name, email and role, from the snapshot taken at sign-in | A | passing |
+| AUTH-29 | The account menu in a browser | opens on the initials, closes on an outside click or Escape, and each item does what it says | E | pending |
+| AUTH-30 | An account's permissions | read from the access token's `permissions` claim at sign-in and kept as claims of the configured type; without an audience, or without the claim, nothing is added | U | passing |
+| AUTH-31 | The scopes the login asks for | `Auth0:Scope` overrides the provider's default, so a per-app authorization policy can name the permission its token should carry | U | passing |
+| AUTH-32 | The account's role in the access token | a permission ending `:role` names the role of the same name, capitalised; a permission that names none is left alone; a role an Action already wrote is not stated twice | U,E | passing |
+| AUTH-33 | The builder's nav link | shown only to an account that carries the claim the gate checks — hidden for a guest and for a signed-in account without it | E | passing |
 
 ## Notes recorded during E7
 

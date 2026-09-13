@@ -23,7 +23,7 @@
        what an unreleased build shows. The SDK would otherwise append the commit hash to the
        informational version, and the footer is a version rather than a build fingerprint. -->
   <PropertyGroup>
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>0.0.2</VersionPrefix>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 

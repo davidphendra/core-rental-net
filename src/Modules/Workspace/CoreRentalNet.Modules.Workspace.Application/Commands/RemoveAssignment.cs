@@ -7,7 +7,13 @@ namespace CoreRentalNet.Modules.Workspace.Application.Commands;
 /// <summary>Empty a slot. Removing an empty slot is a no-op, so a double click is harmless.</summary>
 public sealed record RemoveAssignment(string DraftToken, SlotId Slot);
 
-public sealed class RemoveAssignmentHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
+/// <summary>Empties a slot of the workspace behind a draft token.</summary>
+public interface IRemoveAssignment
+{
+    Task<WorkspaceView> HandleAsync(RemoveAssignment command, CancellationToken cancellationToken = default);
+}
+
+public sealed class RemoveAssignmentHandler(IWorkspaceRepository repository, IDefineProductPrices prices) : IRemoveAssignment
 {
     public async Task<WorkspaceView> HandleAsync(RemoveAssignment command, CancellationToken cancellationToken = default)
     {

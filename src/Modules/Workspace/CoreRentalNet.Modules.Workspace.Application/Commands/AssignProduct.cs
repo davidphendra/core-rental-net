@@ -12,7 +12,13 @@ namespace CoreRentalNet.Modules.Workspace.Application.Commands;
 /// </summary>
 public sealed record AssignProduct(string DraftToken, string Sku, int Quantity = 1);
 
-public sealed class AssignProductHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
+/// <summary>Adds units of a product to a slot of the workspace behind a draft token.</summary>
+public interface IAssignProduct
+{
+    Task<WorkspaceView> HandleAsync(AssignProduct command, CancellationToken cancellationToken = default);
+}
+
+public sealed class AssignProductHandler(IWorkspaceRepository repository, IDefineProductPrices prices) : IAssignProduct
 {
     public async Task<WorkspaceView> HandleAsync(AssignProduct command, CancellationToken cancellationToken = default)
     {

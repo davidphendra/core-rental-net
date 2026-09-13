@@ -14,7 +14,20 @@ public sealed record GetCatalogPage(
     CatalogSubCategory? SubCategory = null,
     string? Search = null);
 
-public sealed class GetCatalogPageHandler(IProductCatalog catalog)
+/// <summary>
+/// The catalog page for one category and one search.
+/// </summary>
+/// <remarks>
+/// The operation is the abstraction: a caller asks for a page, and how it is produced is the
+/// application's business. Naming it after the operation rather than the mechanism is what lets the
+/// UI depend on it without knowing a handler class exists.
+/// </remarks>
+public interface IGetCatalogPage
+{
+    IReadOnlyList<ProductListItem> Handle(GetCatalogPage query);
+}
+
+public sealed class GetCatalogPageHandler(IProductCatalog catalog) : IGetCatalogPage
 {
     public IReadOnlyList<ProductListItem> Handle(GetCatalogPage query)
     {

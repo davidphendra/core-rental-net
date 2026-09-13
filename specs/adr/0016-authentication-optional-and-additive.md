@@ -1,6 +1,6 @@
 # ADR-0016: Authentication is optional and additive
 
-- **Status:** Accepted (2026-09-10)
+- **Status:** Accepted (2026-09-10), amended 2026-09-12
 - **Amends:** ADR-0009, whose "no identity provider for the MVP" is now superseded in part
 
 ## Context
@@ -22,7 +22,8 @@ seconds.
   registered, the sign-in affordance is hidden, and the application behaves exactly as it did
   before this epic. A working application must not refuse to start because of a feature nobody is
   using.
-- No roles. No organizations. The only authorization rule is ownership.
+- **Roles are displayed, never enforced.** The account's role claim is shown on the profile page
+  and decides nothing: the only authorization rule is ownership. No organizations.
 
 ## Consequences
 - The guest half of the browser suite is unaffected and keeps passing unchanged.

@@ -14,8 +14,17 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <!-- BackgroundService, so the time-driven run has a home. -->
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
-    <!-- Standard OpenID Connect. Not in the ASP.NET Core shared framework, unlike cookie auth. -->
+    <!-- Auth0's package as the identity wrapper, over the standard OpenID Connect handler it is
+         built on. MIT. 1.11.0 is the release that targets net10.0. -->
+    <PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.11.0" />
+    <!-- The handler the wrapper is built on. Referenced directly rather than left transitive: the
+         two settings the wrapper does not expose (SaveTokens, GetClaimsFromUserInfoEndpoint) are
+         applied on it, and ADR-0015 pins its exact version rather than trusting resolution. -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.12" />
+    <!-- The token type used to read an access token's permissions. Referenced directly for the same
+         reason as the handler above: the application reads it directly, so it is pinned here rather
+         than left to whatever the OpenID Connect handler happens to resolve. -->
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

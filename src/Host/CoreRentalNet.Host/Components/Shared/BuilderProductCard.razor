@@ -15,18 +15,10 @@
     }
 
     <div class="h-24 w-full bg-surface-container rounded-lg mb-2 flex items-center justify-center overflow-hidden">
-        @if (Product.ImageAvailable && !string.IsNullOrWhiteSpace(Product.ImagePath))
-        {
-            <img class="object-cover w-full h-full group-hover:scale-105 transition-transform" src="@Product.ImagePath" alt="@Product.Name" loading="lazy" />
-        }
-        else
-        {
-            @* No image file exists for most of the catalogue. The design never draws that case, so
-               this is a deliberate placeholder: the same box, with the glyph centred in it. *@
-            <svg class="w-1/2 h-1/2 text-primary-container" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="@Product.Name">
-                <path d="@ProductGlyph.PathFor(ProductGlyph.ForProduct(Product.Category, Product.SubCategory))" />
-            </svg>
-        }
+        <ProductVisual AltText="@Product.Name" ImagePath="@Product.ImagePath" ImageAvailable="@Product.ImageAvailable"
+                      Glyph="@ProductGlyph.ForProduct(Product.Category, Product.SubCategory)"
+                      ImageClass="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                      GlyphClass="w-1/2 h-1/2 text-primary-container" />
     </div>
 
     <h4 class="text-label-sm font-label-sm text-on-surface font-bold">@Product.Name</h4>

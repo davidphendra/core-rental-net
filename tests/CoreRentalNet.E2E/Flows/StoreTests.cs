@@ -107,4 +107,30 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
         await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(10);
     }
+
+    [Fact] // STORE-07
+    public async Task The_price_does_not_overlap_the_name()
+    {
+        await GotoAsync("/extras");
+
+        // The worst case in the catalogue: a long name at the largest price, in the narrowest grid
+        // the design draws (four columns).
+        var card = Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = "Jimbaran Executive" });
+        await Expect(card).ToHaveCountAsync(1);
+
+        var name = await card.Locator("h3").BoundingBoxAsync();
+        var price = await card.Locator("h3 + span").BoundingBoxAsync();
+
+        name.Should().NotBeNull();
+        price.Should().NotBeNull();
+
+        // Either they are side by side, or the price wrapped onto its own line below the name. They
+        // are never drawn over each other, which is what the unbroken IDR amount used to do.
+        var overlaps = name!.X < price!.X + price.Width
+            && price.X < name.X + name.Width
+            && name.Y < price.Y + price.Height
+            && price.Y < name.Y + name.Height;
+
+        overlaps.Should().BeFalse("the price and the name must not be drawn over one another");
+    }
 }

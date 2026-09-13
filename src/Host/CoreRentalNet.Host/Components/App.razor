@@ -1,4 +1,5 @@
 @inject IHttpContextAccessor HttpContextAccessor
+@inject IdentitySettings Identity
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,8 +42,8 @@
 
     protected override void OnInitialized()
     {
-        DraftToken = TokenEventHandlerMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
-        Customer = CurrentCustomer.FromClaims(HttpContextAccessor.HttpContext?.User);
+        DraftToken = DraftTokenMiddleware.ResolveToken(HttpContextAccessor.HttpContext) ?? string.Empty;
+        Customer = CurrentCustomer.FromClaims(HttpContextAccessor.HttpContext?.User, Identity.RoleClaimType);
         StoreCategory = StoreCategoryPreference.Read(HttpContextAccessor.HttpContext?.Request.Cookies);
     }
 }

@@ -1,5 +1,7 @@
+using Auth0.AspNetCore.Authentication;
 using CoreRentalNet.Host.Components.Pages;
 using CoreRentalNet.Host.Controllers;
+using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -10,6 +12,11 @@ namespace CoreRentalNet.Host.Composition;
 /// Identity, which is optional and additive (ADR-0016). With no domain configured nothing is
 /// registered and the application runs exactly as it did before identity existed.
 /// </summary>
+/// <remarks>
+/// The registration is a list of named concerns - the provider, the access token, the cookie, the
+/// handler - rather than one long block, so the concern a reader is looking for is a name they can
+/// find instead of a paragraph they have to read.
+/// </remarks>
 internal static class IdentityRegistration
 {
     public static IdentitySettings AddOptionalIdentity(this WebApplicationBuilder builder)
@@ -17,21 +24,82 @@ internal static class IdentityRegistration
         ArgumentNullException.ThrowIfNull(builder);
 
         var settings = IdentitySettings.From(builder.Configuration);
+        var permissionClaim = CatalogReadClaim.From(builder.Configuration);
         builder.Services.AddSingleton(settings);
-        builder.Services.AddSingleton(CatalogReadClaim.From(builder.Configuration));
+        builder.Services.AddSingleton(permissionClaim);
 
         if (!settings.IsConfigured)
         {
             return settings;
         }
 
+        RegisterProvider(builder, settings);
+        RegisterAccessTokenHandler(builder);
+        ConfigureCookie(builder);
+        ConfigureOpenIdConnect(builder, settings, permissionClaim);
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Auth0's own package rather than the bare handler it is built on: the scheme name, the
+    /// authority, the provider's logout endpoint and the scope the provider recognises are its
+    /// conventions, and taking them from the provider is one fewer place to get them wrong. What it
+    /// registers under that name is still the standard OpenID Connect handler, so the settings it
+    /// does not expose are stated on the handler instead.
+    /// </summary>
+    private static void RegisterProvider(WebApplicationBuilder builder, IdentitySettings settings)
+    {
         builder.Services
-            .AddAuthentication(options =>
+            .AddAuth0WebAppAuthentication(options =>
             {
-                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                options.Domain = settings.Domain!;
+                options.ClientId = settings.ClientId!;
+                options.ClientSecret = settings.ClientSecret;
+
+                // The provider's default scope omits the address we record on an order, and a per-app
+                // authorization policy issues a permission only when the login asked for it as a
+                // scope. Both are configuration, so the deployment names them beside the audience.
+                options.Scope = settings.Scope;
+
+                // The authorization-code flow with PKCE. The wrapper leaves the response type at the
+                // handler's default, which is the implicit flow; there is no reason to accept that.
+                // It also means a configured deployment without a client secret fails at startup with
+                // the wrapper's own message rather than at the first sign-in attempt.
+                options.ResponseType = "code";
+
+                // Every identity route stays under /account.
+                options.CallbackPath = AccountController.CallbackPath;
             })
-            .AddCookie(options =>
+            .WithAccessToken(options =>
+            {
+                // Auth0 writes an account's permissions onto an access token, and writes one only
+                // when the login names an API as the audience. The SDK's own option asks for it; the
+                // token it produces is where the permissions are read from.
+                options.Audience = settings.Audience;
+            });
+    }
+
+    /// <summary>
+    /// The SDK keeps that access token in the session. This is what puts it on an outbound request
+    /// when the application calls the API the audience names; nothing calls it yet, so it is
+    /// registered ready rather than wired to a caller.
+    /// </summary>
+    private static void RegisterAccessTokenHandler(WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<TokenHandler>();
+        builder.Services.AddHttpClient(TokenHandler.ClientName).AddHttpMessageHandler<TokenHandler>();
+    }
+
+    /// <summary>
+    /// The wrapper registers the cookie scheme; the policy it follows is still this application's,
+    /// and this states it (ADR-0019).
+    /// </summary>
+    private static void ConfigureCookie(WebApplicationBuilder builder)
+    {
+        builder.Services.Configure<CookieAuthenticationOptions>(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            options =>
             {
                 options.ExpireTimeSpan = TimeSpan.FromDays(14);
                 options.SlidingExpiration = true;
@@ -43,45 +111,84 @@ internal static class IdentityRegistration
                     ? CookieSecurePolicy.SameAsRequest
                     : CookieSecurePolicy.Always;
 
-                // Where a challenge sends a customer who is not signed in, and what the return address
-                // is called - our own route, so that the middleware's redirect and the links the
-                // application writes are the same address twice over rather than two similar ones.
+                // Where a challenge sends a customer who is not signed in, and what the return
+                // address is called - our own route, so that the middleware's redirect and the links
+                // the application writes are the same address twice over rather than two similar ones.
                 options.LoginPath = AccountController.SignInPath;
                 options.ReturnUrlParameter = "returnUrl";
 
                 // And where a signed-in account that is refused gets sent. The default is a path this
                 // application does not serve, which is a blank 404 where an explanation belongs.
                 options.AccessDeniedPath = AccessDenied.Path;
-            })
-            .AddOpenIdConnect(options =>
+            });
+    }
+
+    /// <summary>
+    /// The handler the wrapper leaves alone: the profile is read once from the user-info endpoint,
+    /// the access token is kept, a non-tenant authority is reached through one override, and the
+    /// permissions and roles are lifted out of the access token as it is validated.
+    /// </summary>
+    private static void ConfigureOpenIdConnect(
+        WebApplicationBuilder builder,
+        IdentitySettings settings,
+        CatalogReadClaim permissionClaim)
+    {
+        builder.Services
+            .AddOptions<OpenIdConnectOptions>(Auth0Constants.AuthenticationScheme)
+            .Configure(options =>
             {
-                options.Authority = $"https://{settings.Domain}/";
-                options.ClientId = settings.ClientId!;
-                options.ClientSecret = settings.ClientSecret;
-                options.ResponseType = "code";
-                options.UsePkce = true;
-
-                // The default scope for this provider omits the address we record on an order.
-                options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("email");
-
-                options.CallbackPath = AccountController.CallbackPath;
-
-                // Where the provider returns the browser after signing out, which the handler then
-                // redirects from. The default is /signout-callback-oidc and has to be registered in
-                // the tenant just the same; naming it keeps every identity route under /account.
-                options.SignedOutCallbackPath = AccountController.SignedOutCallbackPath;
-
-                // No access token and no refresh token are stored (ADR-0019). The profile is read
-                // once at sign-in so the name and email on an order are reliable.
-                options.SaveTokens = false;
+                // The profile is read once at sign-in from the user-info endpoint, so the name and
+                // email on an order are reliable. The access token the API audience produced is kept
+                // in the session: a per-app authorization policy issues a permission only when the
+                // login asked for it, and that token is where the permission arrives.
+                options.SaveTokens = true;
                 options.GetClaimsFromUserInfoEndpoint = true;
 
-                options.TokenValidationParameters.NameClaimType = "name";
-            });
+                if (settings.Authority is { Length: > 0 } authority)
+                {
+                    ConfigureNonTenantAuthority(options, authority);
+                }
 
-        return settings;
+                // The one thing the ID token never carries. Read from the access token in the same
+                // response and kept as claims, so the gate does not depend on the token's lifetime.
+                // Chained onto the wrapper's own handler, which runs first.
+                options.Events.OnTokenValidated += context =>
+                {
+                    var accessToken = context.TokenEndpointResponse?.AccessToken;
+
+                    PermissionClaims.AddTo(context.Principal, accessToken, permissionClaim.ClaimType);
+
+                    // The role is stated inside a permission (manager:role, supervisor:role, ...),
+                    // so it is read from the same token the permissions arrive on rather than from a
+                    // claim an Action has to be written to add.
+                    RoleClaims.AddTo(context.Principal, accessToken, settings.RoleClaimType);
+
+                    return Task.CompletedTask;
+                };
+            });
+    }
+
+    /// <summary>
+    /// A provider that is not a tenant - the browser suite's own, on localhost over plain HTTP - is
+    /// reached through this one override. Left unset the wrapper's domain-derived authority stands,
+    /// which is what a real deployment uses.
+    /// </summary>
+    private static void ConfigureNonTenantAuthority(OpenIdConnectOptions options, string authority)
+    {
+        options.Authority = authority;
+        options.MetadataAddress = $"{authority}/.well-known/openid-configuration";
+        options.RequireHttpsMetadata = false;
+
+        // The wrapper pins the issuer to https://{domain}/; the metadata's issuer is this one, and
+        // the ID token is validated against it.
+        options.TokenValidationParameters.ValidIssuer = authority;
+
+        // The wrapper also replaces sign-out with Auth0's own /v2/logout built from the tenant
+        // domain. That is right for a tenant and wrong for any other authority, and it is the one
+        // place a stray domain setting could send the browser to a third party. A handler that does
+        // nothing leaves the circuit unhandled, so the OpenID Connect handler's own sign-out runs
+        // and follows the authority's discovery document instead.
+        options.Events.OnRedirectToIdentityProviderForSignOut = _ => Task.CompletedTask;
+        options.SignedOutRedirectUri = "/";
     }
 }

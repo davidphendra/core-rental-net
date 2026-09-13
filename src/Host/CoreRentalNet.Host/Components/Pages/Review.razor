@@ -1,5 +1,5 @@
 @page "/review"
-@inject WorkspaceSession Session
+@inject IWorkspaceSession Session
 @inject ICheckout Checkout
 @inject RentalsSettings Rentals
 @inject NavigationManager Navigation
@@ -197,15 +197,11 @@
             // cart. That needs a full page load: a circuit cannot set a cookie.
             var url = result.WasAlreadyPlaced
                 ? $"/orders/{result.RentalNumber}"
-                : $"/orders/{result.RentalNumber}?t={Uri.EscapeDataString(result.RawAccessToken)}&{TokenEventHandlerMiddleware.RotateQueryKey}=1";
+                : $"/orders/{result.RentalNumber}?t={Uri.EscapeDataString(result.RawAccessToken)}&{DraftTokenMiddleware.RotateQueryKey}=1";
 
             Navigation.NavigateTo(url, forceLoad: true);
         }
-        catch (DomainRuleViolationException exception)
-        {
-            CheckoutError = exception.Message;
-        }
-        catch (NotFoundException exception)
+        catch (Exception exception) when (exception is DomainRuleViolationException or NotFoundException)
         {
             CheckoutError = exception.Message;
         }

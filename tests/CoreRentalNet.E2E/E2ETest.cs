@@ -18,11 +18,11 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
 
     protected IPage Page { get; private set; } = null!;
 
-    protected string BaseUrl => Host.BaseUrl;
+    protected virtual string BaseUrl => Host.BaseUrl;
 
     protected virtual ViewportSize? Viewport => null;
 
-    public async Task InitializeAsync()
+    public virtual async Task InitializeAsync()
     {
         Page = await Host.NewPageAsync(Viewport);
 

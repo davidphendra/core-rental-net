@@ -14,7 +14,13 @@ namespace CoreRentalNet.Modules.Workspace.Application.Commands;
 /// </remarks>
 public sealed record StartDraft(string DraftToken);
 
-public sealed class StartDraftHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
+/// <summary>Starts the workspace behind a draft token, or returns the one that already exists.</summary>
+public interface IStartDraft
+{
+    Task<WorkspaceView> HandleAsync(StartDraft command, CancellationToken cancellationToken = default);
+}
+
+public sealed class StartDraftHandler(IWorkspaceRepository repository, IDefineProductPrices prices) : IStartDraft
 {
     public async Task<WorkspaceView> HandleAsync(StartDraft command, CancellationToken cancellationToken = default)
     {

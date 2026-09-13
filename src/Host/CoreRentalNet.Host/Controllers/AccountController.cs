@@ -1,7 +1,7 @@
+using Auth0.AspNetCore.Authentication;
 using CoreRentalNet.Host.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace CoreRentalNet.Host.Controllers;
 
@@ -19,13 +19,12 @@ namespace CoreRentalNet.Host.Controllers;
 public static class AccountController
 {
     /// <summary>Where the identity provider returns the browser after signing in.</summary>
+    /// <remarks>
+    /// The only address of ours the tenant has to be told about. Sign-out does not come back to a
+    /// route here: the provider's own logout endpoint is handed the application root to return to,
+    /// so that is what belongs in the tenant's "Allowed Logout URLs" list.
+    /// </remarks>
     public const string CallbackPath = "/account/callback";
-
-    /// <summary>
-    /// Where the provider sends the browser after signing out, which the handler then redirects
-    /// from. This is the second URL the tenant has to be told about.
-    /// </summary>
-    public const string SignedOutCallbackPath = "/account/signed-out";
 
     /// <summary>The address that starts a sign-in, and the one that ends a session.</summary>
     public const string SignInPath = "/account/login";
@@ -33,9 +32,9 @@ public static class AccountController
     public const string SignOutPath = "/account/logout";
 
     /// <summary>
-    /// Maps the two routes a customer can reach under <c>/account</c>. The callback paths above are
-    /// deliberately absent: the authentication handler owns those and the middleware answers them
-    /// before routing is reached, so an endpoint here would be dead code.
+    /// Maps the two routes a customer can reach under <c>/account</c>. The callback path above is
+    /// deliberately absent: the authentication handler owns it and the middleware answers it before
+    /// routing is reached, so an endpoint here would be dead code.
     /// </summary>
     public static void MapEndpoints(IEndpointRouteBuilder endpoints)
     {
@@ -49,16 +48,17 @@ public static class AccountController
 
             return Results.Challenge(
                 new AuthenticationProperties { RedirectUri = destination },
-                [OpenIdConnectDefaults.AuthenticationScheme]);
+                [Auth0Constants.AuthenticationScheme]);
         });
 
         account.MapGet("logout", () =>
         {
             // Signing out of the cookie alone would leave the provider's own session alive, so on a
-            // shared computer the next click would silently sign the same person back in.
+            // shared computer the next click would silently sign the same person back in. The
+            // provider's scheme ends that session and sends the browser back to the root.
             return Results.SignOut(
                 new AuthenticationProperties { RedirectUri = "/" },
-                [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
+                [Auth0Constants.AuthenticationScheme, CookieAuthenticationDefaults.AuthenticationScheme]);
         });
     }
 }

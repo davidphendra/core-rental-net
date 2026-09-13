@@ -1,12 +1,16 @@
 @implements IDisposable
-@inject WorkspaceSession Session
+@inject IWorkspaceSession Session
 @inject NavigationManager Navigation
 @* Summary and Rent stay disabled until the workspace holds something. *@
 <nav class="bottom-nav" aria-label="Workspace">
-    <NavLink class="bottom-nav__item" href="/builder">
-        <span class="bottom-nav__glyph" aria-hidden="true">&#9635;</span>
-        <span class="label-sm">Build</span>
-    </NavLink>
+    @* The same rule the header states: the affordance follows the entitlement, and the page is
+       what refuses. *@
+    <AuthorizeView Policy="@CatalogPolicy.Name">
+        <NavLink class="bottom-nav__item" href="/builder">
+            <span class="bottom-nav__glyph" aria-hidden="true">&#9635;</span>
+            <span class="label-sm">Build</span>
+        </NavLink>
+    </AuthorizeView>
     <NavLink class="bottom-nav__item" href="/extras">
         <span class="bottom-nav__glyph" aria-hidden="true">&#9636;</span>
         <span class="label-sm">Store</span>

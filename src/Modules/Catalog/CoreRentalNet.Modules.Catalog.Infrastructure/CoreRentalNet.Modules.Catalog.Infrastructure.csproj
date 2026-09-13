@@ -9,6 +9,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The record shape and the mapper that reads it are infrastructure-only. The rules the mapper
+         enforces are tested from records alone, which needs the test project to see both. -->
+    <InternalsVisibleTo Include="CoreRentalNet.Modules.Catalog.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Shipped beside the assembly so the host can load it at runtime from any working directory. -->
     <Content Include="../../../shared/data/products.json" Link="Catalog/products.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

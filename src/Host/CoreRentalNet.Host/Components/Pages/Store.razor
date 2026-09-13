@@ -1,8 +1,8 @@
 @page "/extras"
 @layout BuilderLayout
-@inject WorkspaceSession Session
+@inject IWorkspaceSession Session
 @inject IJSRuntime JS
-@inject GetCatalogPageHandler CatalogPage
+@inject CatalogBrowser Browser
 <PageTitle>Store — Core Rental</PageTitle>
 
 @* The design's store page carries a selection panel on the left and lists extras. Neither is here
@@ -40,7 +40,7 @@
         </p>
     </header>
 
-    <StoreCategoryPills Selected="tab" OnSelect="SelectAsync" />
+    <StoreCategoryPills Selected="Browser.Tab" OnSelect="SelectAsync" />
 
     @if (Session.Error is not null)
     {
@@ -57,7 +57,7 @@
        spacing to show for it. grid-store carries no styling of its own: it is the marker the browser
        tests wait for on this page, the same way workspace-stage marks the builder. *@
     <div class="flex flex-col gap-stack-lg">
-        @foreach (var group in AccessoryGroups.Of(products))
+        @foreach (var group in AccessoryGroups.Of(Browser.Items))
         {
             <section class="flex flex-col gap-stack-md">
                 @if (group.Label.Length > 0)
@@ -81,35 +81,28 @@
     /// <summary>Already resolved from the cookie on the request; desks if nothing was remembered.</summary>
     [CascadingParameter(Name = "StoreCategory")] public CatalogTab StoreCategory { get; set; } = CatalogTab.Desks;
 
-    private CatalogTab tab = CatalogTab.Desks;
-    private IReadOnlyList<ProductListItem> products = [];
     private string? LastAdded;
 
     protected override async Task OnInitializedAsync()
     {
-        tab = StoreCategory;
-
         if (!string.IsNullOrEmpty(DraftToken))
         {
             await Session.EnsureLoadedAsync(DraftToken);
         }
 
-        LoadProducts();
+        Browser.SelectTab(StoreCategory);
     }
-
-    private void LoadProducts() => products = CatalogTabs.Load(tab, CatalogPage);
 
     private async Task SelectAsync(CatalogTab selected)
     {
-        tab = selected;
-        LoadProducts();
+        Browser.SelectTab(selected);
 
         // The confirmation is deliberately not cleared here. It says what was added to the workspace,
         // which a change of category has nothing to do with - and clearing it pulled everything below
         // it 48px up the page, which is what the customer sees as the grid jumping.
 
         // The browser writes the cookie. See StoreCategoryPreference for why it cannot be written here.
-        await JS.InvokeVoidAsync(StoreCategoryPreference.RememberFunction, tab.ToString());
+        await JS.InvokeVoidAsync(StoreCategoryPreference.RememberFunction, selected.ToString());
     }
 
     private async Task AddAsync(ProductListItem product)

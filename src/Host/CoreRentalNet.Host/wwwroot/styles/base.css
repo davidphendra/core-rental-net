@@ -162,6 +162,41 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .app-header__icon[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
 @media (min-width: 768px) { .app-header__nav { display: flex; } }
 
+/* The account menu. Its trigger is one more round icon, drawn with the account's initials rather
+   than the provider's picture; it sits before the bag so the header's right end reads as the
+   person and then the workspace. The panel is absolutely placed against the trigger, so it opens
+   under the icon and stays inside the header's own stacking context. */
+.account-menu { position: relative; display: inline-flex; }
+.account-menu__trigger { padding: 0; }
+.account-menu__initials {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2.25rem; height: 2.25rem; border-radius: var(--radius-full);
+  background: var(--primary-container); color: var(--on-primary-container);
+  font-family: var(--font-label); font-size: var(--label-sm-size); font-weight: var(--label-sm-weight);
+  letter-spacing: var(--label-sm-tracking);
+}
+.account-menu__initials--large { width: 4rem; height: 4rem; font-size: var(--headline-md-size); }
+.account-menu__trigger:hover .account-menu__initials { background: var(--primary); color: var(--on-primary); }
+.account-menu__panel {
+  position: absolute; right: 0; top: calc(100% + var(--stack-sm)); z-index: 60;
+  display: flex; flex-direction: column; gap: 2px; min-width: 12rem; padding: var(--stack-sm);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--surface-container-highest);
+  border-radius: var(--radius-xl); box-shadow: var(--shadow-3);
+}
+.account-menu__item {
+  display: block; padding: 10px 14px; border-radius: var(--radius-lg);
+  color: var(--on-surface); font-family: var(--font-label); font-size: var(--label-md-size); font-weight: var(--label-md-weight);
+}
+.account-menu__item:hover { background: var(--surface-container); color: var(--primary); }
+
+/* The account page: a definition list, because every line is a term and its answer. */
+.profile { display: flex; flex-direction: column; gap: 0; margin: 0; max-width: 32rem; border-radius: var(--radius-2xl); background: var(--surface-container-lowest); border: 1px solid var(--surface-container-highest); box-shadow: var(--shadow-1); }
+.profile__row { display: flex; flex-direction: column; gap: 2px; padding: var(--stack-md) var(--gutter); border-bottom: 1px solid var(--surface-container); }
+.profile__row:last-child { border-bottom: 0; }
+.profile__label { color: var(--on-surface-variant); font-family: var(--font-label); font-size: var(--label-sm-size); font-weight: var(--label-sm-weight); letter-spacing: var(--label-sm-tracking); text-transform: uppercase; }
+.profile__value { margin: 0; font-size: var(--body-lg-size); line-height: var(--body-lg-line); }
+
 .app-main { flex: 1; display: flex; flex-direction: column; }
 
 .bottom-nav {

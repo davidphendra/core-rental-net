@@ -1,6 +1,6 @@
 # E9 — Optional authentication with Auth0
 
-**Slice:** 4 · **Status:** ready · **ADR:** 0016, 0017, 0018, 0019, 0020
+**Slice:** 4 · **Status:** ready · **ADR:** 0016, 0017, 0018, 0019, 0020, 0021, 0022
 
 ## Goal
 Let a customer sign in — optionally — so that an order can belong to someone and they can find
@@ -17,6 +17,9 @@ their own orders again, without disturbing the guest funnel that already works.
   validated as local.
 - **Sign-in and sign-out controls**: the header and the Review step, replacing nothing. Initials
   rather than the provider's `picture`, so no page load reaches a third party.
+- **An account menu in the header**: the initials sit before the bag and open a menu offering
+  Profile and Sign out. Profile is a page showing the account's email, name and role; the menu is
+  absent when no provider is configured.
 - **A customer snapshot on the order**: `CustomerId` (the OIDC `sub`), `CustomerEmail`,
   `CustomerName`, all nullable, written once at checkout. A guest order leaves them null.
 - **My rentals**: a list of the signed-in customer's own orders, plus the existing detail page
@@ -25,9 +28,13 @@ their own orders again, without disturbing the guest funnel that already works.
   access or refresh token stored; sign-out also redirects to the provider's logout.
 
 ## Out of scope
-Roles. Organizations. A local customer entity. Cancellation or extension from the UI. Any
-revalidating authentication state provider (ADR-0019 records the accepted consequence). Any
-administrator surface. Multi-currency or i18n.
+Organizations, a local customer entity, cancellation or extension from the UI, any revalidating
+authentication state provider (ADR-0019 records the accepted consequence), any administrator
+surface, multi-currency or i18n. **Superseded:** this slice originally left "roles as an
+authorization mechanism" out of scope, with the role claim displayed only. A first amendment
+gated the builder on the `Manager` role (ADR-0021); that is itself superseded — with the tenant's
+API audience configured, the gate now checks the API permission **`read:catalog`** on the access
+token, and the role is read from the same token (ADR-0022).
 
 ## Stories
 1. As a guest I want the whole funnel to keep working, so that signing in is never required to
@@ -47,7 +54,7 @@ Build clean with warnings as errors; every new matrix row below passing; the gue
 capsule archived with its evidence. The product owner decides acceptance.
 
 ## Matrix rows
-AUTH-01 … AUTH-24
+AUTH-01 … AUTH-33
 
 ## Risks
 - **The OIDC handshake is the integration most likely to be misconfigured** and it is the part no

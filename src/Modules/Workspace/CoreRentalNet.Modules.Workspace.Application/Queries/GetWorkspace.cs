@@ -6,7 +6,13 @@ namespace CoreRentalNet.Modules.Workspace.Application.Queries;
 
 public sealed record GetWorkspace(string DraftToken);
 
-public sealed class GetWorkspaceHandler(IWorkspaceRepository repository, IDefineProductPrices prices)
+/// <summary>The workspace behind a draft token, priced and ready to render.</summary>
+public interface IGetWorkspace
+{
+    Task<WorkspaceView> HandleAsync(GetWorkspace query, CancellationToken cancellationToken = default);
+}
+
+public sealed class GetWorkspaceHandler(IWorkspaceRepository repository, IDefineProductPrices prices) : IGetWorkspace
 {
     public async Task<WorkspaceView> HandleAsync(GetWorkspace query, CancellationToken cancellationToken = default)
     {

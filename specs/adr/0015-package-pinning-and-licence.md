@@ -14,6 +14,17 @@
   resolves 2.1.12.
 - `SQLitePCLRaw.bundle_e_sqlite3` **2.1.12** forced via
   `CentralPackageTransitivePinningEnabled`.
+- **Identity is Auth0's own package.** `Auth0.AspNetCore.Authentication` **1.11.0**
+  (MIT, targets `net10.0`) is the integration point, so the scheme name, authority,
+  logout endpoint and scopes are the provider's conventions rather than ours.
+  `Microsoft.AspNetCore.Authentication.OpenIdConnect` **10.0.12** stays a direct
+  reference rather than being left transitive: the wrapper is built on that
+  handler, two session-policy settings (ADR-0019) are applied on it, and its exact
+  version is pinned here rather than trusted to resolution.
+- **`Microsoft.IdentityModel.JsonWebTokens` 8.22.0** is a direct reference for the
+  same reason: an access token is read for its permissions (ADR-0019), so the token
+  type it is read with is pinned here rather than left to whatever the handler
+  resolves.
 - **`AwesomeAssertions` 9.6.0** (Apache-2.0) instead of FluentAssertions 8.x,
   which ships a *non-commercial* Xceed licence.
 - Tests: xUnit v2 (`2.9.3`), `Microsoft.NET.Test.Sdk` 17.14.1,

@@ -10,8 +10,14 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// runs over the SignalR circuit, not in an HTTP response, so a component cannot set a cookie
 /// (ADR-0007). The resolved raw token is placed in <c>HttpContext.Items</c> so the root
 /// component can hand it to the interactive tree without reading the cookie again.
+/// <para>
+/// It is named for the draft, not for identity: the token it reads and issues is the anonymous
+/// cart's, and it has nothing to do with the sign-in tokens a provider issues. The previous name
+/// said "token handler", which read as identity and sent a reader looking for an OIDC handler that
+/// does not exist here.
+/// </para>
 /// </remarks>
-public sealed class TokenEventHandlerMiddleware(RequestDelegate next)
+public sealed class DraftTokenMiddleware(RequestDelegate next)
 {
     public const string CookieName = "corerental.draft";
 

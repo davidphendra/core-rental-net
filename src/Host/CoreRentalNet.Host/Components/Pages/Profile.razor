@@ -1,0 +1,90 @@
+@page "/profile"
+@inject IdentitySettings Identity
+@* Who the account is, as the identity provider described it at sign-in. The values are the ones the
+   order was recorded with (ADR-0018), read from the same snapshot the header's menu is drawn from,
+   so the page and the menu cannot disagree.
+
+   The page is not gated by [Authorize], because authentication here is optional (ADR-0016): a
+   deployment with no provider has no account to show, and sending that visitor to a sign-in route
+   that is not mapped would be a dead end rather than a refusal. Each of the three states is drawn
+   instead, and the guest is sent to sign in by the same component the router uses.
+
+   A provider that issued no name, or no role, is stated rather than left blank: an empty line where
+   an answer belongs reads as a page that failed to load. *@
+<PageTitle>Your profile — Core Rental</PageTitle>
+
+@if (!Identity.IsConfigured)
+{
+    <section class="section">
+        <div class="container stack-md">
+            <h1 class="headline-lg">No account to show</h1>
+            <p class="body-lg muted">
+                This demonstration is running without an identity provider, so there is no signed-in
+                account and no profile to display.
+            </p>
+            <a class="button button--primary" href="/">Back to the home page</a>
+        </div>
+    </section>
+}
+else if (!Customer.IsSignedIn)
+{
+    <SignInRedirect />
+}
+else
+{
+    <section class="section">
+        <div class="container stack-lg">
+            <header class="stack-sm">
+                <span class="account-menu__initials account-menu__initials--large" aria-hidden="true">@Customer.Initials</span>
+                <h1 class="headline-lg">@Customer.DisplayName</h1>
+                <p class="body-lg muted">The account you are signed in with.</p>
+            </header>
+
+            <dl class="profile">
+                <div class="profile__row">
+                    <dt class="profile__label">Name</dt>
+                    <dd class="profile__value">@Name</dd>
+                </div>
+                <div class="profile__row">
+                    <dt class="profile__label">Email</dt>
+                    <dd class="profile__value">@Email</dd>
+                </div>
+                <div class="profile__row">
+                    <dt class="profile__label">Role</dt>
+                    <dd class="profile__value">
+                        @if (string.IsNullOrWhiteSpace(Customer.RoleLabel))
+                        {
+                            @NotProvided
+                        }
+                        else
+                        {
+                            <span class="chip">@Customer.RoleLabel</span>
+                        }
+                    </dd>
+                </div>
+            </dl>
+
+            <div class="row">
+                <a class="button button--ghost" href="@AccountController.SignOutPath" data-enhance-nav="false">Sign out</a>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    /// <summary>This page's own address, which the account menu names rather than repeats.</summary>
+    public const string Path = "/profile";
+
+    [CascadingParameter(Name = "Customer")] public CurrentCustomer Customer { get; set; } = CurrentCustomer.Anonymous;
+
+    private string Name => string.IsNullOrWhiteSpace(Customer.Name) ? NotProvided : Customer.Name;
+
+    private string Email => string.IsNullOrWhiteSpace(Customer.Email) ? NotProvided : Customer.Email;
+
+    /// <summary>
+    /// Said where a value belongs and the provider sent none. A role is not assumed: Auth0 issues
+    /// one only when the tenant's Action puts it in the token, and a deployment that has not added
+    /// that Action has no role to show.
+    /// </summary>
+    private const string NotProvided = "Not provided by your identity provider";
+}

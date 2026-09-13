@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -10,20 +7,35 @@ namespace CoreRentalNet.E2E;
 /// A real application, started as a real process, on a real port, with its own database file.
 /// </summary>
 /// <remarks>
-/// Nothing here is a test double. The suite runs the published host exactly as a person would,
-/// because the requirement is full user interaction with no mocks and no intercepted calls: a
-/// stubbed server would make the suite a test of the stubs.
 /// <para>
-/// Started once for the whole collection. Isolation between tests comes from a fresh browser
-/// context per test, which gives each test its own draft cookie and therefore its own workspace.
+/// Two hosts run, because identity is optional (ADR-0016): the guest host has it off, so the funnel
+/// is exercised exactly as it ships without a provider, and the authenticated host has it on and
+/// points at the local provider in this repository (ADR-0020), so a real OIDC handshake can be
+/// driven and the builder's gate can be observed from the browser.
+/// </para>
+/// <para>
+/// Started once for the whole collection. Isolation between tests comes from a fresh browser context
+/// per test, which gives each test its own draft cookie and therefore its own workspace.
+/// </para>
+/// <para>
+/// This is the composition: which hosts exist, and when each starts. Starting a process, waiting for
+/// one, and finding the assembly to start belong to <see cref="ProcessPool"/> and
+/// <see cref="TestPaths"/>.
 /// </para>
 /// </remarks>
 public sealed class HostFixture : IAsyncLifetime
 {
-    private Process? host;
+    private readonly ProcessPool processes = new();
     private string? workingDirectory;
+    private string? realTenantBaseUrl;
 
     public string BaseUrl { get; private set; } = string.Empty;
+
+    /// <summary>The host with identity on, pointed at <see cref="ProviderAuthority"/>.</summary>
+    public string AuthenticatedBaseUrl { get; private set; } = string.Empty;
+
+    /// <summary>The local provider's issuer address, for tests that assert where a redirect went.</summary>
+    public string ProviderAuthority { get; private set; } = string.Empty;
 
     public IPlaywright Playwright { get; private set; } = null!;
 
@@ -31,16 +43,54 @@ public sealed class HostFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var port = FreePort();
-        BaseUrl = $"http://127.0.0.1:{port}";
-
-        // Where the database goes. A throwaway directory, so a run cannot touch real data.
+        // Where the databases go. A throwaway directory, so a run cannot touch real data.
         workingDirectory = Path.Combine(Path.GetTempPath(), $"core-rental-e2e-{Guid.NewGuid():N}");
         Directory.CreateDirectory(workingDirectory);
 
-        host = StartHost(port);
+        var port = TestPaths.FreePort();
+        BaseUrl = $"http://127.0.0.1:{port}";
 
-        await WaitUntilReadyAsync().ConfigureAwait(false);
+        var guest = StartHost(
+            port,
+            "e2e.db",
+            new Dictionary<string, string>
+            {
+                // Identity off, explicitly and by configuration rather than by having no credentials.
+                // Development loads appsettings.Local.json, that file is loaded last so it wins over
+                // the environment, and on a machine that has real Auth0 credentials the catalog gate
+                // would then be live for every test - which is how nine of them failed before this
+                // line existed. The suite has to run the application the way it ships, not the way
+                // one laptop is configured.
+                ["Auth0__Enabled"] = "false",
+            });
+
+        await ProcessPool.WaitUntilReadyAsync(BaseUrl, guest, requireAssets: true).ConfigureAwait(false);
+
+        // The provider first, so its authority is known when the authenticated host is configured.
+        var providerPort = TestPaths.FreePort();
+        var provider = StartLocalProvider(providerPort);
+
+        await ProcessPool.WaitUntilProviderReadyAsync(ProviderAuthority, provider).ConfigureAwait(false);
+
+        var authenticatedPort = TestPaths.FreePort();
+        AuthenticatedBaseUrl = $"http://127.0.0.1:{authenticatedPort}";
+
+        var authenticated = StartHost(
+            authenticatedPort,
+            "e2e-auth.db",
+            new Dictionary<string, string>
+            {
+                ["Auth0__Enabled"] = "true",
+                // The wrapper needs a domain to build its default authority from, and refuses a
+                // code-flow registration without a secret. Both are overridden or ignored by the
+                // provider; the authority below is what actually decides where the handshake goes.
+                ["Auth0__Domain"] = "local-provider",
+                ["Auth0__ClientId"] = "core-rental-e2e",
+                ["Auth0__ClientSecret"] = "local-provider-secret",
+                ["Auth0__Authority"] = ProviderAuthority,
+            });
+
+        await ProcessPool.WaitUntilReadyAsync(AuthenticatedBaseUrl, authenticated, requireAssets: true).ConfigureAwait(false);
 
         Playwright = await Microsoft.Playwright.Playwright.CreateAsync().ConfigureAwait(false);
         Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true })
@@ -56,13 +106,7 @@ public sealed class HostFixture : IAsyncLifetime
 
         Playwright?.Dispose();
 
-        if (host is { HasExited: false })
-        {
-            host.Kill(entireProcessTree: true);
-            await host.WaitForExitAsync().ConfigureAwait(false);
-        }
-
-        host?.Dispose();
+        await processes.DisposeAsync().ConfigureAwait(false);
 
         if (workingDirectory is not null && Directory.Exists(workingDirectory))
         {
@@ -91,186 +135,101 @@ public sealed class HostFixture : IAsyncLifetime
         return page;
     }
 
-    private readonly Queue<string> hostOutput = new();
-
-    private void Record(string? line)
-    {
-        if (string.IsNullOrWhiteSpace(line))
-        {
-            return;
-        }
-
-        lock (hostOutput)
-        {
-            hostOutput.Enqueue(line);
-
-            while (hostOutput.Count > 40)
+    private AppProcess StartHost(int port, string databaseName, Dictionary<string, string> environment, string host = "127.0.0.1")
+        => processes.Start(
+            TestPaths.HostAssembly(),
+            // Started from the application's own directory, exactly as dotnet run does. A development
+            // build serves its static assets, its fonts and its vendored product images from there, so
+            // starting it anywhere else loses all of them silently.
+            TestPaths.ProjectDirectory(),
+            new Dictionary<string, string>(environment)
             {
-                hostOutput.Dequeue();
-            }
-        }
+                ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                ["ASPNETCORE_URLS"] = $"http://{host}:{port}",
+                // The database is a throwaway file in a throwaway directory, so a run cannot
+                // contaminate the developer's own data and cannot be contaminated by it.
+                ["Sqlite__DatabasePath"] = Path.Combine(workingDirectory!, databaseName),
+                ["Rentals__SchedulerIntervalMinutes"] = "1",
+                ["Logging__LogLevel__Default"] = "Warning",
+            });
+
+    private AppProcess StartLocalProvider(int port)
+    {
+        ProviderAuthority = $"http://127.0.0.1:{port}";
+
+        return processes.Start(
+            TestPaths.LocalProviderAssembly(),
+            TestPaths.RepositoryRoot(),
+            new Dictionary<string, string>
+            {
+                // The provider refuses to run anywhere else; this is the one place that asks it to.
+                ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                ["ASPNETCORE_URLS"] = ProviderAuthority,
+                ["Logging__LogLevel__Default"] = "Warning",
+            });
     }
 
-    private string HostOutput()
+    /// <summary>
+    /// The host with identity on and pointed at the developer's real tenant, for the opt-in test.
+    /// </summary>
+    /// <remarks>
+    /// Started only when that test runs, on the one address the README registers with the tenant
+    /// (<c>http://localhost:5199</c>), because the callback URL has to match character for
+    /// character. The tenant's credentials come from <c>appsettings.Local.json</c>, which the host
+    /// loads in Development exactly as it would for a person; the API whose access token carries
+    /// the permission comes from <c>CORERENTAL_TENANT_AUDIENCE</c> when there is one.
+    /// </remarks>
+    public async Task<string> StartRealTenantHostAsync()
     {
-        lock (hostOutput)
+        if (realTenantBaseUrl is not null)
         {
-            return hostOutput.Count == 0 ? "(the application said nothing)" : string.Join(Environment.NewLine, hostOutput);
+            return realTenantBaseUrl;
         }
-    }
 
-    private Process StartHost(int port)
-    {
-        var hostDll = HostAssemblyPath();
-
-        var startInfo = new ProcessStartInfo("dotnet")
+        // A developer's own `dotnet run` may already own the one address the tenant's callback is
+        // registered for. Reusing it is kinder than killing it, and the test wants a running host
+        // rather than a particular process.
+        if (Environment.GetEnvironmentVariable("CORERENTAL_TENANT_URL") is { Length: > 0 } running)
         {
-            // Started from the application's own directory, exactly as dotnet run does. A
-            // development build serves its static assets, its fonts and its vendored product
-            // images from there, so starting it anywhere else loses all of them silently.
-            WorkingDirectory = ProjectDirectory(),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
+            realTenantBaseUrl = running.TrimEnd('/');
+
+            return realTenantBaseUrl;
+        }
+
+        const int port = 5199;
+
+        var environment = new Dictionary<string, string>
+        {
+            ["Auth0__Enabled"] = "true",
         };
 
-        startInfo.ArgumentList.Add(hostDll);
-
-        // The database is a throwaway file in a throwaway directory, so a run cannot contaminate
-        // the developer's own data and cannot be contaminated by it.
-        startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
-        startInfo.Environment["ASPNETCORE_URLS"] = BaseUrl;
-        startInfo.Environment["Sqlite__DatabasePath"] = Path.Combine(workingDirectory!, "e2e.db");
-
-        // Identity off, explicitly and by configuration rather than by having no credentials.
-        // Development loads appsettings.Local.json, that file is loaded last so it wins over the
-        // environment, and on a machine that has real Auth0 credentials the catalog gate would then be
-        // live for every test - which is how nine of them failed before this line existed. The suite
-        // has to run the application the way it ships, not the way one laptop is configured.
-        startInfo.Environment["Auth0__Enabled"] = "false";
-        startInfo.Environment["Rentals__SchedulerIntervalMinutes"] = "1";
-        startInfo.Environment["Logging__LogLevel__Default"] = "Warning";
-
-        var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("The application process could not be started.");
-
-        // Drained so the process never blocks on a full pipe, and kept so a start-up failure can
-        // report what the application actually said.
-        process.OutputDataReceived += (_, args) => Record(args.Data);
-        process.ErrorDataReceived += (_, args) => Record(args.Data);
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-
-        return process;
-    }
-
-    private async Task WaitUntilReadyAsync()
-    {
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(90);
-
-        while (DateTimeOffset.UtcNow < deadline)
+        // Without an API audience Auth0 issues no JWT access token, so no permission claim can be
+        // read and the builder is refused. The variable lets the test say which case it is in.
+        if (Environment.GetEnvironmentVariable("CORERENTAL_TENANT_AUDIENCE") is { Length: > 0 } audience)
         {
-            if (host!.HasExited)
-            {
-                throw new InvalidOperationException(
-                    $"The application exited with code {host.ExitCode} before becoming ready.{Environment.NewLine}{HostOutput()}");
-            }
-
-            try
-            {
-                var response = await client.GetAsync(new Uri(BaseUrl)).ConfigureAwait(false);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    // The root page answering is not enough. A build started from the wrong
-                    // directory serves it happily while every asset behind it is missing.
-                    var asset = await client.GetAsync(new Uri($"{BaseUrl}/styles/tokens.css")).ConfigureAwait(false);
-
-                    if (asset.IsSuccessStatusCode)
-                    {
-                        return;
-                    }
-
-                    throw new InvalidOperationException(
-                        $"The application is answering but /styles/tokens.css returned {asset.StatusCode}. It is running from {ProjectDirectory()} but its static assets are somewhere else.");
-                }
-            }
-            catch (HttpRequestException)
-            {
-                // Not listening yet.
-            }
-            catch (TaskCanceledException)
-            {
-                // Still starting.
-            }
-
-            await Task.Delay(500).ConfigureAwait(false);
+            environment["Auth0__Audience"] = audience;
         }
 
-        throw new TimeoutException(
-            $"The application did not become ready at {BaseUrl} within 90 seconds.{Environment.NewLine}{HostOutput()}");
-    }
-
-    private static string ProjectDirectory()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-
-        while (directory is not null)
+        // A deployment may entitle readers by a claim the tenant already issues - a role, for
+        // instance - rather than by an API permission it cannot issue. The gate is configuration,
+        // so the probe can be pointed at whichever claim is being checked.
+        if (Environment.GetEnvironmentVariable("CORERENTAL_TENANT_CLAIM_TYPE") is { Length: > 0 } claimType)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "CoreRentalNet.sln")))
-            {
-                return Path.Combine(directory.FullName, "src", "Host", "CoreRentalNet.Host");
-            }
-
-            directory = directory.Parent;
+            environment["Authorization__CatalogRead__ClaimType"] = claimType;
         }
 
-        throw new InvalidOperationException("Could not locate the repository root.");
-    }
-
-    private static string HostAssemblyPath()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        string? root = null;
-
-        while (directory is not null)
+        if (Environment.GetEnvironmentVariable("CORERENTAL_TENANT_CLAIM_VALUE") is { Length: > 0 } claimValue)
         {
-            if (File.Exists(Path.Combine(directory.FullName, "CoreRentalNet.sln")))
-            {
-                root = directory.FullName;
-                break;
-            }
-
-            directory = directory.Parent;
+            environment["Authorization__CatalogRead__ClaimValue"] = claimValue;
         }
 
-        if (root is null)
-        {
-            throw new InvalidOperationException("Could not locate the repository root.");
-        }
+        var host = StartHost(port, "e2e-real-tenant.db", environment, host: "localhost");
 
-        // The build configuration of the tests is the configuration the host was built in.
-        var configuration = AppContext.BaseDirectory.Contains($"{Path.DirectorySeparatorChar}Release{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-            ? "Release"
-            : "Debug";
+        realTenantBaseUrl = $"http://localhost:{port}";
 
-        var hostDll = Path.Combine(
-            root, "src", "Host", "CoreRentalNet.Host", "bin", configuration, "net10.0", "CoreRentalNet.Host.dll");
+        await ProcessPool.WaitUntilReadyAsync(realTenantBaseUrl, host, requireAssets: true).ConfigureAwait(false);
 
-        return File.Exists(hostDll)
-            ? hostDll
-            : throw new FileNotFoundException($"The application was not built: {hostDll}");
-    }
-
-    private static int FreePort()
-    {
-        var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-
-        return port;
+        return realTenantBaseUrl;
     }
 }
 

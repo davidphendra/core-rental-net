@@ -51,18 +51,32 @@ on the order and gives you a list of your own orders.
 application behaves exactly as described above. To turn it on against your own Auth0 tenant:
 
 1. In the Auth0 dashboard, create an application of type **Regular Web Application**.
-2. Register these URLs (the port is pinned, so they stay valid). Both are required: the second
-   is where the provider returns the browser *after* signing out, not the application's home page.
+2. Register these URLs (the port is pinned, so they stay valid). Both are required.
    - **Allowed Callback URLs:** `http://localhost:5199/account/callback`
-   - **Allowed Logout URLs:** `http://localhost:5199/account/signed-out`
-     — at **Account Settings → Advanced → Allowed Logout URLs**, which is a *tenant* setting, not
-     the application's own settings page. The provider says so itself when it is missing.
+   - **Allowed Logout URLs:** `http://localhost:5199/` — the application root, because sign-out
+     hands the provider that address to return to rather than a route of ours.
+     This one is at **Account Settings → Advanced → Allowed Logout URLs**, which is a *tenant*
+     setting, not the application's own settings page. The provider says so itself when it is
+     missing.
 3. Put your **Domain**, **Client ID** and **Client secret** in
    `src/Host/CoreRentalNet.Host/appsettings.Local.json`, which is **gitignored** and loaded last:
 
    ```json
-   { "Auth0": { "Domain": "…", "ClientId": "…", "ClientSecret": "…" } }
+   {
+     "Auth0": {
+       "Domain": "…",
+       "ClientId": "…",
+       "ClientSecret": "…",
+       "Audience": "https://your-api-identifier",
+       "Scope": "openid profile email read:catalog"
+     }
+   }
    ```
+
+   `Audience` is the API whose access token carries the account's permissions, and `Scope` names the
+   permission the login asks for — a per-app authorization policy issues a permission only when the
+   login requested it. Neither is set in `appsettings.json`, so a deployment with no API signs in
+   exactly as it did before.
 
    `appsettings.Development.json` stays as the tracked, empty template, and **the local file is
    read in development only** — a deployed environment ignores it entirely, so a stray copy cannot
@@ -73,11 +87,43 @@ application behaves exactly as described above. To turn it on against your own A
    → user secrets → environment variables → **`appsettings.Local.json`**. The local file is loaded
    last, so on a developer's machine it is the final word — which is the point of it.
 
-5. Run the app and use the sign-in link in the header.
+4. **The role is read from the access token.** The tenant names one permission per role —
+   `manager:role`, `supervisor:role`, `staff:role`, `guest:role` — so the role is the permission's
+   name before `:role`, shown with its first letter capitalised. Assign a role under **User
+   Management → Users**, then open that user's **Roles** tab, and the profile's Role line follows.
 
-**Signing out takes one extra click.** Because no identity token is kept (ADR-0019), the provider
-cannot be told who is signing out and asks for confirmation before ending its own session. That is
-the provider's screen, not ours.
+   A tenant that would rather put roles in the token itself has to do it with an Action, because
+   Auth0 issues roles in no token on its own: reach for `api.accessToken.setCustomClaim` (or
+   `api.idToken.setCustomClaim`) and attach the Action to the **Login** flow. The application still
+   reads the claim named by `Auth0:RoleClaimType` (default
+   `https://core-rental.periang.auth0/roles`) and any claim whose own name ends in `/roles`, in
+   addition to the role permission. With none of that, the profile's Role line says the provider
+   sent none — the honest answer rather than a label the application invented.
+
+5. **The builder is gated by the `read:catalog` permission.** Auth0 writes an account's permissions
+   into the **access token** — never the ID token — and only when the login names an API's
+   identifier as the `audience`. To set it up:
+
+   - Create an **API** with an identifier (for example `https://corerental/api`).
+   - Add the permission **`read:catalog`** on its **Permissions** tab.
+   - Under **Settings → RBAC Settings**, enable **Enable RBAC** and **Add Permissions in the Access
+     Token**.
+   - Assign the permission to a role the account holds, under the role's **Permissions** tab. A
+     `Per-app authorization` policy also needs the application granted, on the API's **Application
+     Access** tab.
+   - Set `Auth0:Audience` to the identifier and add `read:catalog` to `Auth0:Scope`, beside the
+     credentials in `appsettings.Local.json`.
+
+   The gate itself is `Authorization:CatalogRead:ClaimType` = `permissions` and `:ClaimValue` =
+   `read:catalog`. An account that carries it may open the builder; a signed-in account that does
+   not is told the builder is refused. The header's link is hidden unless the account carries the
+   claim, so the affordance and the gate agree. The trade-offs are recorded in ADR-0022.
+
+6. Run the app and use the sign-in link in the header.
+
+**Signing out takes one extra click.** The application clears its own cookie and sends the browser
+to the provider's logout endpoint; without an `id_token_hint` the provider asks for confirmation
+before ending its own session. That is the provider's screen, not ours.
 
 A test fails the build if a client secret ever appears in a committed configuration file.
 
@@ -99,8 +145,8 @@ Editing `src/shared/data/products.json` has no effect until you do that.
 ## Test it
 
 ```bash
-dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"   # 282 tests
-dotnet test tests/CoreRentalNet.E2E                                              # 43 in a browser
+dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"   # 410 tests
+dotnet test tests/CoreRentalNet.E2E                                              # 94 in a browser
 ```
 
 | Layer | What it proves |
@@ -111,8 +157,25 @@ dotnet test tests/CoreRentalNet.E2E                                             
 | Browser | The whole funnel in Chromium, with **no mocks and no intercepted calls** |
 
 The browser suite starts a real application process with its own throwaway database, and one test
-asserts that nothing sits between the browser and the server. It exists because four separate bugs
-in this project were invisible to a green unit suite and to every command-line check.
+asserts that nothing sits between the browser and the server. A second process is the identity
+provider the sign-in tests drive a real OIDC handshake against, on localhost, from this repository
+(`tests/CoreRentalNet.E2E.LocalProvider`) - so authentication is exercised without a tenant, secrets
+or the public internet. It exists because four separate bugs in this project were invisible to a
+green unit suite and to every command-line check.
+
+One test is opt-in and reaches a **real tenant**. It is skipped unless credentials are in the
+environment, because it needs a tenant, a real account and the network - none of which belongs in
+the hermetic suite (ADR-0020):
+
+```bash
+CORERENTAL_TENANT_EMAIL=you@example.com CORERENTAL_TENANT_PASSWORD=... \
+  dotnet test tests/CoreRentalNet.E2E --filter FullyQualifiedName~RealTenantTests
+```
+
+Add `CORERENTAL_TENANT_AUDIENCE` when the tenant has an API whose access token carries the gate's
+permission; without it the test asserts the refusal the missing audience produces. The tenant's
+credentials themselves come from `appsettings.Local.json`, and `CORERENTAL_TENANT_URL` reuses an
+already-running host instead of starting one on `http://localhost:5199`.
 
 ## Where things are
 
@@ -161,6 +224,6 @@ specs/                  ADRs, architecture, the test matrix, epic capsules, veri
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` builds, runs the 282 non-browser tests, installs Chromium and runs the
-43 browser tests. It has **never executed**: this repository has no remote yet. The file is
+`.github/workflows/ci.yml` builds, runs the 410 non-browser tests, installs Chromium and runs the
+94 browser tests. It has **never executed**: this repository has no remote yet. The file is
 committed so that the first push is the first run.

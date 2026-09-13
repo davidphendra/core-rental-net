@@ -17,13 +17,18 @@ builder.AddCatalog();
 builder.AddWorkspace();
 builder.AddRentals();
 
-builder.Services.AddScoped<WorkspaceSession>();
+builder.Services.AddScoped<IWorkspaceSession, WorkspaceSession>();
 
 var app = builder.Build();
 
 app.UseApplicationPipeline(identity);
 
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>()
+    // The framework answers its component endpoints with a Content-Security-Policy carrying only this
+    // one directive, and 'self' is the default. An app that is never framed refuses to be framed at
+    // all, and saying so here keeps the framework's header and the application's own from disagreeing -
+    // two policies are enforced together, so a disagreement is a subtle way to be wrong.
+    .AddInteractiveServerRenderMode(options => options.ContentSecurityFrameAncestorsPolicy = "'none'");
 
 await app.ApplyMigrationsInDevelopmentAsync();
 

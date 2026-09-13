@@ -13,7 +13,7 @@ slices:
     covers: [AUTH-13, AUTH-14, AUTH-15]
   - id: D
     name: The local provider, the tenant test, and the evidence
-    covers: [AUTH-17, AUTH-18, AUTH-19, AUTH-22, AUTH-24]
+    covers: [AUTH-17, AUTH-18, AUTH-19, AUTH-22, AUTH-24, AUTH-30, AUTH-31, AUTH-32, AUTH-33]
 
 tasks:
   - id: E9-T1
@@ -39,12 +39,20 @@ tasks:
   - id: E9-T6
     title: A minimal OpenID provider for the browser suite, refused in Production
     type: test
-    status: pending
+    status: done
   - id: E9-T7
     title: An opt-in test against the real tenant, skipped by default
     type: test
-    status: pending
+    status: done
   - id: E9-T8
     title: No secret in committed configuration, and no third-party request while signed in
     type: test
     status: pending
+  - id: E9-T9
+    title: The builder's gate checks the API permission read:catalog on the access token
+    type: infra
+    status: done
+  - id: E9-T10
+    title: The account's role is read from the access token's role permission
+    type: application
+    status: done

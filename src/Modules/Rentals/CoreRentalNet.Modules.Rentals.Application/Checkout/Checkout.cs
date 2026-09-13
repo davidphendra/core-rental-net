@@ -42,54 +42,39 @@ public sealed class CheckoutService(
     IRentalRepository rentals,
     IPlaceOrder placeOrder) : ICheckout
 {
+    /// <summary>The shortest address the order will accept, matching the draft's own rule.</summary>
+    private const int AddressMinimumLength = 5;
+
     public async Task<CheckoutResult> CheckoutAsync(
         CheckoutCommand command,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        // 1. The demonstration gate, re-checked here and not only in the browser.
+        // The demonstration gate, re-checked here and not only in the browser.
         DemoConfirmation.EnsureSatisfied(command.Confirmation);
 
-        // 2. Something to order.
         var conversion = await converter
             .DescribeAsync(command.DraftToken, cancellationToken)
             .ConfigureAwait(false);
 
-        if (conversion.Lines.Count == 0)
-        {
-            throw new DomainRuleViolationException("Add at least one item to your workspace before renting it.");
-        }
+        EnsureSomethingToOrder(conversion);
+        var address = RequireDeliveryAddress(conversion);
 
-        // 3. Somewhere to deliver it.
-        var address = conversion.DeliveryAddress;
-
-        if (string.IsNullOrWhiteSpace(address) || address.Length < 5)
-        {
-            throw new DomainRuleViolationException("Add a delivery address before renting.");
-        }
-
-        // 4. If this workspace already became an order, hand back that order rather than a second one.
-        var existing = await rentals.FindByWorkspaceIdAsync(conversion.WorkspaceId, cancellationToken).ConfigureAwait(false);
+        // If this workspace already became an order, hand back that order rather than a second one.
+        var existing = await rentals
+            .FindByWorkspaceIdAsync(conversion.WorkspaceId, cancellationToken)
+            .ConfigureAwait(false);
 
         if (existing is not null)
         {
             return AlreadyPlaced(existing);
         }
 
-        // 5. Price it from the catalog, and refuse visibly if anything has gone.
-        var lines = new List<OrderLineRequest>(conversion.Lines.Count);
+        // Price it from the catalog, and refuse visibly if anything has gone.
+        var lines = PriceLines(conversion);
 
-        foreach (var line in conversion.Lines)
-        {
-            var price = prices.FindPrice(line.Sku)
-                ?? throw new DomainRuleViolationException(
-                    $"'{line.Sku}' is no longer in the catalog. Remove it from your workspace before renting.");
-
-            lines.Add(new OrderLineRequest(price.Sku, price.Name, line.Quantity, price.MonthlyPrice));
-        }
-
-        // 6. Now, and only now, the draft becomes terminal.
+        // Now, and only now, the draft becomes terminal.
         var converted = await converter
             .ConvertAsync(command.DraftToken, cancellationToken)
             .ConfigureAwait(false);
@@ -97,14 +82,15 @@ public sealed class CheckoutService(
         if (converted.WasAlreadyConverted)
         {
             // Another attempt got here first; return its order.
-            var raced = await rentals.FindByWorkspaceIdAsync(converted.WorkspaceId, cancellationToken).ConfigureAwait(false);
+            var raced = await rentals
+                .FindByWorkspaceIdAsync(converted.WorkspaceId, cancellationToken)
+                .ConfigureAwait(false);
 
             return raced is not null
                 ? AlreadyPlaced(raced)
                 : throw new DomainRuleViolationException("This workspace has already been rented.");
         }
 
-        // 7. Place it.
         var result = await placeOrder
             .PlaceAsync(new PlaceOrderRequest(converted.WorkspaceId, lines, address), cancellationToken)
             .ConfigureAwait(false);
@@ -117,6 +103,49 @@ public sealed class CheckoutService(
             result.PlacedOn,
             result.DeliveryScheduledFor,
             WasAlreadyPlaced: false);
+    }
+
+    /// <summary>There has to be something to order before anything else is asked of the draft.</summary>
+    private static void EnsureSomethingToOrder(WorkspaceConversion conversion)
+    {
+        if (conversion.Lines.Count == 0)
+        {
+            throw new DomainRuleViolationException("Add at least one item to your workspace before renting it.");
+        }
+    }
+
+    /// <summary>Somewhere to deliver it: the order refuses a blank or too-short one.</summary>
+    private static string RequireDeliveryAddress(WorkspaceConversion conversion)
+    {
+        var address = conversion.DeliveryAddress;
+
+        if (string.IsNullOrWhiteSpace(address) || address.Length < AddressMinimumLength)
+        {
+            throw new DomainRuleViolationException("Add a delivery address before renting.");
+        }
+
+        return address;
+    }
+
+    /// <summary>
+    /// Prices every line from the catalog rather than from the draft: the client sends no amount, and
+    /// a product that has left the catalog is refused by name rather than priced from memory
+    /// (ADR-0006, matrix CO-13).
+    /// </summary>
+    private IReadOnlyList<OrderLineRequest> PriceLines(WorkspaceConversion conversion)
+    {
+        var lines = new List<OrderLineRequest>(conversion.Lines.Count);
+
+        foreach (var line in conversion.Lines)
+        {
+            var price = prices.FindPrice(line.Sku)
+                ?? throw new DomainRuleViolationException(
+                    $"'{line.Sku}' is no longer in the catalog. Remove it from your workspace before renting.");
+
+            lines.Add(new OrderLineRequest(price.Sku, price.Name, line.Quantity, price.MonthlyPrice));
+        }
+
+        return lines;
     }
 
     private static CheckoutResult AlreadyPlaced(Domain.Rental rental)

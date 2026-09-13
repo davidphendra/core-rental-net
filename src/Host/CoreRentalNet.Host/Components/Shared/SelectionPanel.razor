@@ -1,5 +1,5 @@
 @inherits WorkspaceObserver
-@inject GetCatalogPageHandler CatalogPage
+@inject CatalogBrowser Browser
 @* The docked panel the designs draw on the builder: browse a category, assign an item, and leave
    for the summary. It keeps its own browsing state, because what it shows has nothing to do with
    what the page beside it is doing.
@@ -17,7 +17,7 @@
         <p class="text-on-surface-variant text-label-md font-label-md mt-1">Build your setup</p>
     </div>
 
-    <CategoryNav Selected="tab" OnSelect="SelectTabAsync" />
+    <CategoryNav Selected="Browser.Tab" OnSelect="SelectTab" />
 
     @* Refusals are surfaced by the page, beside the canvas they concern. One error surface, and
        it is where the customer is looking. *@
@@ -26,10 +26,10 @@
        floating bar is still the way out, and still closes until the workspace can be rented. *@
     <div class="flex-1 min-h-0 flex flex-col gap-6 mt-4 pt-4">
         <SearchField Id="panel-search" Label="Search these products by name"
-                     Value="@query" ValueChanged="SetQueryAsync" />
+                     Value="@Browser.Query" ValueChanged="SetQueryAsync" />
 
         <div class="flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-stack-md">
-            @if (products.Count == 0)
+            @if (Browser.Items.Count == 0)
             {
                 <p class="body-md muted">@EmptyMessage</p>
             }
@@ -37,7 +37,7 @@
             {
                 @* One section per subcategory, headings only where a subcategory has a name to
                    show: desks and chairs arrive as one unlabelled group. *@
-                @foreach (var group in AccessoryGroups.Of(products))
+                @foreach (var group in AccessoryGroups.Of(Browser.Items))
                 {
                     <section class="flex flex-col gap-3">
                         @if (group.Label.Length > 0)
@@ -60,36 +60,21 @@
 @code {
     [CascadingParameter(Name = "DraftToken")] public string? DraftToken { get; set; }
 
-    private CatalogTab tab = CatalogTab.Desks;
-
-    /// <summary>What the tab is showing: the catalog's answer for this category and this search.</summary>
-    private IReadOnlyList<ProductListItem> products = [];
-
-    private string query = string.Empty;
-
-    protected override void OnInitialized() => Load();
-
-    private string EmptyMessage => string.IsNullOrWhiteSpace(query)
-        ? "Nothing in this category."
-        : $"Nothing here is named \"{query.Trim()}\".";
-
-    /// <summary>
-    /// The filtering is the query's, not the panel's: the panel decides nothing about what matches,
-    /// it asks the catalog and shows what comes back.
-    /// </summary>
-    private void Load() => products = CatalogTabs.Load(tab, CatalogPage, query);
-
-    private Task SelectTabAsync(CatalogTab selected)
+    protected override void OnInitialized()
     {
-        tab = selected;
+        // The base subscribes to the workspace, so a box removed on the canvas still clears the card
+        // selected for it here. Overriding without calling it left the panel showing a selection the
+        // workspace no longer had.
+        base.OnInitialized();
 
-        // Emptied before the query, so a search that matched nothing in the last tab cannot hide
-        // this one's products.
-        query = string.Empty;
-        Load();
-
-        return Task.CompletedTask;
+        Browser.Reload();
     }
+
+    private string EmptyMessage => string.IsNullOrWhiteSpace(Browser.Query)
+        ? "Nothing in this category."
+        : $"Nothing here is named \"{Browser.Query.Trim()}\".";
+
+    private void SelectTab(CatalogTab selected) => Browser.SelectTab(selected);
 
     /// <summary>
     /// The one way the query changes: typed into the field, or cleared by its control. Either way the
@@ -97,8 +82,7 @@
     /// </summary>
     private Task SetQueryAsync(string value)
     {
-        query = value;
-        Load();
+        Browser.Search(value);
 
         return Task.CompletedTask;
     }
