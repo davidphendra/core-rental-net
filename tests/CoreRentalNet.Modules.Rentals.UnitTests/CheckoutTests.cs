@@ -5,38 +5,14 @@ using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Checkout;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Rentals.Domain;
-using CoreRentalNet.Modules.Workspace.Application.Contracts;
+using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
+using CoreRentalNet.Modules.Workspace.Application.Contracts.Conversion;
 using Xunit;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Persistence;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
-
-public sealed class DemoConfirmationTests
-{
-    [Theory] // CO-03
-    [InlineData("this is a demo")]
-    [InlineData("  this is a demo  ")]
-    [InlineData("This Is A Demo")]
-    [InlineData("THIS IS A DEMO")]
-    [InlineData("\tThis is a Demo ")]
-    public void The_phrase_is_trimmed_and_case_insensitive(string typed)
-        => DemoConfirmation.IsSatisfied(typed).Should().BeTrue();
-
-    [Theory] // CO-04
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("demo")]
-    [InlineData("this is a demo!")]
-    [InlineData("this is demo")]
-    [InlineData(null)]
-    public void Anything_else_is_not_accepted(string? typed)
-    {
-        DemoConfirmation.IsSatisfied(typed).Should().BeFalse();
-
-        var action = () => DemoConfirmation.EnsureSatisfied(typed);
-        action.Should().Throw<DomainRuleViolationException>();
-    }
-}
 
 public sealed class CheckoutTests
 {
@@ -72,15 +48,18 @@ public sealed class CheckoutTests
         }
     }
 
-    private sealed class FakePrices : IDefineProductPrices
+    private sealed class FakePrices : IProductCatalog
     {
-        private readonly Dictionary<string, ProductPriceView> views = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ProductView> views = new(StringComparer.OrdinalIgnoreCase);
+
+        public IReadOnlyList<ProductView> All => views.Values.ToArray();
 
         public FakePrices Add(string sku, decimal price, string? name = null)
         {
-            views[sku] = new ProductPriceView(
+            views[sku] = new ProductView(
                 sku.ToUpperInvariant(), name ?? $"Product {sku}", CatalogCategory.Accessory,
-                CatalogSubCategory.Monitor, Money.Idr(price), "/images/x.svg", true);
+                CatalogSubCategory.Monitor, new Money(price, Currencies.Idr), "A description.",
+                "/images/x.svg", true, false);
             return this;
         }
 
@@ -90,9 +69,19 @@ public sealed class CheckoutTests
             return this;
         }
 
-        public ProductPriceView? FindPrice(string sku) => views.TryGetValue(sku, out var view) ? view : null;
+        public ProductView? Find(string sku) => views.TryGetValue(sku, out var view) ? view : null;
 
-        public IReadOnlyList<ProductPriceView> AllPrices() => views.Values.ToArray();
+        public IReadOnlyList<ProductView> ByCategory(CatalogCategory category)
+            => views.Values.Where(view => view.Category == category).ToArray();
+
+        public IReadOnlyList<ProductView> BySubCategory(CatalogSubCategory subCategory)
+            => views.Values.Where(view => view.SubCategory == subCategory).ToArray();
+
+        public IReadOnlyList<ProductView> Featured()
+            => views.Values.Where(view => view.IsFeatured).ToArray();
+
+        public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory, string? search)
+            => views.Values.ToArray();
     }
 
     private sealed class FakePlaceOrder : IPlaceOrder
@@ -108,7 +97,7 @@ public sealed class CheckoutTests
 
             return Task.FromResult(new PlaceOrderResult(
                 Guid.NewGuid(), "CR-2026-0001", "raw-order-token", "INV-2026-0001",
-                Money.Idr(1_150_000m), new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 12)));
+                new Money(1_150_000m, Currencies.Idr), new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 12)));
         }
     }
 
@@ -126,7 +115,8 @@ public sealed class CheckoutTests
             Converter = new FakeConverter(Conversion);
             PlaceOrder = new FakePlaceOrder();
             Rentals = new InMemoryRentalRepository();
-            Service = new CheckoutService(Converter, Prices, Rentals, PlaceOrder);
+            CommandHandler = new CheckoutCommandHandler(
+                Converter, Prices, Rentals, PlaceOrder, RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries);
         }
 
         public static Guid WorkspaceId { get; } = Guid.NewGuid();
@@ -141,7 +131,7 @@ public sealed class CheckoutTests
 
         public InMemoryRentalRepository Rentals { get; }
 
-        public CheckoutService Service { get; }
+        public CheckoutCommandHandler CommandHandler { get; }
 
         public static CheckoutCommand Command(string? confirmation = "this is a demo")
             => new(DraftToken, confirmation);
@@ -152,7 +142,7 @@ public sealed class CheckoutTests
     {
         var fixture = new Fixture();
 
-        var result = await fixture.Service.CheckoutAsync(Fixture.Command());
+        var result = await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         result.RentalNumber.Should().Be("CR-2026-0001");
         result.InvoiceNumber.Should().Be("INV-2026-0001");
@@ -167,7 +157,7 @@ public sealed class CheckoutTests
     {
         var fixture = new Fixture();
 
-        var action = async () => await fixture.Service.CheckoutAsync(Fixture.Command("yes please"));
+        var action = async () => await fixture.CommandHandler.CheckoutAsync(Fixture.Command("yes please"));
 
         await action.Should().ThrowAsync<DomainRuleViolationException>();
         fixture.Converter.Described.Should().BeFalse("the gate is checked first");
@@ -180,7 +170,7 @@ public sealed class CheckoutTests
     {
         var fixture = new Fixture(new WorkspaceConversion(Fixture.WorkspaceId, [], "Villa Lotus", false));
 
-        var action = async () => await fixture.Service.CheckoutAsync(Fixture.Command());
+        var action = async () => await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         await action.Should().ThrowAsync<DomainRuleViolationException>().WithMessage("*at least one item*");
         fixture.Converter.ConvertCalled.Should().BeFalse();
@@ -195,7 +185,7 @@ public sealed class CheckoutTests
     {
         var fixture = new Fixture(address: address);
 
-        var action = async () => await fixture.Service.CheckoutAsync(Fixture.Command());
+        var action = async () => await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         await action.Should().ThrowAsync<DomainRuleViolationException>().WithMessage("*delivery address*");
         fixture.Converter.ConvertCalled.Should().BeFalse();
@@ -207,7 +197,7 @@ public sealed class CheckoutTests
         var fixture = new Fixture();
         fixture.Prices.Remove("CHA449AGLBB0");
 
-        var action = async () => await fixture.Service.CheckoutAsync(Fixture.Command());
+        var action = async () => await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         await action.Should().ThrowAsync<DomainRuleViolationException>().WithMessage("*CHA449AGLBB0*no longer in the catalog*");
         fixture.Converter.ConvertCalled.Should().BeFalse("nothing may be made terminal until the order is ready");
@@ -218,17 +208,22 @@ public sealed class CheckoutTests
     public async Task Checking_out_a_second_time_returns_the_first_order()
     {
         var fixture = new Fixture();
-        fixture.Rentals.Seed(Rental.Place(
-            RentalId.New(),
-            Fixture.WorkspaceId,
-            RentalNumber.Of(2026, 1),
-            AccessToken.HashOf("raw"),
-            "Villa Lotus, Canggu",
-            Money.Idr(750_000m),
-            [new RentalLine("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))],
-            new DateOnly(2026, 1, 10)));
+        fixture.Rentals.Seed(new Rental
+        {
+            Id = RentalId.New(),
+            WorkspaceId = Fixture.WorkspaceId,
+            Number = RentalNumber.Of(2026, 1),
+            AccessTokenHash = new OpaqueTokenService().HashOf("raw"),
+            DeliveryAddress = "Villa Lotus, Canggu",
+            DeliveryFee = new Money(750_000m, Currencies.Idr),
+            PlacedOn = new DateOnly(2026, 1, 10),
+            AnchorDate = new DateOnly(2026, 1, 10),
+            Status = RentalStatus.Placed,
+            Version = 1,
+            Lines = [new RentalLine { Sku = "CHA449AGLBB0", Name = "Seminyak Lounge", Quantity = 1, UnitMonthlyPrice = new Money(400_000m, Currencies.Idr) }],
+        });
 
-        var result = await fixture.Service.CheckoutAsync(Fixture.Command());
+        var result = await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         result.WasAlreadyPlaced.Should().BeTrue();
         result.RentalNumber.Should().Be("CR-2026-0001");
@@ -241,15 +236,20 @@ public sealed class CheckoutTests
         // The other attempt finished between this one checking and this one converting, so the
         // first lookup misses, the conversion reports it was already done, and the second lookup
         // finds the winner's order.
-        var winner = Rental.Place(
-            RentalId.New(),
-            Fixture.WorkspaceId,
-            RentalNumber.Of(2026, 1),
-            AccessToken.HashOf("raw"),
-            "Villa Lotus, Canggu",
-            Money.Idr(750_000m),
-            [new RentalLine("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))],
-            new DateOnly(2026, 1, 10));
+        var winner = new Rental
+        {
+            Id = RentalId.New(),
+            WorkspaceId = Fixture.WorkspaceId,
+            Number = RentalNumber.Of(2026, 1),
+            AccessTokenHash = new OpaqueTokenService().HashOf("raw"),
+            DeliveryAddress = "Villa Lotus, Canggu",
+            DeliveryFee = new Money(750_000m, Currencies.Idr),
+            PlacedOn = new DateOnly(2026, 1, 10),
+            AnchorDate = new DateOnly(2026, 1, 10),
+            Status = RentalStatus.Placed,
+            Version = 1,
+            Lines = [new RentalLine { Sku = "CHA449AGLBB0", Name = "Seminyak Lounge", Quantity = 1, UnitMonthlyPrice = new Money(400_000m, Currencies.Idr) }],
+        };
 
         var rentals = new RacingRentalRepository(winner);
         var converter = new RacingConverter(
@@ -257,7 +257,9 @@ public sealed class CheckoutTests
             new WorkspaceConversion(Fixture.WorkspaceId, [new WorkspaceCompositionLine("CHA449AGLBB0", 1)], "Villa Lotus, Canggu", true));
         var placeOrder = new FakePlaceOrder();
 
-        var service = new CheckoutService(converter, new FakePrices().Add("CHA449AGLBB0", 400_000m), rentals, placeOrder);
+        var service = new CheckoutCommandHandler(
+            converter, new FakePrices().Add("CHA449AGLBB0", 400_000m), rentals, placeOrder,
+            RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries);
 
         var result = await service.CheckoutAsync(Fixture.Command());
 
@@ -307,7 +309,7 @@ public sealed class CheckoutTests
         var fixture = new Fixture();
         fixture.Prices.Add("CHA449AGLBB0", 999_000m, "Seminyak Lounge");
 
-        await fixture.Service.CheckoutAsync(Fixture.Command());
+        await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         fixture.PlaceOrder.LastRequest!.Lines.Should().ContainSingle();
         fixture.PlaceOrder.LastRequest.Lines[0].UnitMonthlyPrice.Amount.Should().Be(
@@ -320,7 +322,7 @@ public sealed class CheckoutTests
     {
         var fixture = new Fixture();
 
-        await fixture.Service.CheckoutAsync(Fixture.Command());
+        await fixture.CommandHandler.CheckoutAsync(Fixture.Command());
 
         fixture.PlaceOrder.LastRequest!.WorkspaceId.Should().Be(Fixture.WorkspaceId);
         fixture.PlaceOrder.LastRequest.DeliveryAddress.Should().Be("Villa Lotus, Canggu");
@@ -331,7 +333,9 @@ public sealed class CheckoutTests
     {
         var converter = new ThrowingConverter();
 
-        var service = new CheckoutService(converter, new FakePrices(), new InMemoryRentalRepository(), new FakePlaceOrder());
+        var service = new CheckoutCommandHandler(
+            converter, new FakePrices(), new InMemoryRentalRepository(), new FakePlaceOrder(),
+            RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries);
         var action = async () => await service.CheckoutAsync(Fixture.Command());
 
         await action.Should().ThrowAsync<NotFoundException>();

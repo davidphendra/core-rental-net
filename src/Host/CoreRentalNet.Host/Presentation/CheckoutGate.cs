@@ -1,4 +1,4 @@
-using CoreRentalNet.Modules.Workspace.Application.Workspace;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 
 namespace CoreRentalNet.Host.Presentation;
 

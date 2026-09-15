@@ -1,7 +1,6 @@
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
+using CoreRentalNet.Modules.Catalog.Application.SearchCatalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Catalog.Application.Queries;
-using CoreRentalNet.Modules.Workspace.Application.Catalog;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Host.Presentation;
@@ -9,7 +8,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// <summary>Answers "what could go in this slot?" using the same total mapping the domain uses.</summary>
 public static class SlotCatalog
 {
-    public static IReadOnlyList<ProductListItem> ForSlot(IEnumerable<ProductListItem> products, SlotId slot)
+    public static IReadOnlyList<ProductView> ForSlot(IEnumerable<ProductView> products, SlotId slot)
         => products
             .Where(product => CatalogSlotMapping.SlotFor(product.Category, product.SubCategory) == slot)
             .ToArray();
@@ -23,10 +22,10 @@ public static class SlotCatalog
     /// category. Before this, opening any box loaded every category in the catalog and filtered the
     /// result down, which is four queries to show six lamps.
     /// </remarks>
-    public static GetCatalogPage QueryFor(SlotId slot) => slot switch
+    public static SearchCatalogQuery QueryFor(SlotId slot) => slot switch
     {
-        SlotId.Desk => new GetCatalogPage(Category: CatalogCategory.Desk),
-        SlotId.Chair => new GetCatalogPage(Category: CatalogCategory.Chair),
+        SlotId.Desk => new SearchCatalogQuery(Category: CatalogCategory.Desk),
+        SlotId.Chair => new SearchCatalogQuery(Category: CatalogCategory.Chair),
         SlotId.Monitor => Accessories(CatalogSubCategory.Monitor),
         SlotId.Lamp => Accessories(CatalogSubCategory.Lamp),
         SlotId.Plant => Accessories(CatalogSubCategory.Plant),
@@ -35,6 +34,6 @@ public static class SlotCatalog
         _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "No catalog query answers for this slot."),
     };
 
-    private static GetCatalogPage Accessories(CatalogSubCategory subCategory)
+    private static SearchCatalogQuery Accessories(CatalogSubCategory subCategory)
         => new(Category: CatalogCategory.Accessory, SubCategory: subCategory);
 }

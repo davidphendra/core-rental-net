@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Presentation;
-using CoreRentalNet.Modules.Workspace.Application.Workspace;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 
@@ -87,5 +87,5 @@ public sealed class CheckoutGateTests
     /// </summary>
     private static WorkspaceView View(string? address = null, bool empty = false, string[]? missing = null)
         => new(Guid.NewGuid(), DraftState.Draft, Version: 1, Slots: [], address, TotalUnits: 0, empty,
-               new WorkspaceQuote([], Money.Idr(0m)), missing ?? []);
+               new WorkspaceQuote([], new Money(0m, Currencies.Idr)), missing ?? []);
 }

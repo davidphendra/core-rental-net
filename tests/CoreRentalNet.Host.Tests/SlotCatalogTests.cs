@@ -1,9 +1,8 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Presentation;
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Workspace.Application.Catalog;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 
@@ -47,10 +46,10 @@ public sealed class SlotCatalogTests
     [Fact] // SLOT-13
     public void What_a_slot_asks_for_is_what_it_gets()
     {
-        var lamps = new ProductListItem("LMP0001", "Pererenan Clip Light", CatalogCategory.Accessory,
-            CatalogSubCategory.Lamp, Money.Idr(150000m), "A clip light.", "/images/vendored/one.png", true, false);
-        var desks = new ProductListItem("DSK0001", "Canggu Bamboo", CatalogCategory.Desk,
-            null, Money.Idr(900000m), "A desk.", "/images/vendored/two.png", true, false);
+        var lamps = new ProductView("LMP0001", "Pererenan Clip Light", CatalogCategory.Accessory,
+            CatalogSubCategory.Lamp, new Money(150000m, Currencies.Idr), "A clip light.", "/images/vendored/one.png", true, false);
+        var desks = new ProductView("DSK0001", "Canggu Bamboo", CatalogCategory.Desk,
+            null, new Money(900000m, Currencies.Idr), "A desk.", "/images/vendored/two.png", true, false);
         var catalog = new[] { lamps, desks };
 
         SlotCatalog.ForSlot(catalog, SlotId.Lamp).Should().BeEquivalentTo([lamps]);

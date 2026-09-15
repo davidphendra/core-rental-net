@@ -1,8 +1,6 @@
 using AwesomeAssertions;
-using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
-using CoreRentalNet.Modules.Catalog.Infrastructure.Loading;
-using CoreRentalNet.Modules.Workspace.Application.Catalog;
+using CoreRentalNet.Modules.Catalog.Infrastructure;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 
@@ -14,18 +12,16 @@ namespace CoreRentalNet.IntegrationTests;
 /// </summary>
 public sealed class CatalogSlotCoverageTests
 {
+    private static string ProductsJson => RepoRoot.Combine("src", "shared", "data", "products.json");
+
     [Fact] // SLOT-06
     public void Every_product_in_the_real_catalog_maps_to_exactly_one_slot()
     {
-        var catalog = CatalogLoader.LoadFromFile(RepoRoot.Combine("src", "shared", "data", "products.json"));
+        var catalog = new ProductCatalog(ProductsJson, null);
 
-        var mapped = new List<(string Sku, SlotId Slot)>();
-
-        foreach (var product in catalog.All)
-        {
-            var slot = CatalogSlotMapping.SlotFor(product.Category.ToContract(), product.SubCategory.ToContract());
-            mapped.Add((product.Sku.Value, slot));
-        }
+        var mapped = catalog.All
+            .Select(product => (product.Sku, Slot: CatalogSlotMapping.SlotFor(product.Category, product.SubCategory)))
+            .ToArray();
 
         mapped.Should().HaveCount(catalog.All.Count);
         mapped.Should().OnlyHaveUniqueItems(entry => entry.Sku);
@@ -34,10 +30,10 @@ public sealed class CatalogSlotCoverageTests
     [Fact] // SLOT-06
     public void Every_slot_has_at_least_one_product_that_can_fill_it()
     {
-        var catalog = CatalogLoader.LoadFromFile(RepoRoot.Combine("src", "shared", "data", "products.json"));
+        var catalog = new ProductCatalog(ProductsJson, null);
 
         var reachable = catalog.All
-            .Select(product => CatalogSlotMapping.SlotFor(product.Category.ToContract(), product.SubCategory.ToContract()))
+            .Select(product => CatalogSlotMapping.SlotFor(product.Category, product.SubCategory))
             .Distinct()
             .ToArray();
 
@@ -49,8 +45,8 @@ public sealed class CatalogSlotCoverageTests
     [Fact] // SLOT-02
     public void The_catalog_is_large_enough_to_fill_a_workspace_and_then_some()
     {
-        var catalog = CatalogLoader.LoadFromFile(RepoRoot.Combine("src", "shared", "data", "products.json"));
+        var catalog = new ProductCatalog(ProductsJson, null);
 
-        catalog.All.Count.Should().BeGreaterThan(SlotRules.TotalCapacity);
+        catalog.All.Count.Should().BeGreaterThan(new SlotRuleProvider().TotalCapacity);
     }
 }

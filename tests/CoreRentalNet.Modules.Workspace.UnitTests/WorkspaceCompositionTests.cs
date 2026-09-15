@@ -1,7 +1,8 @@
 using AwesomeAssertions;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Workspace.Application.Commands;
-using CoreRentalNet.Modules.Workspace.Application.Contracts;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.AssignProduct;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.SetDeliveryAddress;
+using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
 using Xunit;
 
 namespace CoreRentalNet.Modules.Workspace.UnitTests;
@@ -16,13 +17,13 @@ public sealed class WorkspaceCompositionTests
         var catalog = new TestCatalog()
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("MON0001", 300000m);
-        var assign = new AssignProductHandler(context.Repository, catalog);
+        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces, context.Views);
         await assign.HandleAsync(new AssignProduct(context.Token, "CHA0001"));
         await assign.HandleAsync(new AssignProduct(context.Token, "MON0001", 2));
-        await new SetDeliveryAddressHandler(context.Repository, catalog)
+        await new SetDeliveryAddressHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views)
             .HandleAsync(new SetDeliveryAddress(context.Token, "Villa Lotus, Canggu"));
 
-        IDefineWorkspaceComposition contract = new DefineWorkspaceComposition(context.Repository);
+        IDefineWorkspaceComposition contract = new DefineWorkspaceComposition(context.Repository, WorkspaceTestContext.Tokens);
 
         var composition = await contract.DefineCompositionAsync(context.Token);
 
@@ -36,7 +37,7 @@ public sealed class WorkspaceCompositionTests
     [Fact]
     public async Task An_unknown_token_yields_no_composition_rather_than_an_exception()
     {
-        IDefineWorkspaceComposition contract = new DefineWorkspaceComposition(new InMemoryWorkspaceRepository());
+        IDefineWorkspaceComposition contract = new DefineWorkspaceComposition(new InMemoryWorkspaceRepository(), WorkspaceTestContext.Tokens);
 
         (await contract.DefineCompositionAsync("never-issued")).Should().BeNull();
         (await contract.DefineCompositionAsync("  ")).Should().BeNull();

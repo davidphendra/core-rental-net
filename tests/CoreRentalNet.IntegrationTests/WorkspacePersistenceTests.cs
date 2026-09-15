@@ -1,16 +1,33 @@
 using AwesomeAssertions;
-using CoreRentalNet.Modules.Workspace.Application.Commands;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using WorkspaceDraft = CoreRentalNet.Modules.Workspace.Domain.Workspace;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
 
 namespace CoreRentalNet.IntegrationTests;
 
 public sealed class WorkspacePersistenceTests
 {
     private const string RawToken = "integration-raw-token-0123456789";
+
+    private static readonly ISlotRuleProvider SlotRules = new SlotRuleProvider();
+    private static readonly IWorkspaceService Workspaces = new WorkspaceService(SlotRules);
+    private static readonly IWorkspaceQueryService Queries = new WorkspaceQueryService(SlotRules);
+
+    private static WorkspaceDraft NewDraft(WorkspaceId id)
+        => new()
+        {
+            Id = id,
+            DraftTokenHash = new OpaqueTokenService().HashOf(RawToken),
+            State = DraftState.Draft,
+            Version = 1,
+            Assignments = [],
+        };
 
     [Fact]
     public async Task A_draft_survives_a_round_trip_through_the_file()
@@ -20,23 +37,23 @@ public sealed class WorkspacePersistenceTests
         await using (var write = await database.CreateMigratedContextAsync())
         {
             var repository = new WorkspaceRepository(write);
-            var draft = WorkspaceDraft.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash);
-            draft.Assign(SlotId.Chair, "CHA449AGLBB0");
-            draft.Assign(SlotId.Monitor, "MONJVAP81NPQ", 2);
-            draft.SetDeliveryAddress("Villa Lotus, Canggu");
+            var draft = NewDraft(WorkspaceId.New());
+            Workspaces.Assign(draft, SlotId.Chair, "CHA449AGLBB0");
+            Workspaces.Assign(draft, SlotId.Monitor, "MONJVAP81NPQ", 2);
+            Workspaces.SetDeliveryAddress(draft, "Villa Lotus, Canggu");
 
             await repository.AddAsync(draft);
             await repository.SaveChangesAsync();
         }
 
         await using var read = await database.CreateMigratedContextAsync();
-        var loaded = await new WorkspaceRepository(read).FindByTokenAsync(DraftToken.FromRawToken(RawToken));
+        var loaded = await new WorkspaceRepository(read).FindByTokenAsync(new DraftToken(new OpaqueTokenService().HashOf(RawToken)));
 
         loaded.Should().NotBeNull();
-        loaded!.AssignmentsFor(SlotId.Chair).Single().Sku.Should().Be("CHA449AGLBB0");
-        loaded.AssignmentsFor(SlotId.Monitor).Single().Quantity.Should().Be(2);
-        loaded.DeliveryAddress.Should().Be("Villa Lotus, Canggu");
-        loaded.TotalUnits.Should().Be(3);
+        Queries.AssignmentsFor(loaded!, SlotId.Chair).Single().Sku.Should().Be("CHA449AGLBB0");
+        Queries.AssignmentsFor(loaded!, SlotId.Monitor).Single().Quantity.Should().Be(2);
+        loaded!.DeliveryAddress.Should().Be("Villa Lotus, Canggu");
+        Queries.TotalUnits(loaded).Should().Be(3);
         loaded.State.Should().Be(DraftState.Draft);
     }
 
@@ -47,7 +64,7 @@ public sealed class WorkspacePersistenceTests
         await using var context = await database.CreateMigratedContextAsync();
 
         var repository = new WorkspaceRepository(context);
-        await repository.AddAsync(WorkspaceDraft.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash));
+        await repository.AddAsync(NewDraft(WorkspaceId.New()));
         await repository.SaveChangesAsync();
 
         var storedHash = await context.Database
@@ -55,7 +72,7 @@ public sealed class WorkspacePersistenceTests
             .ToListAsync();
 
         storedHash.Should().ContainSingle();
-        storedHash[0].Should().Be(DraftToken.HashOf(RawToken));
+        storedHash[0].Should().Be(new OpaqueTokenService().HashOf(RawToken));
         storedHash[0].Should().NotContain(RawToken);
     }
 
@@ -66,10 +83,10 @@ public sealed class WorkspacePersistenceTests
         await using var context = await database.CreateMigratedContextAsync();
         var repository = new WorkspaceRepository(context);
 
-        await repository.AddAsync(WorkspaceDraft.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash));
+        await repository.AddAsync(NewDraft(WorkspaceId.New()));
         await repository.SaveChangesAsync();
 
-        await repository.AddAsync(WorkspaceDraft.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash));
+        await repository.AddAsync(NewDraft(WorkspaceId.New()));
 
         var action = async () => await repository.SaveChangesAsync();
         await action.Should().ThrowAsync<DbUpdateException>();
@@ -97,7 +114,7 @@ public sealed class WorkspacePersistenceTests
         {
             columns.Should().NotContain(
                 column => column.Contains(forbidden, StringComparison.OrdinalIgnoreCase),
-                $"a draft column named like '{forbidden}' would mean a price is being stored (ADR-0006)");
+                $"a draft column named like '{forbidden}' would mean a price is being stored");
         }
     }
 
@@ -130,21 +147,21 @@ public sealed class WorkspacePersistenceTests
         await using (var seed = await database.CreateMigratedContextAsync())
         {
             var repository = new WorkspaceRepository(seed);
-            await repository.AddAsync(WorkspaceDraft.CreateNew(id, DraftToken.FromRawToken(RawToken).Hash));
+            await repository.AddAsync(NewDraft(id));
             await repository.SaveChangesAsync();
         }
 
         await using var first = await database.CreateMigratedContextAsync();
         await using var second = await database.CreateMigratedContextAsync();
 
-        var token = DraftToken.FromRawToken(RawToken);
+        var token = new DraftToken(new OpaqueTokenService().HashOf(RawToken));
         var firstDraft = await new WorkspaceRepository(first).FindByTokenAsync(token);
         var secondDraft = await new WorkspaceRepository(second).FindByTokenAsync(token);
 
-        firstDraft!.Assign(SlotId.Chair, "CHA449AGLBB0");
+        Workspaces.Assign(firstDraft!, SlotId.Chair, "CHA449AGLBB0");
         await first.SaveChangesAsync();
 
-        secondDraft!.Assign(SlotId.Monitor, "MONJVAP81NPQ");
+        Workspaces.Assign(secondDraft!, SlotId.Monitor, "MONJVAP81NPQ");
 
         var action = async () => await second.SaveChangesAsync();
 
@@ -152,8 +169,8 @@ public sealed class WorkspacePersistenceTests
 
         await using var verify = database.CreateContext();
         var winner = await new WorkspaceRepository(verify).FindByTokenAsync(token);
-        winner!.AssignmentsFor(SlotId.Chair).Should().NotBeEmpty("the first writer's change must be the one that survived");
-        winner.AssignmentsFor(SlotId.Monitor).Should().BeEmpty("the second writer must not have silently overwritten it");
+        Queries.AssignmentsFor(winner!, SlotId.Chair).Should().NotBeEmpty("the first writer's change must be the one that survived");
+        Queries.AssignmentsFor(winner!, SlotId.Monitor).Should().BeEmpty("the second writer must not have silently overwritten it");
     }
 
     [Fact]
@@ -162,16 +179,16 @@ public sealed class WorkspacePersistenceTests
         await using var database = new SqliteTestDatabase();
         await using var context = await database.CreateMigratedContextAsync();
         var repository = new WorkspaceRepository(context);
-        var draft = WorkspaceDraft.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash);
+        var draft = NewDraft(WorkspaceId.New());
         await repository.AddAsync(draft);
         await repository.SaveChangesAsync();
         var start = draft.Version;
 
-        draft.Assign(SlotId.Chair, "CHA449AGLBB0");
+        Workspaces.Assign(draft, SlotId.Chair, "CHA449AGLBB0");
         await repository.SaveChangesAsync();
 
         draft.Version.Should().BeGreaterThan(start);
-        var stored = await new WorkspaceRepository(context).FindByTokenAsync(DraftToken.FromRawToken(RawToken));
+        var stored = await new WorkspaceRepository(context).FindByTokenAsync(new DraftToken(new OpaqueTokenService().HashOf(RawToken)));
         stored!.Version.Should().Be(draft.Version);
     }
 
@@ -181,18 +198,18 @@ public sealed class WorkspacePersistenceTests
         await using var database = new SqliteTestDatabase();
         await using var context = await database.CreateMigratedContextAsync();
         var repository = new WorkspaceRepository(context);
-        var draft = WorkspaceDraft.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash);
-        draft.Assign(SlotId.Chair, "CHA449AGLBB0");
+        var draft = NewDraft(WorkspaceId.New());
+        Workspaces.Assign(draft, SlotId.Chair, "CHA449AGLBB0");
         await repository.AddAsync(draft);
         await repository.SaveChangesAsync();
 
-        draft.MarkConverted();
+        Workspaces.MarkConverted(draft);
         await repository.SaveChangesAsync();
 
         context.ChangeTracker.Clear();
 
-        var stored = await new WorkspaceRepository(context).FindByTokenAsync(DraftToken.FromRawToken(RawToken));
+        var stored = await new WorkspaceRepository(context).FindByTokenAsync(new DraftToken(new OpaqueTokenService().HashOf(RawToken)));
         stored!.State.Should().Be(DraftState.Converted);
-        stored.AssignmentsFor(SlotId.Chair).Should().NotBeEmpty();
+        Queries.AssignmentsFor(stored, SlotId.Chair).Should().NotBeEmpty();
     }
 }

@@ -1,5 +1,5 @@
 using AwesomeAssertions;
-using CoreRentalNet.BuildingBlocks.Domain;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 
@@ -7,11 +7,13 @@ namespace CoreRentalNet.Modules.Workspace.UnitTests;
 
 public sealed class SlotRulesTests
 {
+    private static readonly ISlotRuleProvider Rules = new SlotRuleProvider();
+
     [Fact] // SLOT-01
     public void The_slot_table_is_exactly_the_seven_agreed_slots()
     {
-        SlotRules.All.Should().HaveCount(7);
-        SlotRules.All.Select(rule => (rule.Slot, rule.MaxQuantity)).Should().BeEquivalentTo(
+        Rules.All.Should().HaveCount(7);
+        Rules.All.Select(rule => (rule.Slot, rule.MaxQuantity)).Should().BeEquivalentTo(
         [
             (SlotId.Desk, 1),
             (SlotId.Chair, 1),
@@ -26,7 +28,7 @@ public sealed class SlotRulesTests
     [Fact] // SLOT-02
     public void A_workspace_can_never_hold_more_than_nine_units()
     {
-        SlotRules.TotalCapacity.Should().Be(9);
+        Rules.TotalCapacity.Should().Be(9);
     }
 
     [Fact] // SLOT-05
@@ -34,9 +36,11 @@ public sealed class SlotRulesTests
     {
         foreach (var slot in Enum.GetValues<SlotId>())
         {
-            var rule = SlotRules.For(slot);
+            var rule = Rules.For(slot);
 
             rule.Slot.Should().Be(slot);
+            // The guard that a rule accepts at least one unit used to be in the SlotRule constructor;
+            // it lives in the provider's table now, and this asserts every rule in it behaves.
             rule.MaxQuantity.Should().BeGreaterThan(0);
             rule.DisplayName.Should().NotBeNullOrWhiteSpace();
         }
@@ -45,16 +49,8 @@ public sealed class SlotRulesTests
     [Fact]
     public void Only_the_monitor_slot_accepts_more_than_one_unit()
     {
-        SlotRules.All.Where(rule => rule.MaxQuantity > 1)
+        Rules.All.Where(rule => rule.MaxQuantity > 1)
             .Select(rule => rule.Slot)
             .Should().Equal(SlotId.Monitor);
-    }
-
-    [Fact]
-    public void A_rule_cannot_accept_zero_units()
-    {
-        var action = () => new SlotRule(SlotId.Chair, "Chair", 0);
-
-        action.Should().Throw<DomainRuleViolationException>();
     }
 }

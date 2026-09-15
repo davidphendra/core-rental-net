@@ -1,3 +1,8 @@
+using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.UnitTests;
@@ -6,16 +11,39 @@ internal sealed class WorkspaceTestContext
 {
     public const string RawToken = "test-raw-draft-token";
 
+    public static IOpaqueTokenService Tokens { get; } = new OpaqueTokenService();
+
+    public static IMoneyService Money { get; } = new MoneyService();
+
     public TestCatalog Catalog { get; } = new();
 
     public InMemoryWorkspaceRepository Repository { get; } = new();
 
+    public ISlotRuleProvider SlotRules { get; } = new SlotRuleProvider();
+
+    public IWorkspaceService Workspaces { get; } = new WorkspaceService(new SlotRuleProvider());
+
+    public IWorkspaceQueryService Queries { get; } = new WorkspaceQueryService(new SlotRuleProvider());
+
     public string Token => RawToken;
+
+    public IWorkspaceQuoteService Quotes => new WorkspaceQuoteService(Money, Catalog);
+
+    public IWorkspaceViewService Views => new WorkspaceViewService(SlotRules, Quotes, Queries);
 
     public async Task<Domain.Workspace> DraftAsync()
     {
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken(RawToken).Hash);
+        var workspace = NewDraft();
         await Repository.AddAsync(workspace);
         return workspace;
     }
+
+    public static Domain.Workspace NewDraft() => new()
+    {
+        Id = WorkspaceId.New(),
+        DraftTokenHash = Tokens.HashOf(RawToken),
+        State = DraftState.Draft,
+        Version = 1,
+        Assignments = [],
+    };
 }

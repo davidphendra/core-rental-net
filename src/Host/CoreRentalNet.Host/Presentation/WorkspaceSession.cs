@@ -1,58 +1,22 @@
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Workspace.Application.Commands;
-using CoreRentalNet.Modules.Workspace.Application.Queries;
-using CoreRentalNet.Modules.Workspace.Application.Workspace;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.AssignProduct;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.ChangeQuantity;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.RemoveAssignment;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.SetDeliveryAddress;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.StartDraft;
+using CoreRentalNet.Modules.Workspace.Application.Queries.GetWorkspace;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Host.Presentation;
-
-/// <summary>
-/// The workspace as a component sees it: what it holds, the last refusal, and the ways to change it.
-/// </summary>
-/// <remarks>
-/// A component depends on this rather than on the session itself, so a component can be exercised
-/// without a database behind it and the session's shape can change without touching markup. The
-/// session is registered under this interface in the same lifetime, because the circuit's state must
-/// survive exactly as it did.
-/// </remarks>
-public interface IWorkspaceSession
-{
-    WorkspaceView? Current { get; }
-
-    string? Error { get; }
-
-    bool IsLoaded { get; }
-
-    bool IsEmpty { get; }
-
-    int TotalUnits { get; }
-
-    event Action? Changed;
-
-    Task RefreshAsync(string draftToken, CancellationToken cancellationToken = default);
-
-    Task EnsureLoadedAsync(string draftToken, CancellationToken cancellationToken = default);
-
-    Task AssignAsync(string draftToken, string sku, CancellationToken cancellationToken = default);
-
-    Task RemoveAsync(string draftToken, SlotId slot, CancellationToken cancellationToken = default);
-
-    Task SetQuantityAsync(string draftToken, SlotId slot, string sku, int quantity, CancellationToken cancellationToken = default);
-
-    Task SetDeliveryAddressAsync(string draftToken, string? address, CancellationToken cancellationToken = default);
-
-    Task<string?> TrySetDeliveryAddressAsync(string draftToken, string? address, CancellationToken cancellationToken = default);
-
-    void ClearError();
-}
 
 /// <summary>
 /// View state for the current circuit.
 /// </summary>
 /// <remarks>
 /// Deliberately a cache, never a source of truth: every value here came from the database via
-/// a handler, and every read refreshes it (ADR-0006, decision 10.5). A refusal from the domain
+/// a handler, and every read refreshes it. A refusal from the domain
 /// is surfaced as a message rather than an exception, so the customer sees why nothing
 /// happened instead of the page breaking.
 /// </remarks>

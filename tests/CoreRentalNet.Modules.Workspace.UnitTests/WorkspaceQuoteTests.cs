@@ -1,24 +1,48 @@
 using AwesomeAssertions;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Workspace.Application.Workspace;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
 
 namespace CoreRentalNet.Modules.Workspace.UnitTests;
 
 public sealed class WorkspaceQuoteTests
 {
+    private static readonly ISlotRuleProvider Rules = new SlotRuleProvider();
+    private static readonly IMoneyService Money = new MoneyService();
+    private static readonly IWorkspaceService Workspaces = new WorkspaceService(Rules);
+    private static readonly IWorkspaceQueryService Queries = new WorkspaceQueryService(Rules);
+
+    private static Domain.Workspace NewDraft() => new()
+    {
+        Id = WorkspaceId.New(),
+        DraftTokenHash = new OpaqueTokenService().HashOf("raw"),
+        State = DraftState.Draft,
+        Version = 1,
+        Assignments = [],
+    };
+
+    private static WorkspaceQuote Quote(Domain.Workspace workspace, TestCatalog catalog)
+        => new WorkspaceQuoteService(Money, catalog).Quote(workspace);
+
+    private static WorkspaceView View(Domain.Workspace workspace, TestCatalog catalog)
+        => new WorkspaceViewService(Rules, new WorkspaceQuoteService(Money, catalog), Queries).Build(workspace);
+
     [Fact] // WS-11
     public void The_monthly_total_is_the_sum_of_price_times_quantity()
     {
         var catalog = new TestCatalog()
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("MON0001", 300000m);
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Chair, "CHA0001");
-        workspace.Assign(SlotId.Monitor, "MON0001", 2);
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Chair, "CHA0001");
+        Workspaces.Assign(workspace, SlotId.Monitor, "MON0001", 2);
 
-        var quote = WorkspaceQuoter.Quote(workspace, catalog);
+        var quote = Quote(workspace, catalog);
 
         quote.MonthlySubtotal.Amount.Should().Be(1000000m);
         quote.MonthlySubtotal.Currency.Should().Be("IDR");
@@ -30,9 +54,9 @@ public sealed class WorkspaceQuoteTests
     [Fact] // WS-11
     public void An_empty_workspace_costs_zero_rather_than_failing()
     {
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
+        var workspace = NewDraft();
 
-        var quote = WorkspaceQuoter.Quote(workspace, new TestCatalog());
+        var quote = Quote(workspace, new TestCatalog());
 
         quote.MonthlySubtotal.Amount.Should().Be(0m);
         quote.MonthlySubtotal.Currency.Should().Be("IDR");
@@ -43,14 +67,14 @@ public sealed class WorkspaceQuoteTests
     public void A_price_change_is_reflected_on_the_next_read()
     {
         var catalog = new TestCatalog().Add("CHA0001", 400000m, CatalogCategory.Chair, null);
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Chair, "CHA0001");
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Chair, "CHA0001");
 
-        WorkspaceQuoter.Quote(workspace, catalog).MonthlySubtotal.Amount.Should().Be(400000m);
+        Quote(workspace, catalog).MonthlySubtotal.Amount.Should().Be(400000m);
 
         catalog.Add("CHA0001", 450000m, CatalogCategory.Chair, null);
 
-        WorkspaceQuoter.Quote(workspace, catalog).MonthlySubtotal.Amount.Should().Be(450000m);
+        Quote(workspace, catalog).MonthlySubtotal.Amount.Should().Be(450000m);
     }
 
     [Fact] // WS-13
@@ -59,13 +83,13 @@ public sealed class WorkspaceQuoteTests
         var catalog = new TestCatalog()
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("MON0001", 300000m);
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Chair, "CHA0001");
-        workspace.Assign(SlotId.Monitor, "MON0001", 2);
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Chair, "CHA0001");
+        Workspaces.Assign(workspace, SlotId.Monitor, "MON0001", 2);
 
         catalog.Remove("MON0001");
 
-        var quote = WorkspaceQuoter.Quote(workspace, catalog);
+        var quote = Quote(workspace, catalog);
 
         quote.HasUnavailableLines.Should().BeTrue();
         quote.UnavailableLines.Should().ContainSingle().Which.Sku.Should().Be("MON0001");
@@ -77,12 +101,12 @@ public sealed class WorkspaceQuoteTests
     public void A_workspace_whose_only_product_disappeared_totals_zero_and_reports_the_gap()
     {
         var catalog = new TestCatalog().Add("CHA0001", 400000m, CatalogCategory.Chair, null);
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Chair, "CHA0001");
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Chair, "CHA0001");
 
         catalog.Remove("CHA0001");
 
-        var quote = WorkspaceQuoter.Quote(workspace, catalog);
+        var quote = Quote(workspace, catalog);
 
         quote.MonthlySubtotal.Amount.Should().Be(0m);
         quote.HasUnavailableLines.Should().BeTrue();
@@ -94,11 +118,11 @@ public sealed class WorkspaceQuoteTests
         var catalog = new TestCatalog()
             .Add("MON0001", 100000.005m)
             .Add("MON0002", 100000.005m, name: "Second monitor");
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Monitor, "MON0001", 1);
-        workspace.Assign(SlotId.Monitor, "MON0002", 2);
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Monitor, "MON0001", 1);
+        Workspaces.Assign(workspace, SlotId.Monitor, "MON0002", 2);
 
-        var quote = WorkspaceQuoter.Quote(workspace, catalog);
+        var quote = Quote(workspace, catalog);
 
         quote.MonthlySubtotal.Amount.Should().Be(300000.02m);
     }
@@ -109,11 +133,11 @@ public sealed class WorkspaceQuoteTests
         var catalog = new TestCatalog()
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("DSK0001", 800000m, CatalogCategory.Desk, null);
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Chair, "CHA0001");
-        workspace.Assign(SlotId.Desk, "DSK0001");
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Chair, "CHA0001");
+        Workspaces.Assign(workspace, SlotId.Desk, "DSK0001");
 
-        var view = WorkspaceViewFactory.Build(workspace, catalog);
+        var view = View(workspace, catalog);
 
         view.Slots.Should().HaveCount(7);
         view.Slots.Single(slot => slot.Slot == SlotId.Chair).IsFilled.Should().BeTrue();
@@ -126,10 +150,10 @@ public sealed class WorkspaceQuoteTests
     public void A_workspace_with_an_unavailable_line_cannot_check_out()
     {
         var catalog = new TestCatalog().Add("CHA0001", 400000m, CatalogCategory.Chair, null);
-        var workspace = Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
-        workspace.Assign(SlotId.Chair, "CHA0001");
+        var workspace = NewDraft();
+        Workspaces.Assign(workspace, SlotId.Chair, "CHA0001");
         catalog.Remove("CHA0001");
 
-        WorkspaceViewFactory.Build(workspace, catalog).CanCheckout.Should().BeFalse();
+        View(workspace, catalog).CanCheckout.Should().BeFalse();
     }
 }

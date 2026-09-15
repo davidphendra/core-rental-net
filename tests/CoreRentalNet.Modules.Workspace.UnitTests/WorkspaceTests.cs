@@ -1,38 +1,56 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
+using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
+using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
 
 namespace CoreRentalNet.Modules.Workspace.UnitTests;
 
+/// <summary>
+/// The workspace's rules, now enforced by <see cref="WorkspaceService"/> against a plain record
+///. Every assertion is the same as it was against the aggregate; only the call site moved.
+/// </summary>
 public sealed class WorkspaceTests
 {
-    private static Domain.Workspace NewDraft()
-        => Domain.Workspace.CreateNew(WorkspaceId.New(), DraftToken.FromRawToken("raw").Hash);
+    private static readonly ISlotRuleProvider Rules = new SlotRuleProvider();
+    private static readonly IWorkspaceService Service = new WorkspaceService(Rules);
+    private static readonly IWorkspaceQueryService Queries = new WorkspaceQueryService(Rules);
+
+    private static Domain.Workspace NewDraft() => new()
+    {
+        Id = WorkspaceId.New(),
+        DraftTokenHash = new OpaqueTokenService().HashOf("raw"),
+        State = DraftState.Draft,
+        Version = 1,
+        Assignments = [],
+    };
 
     [Fact] // WS-01
     public void Assigning_a_product_fills_its_slot_with_one_unit()
     {
         var workspace = NewDraft();
 
-        workspace.Assign(SlotId.Chair, "cha0001");
+        Service.Assign(workspace, SlotId.Chair, "cha0001");
 
-        workspace.AssignmentsFor(SlotId.Chair).Single().Sku.Should().Be("CHA0001");
-        workspace.AssignmentsFor(SlotId.Chair).Single().Quantity.Should().Be(1);
-        workspace.TotalUnits.Should().Be(1);
+        Queries.AssignmentsFor(workspace, SlotId.Chair).Single().Sku.Should().Be("CHA0001");
+        Queries.AssignmentsFor(workspace, SlotId.Chair).Single().Quantity.Should().Be(1);
+        Queries.TotalUnits(workspace).Should().Be(1);
     }
 
     [Fact] // WS-02
     public void A_single_capacity_slot_is_replaced_rather_than_accumulated()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Chair, "CHA0001");
+        Service.Assign(workspace, SlotId.Chair, "CHA0001");
 
-        workspace.Assign(SlotId.Chair, "CHA0002");
+        Service.Assign(workspace, SlotId.Chair, "CHA0002");
 
-        workspace.AssignmentsFor(SlotId.Chair).Single().Sku.Should().Be("CHA0002");
-        workspace.AssignmentsFor(SlotId.Chair).Single().Quantity.Should().Be(1);
-        workspace.TotalUnits.Should().Be(1);
+        Queries.AssignmentsFor(workspace, SlotId.Chair).Single().Sku.Should().Be("CHA0002");
+        Queries.AssignmentsFor(workspace, SlotId.Chair).Single().Quantity.Should().Be(1);
+        Queries.TotalUnits(workspace).Should().Be(1);
     }
 
     [Fact] // WS-03
@@ -40,50 +58,50 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        workspace.Assign(SlotId.Monitor, "MON0001");
-        workspace.Assign(SlotId.Monitor, "MON0001");
-        workspace.Assign(SlotId.Monitor, "MON0001");
+        Service.Assign(workspace, SlotId.Monitor, "MON0001");
+        Service.Assign(workspace, SlotId.Monitor, "MON0001");
+        Service.Assign(workspace, SlotId.Monitor, "MON0001");
 
-        workspace.AssignmentsFor(SlotId.Monitor).Single().Quantity.Should().Be(3);
-        workspace.TotalUnits.Should().Be(3);
+        Queries.AssignmentsFor(workspace, SlotId.Monitor).Single().Quantity.Should().Be(3);
+        Queries.TotalUnits(workspace).Should().Be(3);
     }
 
     [Fact] // WS-04
     public void A_fourth_monitor_is_refused_and_changes_nothing()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Monitor, "MON0001", 3);
+        Service.Assign(workspace, SlotId.Monitor, "MON0001", 3);
         var versionBefore = workspace.Version;
 
-        var action = () => workspace.Assign(SlotId.Monitor, "MON0001");
+        var action = () => Service.Assign(workspace, SlotId.Monitor, "MON0001");
 
         action.Should().Throw<DomainRuleViolationException>().WithMessage("*at most 3*");
-        workspace.AssignmentsFor(SlotId.Monitor).Single().Quantity.Should().Be(3);
-        workspace.Version.Should().Be(versionBefore, "a refused command must not mutate the aggregate");
+        Queries.AssignmentsFor(workspace, SlotId.Monitor).Single().Quantity.Should().Be(3);
+        workspace.Version.Should().Be(versionBefore, "a refused command must not change the record");
     }
 
     [Fact] // WS-08
     public void Removing_a_filled_slot_empties_it_and_removing_an_empty_slot_is_a_no_op()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Plant, "PLT0001");
+        Service.Assign(workspace, SlotId.Plant, "PLT0001");
 
-        workspace.Remove(SlotId.Plant).Should().BeTrue();
-        workspace.AssignmentsFor(SlotId.Plant).Should().BeEmpty();
-        workspace.IsEmpty.Should().BeTrue();
+        Service.Remove(workspace, SlotId.Plant).Should().BeTrue();
+        Queries.AssignmentsFor(workspace, SlotId.Plant).Should().BeEmpty();
+        Queries.IsEmpty(workspace).Should().BeTrue();
 
-        workspace.Remove(SlotId.Plant).Should().BeFalse();
+        Service.Remove(workspace, SlotId.Plant).Should().BeFalse();
     }
 
     [Fact] // WS-09
     public void A_quantity_of_zero_empties_the_slot()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Monitor, "MON0001", 2);
+        Service.Assign(workspace, SlotId.Monitor, "MON0001", 2);
 
-        workspace.ChangeQuantity(SlotId.Monitor, "MON0001", 0);
+        Service.ChangeQuantity(workspace, SlotId.Monitor, "MON0001", 0);
 
-        workspace.AssignmentsFor(SlotId.Monitor).Should().BeEmpty();
+        Queries.AssignmentsFor(workspace, SlotId.Monitor).Should().BeEmpty();
     }
 
     [Fact] // WS-09
@@ -91,7 +109,7 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        var action = () => workspace.ChangeQuantity(SlotId.Monitor, "MON0001", 2);
+        var action = () => Service.ChangeQuantity(workspace, SlotId.Monitor, "MON0001", 2);
 
         // The message names what is missing, because with three monitors the slot can hold other
         // products and "empty" would not say which one the customer tried to count.
@@ -102,9 +120,9 @@ public sealed class WorkspaceTests
     public void A_quantity_beyond_capacity_is_refused()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Monitor, "MON0001");
+        Service.Assign(workspace, SlotId.Monitor, "MON0001");
 
-        var action = () => workspace.ChangeQuantity(SlotId.Monitor, "MON0001", 4);
+        var action = () => Service.ChangeQuantity(workspace, SlotId.Monitor, "MON0001", 4);
 
         action.Should().Throw<DomainRuleViolationException>().WithMessage("*at most 3*");
     }
@@ -113,9 +131,9 @@ public sealed class WorkspaceTests
     public void A_negative_quantity_is_refused()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Monitor, "MON0001");
+        Service.Assign(workspace, SlotId.Monitor, "MON0001");
 
-        var action = () => workspace.ChangeQuantity(SlotId.Monitor, "MON0001", -1);
+        var action = () => Service.ChangeQuantity(workspace, SlotId.Monitor, "MON0001", -1);
 
         action.Should().Throw<DomainRuleViolationException>();
     }
@@ -125,7 +143,7 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        var action = () => workspace.Assign(SlotId.Monitor, "MON0001", 0);
+        var action = () => Service.Assign(workspace, SlotId.Monitor, "MON0001", 0);
 
         action.Should().Throw<DomainRuleViolationException>();
     }
@@ -134,9 +152,9 @@ public sealed class WorkspaceTests
     public void A_blank_delivery_address_clears_it_rather_than_storing_whitespace()
     {
         var workspace = NewDraft();
-        workspace.SetDeliveryAddress("Villa Lotus, Canggu");
+        Service.SetDeliveryAddress(workspace, "Villa Lotus, Canggu");
 
-        workspace.SetDeliveryAddress("   ");
+        Service.SetDeliveryAddress(workspace, "   ");
 
         workspace.DeliveryAddress.Should().BeNull();
     }
@@ -146,10 +164,10 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        var tooShort = () => workspace.SetDeliveryAddress("Vila");
+        var tooShort = () => Service.SetDeliveryAddress(workspace, "Vila");
         tooShort.Should().Throw<DomainRuleViolationException>().WithMessage("*at least 5*");
 
-        var tooLong = () => workspace.SetDeliveryAddress(new string('a', 201));
+        var tooLong = () => Service.SetDeliveryAddress(workspace, new string('a', 201));
         tooLong.Should().Throw<DomainRuleViolationException>().WithMessage("*200*");
     }
 
@@ -158,7 +176,7 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        workspace.SetDeliveryAddress("  Villa Lotus  \r\n\r\n  Canggu   \r\n");
+        Service.SetDeliveryAddress(workspace, "  Villa Lotus  \r\n\r\n  Canggu   \r\n");
 
         workspace.DeliveryAddress.Should().Be("Villa Lotus\nCanggu");
     }
@@ -168,7 +186,7 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        workspace.SetDeliveryAddress("12345");
+        Service.SetDeliveryAddress(workspace, "12345");
 
         workspace.DeliveryAddress.Should().Be("12345");
     }
@@ -179,10 +197,10 @@ public sealed class WorkspaceTests
         var workspace = NewDraft();
         var start = workspace.Version;
 
-        workspace.Assign(SlotId.Chair, "CHA0001");
-        workspace.Assign(SlotId.Desk, "DSK0001");
-        workspace.ChangeQuantity(SlotId.Chair, "CHA0001", 1);
-        workspace.SetDeliveryAddress("Villa Lotus, Canggu");
+        Service.Assign(workspace, SlotId.Chair, "CHA0001");
+        Service.Assign(workspace, SlotId.Desk, "DSK0001");
+        Service.ChangeQuantity(workspace, SlotId.Chair, "CHA0001", 1);
+        Service.SetDeliveryAddress(workspace, "Villa Lotus, Canggu");
 
         workspace.Version.Should().Be(start + 4);
     }
@@ -191,31 +209,31 @@ public sealed class WorkspaceTests
     public void A_converted_workspace_refuses_every_further_change()
     {
         var workspace = NewDraft();
-        workspace.Assign(SlotId.Chair, "CHA0001");
-        workspace.MarkConverted();
+        Service.Assign(workspace, SlotId.Chair, "CHA0001");
+        Service.MarkConverted(workspace);
 
-        workspace.IsConverted.Should().BeTrue();
-        ((Action)(() => workspace.Assign(SlotId.Desk, "DSK0001"))).Should().Throw<DomainRuleViolationException>();
-        ((Action)(() => workspace.Remove(SlotId.Chair))).Should().Throw<DomainRuleViolationException>();
-        ((Action)(() => workspace.ChangeQuantity(SlotId.Chair, "CHA0001", 1))).Should().Throw<DomainRuleViolationException>();
-        ((Action)(() => workspace.SetDeliveryAddress("Villa Lotus, Canggu"))).Should().Throw<DomainRuleViolationException>();
+        Queries.IsConverted(workspace).Should().BeTrue();
+        ((Action)(() => Service.Assign(workspace, SlotId.Desk, "DSK0001"))).Should().Throw<DomainRuleViolationException>();
+        ((Action)(() => Service.Remove(workspace, SlotId.Chair))).Should().Throw<DomainRuleViolationException>();
+        ((Action)(() => Service.ChangeQuantity(workspace, SlotId.Chair, "CHA0001", 1))).Should().Throw<DomainRuleViolationException>();
+        ((Action)(() => Service.SetDeliveryAddress(workspace, "Villa Lotus, Canggu"))).Should().Throw<DomainRuleViolationException>();
     }
 
     [Fact] // CO-11
     public void Converting_twice_is_refused()
     {
         var workspace = NewDraft();
-        workspace.MarkConverted();
+        Service.MarkConverted(workspace);
 
-        var action = () => workspace.MarkConverted();
+        var action = () => Service.MarkConverted(workspace);
 
         action.Should().Throw<DomainRuleViolationException>().WithMessage("*already*");
     }
 
     [Fact]
-    public void A_workspace_cannot_be_created_with_an_empty_id()
+    public void A_workspace_id_cannot_be_empty()
     {
-        var action = () => Domain.Workspace.CreateNew(default, DraftToken.FromRawToken("raw").Hash);
+        var action = () => WorkspaceId.From(Guid.Empty);
 
         action.Should().Throw<DomainRuleViolationException>();
     }
@@ -225,13 +243,13 @@ public sealed class WorkspaceTests
     {
         var workspace = NewDraft();
 
-        workspace.Assign(SlotId.Monitor, "MON0001");
-        workspace.Assign(SlotId.Monitor, "MON0002");
+        Service.Assign(workspace, SlotId.Monitor, "MON0001");
+        Service.Assign(workspace, SlotId.Monitor, "MON0002");
 
         // Two monitors are in the slot and the first is one of them. Assigning a different product
         // into a multi-capacity slot adds a unit; it does not change what the customer already chose.
-        workspace.AssignmentsFor(SlotId.Monitor).Select(assignment => assignment.Sku)
+        Queries.AssignmentsFor(workspace, SlotId.Monitor).Select(assignment => assignment.Sku)
             .Should().BeEquivalentTo(["MON0001", "MON0002"]);
-        workspace.TotalUnits.Should().Be(2);
+        Queries.TotalUnits(workspace).Should().Be(2);
     }
 }
