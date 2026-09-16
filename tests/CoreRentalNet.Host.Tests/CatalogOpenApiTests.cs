@@ -64,6 +64,49 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
             .Should().BeEquivalentTo(["chair", "desk", "accessory"]);
     }
 
+    [Fact] // API-14
+    public async Task The_document_declares_how_a_caller_obtains_a_token()
+    {
+        using var document = await GetDocumentAsync();
+
+        var scheme = document.RootElement
+            .GetProperty("components")
+            .GetProperty("securitySchemes")
+            .GetProperty("Auth0");
+
+        scheme.GetProperty("type").GetString().Should().Be("oauth2");
+
+        var flow = scheme.GetProperty("flows").GetProperty("authorizationCode");
+
+        // Both addresses come from the identity configuration, so a deployment that points at another
+        // provider describes that provider rather than the one this repository was written against.
+        flow.GetProperty("authorizationUrl").GetString().Should().Be("https://tenant.example/authorize");
+        flow.GetProperty("tokenUrl").GetString().Should().Be("https://tenant.example/oauth/token");
+
+        // The scope the flow asks for is the permission the gate checks; a scope that was never
+        // requested is a permission the provider will not issue.
+        flow.GetProperty("scopes").TryGetProperty("read:catalog", out _).Should().BeTrue();
+    }
+
+    [Fact] // API-14
+    public async Task The_endpoint_requires_the_scheme_the_document_declares()
+    {
+        using var document = await GetDocumentAsync();
+
+        var security = document.RootElement
+            .GetProperty("paths")
+            .GetProperty("/api/catalog")
+            .GetProperty("get")
+            .GetProperty("security");
+
+        var schemes = security.EnumerateArray()
+            .SelectMany(requirement => requirement.EnumerateObject().Select(property => property.Name))
+            .Distinct()
+            .ToArray();
+
+        schemes.Should().Equal(["Auth0"], "the endpoint must point at the scheme the document declares");
+    }
+
     private async Task<JsonDocument> GetDocumentAsync()
     {
         var response = await factory.CreateClient().GetAsync("/openapi/v1.json");

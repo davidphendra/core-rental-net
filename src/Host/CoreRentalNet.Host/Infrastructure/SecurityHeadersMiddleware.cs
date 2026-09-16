@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Hosting;
+
 namespace CoreRentalNet.Host.Infrastructure;
 
 /// <summary>
@@ -24,7 +26,7 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// no status code shows that; the suite proved the circuit survives it before the header was flipped.
 /// </para>
 /// </remarks>
-public sealed class SecurityHeadersMiddleware(RequestDelegate next)
+public sealed class SecurityHeadersMiddleware(RequestDelegate next, IWebHostEnvironment environment)
 {
     /// <summary>The policy is enforced; the browser refuses what the policy does not admit.</summary>
     private const string HeaderName = "Content-Security-Policy";
@@ -43,12 +45,34 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
         "connect-src 'self'; " +
         "upgrade-insecure-requests";
 
+    /// <summary>
+    /// The policy the development documentation pages are served under, and why it must differ.
+    /// </summary>
+    /// <remarks>
+    /// swagger-ui builds its page from an inline script and inline styles, which the policy above
+    /// refuses - it would render blank, which is the failure mode this whole middleware exists to
+    /// avoid mistaking for a working page. The exception is deliberately narrow: only swagger's own
+    /// paths, and only in development. Everything else about the policy is unchanged, framing included.
+    /// </remarks>
+    internal const string DocumentationContentSecurityPolicy =
+        "default-src 'self'; " +
+        "base-uri 'self'; " +
+        "object-src 'none'; " +
+        "frame-ancestors 'none'; " +
+        "form-action 'self'; " +
+        "script-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data:; " +
+        "font-src 'self'; " +
+        "connect-src 'self'; " +
+        "upgrade-insecure-requests";
+
     public async Task InvokeAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
         // Set before the response starts, so they ride on static assets as well as on pages.
-        context.Response.Headers[HeaderName] = ContentSecurityPolicy;
+        context.Response.Headers[HeaderName] = Policy(context);
 
         // A browser that guesses a response's type can be talked into running what it was told was
         // data. The application serves images, stylesheets, fonts and scripts, and none of them is
@@ -65,4 +89,13 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next)
 
         await next(context).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// The strict policy, except for the development documentation pages, which cannot be built under it.
+    /// </summary>
+    private string Policy(HttpContext context)
+        => environment.IsDevelopment()
+           && context.Request.Path.StartsWithSegments(DocumentationPath.RequestPath, StringComparison.OrdinalIgnoreCase)
+            ? DocumentationContentSecurityPolicy
+            : ContentSecurityPolicy;
 }

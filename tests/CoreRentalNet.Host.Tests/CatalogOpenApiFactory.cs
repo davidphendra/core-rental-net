@@ -1,6 +1,9 @@
+using CoreRentalNet.Host.Presentation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoreRentalNet.Host.Tests;
 
@@ -10,8 +13,10 @@ namespace CoreRentalNet.Host.Tests;
 /// <remarks>
 /// The document endpoint is anonymous, so the identity question that makes
 /// <see cref="CatalogApiFactory"/> run in the Testing environment does not apply here: this factory
-/// needs Development precisely because that is the environment the document is published in. The
-/// database is a throwaway file, as in the other factories.
+/// needs Development precisely because that is the environment the documentation is published in. The
+/// identity settings are replaced with known ones rather than read from the machine, so what the
+/// document and the page are configured from does not depend on whose laptop runs the suite. The
+/// database is a throwaway file.
 /// </remarks>
 public sealed class CatalogOpenApiFactory : WebApplicationFactory<Program>
 {
@@ -27,6 +32,22 @@ public sealed class CatalogOpenApiFactory : WebApplicationFactory<Program>
         [
             new KeyValuePair<string, string?>("Sqlite:DatabasePath", _database),
         ]));
+
+        builder.ConfigureTestServices(services =>
+        {
+            var identity = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["Auth0:Enabled"] = "true",
+                    ["Auth0:Domain"] = "tenant.example",
+                    ["Auth0:ClientId"] = "swagger-client",
+                    ["Auth0:Audience"] = "https://catalogue.example",
+                    ["Auth0:Scope"] = "openid profile email read:catalog",
+                })
+                .Build();
+
+            services.AddSingleton(IdentitySettings.From(identity));
+        });
     }
 
     protected override void Dispose(bool disposing)

@@ -63,6 +63,7 @@ internal static class ApplicationPipeline
         }
 
         app.MapOpenApi();
+        SwaggerUiRegistration.MapSwaggerUi(app);
     }
 
     private static void ConfigureTransport(WebApplication app)

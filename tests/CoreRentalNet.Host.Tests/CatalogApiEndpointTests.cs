@@ -106,6 +106,16 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact] // API-15
+    public async Task The_swagger_ui_is_not_served_outside_development()
+    {
+        var response = await factory.CreateClient().GetAsync("/swagger/index.html");
+
+        // The page tries the API from a browser. It belongs where a developer is working, and it is
+        // the same surface the relaxed policy is scoped to, so both stop at the same place.
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private async Task<JsonElement> GetArrayAsync(string path)
     {
         var response = await factory.CreateClient().GetAsync(path);
