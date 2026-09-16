@@ -51,3 +51,20 @@ than relaxing it. A real host with a provider configured and no audience answere
 missing and a malformed token (the first attempt at this fix dropped the bearer scheme and answered
 `302`, a login redirect; that shape was rejected).
 
+## Addendum — the OpenAPI document (`8984cbb`)
+
+Development now serves an OpenAPI document at `/openapi/v1.json`. Assessed:
+
+- **Exposure.** Mapped only when `Environment.IsDevelopment()`; a real host confirms `404` in
+  Production while `/api/catalog` still answers `200`. The document names the routes and shapes the
+  application has, so it is a map handed to whoever asks — which is why it is not published anywhere it
+  is not needed.
+- **Authorization.** Anonymous by design: a description of the API is not the API, and it carries no
+  catalogue data — product values are not in it, only their shapes.
+- **Secrets.** It contains no configuration values, no keys and no credentials; it is generated from
+  endpoint metadata and the serializer's schemas.
+- **The request file** `CatalogApi.http` is a repository file, not a served route: it adds no HTTP
+  surface. It does not embed a token (its `@token` is a placeholder).
+
+No new finding; the assessment stands.
+

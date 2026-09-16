@@ -39,3 +39,13 @@ module change, no write surface.
 
 No dark story, no untested behaviour, no unverified story, no stale security review (addendum appended
 after the review response), and all three baselines green at the released commit `9122b65`.
+
+## Follow-on — endpoint discoverability (`8984cbb`)
+
+| Change | Code | Tests | Evidence |
+|---|---|---|---|
+| A `.http` request file | `CatalogApi.http` (a repository file; no HTTP surface) | none — it is a request file, and the calls it makes are the ones API-01…API-12 already pin | `catalog-discovery-after.md` |
+| A development-only OpenAPI document | `CatalogApiRegistration` (registration), `ApplicationPipeline.MapDevelopmentDocumentation` (mapping), `CatalogController` (the metadata the document is built from) | `CatalogOpenApiTests` (3), `CatalogApiEndpointTests.The_openapi_document_is_not_served_outside_development` | API-13; `catalog-discovery-after.md`; real host: 200 in Development, 404 in Production |
+
+No dark change: both additions are covered except the request file, which is not code and whose
+requests are the pinned ones. The archived epic `e01` remains the source of API-01…API-12.

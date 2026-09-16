@@ -145,8 +145,8 @@ Editing `src/shared/data/products.json` has no effect until you do that.
 ## Test it
 
 ```bash
-dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"   # 410 tests
-dotnet test tests/CoreRentalNet.E2E                                              # 94 in a browser
+dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"   # 529 tests
+dotnet test tests/CoreRentalNet.E2E                                              # 103 in a browser
 ```
 
 | Layer | What it proves |
