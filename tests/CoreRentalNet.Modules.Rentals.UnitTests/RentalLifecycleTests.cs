@@ -7,7 +7,7 @@ using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
 /// <summary>
-/// The rental lifecycle, now enforced by <see cref="Application.Rentals.RentalLifecycleService"/>
+/// The rental lifecycle, now enforced by <see cref="Application.Services.RentalLifecycleService"/>
 /// against a plain record. Every assertion is the same as it was against the aggregate;
 /// only the call site moved.
 /// </summary>

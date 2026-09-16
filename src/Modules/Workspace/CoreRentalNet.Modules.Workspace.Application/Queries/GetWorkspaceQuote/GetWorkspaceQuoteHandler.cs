@@ -1,7 +1,7 @@
 using CoreRentalNet.BuildingBlocks.Application;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
+using CoreRentalNet.Modules.Workspace.Application.Services;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Support;
+using CoreRentalNet.Modules.Workspace.Application.Support;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Queries.GetWorkspaceQuote;

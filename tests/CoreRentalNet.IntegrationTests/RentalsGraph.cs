@@ -1,6 +1,6 @@
 using CoreRentalNet.BuildingBlocks.Application;
-using CoreRentalNet.Modules.Rentals.Application.Invoicing;
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
+using CoreRentalNet.Modules.Rentals.Application.Services;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
 
 namespace CoreRentalNet.IntegrationTests;
 

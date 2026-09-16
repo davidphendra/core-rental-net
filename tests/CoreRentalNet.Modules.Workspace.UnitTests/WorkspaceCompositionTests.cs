@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.AssignProduct;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.SetDeliveryAddress;
+using CoreRentalNet.Modules.Workspace.Application.Commands.AssignProduct;
+using CoreRentalNet.Modules.Workspace.Application.Commands.SetDeliveryAddress;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
 using Xunit;
 

@@ -1,7 +1,8 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
+using CoreRentalNet.Modules.Rentals.Application.Services;
 using Xunit;
 using Rental = CoreRentalNet.Modules.Rentals.Domain.Rentals.Rental;
 using CoreRentalNet.Modules.Rentals.Domain.Rentals;

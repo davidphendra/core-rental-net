@@ -163,15 +163,21 @@ no projection monitoring and no distributed-data correctness work, because the s
 
 | Concern | Decision | Placement |
 |---|---|---|
-| Command records | Immutable `sealed record`, one per file | `*.Application/<Feature>/…Command.cs` |
-| Command handlers | One public operation, returns `Task`; injected by interface | `*.Application/<Feature>/…Handler.cs` |
-| Query records | Immutable `sealed record` | `*.Application/Queries/<Feature>/…Query.cs` |
-| Query handlers | Return a view record, never mutate | `*.Application/Queries/<Feature>/…Handler.cs` |
+| Command records | Immutable `sealed record`, one per file | `*.Application/Commands/<Operation>/…Command.cs` |
+| Command handlers | One public operation, returns `Task`; injected by interface | `*.Application/Commands/<Operation>/…Handler.cs` |
+| Query records | Immutable `sealed record` | `*.Application/Queries/<Operation>/…Query.cs` |
+| Query handlers | Return a view record, never mutate | `*.Application/Queries/<Operation>/…Handler.cs` |
+| Read models | The views a query returns | `*.Application/Queries/Views/` |
 | Ports | `I…` declared in the inner layer, `sealed` implementation outward | `Domain/Persistence`, `Application/**` |
-| Projection | `IWorkspaceViewService` / `IWorkspaceQuoteService` build the read shape | `Workspace.Application/Queries/Services` |
+| Services | Rule, domain and projection services alike; never nested | `*.Application/Services/` |
 | Store | EF Core over SQLite, one `DbContext` per module | `*.Infrastructure` |
 | Dispatcher | None. Direct interface injection through DI. | `Host/Composition` |
 | Lifetimes | Handlers and services `Scoped`; the session holds the circuit's cache | `Host/Composition/*Registration.cs` |
+
+Placement rule for the use-case folders: `Commands/` and `Queries/` hold use cases only — a
+message, its port, its handler and the result or view it returns. Anything that is not a use case
+(a rule, a policy, a projection, a domain service) goes to `Rules/` or the single top-level
+`Services/`; there is no `Commands/Services/` and no `Queries/Services/`.
 
 Wiring rule enforced by the change: **a command handler's interface returns `Task`; a query
 handler's interface returns a view record.** `IAssignProductHandler`, `IRemoveAssignmentHandler`,

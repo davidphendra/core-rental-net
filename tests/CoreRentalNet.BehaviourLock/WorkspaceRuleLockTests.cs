@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
+using CoreRentalNet.Modules.Workspace.Application.Rules;
+using CoreRentalNet.Modules.Workspace.Application.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 using WorkspaceDraft = CoreRentalNet.Modules.Workspace.Domain.Workspace;

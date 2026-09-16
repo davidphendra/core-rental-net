@@ -51,7 +51,7 @@ internal static class ProductLoader
             Require(record.Name, "name", sku, path),
             category,
             subCategory,
-            ParsePrice(record.PricePerMonth, sku, path),
+            ParsePrice(record, sku, path),
             Require(record.Description, "description", sku, path),
             resolved.Path,
             ParseBadge(record.Badge, sku, path),
@@ -77,14 +77,40 @@ internal static class ProductLoader
                 ? true
                 : throw new ProductLoadException($"Catalog entry '{sku}' has an unknown badge '{value}': '{path}'.");
 
-    private static Money ParsePrice(decimal amount, string sku, string path)
+    private static Money ParsePrice(ProductJsonRecord record, string sku, string path)
     {
-        if (amount < 0m)
+        if (record.PricePerMonth < 0m)
         {
             throw new ProductLoadException($"Catalog entry '{sku}' has a price that cannot be negative: '{path}'.");
         }
 
-        return new Money(amount, Currencies.Idr);
+        var currency = ParseCurrency(record.Currency, sku, path);
+
+        // A price in a currency this application cannot charge would otherwise reach the checkout and
+        // be summed with IDR, where the money rules refuse it with a message that names neither the
+        // entry nor the file. Refusing it here is the same rule, said where the file is still in hand.
+        if (currency != Currencies.Idr)
+        {
+            throw new ProductLoadException(
+                $"Catalog entry '{sku}' is priced in {currency}, but this application settles in {Currencies.Idr}: '{path}'.");
+        }
+
+        return new Money(record.PricePerMonth, currency);
+    }
+
+    /// <summary>The currency the price is stated in. Absent means the settlement currency.</summary>
+    private static string ParseCurrency(string? value, string sku, string path)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return Currencies.Idr;
+        }
+
+        var code = value.Trim().ToUpperInvariant();
+
+        return Currencies.IsWellFormed(code)
+            ? code
+            : throw new ProductLoadException($"Catalog entry '{sku}' has an unknown currency '{value}': '{path}'.");
     }
 
     /// <summary>An accessory needs a subcategory, and a chair or a desk must not carry one.</summary>

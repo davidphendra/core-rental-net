@@ -1,4 +1,5 @@
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
+using CoreRentalNet.Modules.Rentals.Application.Services;
 using CoreRentalNet.Modules.Rentals.Domain.Persistence;
 using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 

@@ -1,6 +1,6 @@
 using CoreRentalNet.BuildingBlocks.Application;
-using CoreRentalNet.Modules.Rentals.Application.Invoicing;
-using CoreRentalNet.Modules.Rentals.Application.Views;
+using CoreRentalNet.Modules.Rentals.Application.Services;
+using CoreRentalNet.Modules.Rentals.Application.Queries.Views;
 using CoreRentalNet.Modules.Rentals.Domain.Invoices;
 using CoreRentalNet.Modules.Rentals.Domain.Persistence;
 using CoreRentalNet.Modules.Rentals.Domain.Rentals;

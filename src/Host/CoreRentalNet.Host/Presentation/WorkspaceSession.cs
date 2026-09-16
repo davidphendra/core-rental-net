@@ -1,10 +1,10 @@
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.AssignProduct;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.ChangeQuantity;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.RemoveAssignment;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.SetDeliveryAddress;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.StartDraft;
+using CoreRentalNet.Modules.Workspace.Application.Commands.AssignProduct;
+using CoreRentalNet.Modules.Workspace.Application.Commands.ChangeQuantity;
+using CoreRentalNet.Modules.Workspace.Application.Commands.RemoveAssignment;
+using CoreRentalNet.Modules.Workspace.Application.Commands.SetDeliveryAddress;
+using CoreRentalNet.Modules.Workspace.Application.Commands.StartDraft;
 using CoreRentalNet.Modules.Workspace.Application.Queries.GetWorkspace;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Domain;

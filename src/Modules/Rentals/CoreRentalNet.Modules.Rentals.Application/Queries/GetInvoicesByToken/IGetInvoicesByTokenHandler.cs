@@ -1,4 +1,4 @@
-using CoreRentalNet.Modules.Rentals.Application.Views;
+using CoreRentalNet.Modules.Rentals.Application.Queries.Views;
 
 namespace CoreRentalNet.Modules.Rentals.Application.Queries.GetInvoicesByToken;
 

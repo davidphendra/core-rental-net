@@ -1,12 +1,12 @@
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.Modules.Rentals.Application;
-using CoreRentalNet.Modules.Rentals.Application.Checkout;
-using CoreRentalNet.Modules.Rentals.Application.Invoicing;
-using CoreRentalNet.Modules.Rentals.Application.Orders;
+using CoreRentalNet.Modules.Rentals.Application.Commands.Checkout;
+using CoreRentalNet.Modules.Rentals.Application.Services;
+using CoreRentalNet.Modules.Rentals.Application.Commands.PlaceOrder;
 using CoreRentalNet.Modules.Rentals.Application.Queries.GetRentalByToken;
 using CoreRentalNet.Modules.Rentals.Application.Queries.GetInvoicesByToken;
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
 using CoreRentalNet.Modules.Rentals.Application.Scheduling;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Conversion;

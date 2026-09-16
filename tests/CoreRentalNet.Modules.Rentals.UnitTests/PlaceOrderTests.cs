@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application;
-using CoreRentalNet.Modules.Rentals.Application.Orders;
+using CoreRentalNet.Modules.Rentals.Application.Commands.PlaceOrder;
 using CoreRentalNet.Modules.Rentals.Application.Queries.GetRentalByToken;
 using CoreRentalNet.Modules.Rentals.Application.Queries.GetInvoicesByToken;
 using Microsoft.Extensions.Time.Testing;

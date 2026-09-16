@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
+using CoreRentalNet.Modules.Workspace.Application.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 

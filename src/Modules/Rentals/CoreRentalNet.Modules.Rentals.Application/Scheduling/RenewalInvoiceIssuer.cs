@@ -1,5 +1,5 @@
-using CoreRentalNet.Modules.Rentals.Application.Invoicing;
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
+using CoreRentalNet.Modules.Rentals.Application.Services;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
 using CoreRentalNet.Modules.Rentals.Domain.Invoices;
 using CoreRentalNet.Modules.Rentals.Domain.Numbering;
 using CoreRentalNet.Modules.Rentals.Domain.Persistence;

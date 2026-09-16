@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using CoreRentalNet.BuildingBlocks.Application;
-using CoreRentalNet.Modules.Catalog.Application.SearchCatalog;
+using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Host.Presentation;

@@ -5,8 +5,8 @@ using Xunit;
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
 /// <summary>
-/// Anchor period arithmetic, now in <see cref="Application.Rentals.RenewalPolicyService"/> and
-/// <see cref="Application.Rentals.DeliveryPolicyService"/>.
+/// Anchor period arithmetic, now in <see cref="Application.Rules.RenewalPolicyService"/> and
+/// <see cref="Application.Rules.DeliveryPolicyService"/>.
 /// </summary>
 public sealed class RentalPeriodTests
 {

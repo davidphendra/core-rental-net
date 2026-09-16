@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application;
-using CoreRentalNet.Modules.Rentals.Application.Orders;
+using CoreRentalNet.Modules.Rentals.Application.Commands.PlaceOrder;
 using CoreRentalNet.Modules.Rentals.Application.Scheduling;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using Microsoft.EntityFrameworkCore;

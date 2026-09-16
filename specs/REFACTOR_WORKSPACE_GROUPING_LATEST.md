@@ -1,6 +1,9 @@
 # Refactor plan — group the Workspace module under Contracts, Queries and Workspace
 
-Status: PROPOSED — not started. No code has been changed.
+Status: DONE, then superseded. Executed as planned, and afterwards the `Workspace/` grouping was
+flattened (`specs/verifications/workspace-folder-flatten-after.md`) and all three Application
+projects were regrouped by CQRS role (`specs/verifications/application-grouping-after.md`). The
+trees below describe the state at the time of this plan, not the current one.
 
 ## Problem Statement
 

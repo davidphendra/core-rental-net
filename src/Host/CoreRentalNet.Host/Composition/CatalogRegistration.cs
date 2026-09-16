@@ -1,8 +1,8 @@
 using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Infrastructure;
-using CoreRentalNet.Modules.Catalog.Application.GetProductByFeature;
-using CoreRentalNet.Modules.Catalog.Application.GetProductBySku;
-using CoreRentalNet.Modules.Catalog.Application.SearchCatalog;
+using CoreRentalNet.Modules.Catalog.Application.Queries.GetProductByFeature;
+using CoreRentalNet.Modules.Catalog.Application.Queries.GetProductBySku;
+using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Host.Composition;

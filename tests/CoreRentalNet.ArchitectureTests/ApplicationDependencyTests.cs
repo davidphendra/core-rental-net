@@ -2,8 +2,8 @@ using System.Reflection;
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
+using CoreRentalNet.Modules.Rentals.Application.Commands.PlaceOrder;
+using CoreRentalNet.Modules.Workspace.Application.Services;
 using NetArchTest.Rules;
 using Xunit;
 

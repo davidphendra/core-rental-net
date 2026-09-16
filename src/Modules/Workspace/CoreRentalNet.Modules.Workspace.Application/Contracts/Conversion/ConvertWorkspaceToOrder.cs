@@ -1,7 +1,6 @@
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
+using CoreRentalNet.Modules.Workspace.Application.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Contracts.Conversion;

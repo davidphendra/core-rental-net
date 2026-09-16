@@ -1,8 +1,7 @@
 using CoreRentalNet.BuildingBlocks.Application;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
+using CoreRentalNet.Modules.Workspace.Application.Services;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
-using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
+using CoreRentalNet.Modules.Workspace.Application.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.UnitTests;

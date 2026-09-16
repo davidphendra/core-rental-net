@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text.Json;
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
+using CoreRentalNet.Modules.Workspace.Application.Rules;
+using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
 
 namespace CoreRentalNet.ArchitectureTests;
@@ -35,7 +37,7 @@ public sealed class CommittedConfigurationTests
     }
 
     [Fact] // MON-06
-    public void The_configured_culture_is_the_one_whose_money_this_application_charges()
+    public void The_configured_culture_is_the_one_whose_money_this_application_settles_in()
     {
         using var document = JsonDocument.Parse(File.ReadAllText(
             RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "appsettings.json")));
@@ -53,6 +55,11 @@ public sealed class CommittedConfigurationTests
         // that ties the two together - that the locale this application is configured with is the
         // one whose money it charges. Configure en-US and it is the only thing that fails: every page
         // still renders, every money unit test still passes, and every amount is simply dollars.
+        // The currency an amount is stated in is the amount's own (Money.Currency, read from the
+        // catalog); the culture only decides how that amount is written. The two are kept in step on
+        // purpose: the catalog must state the settlement currency (a product priced in another one is
+        // refused at load), and en-ID is the culture that writes that currency the way Denpasar reads
+        // it. This test is the assertion that the two halves describe the same money.
         region.ISOCurrencySymbol.Should().Be(
             Currencies.Idr,
             $"the configured culture is '{name}', and its region uses {region.ISOCurrencySymbol}");
@@ -121,6 +128,25 @@ public sealed class CommittedConfigurationTests
 
         ignore.Should().Contain("appsettings.Local.json",
             "otherwise the exclusion below would quietly become a hole");
+    }
+
+    [Fact] // SLOT-05
+    public void The_committed_slot_capacities_are_the_shipped_defaults()
+    {
+        // The table moves to configuration, so a committed number and the code's default can drift
+        // apart: both still work, and what an operator reads stops being what the application ships.
+        using var document = JsonDocument.Parse(File.ReadAllText(
+            RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "appsettings.json")));
+
+        var configured = document.RootElement.GetProperty("Workspace").GetProperty("SlotCapacity");
+        var defaults = new WorkspaceSlotSettings();
+
+        foreach (var slot in Enum.GetValues<SlotId>())
+        {
+            configured.GetProperty(slot.ToString()).GetInt32().Should().Be(
+                defaults.CapacityFor(slot),
+                $"the committed {slot} capacity and the shipped default have drifted apart");
+        }
     }
 
     private static IEnumerable<string> ConfigurationFiles()

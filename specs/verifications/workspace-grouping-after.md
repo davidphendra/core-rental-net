@@ -22,8 +22,12 @@ Per-bucket NONBROWSER (481) and BROWSER (103/1) gate: green at each close.
 
 ## Final layout
 
+Updated after the later flattening that removed the `Workspace/` grouping (see
+`workspace-folder-flatten-after.md`):
+
 ```
 CoreRentalNet.Modules.Workspace.Application/
+├─ Commands/<Operation>/   5 × { message, I…, Handler }
 ├─ Contracts/
 │   ├─ Composition/   IDefineWorkspaceComposition, DefineWorkspaceComposition,
 │   │                 WorkspaceComposition, WorkspaceCompositionLine
@@ -36,15 +40,15 @@ CoreRentalNet.Modules.Workspace.Application/
 │   │                      IWorkspaceViewService, WorkspaceViewService
 │   └─ Views/              WorkspaceView, WorkspaceQuote, QuoteLine,
 │                          AssignableSlot, AssignableItem
-└─ Workspace/
-    ├─ Commands/<Operation>/  5 × { message, I…, Handler }
-    ├─ Services/              IWorkspaceService, WorkspaceService
-    ├─ Rules/                 ISlotRuleProvider, SlotRuleProvider, CatalogSlotMapping
-    └─ Support/               DeliveryAddressNormalizer, WorkspaceResolver
+├─ Rules/                  ISlotRuleProvider, SlotRuleProvider, WorkspaceSlotSettings,
+│                          CatalogSlotMapping
+├─ Services/               IWorkspaceService, WorkspaceService
+└─ Support/                DeliveryAddressNormalizer, WorkspaceResolver
 ```
 
-`Commands/` and `Catalog/` no longer exist as top-level folders; `CatalogSlotMapping` is in
-`Workspace/Rules/`. Every namespace now matches its folder.
+The `Workspace/` grouping no longer exists: its four children (`Commands/`, `Rules/`,
+`Services/`, `Support/`) now sit directly under the Application folder. Every namespace matches its
+folder, and `CatalogSlotMapping` is in `Rules/`.
 
 ## Scope of the change
 

@@ -8,7 +8,7 @@ using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
 /// <summary>
-/// Invoicing, now enforced by <see cref="Application.Invoicing.IInvoiceService"/> against a plain
+/// Invoicing, now enforced by <see cref="Application.Services.IInvoiceService"/> against a plain
 /// record. Amounts and messages are unchanged.
 /// </summary>
 public sealed class InvoiceTests

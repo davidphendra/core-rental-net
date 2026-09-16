@@ -20,6 +20,9 @@ internal class ProductJsonRecord
     [JsonPropertyName("pricePerMonth")]
     public decimal PricePerMonth { get; set; }
 
+    [JsonPropertyName("currency")]
+    public string? Currency { get; set; }
+
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 

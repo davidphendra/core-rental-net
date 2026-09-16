@@ -1,6 +1,6 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Application.Checkout;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
 using Xunit;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;

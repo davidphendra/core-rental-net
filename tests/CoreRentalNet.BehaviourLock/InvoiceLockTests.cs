@@ -1,8 +1,8 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Application.Invoicing;
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
+using CoreRentalNet.Modules.Rentals.Application.Services;
+using CoreRentalNet.Modules.Rentals.Application.Rules;
 using Xunit;
 using Invoice = CoreRentalNet.Modules.Rentals.Domain.Invoices.Invoice;
 using Rental = CoreRentalNet.Modules.Rentals.Domain.Rentals.Rental;

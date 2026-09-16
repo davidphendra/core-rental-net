@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Domain;
 using CoreRentalNet.Modules.Catalog.Infrastructure.Loader;
@@ -26,6 +27,16 @@ public sealed class CatalogRecordMapperTests
         product.MonthlyPrice.Amount.Should().Be(800000m);
         product.MonthlyPrice.Currency.Should().Be("IDR");
     }
+
+    [Fact] // CAT-52
+    public void A_price_without_a_currency_is_stated_in_the_settlement_currency()
+        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "description": "A desk.", "image": "/images/desk.svg" }]""")
+            .MonthlyPrice.Currency.Should().Be(Currencies.Idr);
+
+    [Fact] // CAT-52
+    public void A_currency_is_read_and_normalised()
+        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "currency": "idr", "description": "A desk.", "image": "/images/desk.svg" }]""")
+            .MonthlyPrice.Currency.Should().Be(Currencies.Idr);
 
     [Fact] // CAT-52
     public void A_field_written_in_a_different_case_is_still_read()

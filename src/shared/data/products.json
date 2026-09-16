@@ -4,6 +4,7 @@
     "name": "Seminyak Lounge",
     "category": "chair",
     "pricePerMonth": 400000,
+    "currency": "IDR",
     "description": "Seminyak Lounge: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-seminyak-lounge.svg"
@@ -13,6 +14,7 @@
     "name": "Jimbaran High-Back",
     "category": "chair",
     "pricePerMonth": 650000,
+    "currency": "IDR",
     "description": "Jimbaran High-Back: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-jimbaran-high-back.svg"
@@ -22,6 +24,7 @@
     "name": "Sanur Mesh",
     "category": "chair",
     "pricePerMonth": 500000,
+    "currency": "IDR",
     "description": "Sanur Mesh: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-sanur-mesh.svg"
@@ -31,6 +34,7 @@
     "name": "Nusa Dua Executive",
     "category": "chair",
     "pricePerMonth": 450000,
+    "currency": "IDR",
     "description": "Nusa Dua Executive: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-nusa-dua-executive.svg"
@@ -40,6 +44,7 @@
     "name": "Ubud Recline",
     "category": "chair",
     "pricePerMonth": 600000,
+    "currency": "IDR",
     "description": "Ubud Recline: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-ubud-recline.svg"
@@ -49,6 +54,7 @@
     "name": "Bingin Draft",
     "category": "chair",
     "pricePerMonth": 750000,
+    "currency": "IDR",
     "description": "Bingin Draft: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-bingin-draft.svg"
@@ -59,6 +65,7 @@
     "category": "chair",
     "subCategory": null,
     "pricePerMonth": 600000,
+    "currency": "IDR",
     "description": "Premium black ergonomic task chair with headrest. Built for long coding sessions.",
     "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAL1X4LeQqM58AEA417piC29Bo082Rq3vt0dnBCgetkEQSr4AFtNRdji1Bl4FLNnQnxKDBURZyQor1m9EYvlQ7rPNw2bV67NV9y6ngGjh5bVUmAvT3u-Y3KVSq2AWoCd1lJ9N6BK8_eRWI5oaRweuNqMNP_6zFF0Eraf3cv1pc5YcQo6W9yfZbBXqucJ58Rt3-_6yjsuV6BxHc4NQHuM2AAdI7WumWlCcaK-dc2wKUwUX4j4NoAnO2JGA",
     "badge": "popular"
@@ -68,6 +75,7 @@
     "name": "Kuta Flex",
     "category": "chair",
     "pricePerMonth": 550000,
+    "currency": "IDR",
     "description": "Kuta Flex: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-kuta-flex.svg"
@@ -77,6 +85,7 @@
     "name": "Amed Gaming",
     "category": "chair",
     "pricePerMonth": 700000,
+    "currency": "IDR",
     "description": "Amed Gaming: ergonomic support for deep-work sessions.",
     "subCategory": null,
     "image": "/placeholders/chair-amed-gaming.svg"
@@ -87,6 +96,7 @@
     "category": "chair",
     "subCategory": null,
     "pricePerMonth": 450000,
+    "currency": "IDR",
     "description": "Light gray mesh ergonomic chair. Clean, modern, island-cafe approved.",
     "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBBwHPiawlGW3969dKW5o0XTGnhWLB7SwZJ1dya2tRUgjUU4aJ57EsoC07NsBbECvVj-A89woj0Z4N4KP6MsUv6P_tniwCxhkludiVF1furDdZHeHwnPAj6ThoyWccd5LnFpPNYQH-ECtHmwM9bZDxSJ0KRfTOEiCKql5T_MUOfhh7MvV2neUNSSqUjZTPBbdHNldnhg5bJNETbvOcBADObdhNzdVWWPkDGp7Y60N8A28SLf_WwO-rMZg"
   },
@@ -95,6 +105,7 @@
     "name": "Canggu Bamboo",
     "category": "desk",
     "pricePerMonth": 800000,
+    "currency": "IDR",
     "description": "Canggu Bamboo: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-canggu-bamboo.svg"
@@ -104,6 +115,7 @@
     "name": "Ubud Solid Teak",
     "category": "desk",
     "pricePerMonth": 700000,
+    "currency": "IDR",
     "description": "Ubud Solid Teak: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-ubud-solid-teak.svg"
@@ -113,6 +125,7 @@
     "name": "Kerobokan Sit-Stand",
     "category": "desk",
     "pricePerMonth": 900000,
+    "currency": "IDR",
     "description": "Kerobokan Sit-Stand: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-kerobokan-sit-stand.svg"
@@ -122,6 +135,7 @@
     "name": "Sanur Writing",
     "category": "desk",
     "pricePerMonth": 1400000,
+    "currency": "IDR",
     "description": "Sanur Writing: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-sanur-writing.svg"
@@ -131,6 +145,7 @@
     "name": "Denpasar Heavy-Duty",
     "category": "desk",
     "pricePerMonth": 1200000,
+    "currency": "IDR",
     "description": "Denpasar Heavy-Duty: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-denpasar-heavy-duty.svg"
@@ -140,6 +155,7 @@
     "name": "Berawa Corner",
     "category": "desk",
     "pricePerMonth": 1100000,
+    "currency": "IDR",
     "description": "Berawa Corner: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-berawa-corner.svg"
@@ -149,6 +165,7 @@
     "name": "Pererenan Minimal",
     "category": "desk",
     "pricePerMonth": 1000000,
+    "currency": "IDR",
     "description": "Pererenan Minimal: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-pererenan-minimal.svg"
@@ -158,6 +175,7 @@
     "name": "Uluwatu Compact",
     "category": "desk",
     "pricePerMonth": 1300000,
+    "currency": "IDR",
     "description": "Uluwatu Compact: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-uluwatu-compact.svg"
@@ -167,6 +185,7 @@
     "name": "Jimbaran Executive",
     "category": "desk",
     "pricePerMonth": 1500000,
+    "currency": "IDR",
     "description": "Jimbaran Executive: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-jimbaran-executive.svg"
@@ -176,6 +195,7 @@
     "name": "Seminyak Standing",
     "category": "desk",
     "pricePerMonth": 600000,
+    "currency": "IDR",
     "description": "Seminyak Standing: a sturdy, island-tested work surface.",
     "subCategory": null,
     "image": "/placeholders/desk-seminyak-standing.svg"
@@ -185,6 +205,7 @@
     "name": "Seminyak Floor Seat",
     "category": "accessory",
     "pricePerMonth": 350000,
+    "currency": "IDR",
     "description": "Seminyak Floor Seat: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-seminyak-floor-seat.svg"
@@ -194,6 +215,7 @@
     "name": "Zero-Gravity Lounger",
     "category": "accessory",
     "pricePerMonth": 325000,
+    "currency": "IDR",
     "description": "Zero-Gravity Lounger: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-zero-gravity-lounger.svg"
@@ -203,6 +225,7 @@
     "name": "Pouf Ottoman",
     "category": "accessory",
     "pricePerMonth": 250000,
+    "currency": "IDR",
     "description": "Pouf Ottoman: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-pouf-ottoman.svg"
@@ -212,6 +235,7 @@
     "name": "Pererenan Lounger",
     "category": "accessory",
     "pricePerMonth": 425000,
+    "currency": "IDR",
     "description": "Pererenan Lounger: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-pererenan-lounger.svg"
@@ -221,6 +245,7 @@
     "name": "Canggu Bean Pod",
     "category": "accessory",
     "pricePerMonth": 400000,
+    "currency": "IDR",
     "description": "Canggu Bean Pod: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-canggu-bean-pod.svg"
@@ -230,6 +255,7 @@
     "name": "Berawa Sofa Sack",
     "category": "accessory",
     "pricePerMonth": 450000,
+    "currency": "IDR",
     "description": "Berawa Sofa Sack: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-berawa-sofa-sack.svg"
@@ -239,6 +265,7 @@
     "name": "Ubud Cushion Lounge",
     "category": "accessory",
     "pricePerMonth": 375000,
+    "currency": "IDR",
     "description": "Ubud Cushion Lounge: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-ubud-cushion-lounge.svg"
@@ -249,6 +276,7 @@
     "category": "accessory",
     "subCategory": "beanbag",
     "pricePerMonth": 350000,
+    "currency": "IDR",
     "description": "Perfect for brainstorming or a quick creative break away from the desk.",
     "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDTzT4Tf58tkbo6X7I2a_aF5XrHlXm7pV5GAMydtstbloGCCC5_LoXb0tmuXW4wxWFYp-K9r_DSFRd1FhGZfwlTIYs9u_Sjj1mFpCjduawANJZfqSIyG6At13g6nueBMlme0wHSmw-E-EfohvvNKC2bxhS5hjAytlxV74b3eU4-sS57APj0jGatARBLneuXhfgqykyMcCtzQkWzlSZRG8qSUB5-oQ8bepiLtS2v0uGGLiAqRSWf3aYV7A"
   },
@@ -257,6 +285,7 @@
     "name": "Hammock Seat",
     "category": "accessory",
     "pricePerMonth": 275000,
+    "currency": "IDR",
     "description": "Hammock Seat: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-hammock-seat.svg"
@@ -266,6 +295,7 @@
     "name": "Floor Cushion Set",
     "category": "accessory",
     "pricePerMonth": 300000,
+    "currency": "IDR",
     "description": "Floor Cushion Set: the relax-zone essential.",
     "subCategory": "beanbag",
     "image": "/placeholders/accessory-floor-cushion-set.svg"
@@ -275,6 +305,7 @@
     "name": "Berawa Espresso Duo",
     "category": "accessory",
     "pricePerMonth": 800000,
+    "currency": "IDR",
     "description": "Berawa Espresso Duo: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-berawa-espresso-duo.svg"
@@ -284,6 +315,7 @@
     "name": "Seminyak Cold Drip",
     "category": "accessory",
     "pricePerMonth": 600000,
+    "currency": "IDR",
     "description": "Seminyak Cold Drip: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-seminyak-cold-drip.svg"
@@ -294,6 +326,7 @@
     "category": "accessory",
     "subCategory": "coffee",
     "pricePerMonth": 750000,
+    "currency": "IDR",
     "description": "Premium bean-to-cup machine. Keep your energy up for those long coding sessions.",
     "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuATDymSt-AcHwZo3PpW0B2MasVp31eN2xETL6HE47QwVmUWSdXfr-qebhbti1geNj2S4aMEcJMq27UHmxy529UDQVfz-wvP1qG47iXhoRJ6JE94YTqOytJXeiNu-RpHVidaOks0Rqec_ZG3bxs_cCkz1LHDRGPAbPPeM5S-gX5Pn2iRmP6ALD028fqVXigofgft6xjAXAJH1dkI1xqBho3iv1Yh5a72Xhq1BLbi-2Nrx9Miaguq30crjA"
   },
@@ -302,6 +335,7 @@
     "name": "Ubud French Press",
     "category": "accessory",
     "pricePerMonth": 650000,
+    "currency": "IDR",
     "description": "Ubud French Press: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-ubud-french-press.svg"
@@ -311,6 +345,7 @@
     "name": "Pour-Over Kit",
     "category": "accessory",
     "pricePerMonth": 400000,
+    "currency": "IDR",
     "description": "Pour-Over Kit: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-pour-over-kit.svg"
@@ -320,6 +355,7 @@
     "name": "Cold Brew Tower",
     "category": "accessory",
     "pricePerMonth": 500000,
+    "currency": "IDR",
     "description": "Cold Brew Tower: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-cold-brew-tower.svg"
@@ -329,6 +365,7 @@
     "name": "Moka Pot Set",
     "category": "accessory",
     "pricePerMonth": 450000,
+    "currency": "IDR",
     "description": "Moka Pot Set: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-moka-pot-set.svg"
@@ -338,6 +375,7 @@
     "name": "Canggu Siphon",
     "category": "accessory",
     "pricePerMonth": 700000,
+    "currency": "IDR",
     "description": "Canggu Siphon: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-canggu-siphon.svg"
@@ -347,6 +385,7 @@
     "name": "Kerobokan Drip Bar",
     "category": "accessory",
     "pricePerMonth": 750000,
+    "currency": "IDR",
     "description": "Kerobokan Drip Bar: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-kerobokan-drip-bar.svg"
@@ -356,6 +395,7 @@
     "name": "Barista Bundle",
     "category": "accessory",
     "pricePerMonth": 550000,
+    "currency": "IDR",
     "description": "Barista Bundle: keep the caffeine pipeline flowing.",
     "subCategory": "coffee",
     "image": "/placeholders/accessory-barista-bundle.svg"
@@ -365,6 +405,7 @@
     "name": "Pererenan Clip Light",
     "category": "accessory",
     "pricePerMonth": 180000,
+    "currency": "IDR",
     "description": "Pererenan Clip Light: soft, adjustable light for late sessions.",
     "subCategory": "lamp",
     "image": "/placeholders/accessory-pererenan-clip-light.svg"
@@ -374,6 +415,7 @@
     "name": "Jimbaran Floor Lamp",
     "category": "accessory",
     "pricePerMonth": 200000,
+    "currency": "IDR",
     "description": "Jimbaran Floor Lamp: soft, adjustable light for late sessions.",
     "subCategory": "lamp",
     "image": "/placeholders/accessory-jimbaran-floor-lamp.svg"
@@ -383,6 +425,7 @@
     "name": "Seminyak Architect",
     "category": "accessory",
     "pricePerMonth": 140000,
+    "currency": "IDR",
     "description": "Seminyak Architect: soft, adjustable light for late sessions.",
     "subCategory": "lamp",
     "image": "/placeholders/accessory-seminyak-architect.svg"
@@ -392,6 +435,7 @@
     "name": "Canggu Desk Lamp",
     "category": "accessory",
     "pricePerMonth": 100000,
+    "currency": "IDR",
     "description": "Canggu Desk Lamp: soft, adjustable light for late sessions.",
     "subCategory": "lamp",
     "image": "/placeholders/accessory-canggu-desk-lamp.svg"
@@ -401,6 +445,7 @@
     "name": "Ubud Warm Glow",
     "category": "accessory",
     "pricePerMonth": 120000,
+    "currency": "IDR",
     "description": "Ubud Warm Glow: soft, adjustable light for late sessions.",
     "subCategory": "lamp",
     "image": "/placeholders/accessory-ubud-warm-glow.svg"
@@ -410,6 +455,7 @@
     "name": "Berawa LED Bar",
     "category": "accessory",
     "pricePerMonth": 160000,
+    "currency": "IDR",
     "description": "Berawa LED Bar: soft, adjustable light for late sessions.",
     "subCategory": "lamp",
     "image": "/placeholders/accessory-berawa-led-bar.svg"
@@ -419,6 +465,7 @@
     "name": "Nusa Dua 27\" Touch",
     "category": "accessory",
     "pricePerMonth": 475000,
+    "currency": "IDR",
     "description": "Nusa Dua 27\" Touch: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-nusa-dua-27-touch.svg"
@@ -428,6 +475,7 @@
     "name": "Seminyak 32\" UHD",
     "category": "accessory",
     "pricePerMonth": 350000,
+    "currency": "IDR",
     "description": "Seminyak 32\" UHD: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-seminyak-32-uhd.svg"
@@ -437,6 +485,7 @@
     "name": "Batu Bolong 27\" 4K",
     "category": "accessory",
     "pricePerMonth": 300000,
+    "currency": "IDR",
     "description": "Batu Bolong 27\" 4K: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-batu-bolong-27-4k.svg"
@@ -446,6 +495,7 @@
     "name": "Canggu Portable 15.6\"",
     "category": "accessory",
     "pricePerMonth": 375000,
+    "currency": "IDR",
     "description": "Canggu Portable 15.6\": crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-canggu-portable-15-6.svg"
@@ -455,6 +505,7 @@
     "name": "Berawa 24\" QHD",
     "category": "accessory",
     "pricePerMonth": 325000,
+    "currency": "IDR",
     "description": "Berawa 24\" QHD: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-berawa-24-qhd.svg"
@@ -464,6 +515,7 @@
     "name": "Ubud 34\" Ultrawide",
     "category": "accessory",
     "pricePerMonth": 400000,
+    "currency": "IDR",
     "description": "Ubud 34\" Ultrawide: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-ubud-34-ultrawide.svg"
@@ -473,6 +525,7 @@
     "name": "Pererenan 27\" 144Hz",
     "category": "accessory",
     "pricePerMonth": 425000,
+    "currency": "IDR",
     "description": "Pererenan 27\" 144Hz: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-pererenan-27-144hz.svg"
@@ -482,6 +535,7 @@
     "name": "Kuta 22\" FHD",
     "category": "accessory",
     "pricePerMonth": 450000,
+    "currency": "IDR",
     "description": "Kuta 22\" FHD: crisp pixels for code and creative work.",
     "subCategory": "monitor",
     "image": "/placeholders/accessory-kuta-22-fhd.svg"
@@ -492,6 +546,7 @@
     "category": "accessory",
     "subCategory": "plant",
     "pricePerMonth": 200000,
+    "currency": "IDR",
     "description": "Breathe fresh island air into your setup. Low maintenance, high vibes.",
     "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBNM8NClz_4yWCUaLWIxUl0VPsSwgzpS59SzMt0oeaXq5pGtVdSkC_qDItbd-HAgqnVyUtLH-m5VqKPqRAtEPISuAm251n7PkVt1ryhwJ4Dj0EJ6poWJpX0frBBEqDW0sliyEsIJFl8ceIC7iFvn10G_cBFqr5urj_3NK1nKDh6C89ACSPSxxwk26WN_eqbSgCqurzJo5NuHocB4Gi30a1MnfutsimRiply4I4hnqATq-QtK8lgaJzBuQ",
     "badge": "popular"
@@ -501,6 +556,7 @@
     "name": "ZZ Plant",
     "category": "accessory",
     "pricePerMonth": 160000,
+    "currency": "IDR",
     "description": "ZZ Plant: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-zz-plant.svg"
@@ -510,6 +566,7 @@
     "name": "Rubber Tree",
     "category": "accessory",
     "pricePerMonth": 140000,
+    "currency": "IDR",
     "description": "Rubber Tree: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-rubber-tree.svg"
@@ -519,6 +576,7 @@
     "name": "Peace Lily",
     "category": "accessory",
     "pricePerMonth": 220000,
+    "currency": "IDR",
     "description": "Peace Lily: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-peace-lily.svg"
@@ -528,6 +586,7 @@
     "name": "Bamboo Stalk",
     "category": "accessory",
     "pricePerMonth": 180000,
+    "currency": "IDR",
     "description": "Bamboo Stalk: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-bamboo-stalk.svg"
@@ -537,6 +596,7 @@
     "name": "Snake Plant",
     "category": "accessory",
     "pricePerMonth": 100000,
+    "currency": "IDR",
     "description": "Snake Plant: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-snake-plant.svg"
@@ -546,6 +606,7 @@
     "name": "Fiddle Leaf Fig",
     "category": "accessory",
     "pricePerMonth": 200000,
+    "currency": "IDR",
     "description": "Fiddle Leaf Fig: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-fiddle-leaf-fig.svg"
@@ -555,6 +616,7 @@
     "name": "Palm Areca",
     "category": "accessory",
     "pricePerMonth": 120000,
+    "currency": "IDR",
     "description": "Palm Areca: living greenery that survives (almost) anything.",
     "subCategory": "plant",
     "image": "/placeholders/accessory-palm-areca.svg"

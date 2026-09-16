@@ -55,6 +55,14 @@ public sealed class ProductRuleTests
         => Refuses(Row(image: "   "), "no image");
 
     [Fact]
+    public void An_unknown_currency_is_refused_and_named()
+        => Refuses(Row(currency: "RUPIAH"), "unknown currency 'RUPIAH'");
+
+    [Fact]
+    public void A_price_in_another_currency_is_refused()
+        => Refuses(Row(currency: "USD"), "priced in USD");
+
+    [Fact]
     public void Duplicate_skus_are_refused_whatever_their_case()
     {
         using var file = new TemporaryCatalogFile($"[{Row(sku: "AAA0001", category: "chair")},{Row(sku: "aaa0001", category: "chair")}]");
@@ -79,6 +87,7 @@ public sealed class ProductRuleTests
         string category = "desk",
         string? subCategory = null,
         decimal price = 800000m,
+        string? currency = null,
         string description = "A desk.",
         string image = "/images/desk.svg",
         string? badge = null)
@@ -96,6 +105,11 @@ public sealed class ProductRuleTests
         if (subCategory is not null)
         {
             fields.Add($"\"subCategory\": {Text(subCategory)}");
+        }
+
+        if (currency is not null)
+        {
+            fields.Add($"\"currency\": {Text(currency)}");
         }
 
         if (badge is not null)
