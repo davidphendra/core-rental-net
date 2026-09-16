@@ -23,7 +23,7 @@ stories:
     title: Only an entitled machine reads the catalog
     bcps: 5
     risk: P0
-    status: failing
+    status: passing
   - id: e01s03
     slug: catalog-call-logging
     title: Every catalog call is attributable

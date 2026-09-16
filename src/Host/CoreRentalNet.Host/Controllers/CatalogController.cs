@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 
 namespace CoreRentalNet.Host.Controllers;
@@ -28,6 +29,6 @@ public static class CatalogController
             return binding.Query is null
                 ? Results.BadRequest(binding.Error)
                 : Results.Ok(catalog.Handle(binding.Query));
-        });
+        }).RequireAuthorization(CatalogApiPolicy.Name);
     }
 }

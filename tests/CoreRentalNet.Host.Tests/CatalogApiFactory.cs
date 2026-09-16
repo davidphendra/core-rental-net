@@ -22,7 +22,11 @@ public sealed class CatalogApiFactory : WebApplicationFactory<Program>
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.UseEnvironment("Development");
+        // Not Development: that environment loads appsettings.Local.json last, so a machine whose
+        // local settings hold real Auth0 credentials would configure identity and answer every
+        // request 401. The suite must run the application hermetically, not the way one laptop is
+        // configured - the same reason the browser suite runs its guest host with identity off.
+        builder.UseEnvironment("Testing");
         builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(
         [
             new KeyValuePair<string, string?>("Auth0:Enabled", "false"),

@@ -16,6 +16,7 @@
          is referenced directly because the session policy is applied on that handler. -->
     <PackageReference Include="Auth0.AspNetCore.Authentication" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <!-- An access token is read for its permissions, so its token type is a direct dependency. -->
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
   </ItemGroup>

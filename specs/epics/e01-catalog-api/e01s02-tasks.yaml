@@ -1,13 +1,13 @@
 story_id: e01s02
 title: Only an entitled machine reads the catalog
-status: failing
+status: passing
 bcps: 5
 tasks:
   - id: 1
     description: "Add Microsoft.AspNetCore.Authentication.JwtBearer [OK] (pinned) to the Host project"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["auth", "packages"]
@@ -15,7 +15,7 @@ tasks:
     description: "Add CatalogApiRegistration: JWT bearer from the existing Auth0 authority/audience plus the catalog-api policy (same CatalogReadRequirement), scheme added only when identity is configured"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["auth", "Security Review"]
@@ -23,7 +23,7 @@ tasks:
     description: "Require the catalog-api policy on the endpoint"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["auth", "Security Review"]
@@ -31,7 +31,7 @@ tasks:
     description: "Call the registration from Program.cs beside AddCatalogAuthorization"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["auth", "wiring"]
@@ -39,7 +39,7 @@ tasks:
     description: "Unit tests for the policy wiring: bearer scheme present exactly when identity is configured (CatalogApiPolicyTests)"
     verify: "dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter \"FullyQualifiedName~CatalogApiPolicyTests\""
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["auth", "unit"]
@@ -47,7 +47,7 @@ tasks:
     description: "In-process HTTP tests API-08 to API-11 with a test authentication scheme (CatalogApiAuthorizationTests)"
     verify: "dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter \"FullyQualifiedName~CatalogApiAuthorizationTests\""
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["auth", "integration", "Security Review"]
@@ -55,7 +55,7 @@ tasks:
     description: "Re-run the three baselines; confirm the E2E authentication flow is unchanged"
     verify: "dotnet test CoreRentalNet.sln --filter \"FullyQualifiedName!~CoreRentalNet.E2E\" --nologo"
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["baselines", "auth"]

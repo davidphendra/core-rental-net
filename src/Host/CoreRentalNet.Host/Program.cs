@@ -14,6 +14,8 @@ builder.AddBuildingBlocks();
 
 var identity = builder.AddOptionalIdentity();
 builder.AddCatalogAuthorization();
+builder.AddCatalogApiAuthentication(identity);
+builder.AddCatalogApiAuthorization(identity);
 builder.AddPresentation();
 
 builder.AddSqliteDatabase();
