@@ -14,9 +14,15 @@ draft into a rental order.
 |---|---|
 | Write side | `AssignProduct`, `RemoveAssignment`, `ChangeQuantity`, `SetDeliveryAddress`, `StartDraft`, `Checkout`, `ConvertWorkspaceToOrder`. Each one is a command record plus a handler. |
 | Write rules | Slot capacity, single-unit replacement, address bounds (5–200 characters), the terminal state of a converted draft, the demonstration confirmation gate, catalog re-pricing at checkout, one rental per workspace. |
-| Read side | `GetWorkspace`, `GetWorkspaceQuote`, `GetRentalByToken`, `GetInvoicesByToken`, `GetFeaturedProducts`, `GetProductBySku`, `SearchCatalog`. Each returns a view record. |
+| Read side | `GetWorkspace`, `GetWorkspaceQuote`, `GetRentalByToken`, `GetInvoicesByToken`, `GetFeaturedProducts`, `GetProductBySku`, `SearchCatalog`. Each returns a view record. `SearchCatalog` is also served over HTTP, to a machine caller. |
 | Store | One SQLite file, three `DbContext`s, one per module. |
-| Consumer | The Blazor circuit, through `IWorkspaceSession` and the module handlers. |
+| Consumer | The Blazor circuit, through `IWorkspaceSession` and the module handlers; and, for the catalogue only, a machine caller over `GET /api/catalog` (epic e01), entitled by the same `read:catalog` claim presented on a bearer token. |
+
+The catalogue gained a second delivery channel in epic e01: `GET /api/catalog` answers the same
+`SearchCatalogQuery` with the same `ProductView`, over HTTP, for a machine caller. A delivery channel
+is not a model — the level stays **L1**, no second read model was introduced, and the endpoint reuses
+the module's published query and view unchanged. It is recorded here because the read side's
+consumers are no longer only the Blazor circuit.
 
 The measured pain, in one sentence: **the write handlers return the read view**. `AssignProductHandler`,
 `RemoveAssignmentHandler`, `ChangeQuantityHandler`, `SetDeliveryAddressHandler` and
@@ -129,6 +135,13 @@ Blazor component
   -> IWorkspaceResolver -> IWorkspaceRepository.FindByTokenAsync
   -> IWorkspaceViewService.Build -> WorkspaceView          [projection]
   -> rendered
+
+READ PATH (catalogue, machine caller — the application's only HTTP surface)
+Machine caller (an agent)
+  -> GET /api/catalog?category=&subCategory=&search=       [endpoint, bearer-entitled]
+  -> CatalogApiParameters.Bind -> SearchCatalogQuery        [the module's own query]
+  -> ISearchCatalogHandler -> IProductCatalog.Search
+  -> ProductView[]  as JSON                                 [the module's published view]
 ```
 
 Boundaries:

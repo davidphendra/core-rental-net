@@ -25,9 +25,9 @@ internal static class AuthorizationRegistration
     /// The same requirement, for a machine caller.
     /// </summary>
     /// <remarks>
-    /// The bearer scheme is named only where one is registered: a policy that names a scheme nobody
-    /// registered throws when authorization runs, and with no provider the requirement opens the
-    /// catalogue by itself, exactly as it does for the pages.
+    /// The bearer scheme is named only where one is registered, which is wherever there is a provider:
+    /// a policy that names a scheme nobody registered throws when authorization runs. With no provider
+    /// the requirement opens the catalogue by itself, exactly as it does for the pages.
     /// </remarks>
     public static void AddCatalogApiAuthorization(this WebApplicationBuilder builder, IdentitySettings identity)
     {

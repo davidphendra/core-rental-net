@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.Host.Composition;
 using CoreRentalNet.Host.Infrastructure;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -55,28 +56,59 @@ public sealed class CatalogApiPolicyTests
         CatalogPolicy.Name.Should().NotBe(CatalogApiPolicy.Name);
     }
 
+    [Fact] // API-10
+    public async Task With_a_provider_and_an_audience_the_bearer_scheme_is_registered_and_bound_to_the_api()
+    {
+        using var services = Composition(withProvider: true);
+
+        var scheme = await services.GetRequiredService<IAuthenticationSchemeProvider>()
+            .GetSchemeAsync(JwtBearerDefaults.AuthenticationScheme);
+
+        scheme.Should().NotBeNull("the API policy names it, so it has to exist");
+
+        var options = services.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme);
+
+        options.Authority.Should().Be("https://tenant.example/");
+        options.Audience.Should().Be(
+            "https://api.example",
+            "without an audience a token minted for another API would be accepted");
+    }
+
+    [Fact] // API-11
+    public async Task A_provider_with_no_audience_still_challenges_with_the_bearer_scheme_and_requires_an_audience()
+    {
+        using var services = Composition(withProvider: true, withAudience: false);
+
+        var scheme = await services.GetRequiredService<IAuthenticationSchemeProvider>()
+            .GetSchemeAsync(JwtBearerDefaults.AuthenticationScheme);
+
+        scheme.Should().NotBeNull(
+            "a machine caller must be refused by the bearer scheme, not redirected to a sign-in page");
+
+        var options = services.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+            .Get(JwtBearerDefaults.AuthenticationScheme);
+
+        options.Audience.Should().BeNull();
+        options.TokenValidationParameters.RequireAudience.Should().BeTrue(
+            "a token whose audience was never named must be refused, not accepted on its issuer alone");
+    }
+
     private static AuthorizationPolicy Policy(IServiceProvider services)
         => services.GetRequiredService<IOptions<AuthorizationOptions>>().Value.GetPolicy(CatalogApiPolicy.Name)!;
 
-    private static ServiceProvider Composition(bool withProvider)
+    private static ServiceProvider Composition(bool withProvider, bool withAudience = true)
     {
-        var settings = withProvider
-            ? new Dictionary<string, string?>
-            {
-                ["Auth0:Enabled"] = "true",
-                ["Auth0:Domain"] = "tenant.example",
-                ["Auth0:ClientId"] = "client",
-                ["Auth0:ClientSecret"] = "secret",
-                ["Auth0:Audience"] = "https://api.example",
-                ["Authorization:CatalogRead:ClaimType"] = "permissions",
-                ["Authorization:CatalogRead:ClaimValue"] = "read:catalog",
-            }
-            : new Dictionary<string, string?>
-            {
-                ["Auth0:Enabled"] = "false",
-                ["Authorization:CatalogRead:ClaimType"] = "permissions",
-                ["Authorization:CatalogRead:ClaimValue"] = "read:catalog",
-            };
+        var settings = new Dictionary<string, string?>
+        {
+            ["Auth0:Enabled"] = withProvider ? "true" : "false",
+            ["Auth0:Domain"] = withProvider ? "tenant.example" : null,
+            ["Auth0:ClientId"] = withProvider ? "client" : null,
+            ["Auth0:ClientSecret"] = withProvider ? "secret" : null,
+            ["Auth0:Audience"] = withProvider && withAudience ? "https://api.example" : null,
+            ["Authorization:CatalogRead:ClaimType"] = "permissions",
+            ["Authorization:CatalogRead:ClaimValue"] = "read:catalog",
+        };
 
         var builder = WebApplication.CreateBuilder();
         builder.Configuration.AddInMemoryCollection(settings);
