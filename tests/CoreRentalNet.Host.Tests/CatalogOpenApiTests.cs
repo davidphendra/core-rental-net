@@ -107,6 +107,53 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
         schemes.Should().Equal(["Auth0"], "the endpoint must point at the scheme the document declares");
     }
 
+    [Fact] // API-18
+    public async Task Only_the_gated_operation_requires_the_scheme()
+    {
+        using var document = await GetDocumentAsync();
+
+        var paths = document.RootElement.GetProperty("paths");
+
+        paths.GetProperty("/api/catalog").GetProperty("get").TryGetProperty("security", out _).Should().BeTrue();
+
+        // The account routes are not gated, and declaring a token requirement on a sign-in would
+        // describe a flow that cannot happen.
+        foreach (var ungated in new[] { "/account/login", "/account/logout" })
+        {
+            paths.TryGetProperty(ungated, out var path).Should().BeTrue();
+
+            foreach (var operation in path.EnumerateObject())
+            {
+                operation.Value.TryGetProperty("security", out _).Should().BeFalse($"'{ungated}' is not gated");
+            }
+        }
+    }
+
+    [Fact] // API-18
+    public async Task The_requirement_is_the_permission_the_gate_checks()
+    {
+        using var document = await GetDocumentAsync();
+
+        var scopes = document.RootElement
+            .GetProperty("paths").GetProperty("/api/catalog").GetProperty("get").GetProperty("security")
+            .EnumerateArray()
+            .SelectMany(requirement => requirement.GetProperty("Auth0").EnumerateArray())
+            .Select(scope => scope.GetString())
+            .ToArray();
+
+        // A generated client would be made to ask for the login's scopes if this were identity.Scope.
+        scopes.Should().Equal("read:catalog");
+
+        // And every scope the flow offers says what it is; the specification asks for a description.
+        foreach (var scope in document.RootElement
+            .GetProperty("components").GetProperty("securitySchemes").GetProperty("Auth0")
+            .GetProperty("flows").GetProperty("authorizationCode").GetProperty("scopes")
+            .EnumerateObject())
+        {
+            scope.Value.GetString().Should().NotBeNullOrWhiteSpace($"scope '{scope.Name}' has no description");
+        }
+    }
+
     private async Task<JsonDocument> GetDocumentAsync()
     {
         var response = await factory.CreateClient().GetAsync("/openapi/v1.json");

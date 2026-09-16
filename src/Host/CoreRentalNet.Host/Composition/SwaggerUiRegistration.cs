@@ -38,6 +38,11 @@ internal static class SwaggerUiRegistration
         {
             options.RoutePrefix = RoutePrefix;
 
+            // The document this application actually serves. Swashbuckle's default points at
+            // v1/swagger.json, which MapOpenApi does not publish, and a page with no document shows no
+            // operations at all - which is exactly what it did until this line existed.
+            options.SwaggerEndpoint(DocumentationPath.Document, "CoreRentalNet");
+
             // The badge fetches a third party, which the policy forbids and the application has no use
             // for; asking for it to be drawn would only paint a broken image. Null is how swagger-ui
             // disables validation.

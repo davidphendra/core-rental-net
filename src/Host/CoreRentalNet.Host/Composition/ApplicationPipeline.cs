@@ -62,7 +62,7 @@ internal static class ApplicationPipeline
             return;
         }
 
-        app.MapOpenApi();
+        app.MapOpenApi(DocumentationPath.Document);
         SwaggerUiRegistration.MapSwaggerUi(app);
     }
 

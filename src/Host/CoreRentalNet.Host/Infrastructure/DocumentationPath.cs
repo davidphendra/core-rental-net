@@ -15,4 +15,15 @@ internal static class DocumentationPath
 
     /// <summary>The same path as a request path, as the middleware matches it.</summary>
     public const string RequestPath = "/swagger";
+
+    /// <summary>
+    /// The document the application publishes, and the address the page must be pointed at.
+    /// </summary>
+    /// <remarks>
+    /// Swashbuckle's page defaults to <c>v1/swagger.json</c>, which this application does not serve -
+    /// its document comes from <c>MapOpenApi</c>, at this address. Left unset, the page loads and shows
+    /// no operations at all, which looks like a working page until somebody reads it. Named once here
+    /// and used by both, so the two cannot disagree.
+    /// </remarks>
+    public const string Document = "/openapi/v1.json";
 }

@@ -89,3 +89,17 @@ before concluding the flow is broken: the page reflects whatever `Auth0:*` says.
   forbids; leaving it on would only draw a broken image.
 - The redirect address is deliberately not configured: swashbuckle's own `index.js` defaults it to
   `oauth2-redirect.html` beside the page, so it is right on any host and port.
+
+## Correction, after the independent review
+
+Two of this record's claims were wrong, and the way they were wrong is the point:
+
+- **The page did not work.** It was never told which document to load, so it fetched swashbuckle's
+  default `v1/swagger.json` — which this application does not serve. Measured: **404**. The page
+  rendered and showed no operations. Every check in this record passed anyway, because they verified
+  that things *served* rather than that the page could *read* them.
+- **The Authorize button could not have completed.** The relaxed policy kept `connect-src 'self'`, and
+  the authorization-code exchange is a fetch from the browser to the provider's token endpoint.
+
+Both are fixed, with a browser test that fails when the fix is removed. See
+`swagger-ui-review-response.md`.

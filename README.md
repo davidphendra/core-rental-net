@@ -52,7 +52,10 @@ application behaves exactly as described above. To turn it on against your own A
 
 1. In the Auth0 dashboard, create an application of type **Regular Web Application**.
 2. Register these URLs (the port is pinned, so they stay valid). Both are required.
-   - **Allowed Callback URLs:** `http://localhost:5199/account/callback`
+   - **Allowed Callback URLs:** `http://localhost:5199/account/callback`, and
+     `http://localhost:5199/swagger/oauth2-redirect.html` if you want to try the catalogue endpoint
+     from the documentation page — the provider matches a callback exactly, so a missing entry fails
+     the flow after the redirect with nothing said on the page.
    - **Allowed Logout URLs:** `http://localhost:5199/` — the application root, because sign-out
      hands the provider that address to return to rather than a route of ours.
      This one is at **Account Settings → Advanced → Allowed Logout URLs**, which is a *tenant*
@@ -77,6 +80,20 @@ application behaves exactly as described above. To turn it on against your own A
    permission the login asks for — a per-app authorization policy issues a permission only when the
    login requested it. Neither is set in `appsettings.json`, so a deployment with no API signs in
    exactly as it did before.
+
+   The same three values drive the development documentation page at `/swagger`, which authorizes
+   with the same client and asks for the same scopes. One thing is worth knowing about PKCE: the
+   provider documents it for clients that cannot hold a secret — single-page and native applications —
+   while a regular web application is a confidential client, so a tenant that refuses the exchange
+   without a secret for it needs a public client for that page alone:
+
+   ```json
+   {
+     "Swagger": { "ClientId": "your-public-client-id" }
+   }
+   ```
+
+   Naming one changes nothing about the sign-in, and the page uses `Auth0:ClientId` when it is unset.
 
    `appsettings.Development.json` stays as the tracked, empty template, and **the local file is
    read in development only** — a deployed environment ignores it entirely, so a stray copy cannot

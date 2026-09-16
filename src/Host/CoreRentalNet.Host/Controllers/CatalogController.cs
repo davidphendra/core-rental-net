@@ -21,7 +21,7 @@ public static class CatalogController
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        endpoints.MapGet("/api/catalog", (
+        endpoints.MapGet(CatalogRoutes.Catalogue, (
             HttpContext context,
             string? category,
             string? subCategory,

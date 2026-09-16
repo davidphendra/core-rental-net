@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Presentation;
 using Microsoft.AspNetCore.Hosting;
 
 namespace CoreRentalNet.Host.Infrastructure;
@@ -26,7 +27,10 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// no status code shows that; the suite proved the circuit survives it before the header was flipped.
 /// </para>
 /// </remarks>
-public sealed class SecurityHeadersMiddleware(RequestDelegate next, IWebHostEnvironment environment)
+public sealed class SecurityHeadersMiddleware(
+    RequestDelegate next,
+    IWebHostEnvironment environment,
+    IdentitySettings identity)
 {
     /// <summary>The policy is enforced; the browser refuses what the policy does not admit.</summary>
     private const string HeaderName = "Content-Security-Policy";
@@ -40,28 +44,6 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next, IWebHostEnvi
         "form-action 'self'; " +
         "script-src 'self'; " +
         "style-src 'self'; " +
-        "img-src 'self' data:; " +
-        "font-src 'self'; " +
-        "connect-src 'self'; " +
-        "upgrade-insecure-requests";
-
-    /// <summary>
-    /// The policy the development documentation pages are served under, and why it must differ.
-    /// </summary>
-    /// <remarks>
-    /// swagger-ui builds its page from an inline script and inline styles, which the policy above
-    /// refuses - it would render blank, which is the failure mode this whole middleware exists to
-    /// avoid mistaking for a working page. The exception is deliberately narrow: only swagger's own
-    /// paths, and only in development. Everything else about the policy is unchanged, framing included.
-    /// </remarks>
-    internal const string DocumentationContentSecurityPolicy =
-        "default-src 'self'; " +
-        "base-uri 'self'; " +
-        "object-src 'none'; " +
-        "frame-ancestors 'none'; " +
-        "form-action 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
-        "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data:; " +
         "font-src 'self'; " +
         "connect-src 'self'; " +
@@ -91,11 +73,50 @@ public sealed class SecurityHeadersMiddleware(RequestDelegate next, IWebHostEnvi
     }
 
     /// <summary>
-    /// The strict policy, except for the development documentation pages, which cannot be built under it.
+    /// The strict policy, except for the development documentation pages, which cannot work under it.
     /// </summary>
     private string Policy(HttpContext context)
+        => IsDocumentation(context) ? DocumentationPolicy() : ContentSecurityPolicy;
+
+    private bool IsDocumentation(HttpContext context)
         => environment.IsDevelopment()
-           && context.Request.Path.StartsWithSegments(DocumentationPath.RequestPath, StringComparison.OrdinalIgnoreCase)
-            ? DocumentationContentSecurityPolicy
-            : ContentSecurityPolicy;
+           && context.Request.Path.StartsWithSegments(DocumentationPath.RequestPath, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The policy the documentation page is served under, derived from the strict one rather than
+    /// written beside it.
+    /// </summary>
+    /// <remarks>
+    /// It differs in exactly two ways, and both are forced. swagger-ui builds its page from an inline
+    /// script and inline styles, which the strict policy refuses - the page then renders blank, which is
+    /// the failure this middleware exists to make visible rather than to create. And the
+    /// authorization-code exchange is a fetch from the browser to the provider's token endpoint, which
+    /// <c>connect-src</c> governs and refuses, so the flow would fail after the redirect. Deriving the
+    /// exception by substitution means a directive added to the strict policy cannot be forgotten here.
+    /// Framing, <c>object-src</c>, <c>base-uri</c> and <c>form-action</c> are untouched.
+    /// </remarks>
+    private string DocumentationPolicy()
+    {
+        var policy = ContentSecurityPolicy
+            .Replace("script-src 'self'", "script-src 'self' 'unsafe-inline'", StringComparison.Ordinal)
+            .Replace("style-src 'self'", "style-src 'self' 'unsafe-inline'", StringComparison.Ordinal);
+
+        return ProviderOrigin is { } origin
+            ? policy.Replace("connect-src 'self'", $"connect-src 'self' {origin}", StringComparison.Ordinal)
+            : policy;
+    }
+
+    /// <summary>The provider the page must reach to exchange its code, when the deployment names one.</summary>
+    private string? ProviderOrigin
+    {
+        get
+        {
+            var authority = identity.Authority
+                ?? (identity.Domain is { Length: > 0 } domain ? $"https://{domain}" : null);
+
+            return authority is not null && Uri.TryCreate(authority, UriKind.Absolute, out var uri)
+                ? uri.GetLeftPart(UriPartial.Authority)
+                : null;
+        }
+    }
 }

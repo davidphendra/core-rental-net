@@ -34,20 +34,7 @@ public sealed class CatalogOpenApiFactory : WebApplicationFactory<Program>
         ]));
 
         builder.ConfigureTestServices(services =>
-        {
-            var identity = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Auth0:Enabled"] = "true",
-                    ["Auth0:Domain"] = "tenant.example",
-                    ["Auth0:ClientId"] = "swagger-client",
-                    ["Auth0:Audience"] = "https://catalogue.example",
-                    ["Auth0:Scope"] = "openid profile email read:catalog",
-                })
-                .Build();
-
-            services.AddSingleton(IdentitySettings.From(identity));
-        });
+            services.AddSingleton(SwaggerTestSetup.Identity()));
     }
 
     protected override void Dispose(bool disposing)

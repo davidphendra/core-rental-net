@@ -12,13 +12,12 @@ public sealed class SwaggerClientTests(SwaggerClientFactory factory) : IClassFix
     [Fact] // API-15
     public async Task Naming_a_client_for_the_page_leaves_the_sign_in_client_alone()
     {
-        var script = await factory.CreateClient().GetStringAsync("/swagger/index.js");
+        var config = await SwaggerTestSetup.InjectedConfigAsync(factory.CreateClient(), "oauthConfigObject");
 
-        var marker = "var oauthConfigObject = JSON.parse('";
-        var start = script.IndexOf(marker, StringComparison.Ordinal) + marker.Length;
-        var config = script[start..script.IndexOf("')", start, StringComparison.Ordinal)];
+        config.GetProperty("clientId").GetString().Should().Be("public-client");
 
-        config.Should().Contain("public-client");
-        config.Should().NotContain("sign-in-client");
+        config.GetRawText().Should().NotContain(
+            SwaggerClientFactory.SignInClient,
+            "the page authorizes with its own client; the sign-in client is not on it");
     }
 }

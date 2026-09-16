@@ -19,6 +19,9 @@ public sealed class SwaggerClientFactory : WebApplicationFactory<Program>
 {
     private const string SwaggerClient = "public-client";
 
+    /// <summary>The client the application signs people in with, which the page must not use.</summary>
+    public const string SignInClient = "sign-in-client";
+
     private readonly string _database =
         Path.Combine(Path.GetTempPath(), $"core-rental-swagger-{Guid.NewGuid():N}.db");
 
@@ -34,20 +37,7 @@ public sealed class SwaggerClientFactory : WebApplicationFactory<Program>
         ]));
 
         builder.ConfigureTestServices(services =>
-        {
-            var identity = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Auth0:Enabled"] = "true",
-                    ["Auth0:Domain"] = "tenant.example",
-                    ["Auth0:ClientId"] = "sign-in-client",
-                    ["Auth0:Audience"] = "https://catalogue.example",
-                    ["Auth0:Scope"] = "openid profile email read:catalog",
-                })
-                .Build();
-
-            services.AddSingleton(IdentitySettings.From(identity));
-        });
+            services.AddSingleton(SwaggerTestSetup.Identity(clientId: SignInClient)));
     }
 
     protected override void Dispose(bool disposing)

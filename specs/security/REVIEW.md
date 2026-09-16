@@ -68,3 +68,36 @@ Development now serves an OpenAPI document at `/openapi/v1.json`. Assessed:
 
 No new finding; the assessment stands.
 
+## Addendum — the documentation page's policy exception (`fix-review`)
+
+The third change to the posture, and the largest: `/swagger` is served in development under a policy
+that admits swagger-ui's inline script and styles, and that lets the browser reach the provider's
+token endpoint.
+
+**Scope.** Development only, and only for paths under `/swagger` — a case-insensitive prefix match, so
+`/swaggerz` is not covered. `base-uri`, `object-src`, `frame-ancestors`, `form-action`, `default-src`,
+`img-src` and `font-src` are byte-identical to the strict policy. The exception is *derived* from the
+strict policy by substitution, so a directive added to one cannot be forgotten in the other, and a test
+asserts the exact set of directives that differ.
+
+**Why it cannot be narrower.** Two allowances are forced. swagger-ui builds its page from an inline
+script carrying its configuration and from inline styles, so without `'unsafe-inline'` the page renders
+blank — the failure this middleware exists to make visible. And the authorization-code exchange is a
+fetch from the browser to the provider's token endpoint, which `connect-src` governs; without the
+provider's origin the flow fails after the redirect. The origin is taken from the same
+`IdentitySettings` the token URL comes from.
+
+**Alternative considered and rejected.** swashbuckle lets the page be replaced
+(`SwaggerUIOptions.IndexStream`), so a per-response nonce could be threaded from the middleware into
+the generated page and named in `script-src`, avoiding `'unsafe-inline'`. Rejected: it moves a nonce
+through two components for a development-only page, it must be recomputed per response, and it would
+still need `connect-src` widened for the exchange — so it removes one word from one directive and adds
+machinery to the request path. Recorded here rather than left implicit.
+
+**Residual risk.** `'unsafe-inline'` applies to every response under the prefix, including the
+application's own 404 for `/swagger/<anything>`. The relaxation is bound to the Development environment
+and not to the request's host, so a development host bound to a non-loopback interface (`--urls
+http://+:5199`) would serve it — with the configured client id and audience on the page. Both are
+public values rather than secrets, and the guard is the same one that maps the page; the mitigation, if
+it is ever wanted, is to relax only for loopback requests.
+
