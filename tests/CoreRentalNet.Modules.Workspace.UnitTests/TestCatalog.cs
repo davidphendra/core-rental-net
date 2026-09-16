@@ -3,10 +3,12 @@ using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Modules.Workspace.UnitTests;
 
-/// <summary>A hand-written price source. No mocking library is used anywhere in this project.</summary>
-internal sealed class TestCatalog : IDefineProductPrices
+/// <summary>A hand-written read source. No mocking library is used anywhere in this project.</summary>
+internal sealed class TestCatalog : IProductCatalog
 {
-    private readonly Dictionary<string, ProductPriceView> views = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ProductView> views = new(StringComparer.OrdinalIgnoreCase);
+
+    public IReadOnlyList<ProductView> All => views.Values.ToArray();
 
     public TestCatalog Add(
         string sku,
@@ -16,14 +18,16 @@ internal sealed class TestCatalog : IDefineProductPrices
         string? name = null,
         bool imageAvailable = true)
     {
-        views[sku] = new ProductPriceView(
+        views[sku] = new ProductView(
             sku.ToUpperInvariant(),
             name ?? $"Product {sku.ToUpperInvariant()}",
             category,
             subCategory,
-            Money.Idr(monthlyPrice),
+            new Money(monthlyPrice, Currencies.Idr),
+            "A description.",
             "/images/test.svg",
-            imageAvailable);
+            imageAvailable,
+            false);
 
         return this;
     }
@@ -34,8 +38,22 @@ internal sealed class TestCatalog : IDefineProductPrices
         return this;
     }
 
-    public ProductPriceView? FindPrice(string sku)
+    public ProductView? Find(string sku)
         => views.TryGetValue(sku, out var view) ? view : null;
 
-    public IReadOnlyList<ProductPriceView> AllPrices() => views.Values.ToArray();
+    public IReadOnlyList<ProductView> ByCategory(CatalogCategory category)
+        => views.Values.Where(view => view.Category == category).ToArray();
+
+    public IReadOnlyList<ProductView> BySubCategory(CatalogSubCategory subCategory)
+        => views.Values.Where(view => view.SubCategory == subCategory).ToArray();
+
+    public IReadOnlyList<ProductView> Featured()
+        => views.Values.Where(view => view.IsFeatured).ToArray();
+
+    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory, string? search)
+        => views.Values
+            .Where(view => (category is null || view.Category == category)
+                && (subCategory is null || view.SubCategory == subCategory)
+                && (string.IsNullOrWhiteSpace(search) || view.Name.Contains(search, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
 }

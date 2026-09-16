@@ -33,9 +33,12 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
 
-        var view = await handler.HandleAsync(new AssignProduct(context.Token, "cfe0001"));
+        await handler.HandleAsync(new AssignProductCommand(context.Token, "cfe0001"));
+
+        var view = await new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views)
+            .HandleAsync(new GetWorkspaceQuery(context.Token));
 
         context.Queries.AssignmentsFor(workspace, SlotId.CoffeeStation).Single().Sku.Should().Be("CFE0001");
         view.Slots.Single(slot => slot.Slot == SlotId.CoffeeStation).IsFilled.Should().BeTrue();
@@ -46,9 +49,9 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
 
-        var action = async () => await handler.HandleAsync(new AssignProduct(context.Token, "XXX0000"));
+        var action = async () => await handler.HandleAsync(new AssignProductCommand(context.Token, "XXX0000"));
 
         await action.Should().ThrowAsync<DomainRuleViolationException>();
     }
@@ -57,9 +60,9 @@ public sealed class WorkspaceCommandTests
     public async Task A_command_against_an_unknown_draft_reports_not_found()
     {
         var context = NewContext();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
 
-        var action = async () => await handler.HandleAsync(new AssignProduct(context.Token, "CHA0001"));
+        var action = async () => await handler.HandleAsync(new AssignProductCommand(context.Token, "CHA0001"));
 
         await action.Should().ThrowAsync<NotFoundException>();
     }
@@ -69,11 +72,11 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
 
-        await handler.HandleAsync(new AssignProduct(context.Token, "MON0001", 3));
+        await handler.HandleAsync(new AssignProductCommand(context.Token, "MON0001", 3));
 
-        var action = async () => await handler.HandleAsync(new AssignProduct(context.Token, "MON0001"));
+        var action = async () => await handler.HandleAsync(new AssignProductCommand(context.Token, "MON0001"));
 
         await action.Should().ThrowAsync<DomainRuleViolationException>();
     }
@@ -83,9 +86,9 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var handler = new RemoveAssignmentHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views);
+        var handler = new RemoveAssignmentHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces);
 
-        await handler.HandleAsync(new RemoveAssignment(context.Token, SlotId.Plant));
+        await handler.HandleAsync(new RemoveAssignmentCommand(context.Token, SlotId.Plant));
 
         context.Repository.SaveCount.Should().Be(0);
     }
@@ -95,11 +98,14 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views)
-            .HandleAsync(new AssignProduct(context.Token, "PLT0001"));
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+            .HandleAsync(new AssignProductCommand(context.Token, "PLT0001"));
 
-        var view = await new RemoveAssignmentHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views)
-            .HandleAsync(new RemoveAssignment(context.Token, SlotId.Plant));
+        await new RemoveAssignmentHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
+            .HandleAsync(new RemoveAssignmentCommand(context.Token, SlotId.Plant));
+
+        var view = await new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views)
+            .HandleAsync(new GetWorkspaceQuery(context.Token));
 
         context.Queries.AssignmentsFor(workspace, SlotId.Plant).Should().BeEmpty();
         view.IsEmpty.Should().BeTrue();
@@ -111,11 +117,11 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views)
-            .HandleAsync(new AssignProduct(context.Token, "MON0001", 2));
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+            .HandleAsync(new AssignProductCommand(context.Token, "MON0001", 2));
 
-        await new ChangeQuantityHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views)
-            .HandleAsync(new ChangeQuantity(context.Token, SlotId.Monitor, "MON0001", 0));
+        await new ChangeQuantityHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
+            .HandleAsync(new ChangeQuantityCommand(context.Token, SlotId.Monitor, "MON0001", 0));
 
         context.Queries.AssignmentsFor(workspace, SlotId.Monitor).Should().BeEmpty();
     }
@@ -125,11 +131,11 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views)
-            .HandleAsync(new AssignProduct(context.Token, "MON0001"));
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+            .HandleAsync(new AssignProductCommand(context.Token, "MON0001"));
 
-        await new ChangeQuantityHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views)
-            .HandleAsync(new ChangeQuantity(context.Token, SlotId.Monitor, "MON0001", 3));
+        await new ChangeQuantityHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
+            .HandleAsync(new ChangeQuantityCommand(context.Token, SlotId.Monitor, "MON0001", 3));
 
         context.Queries.AssignmentsFor(workspace, SlotId.Monitor).Single().Quantity.Should().Be(3);
     }
@@ -139,10 +145,10 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        var handler = new SetDeliveryAddressHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views);
+        var handler = new SetDeliveryAddressHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces);
 
-        await handler.HandleAsync(new SetDeliveryAddress(context.Token, "Villa Lotus, Canggu"));
-        await handler.HandleAsync(new SetDeliveryAddress(context.Token, "Villa Lotus, Canggu, Bali"));
+        await handler.HandleAsync(new SetDeliveryAddressCommand(context.Token, "Villa Lotus, Canggu"));
+        await handler.HandleAsync(new SetDeliveryAddressCommand(context.Token, "Villa Lotus, Canggu, Bali"));
 
         context.Repository.SaveCount.Should().Be(2);
         workspace.DeliveryAddress.Should().Be("Villa Lotus, Canggu, Bali");
@@ -153,23 +159,23 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views);
+        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
         var read = new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views);
 
-        (await read.HandleAsync(new GetWorkspace(context.Token))).CanCheckout.Should().BeFalse();
+        (await read.HandleAsync(new GetWorkspaceQuery(context.Token))).CanCheckout.Should().BeFalse();
 
-        await assign.HandleAsync(new AssignProduct(context.Token, "CHA0001"));
+        await assign.HandleAsync(new AssignProductCommand(context.Token, "CHA0001"));
 
-        var chaired = await read.HandleAsync(new GetWorkspace(context.Token));
+        var chaired = await read.HandleAsync(new GetWorkspaceQuery(context.Token));
 
         // A chair on its own is not a workspace: the desk is missing, and the view says which slot
         // it is rather than leaving the customer to guess why the way out is shut.
         chaired.CanCheckout.Should().BeFalse();
         chaired.BlockingReason.Should().Contain("desk");
 
-        await assign.HandleAsync(new AssignProduct(context.Token, "DSK0001"));
+        await assign.HandleAsync(new AssignProductCommand(context.Token, "DSK0001"));
 
-        var view = await read.HandleAsync(new GetWorkspace(context.Token));
+        var view = await read.HandleAsync(new GetWorkspaceQuery(context.Token));
 
         view.CanCheckout.Should().BeTrue();
         view.BlockingReason.Should().BeNull();
@@ -182,11 +188,11 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces, context.Views)
-            .HandleAsync(new AssignProduct(context.Token, "DSK0001"));
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+            .HandleAsync(new AssignProductCommand(context.Token, "DSK0001"));
 
         var quote = await new GetWorkspaceQuoteHandler(context.Repository, WorkspaceTestContext.Tokens, context.Quotes)
-            .HandleAsync(new GetWorkspaceQuote(context.Token));
+            .HandleAsync(new GetWorkspaceQuoteQuery(context.Token));
 
         quote.MonthlySubtotal.Amount.Should().Be(800000m);
     }

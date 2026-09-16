@@ -52,15 +52,15 @@ CoreRentalNet.Modules.Workspace.Application/
 │   └─ Conversion/                 IConvertWorkspaceToOrder, ConvertWorkspaceToOrder,
 │                                  WorkspaceConversion
 ├─ Queries/                        read path
-│   ├─ GetWorkspace/               GetWorkspace, IGetWorkspace, GetWorkspaceHandler
-│   ├─ GetWorkspaceQuote/          GetWorkspaceQuote, IGetWorkspaceQuote, GetWorkspaceQuoteHandler
+│   ├─ GetWorkspace/               GetWorkspaceQuery, IGetWorkspaceHandler, GetWorkspaceHandler
+│   ├─ GetWorkspaceQuote/          GetWorkspaceQuoteQuery, IGetWorkspaceQuoteHandler, GetWorkspaceQuoteHandler
 │   ├─ Services/                   IWorkspaceQueryService, WorkspaceQueryService,
 │   │                              IWorkspaceQuoteService, WorkspaceQuoteService,
 │   │                              IWorkspaceViewService, WorkspaceViewService
 │   └─ Views/                      WorkspaceView, WorkspaceQuote, QuoteLine,
 │                                  AssignableSlot, AssignableItem
 └─ Workspace/                      write path and rules
-    ├─ Commands/<Operation>/       5 × { message, I…, Handler }
+    ├─ Commands/<Operation>/       5 × { <Operation>Command, I<Operation>Handler, <Operation>Handler }
     ├─ Services/                   IWorkspaceService, WorkspaceService
     ├─ Rules/                      ISlotRuleProvider, SlotRuleProvider, CatalogSlotMapping
     └─ Support/                    DeliveryAddressNormalizer, WorkspaceResolver
@@ -72,19 +72,19 @@ The whole move, class by class:
 |---|---|---|
 | `IConvertWorkspaceToOrder`, `ConvertWorkspaceToOrder`, `WorkspaceConversion` | `Contracts/Conversion/` | cross-module conversion contract |
 | `IDefineWorkspaceComposition`, `DefineWorkspaceComposition`, `WorkspaceComposition`, `WorkspaceCompositionLine` | `Contracts/Composition/` | cross-module read-of-a-draft contract |
-| `GetWorkspace`, `IGetWorkspace`, `GetWorkspaceHandler` | `Queries/GetWorkspace/` | read path |
-| `GetWorkspaceQuote`, `IGetWorkspaceQuote`, `GetWorkspaceQuoteHandler` | `Queries/GetWorkspaceQuote/` | read path |
+| `GetWorkspaceQuery`, `IGetWorkspaceHandler`, `GetWorkspaceHandler` | `Queries/GetWorkspace/` | read path |
+| `GetWorkspaceQuoteQuery`, `IGetWorkspaceQuoteHandler`, `GetWorkspaceQuoteHandler` | `Queries/GetWorkspaceQuote/` | read path |
 | `IWorkspaceQueryService`, `WorkspaceQueryService` | `Queries/Services/` | read path |
 | `IWorkspaceQuoteService`, `WorkspaceQuoteService` | `Queries/Services/` | read path |
 | `IWorkspaceViewService`, `WorkspaceViewService` | `Queries/Services/` | read path |
 | `WorkspaceView` | `Queries/Views/` | read model |
 | `WorkspaceQuote`, `QuoteLine` | `Queries/Views/` | read model |
 | `AssignableSlot`, `AssignableItem` | `Queries/Views/` | read model |
-| `AssignProduct` + `IAssignProduct` + `AssignProductHandler` | `Workspace/Commands/AssignProduct/` | write path |
-| `ChangeQuantity` + `IChangeQuantity` + `ChangeQuantityHandler` | `Workspace/Commands/ChangeQuantity/` | write path |
-| `RemoveAssignment` + `IRemoveAssignment` + `RemoveAssignmentHandler` | `Workspace/Commands/RemoveAssignment/` | write path |
-| `SetDeliveryAddress` + `ISetDeliveryAddress` + `SetDeliveryAddressHandler` | `Workspace/Commands/SetDeliveryAddress/` | write path |
-| `StartDraft` + `IStartDraft` + `StartDraftHandler` | `Workspace/Commands/StartDraft/` | write path |
+| `AssignProductCommand` + `IAssignProductHandler` + `AssignProductHandler` | `Workspace/Commands/AssignProduct/` | write path |
+| `ChangeQuantityCommand` + `IChangeQuantityHandler` + `ChangeQuantityHandler` | `Workspace/Commands/ChangeQuantity/` | write path |
+| `RemoveAssignmentCommand` + `IRemoveAssignmentHandler` + `RemoveAssignmentHandler` | `Workspace/Commands/RemoveAssignment/` | write path |
+| `SetDeliveryAddressCommand` + `ISetDeliveryAddressHandler` + `SetDeliveryAddressHandler` | `Workspace/Commands/SetDeliveryAddress/` | write path |
+| `StartDraftCommand` + `IStartDraftHandler` + `StartDraftHandler` | `Workspace/Commands/StartDraft/` | write path |
 | `IWorkspaceService`, `WorkspaceService` | `Workspace/Services/` | write path |
 | `ISlotRuleProvider`, `SlotRuleProvider` | `Workspace/Rules/` | slot table (a write rule) |
 | `CatalogSlotMapping` (was `Catalog/`) | `Workspace/Rules/` | maps a catalog category to a slot id |
@@ -140,10 +140,10 @@ BROWSER    = dotnet test tests/CoreRentalNet.E2E --configuration Release --no-bu
 
 **Stage 1 — the read side (`Queries/`)**
 
-1. Create `Queries/GetWorkspace/` and move `GetWorkspace.cs`, `IGetWorkspace.cs`,
+1. Create `Queries/GetWorkspace/` and move `GetWorkspaceQuery.cs`, `IGetWorkspaceHandler.cs`,
    `GetWorkspaceHandler.cs` into it; rewrite the three `namespace` lines and every `using` that
    names them → verify: `BUILD`.
-2. Same for `Queries/GetWorkspaceQuote/` (`GetWorkspaceQuote.cs`, `IGetWorkspaceQuote.cs`,
+2. Same for `Queries/GetWorkspaceQuote/` (`GetWorkspaceQuoteQuery.cs`, `IGetWorkspaceQuoteHandler.cs`,
    `GetWorkspaceQuoteHandler.cs`) → verify: `BUILD`.
 3. Create `Queries/Views/`, move `WorkspaceView.cs`, `WorkspaceQuote.cs`, `QuoteLine.cs`,
    `AssignableSlot.cs`, `AssignableItem.cs`; update namespaces and usings → verify: `BUILD`.

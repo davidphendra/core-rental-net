@@ -8,7 +8,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// <remarks>
 /// This is the only place the UI translates a slot into geometry, and it translates it into a
 /// class name, not into coordinates. The classes are the design's own, copied from its markup,
-/// which places the seven positions absolutely instead of laying them out (ADR-0008).
+/// which places the seven positions absolutely instead of laying them out.
 /// </remarks>
 public static class SlotCss
 {

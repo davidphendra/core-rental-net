@@ -6,7 +6,7 @@ namespace CoreRentalNet.E2E;
 
 /// <summary>
 /// The local identity provider is for the browser suite and nothing else, and it says so by
-/// refusing to boot rather than by a convention (ADR-0020).
+/// refusing to boot rather than by a convention.
 /// </summary>
 public sealed class LocalProviderGuardTests
 {

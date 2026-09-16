@@ -1,8 +1,11 @@
-using CoreRentalNet.Modules.Rentals.Domain;
 using Microsoft.EntityFrameworkCore;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Persistence;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.Infrastructure;
 
+/// <summary>The EF Core adapter behind <see cref="Domain.Persistence.IInvoiceRepository"/>.</summary>
 public sealed class InvoiceRepository(RentalsContext context) : IInvoiceRepository
 {
     public async Task<IReadOnlyList<Invoice>> ListForRentalAsync(RentalId rentalId, CancellationToken cancellationToken = default)

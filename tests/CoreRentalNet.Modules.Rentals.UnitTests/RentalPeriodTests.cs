@@ -1,10 +1,13 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Domain;
 using Xunit;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
+/// <summary>
+/// Anchor period arithmetic, now in <see cref="Application.Rentals.RenewalPolicyService"/> and
+/// <see cref="Application.Rentals.DeliveryPolicyService"/>.
+/// </summary>
 public sealed class RentalPeriodTests
 {
     [Fact] // SC-07
@@ -12,14 +15,14 @@ public sealed class RentalPeriodTests
     {
         var anchor = new DateOnly(2026, 1, 31);
 
-        RentalPeriod.For(anchor, 0).Start.Should().Be(new DateOnly(2026, 1, 31));
-        RentalPeriod.For(anchor, 0).EndExclusive.Should().Be(new DateOnly(2026, 2, 28));
-        RentalPeriod.For(anchor, 1).Start.Should().Be(new DateOnly(2026, 2, 28));
-        RentalPeriod.For(anchor, 1).EndExclusive.Should().Be(new DateOnly(2026, 3, 31));
-        RentalPeriod.For(anchor, 2).Start.Should().Be(new DateOnly(2026, 3, 31));
-        RentalPeriod.For(anchor, 2).EndExclusive.Should().Be(new DateOnly(2026, 4, 30));
-        RentalPeriod.For(anchor, 3).Start.Should().Be(new DateOnly(2026, 4, 30));
-        RentalPeriod.For(anchor, 3).EndExclusive.Should().Be(new DateOnly(2026, 5, 31));
+        RentalsTestGraph.Renewals.For(anchor, 0).Start.Should().Be(new DateOnly(2026, 1, 31));
+        RentalsTestGraph.Renewals.For(anchor, 0).EndExclusive.Should().Be(new DateOnly(2026, 2, 28));
+        RentalsTestGraph.Renewals.For(anchor, 1).Start.Should().Be(new DateOnly(2026, 2, 28));
+        RentalsTestGraph.Renewals.For(anchor, 1).EndExclusive.Should().Be(new DateOnly(2026, 3, 31));
+        RentalsTestGraph.Renewals.For(anchor, 2).Start.Should().Be(new DateOnly(2026, 3, 31));
+        RentalsTestGraph.Renewals.For(anchor, 2).EndExclusive.Should().Be(new DateOnly(2026, 4, 30));
+        RentalsTestGraph.Renewals.For(anchor, 3).Start.Should().Be(new DateOnly(2026, 4, 30));
+        RentalsTestGraph.Renewals.For(anchor, 3).EndExclusive.Should().Be(new DateOnly(2026, 5, 31));
     }
 
     [Fact] // SC-08
@@ -27,7 +30,7 @@ public sealed class RentalPeriodTests
     {
         var anchor = new DateOnly(2026, 1, 31);
 
-        var starts = Enumerable.Range(0, 12).Select(index => RentalPeriod.For(anchor, index).Start).ToArray();
+        var starts = Enumerable.Range(0, 12).Select(index => RentalsTestGraph.Renewals.For(anchor, index).Start).ToArray();
 
         starts.Should().Contain(new DateOnly(2026, 1, 31));
         starts.Should().Contain(new DateOnly(2026, 3, 31));
@@ -40,7 +43,7 @@ public sealed class RentalPeriodTests
         // Every period starts where the previous one ended: no gap, no overlap.
         for (var index = 1; index < starts.Length; index++)
         {
-            starts[index].Should().Be(RentalPeriod.For(anchor, index - 1).EndExclusive);
+            starts[index].Should().Be(RentalsTestGraph.Renewals.For(anchor, index - 1).EndExclusive);
         }
     }
 
@@ -49,13 +52,13 @@ public sealed class RentalPeriodTests
     {
         var anchor = new DateOnly(2028, 1, 31);
 
-        RentalPeriod.For(anchor, 1).Start.Should().Be(new DateOnly(2028, 2, 29), "2028 is a leap year");
+        RentalsTestGraph.Renewals.For(anchor, 1).Start.Should().Be(new DateOnly(2028, 2, 29), "2028 is a leap year");
     }
 
     [Fact]
     public void A_period_contains_its_first_day_but_not_its_last()
     {
-        var period = RentalPeriod.For(new DateOnly(2026, 1, 10), 0);
+        var period = RentalsTestGraph.Renewals.For(new DateOnly(2026, 1, 10), 0);
 
         period.Contains(new DateOnly(2026, 1, 10)).Should().BeTrue();
         period.Contains(new DateOnly(2026, 2, 9)).Should().BeTrue();
@@ -69,16 +72,16 @@ public sealed class RentalPeriodTests
     {
         var anchor = new DateOnly(2026, 1, 10);
 
-        RenewalPolicy.PeriodIndexContaining(anchor, new DateOnly(2026, 1, 10)).Should().Be(0);
-        RenewalPolicy.PeriodIndexContaining(anchor, new DateOnly(2026, 2, 9)).Should().Be(0);
-        RenewalPolicy.PeriodIndexContaining(anchor, new DateOnly(2026, 2, 10)).Should().Be(1);
-        RenewalPolicy.PeriodIndexContaining(anchor, new DateOnly(2026, 4, 15)).Should().Be(3);
+        RentalsTestGraph.Renewals.PeriodIndexContaining(anchor, new DateOnly(2026, 1, 10)).Should().Be(0);
+        RentalsTestGraph.Renewals.PeriodIndexContaining(anchor, new DateOnly(2026, 2, 9)).Should().Be(0);
+        RentalsTestGraph.Renewals.PeriodIndexContaining(anchor, new DateOnly(2026, 2, 10)).Should().Be(1);
+        RentalsTestGraph.Renewals.PeriodIndexContaining(anchor, new DateOnly(2026, 4, 15)).Should().Be(3);
     }
 
     [Fact]
     public void A_date_before_the_anchor_is_refused()
     {
-        var action = () => RenewalPolicy.PeriodIndexContaining(new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 9));
+        var action = () => RentalsTestGraph.Renewals.PeriodIndexContaining(new DateOnly(2026, 1, 10), new DateOnly(2026, 1, 9));
 
         action.Should().Throw<DomainRuleViolationException>();
     }
@@ -86,7 +89,7 @@ public sealed class RentalPeriodTests
     [Fact]
     public void A_negative_period_index_is_refused()
     {
-        var action = () => RentalPeriod.For(new DateOnly(2026, 1, 10), -1);
+        var action = () => RentalsTestGraph.Renewals.For(new DateOnly(2026, 1, 10), -1);
 
         action.Should().Throw<DomainRuleViolationException>();
     }
@@ -94,7 +97,7 @@ public sealed class RentalPeriodTests
     [Fact]
     public void A_delivery_is_scheduled_two_days_after_the_order()
     {
-        DeliveryPolicy.ScheduledFor(new DateOnly(2026, 1, 30)).Should().Be(new DateOnly(2026, 2, 1));
-        DeliveryPolicy.LeadTimeDays.Should().Be(2);
+        RentalsTestGraph.Deliveries.ScheduledFor(new DateOnly(2026, 1, 30)).Should().Be(new DateOnly(2026, 2, 1));
+        RentalsTestGraph.Deliveries.LeadTimeDays.Should().Be(2);
     }
 }

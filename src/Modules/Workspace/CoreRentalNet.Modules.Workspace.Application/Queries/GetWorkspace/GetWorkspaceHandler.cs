@@ -6,13 +6,13 @@ using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Queries.GetWorkspace;
 
-/// <summary>Answers <see cref="IGetWorkspace"/> with the draft as the builder renders it.</summary>
+/// <summary>Answers <see cref="IGetWorkspaceHandler"/> with the draft as the builder renders it.</summary>
 public sealed class GetWorkspaceHandler(
     IWorkspaceRepository repository,
     IOpaqueTokenService tokens,
-    IWorkspaceViewService views) : IGetWorkspace
+    IWorkspaceViewService views) : IGetWorkspaceHandler
 {
-    public async Task<WorkspaceView> HandleAsync(GetWorkspace query, CancellationToken cancellationToken = default)
+    public async Task<WorkspaceView> HandleAsync(GetWorkspaceQuery query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
 

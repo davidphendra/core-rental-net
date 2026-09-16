@@ -1,13 +1,13 @@
-using CoreRentalNet.Modules.Rentals.Domain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.Infrastructure.Configuration;
 
-internal sealed class InvoiceEntityTypeConfiguration : IEntityTypeConfiguration<Domain.Invoice>
+internal sealed class InvoiceEntityTypeConfiguration : IEntityTypeConfiguration<Invoice>
 {
-    public void Configure(EntityTypeBuilder<Domain.Invoice> builder)
+    public void Configure(EntityTypeBuilder<Invoice> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -42,6 +42,11 @@ internal sealed class InvoiceEntityTypeConfiguration : IEntityTypeConfiguration<
         builder.Property(invoice => invoice.IssuedOn).IsRequired();
         builder.Property(invoice => invoice.Version).IsConcurrencyToken().IsRequired();
 
+        ConfigureLines(builder);
+    }
+
+    private static void ConfigureLines(EntityTypeBuilder<Invoice> builder)
+    {
         builder.OwnsMany(invoice => invoice.Lines, lines =>
         {
             lines.ToTable("Rentals_InvoiceLine");
@@ -53,9 +58,5 @@ internal sealed class InvoiceEntityTypeConfiguration : IEntityTypeConfiguration<
             lines.Property(line => line.UnitMonthlyPrice).HasConversion(MoneyConversion.Converter).HasPrecision(18, 2).IsRequired();
             lines.Property(line => line.LineTotal).HasConversion(MoneyConversion.Converter).HasPrecision(18, 2).IsRequired();
         });
-
-        builder.Metadata
-            .FindNavigation(nameof(Domain.Invoice.Lines))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

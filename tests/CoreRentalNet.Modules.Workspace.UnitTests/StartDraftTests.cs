@@ -22,10 +22,13 @@ public sealed class StartDraftTests
     public async Task Starting_a_draft_creates_exactly_one_and_is_idempotent()
     {
         var context = NewContext();
-        var handler = new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views);
+        var handler = new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens);
+        var read = new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views);
 
-        var first = await handler.HandleAsync(new StartDraft(context.Token));
-        var second = await handler.HandleAsync(new StartDraft(context.Token));
+        await handler.HandleAsync(new StartDraftCommand(context.Token));
+        var first = await read.HandleAsync(new GetWorkspaceQuery(context.Token));
+        await handler.HandleAsync(new StartDraftCommand(context.Token));
+        var second = await read.HandleAsync(new GetWorkspaceQuery(context.Token));
 
         first.WorkspaceId.Should().Be(second.WorkspaceId);
         first.IsEmpty.Should().BeTrue();
@@ -37,10 +40,13 @@ public sealed class StartDraftTests
     public async Task Two_browsers_get_two_drafts()
     {
         var context = NewContext();
-        var handler = new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views);
+        var handler = new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens);
+        var read = new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views);
 
-        var first = await handler.HandleAsync(new StartDraft("browser-one"));
-        var second = await handler.HandleAsync(new StartDraft("browser-two"));
+        await handler.HandleAsync(new StartDraftCommand("browser-one"));
+        var first = await read.HandleAsync(new GetWorkspaceQuery("browser-one"));
+        await handler.HandleAsync(new StartDraftCommand("browser-two"));
+        var second = await read.HandleAsync(new GetWorkspaceQuery("browser-two"));
 
         first.WorkspaceId.Should().NotBe(second.WorkspaceId);
     }
@@ -50,15 +56,15 @@ public sealed class StartDraftTests
     {
         var context = NewContext();
         var catalog = context.Catalog;
-        await new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views).HandleAsync(new StartDraft(context.Token));
+        await new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens).HandleAsync(new StartDraftCommand(context.Token));
 
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces, context.Views)
-            .HandleAsync(new AssignProduct(context.Token, "CHA0001"));
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces, context.Views)
-            .HandleAsync(new AssignProduct(context.Token, "DSK0001"));
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces)
+            .HandleAsync(new AssignProductCommand(context.Token, "CHA0001"));
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces)
+            .HandleAsync(new AssignProductCommand(context.Token, "DSK0001"));
 
         var read = await new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views)
-            .HandleAsync(new GetWorkspace(context.Token));
+            .HandleAsync(new GetWorkspaceQuery(context.Token));
 
         read.TotalUnits.Should().Be(2);
         read.CanCheckout.Should().BeTrue();

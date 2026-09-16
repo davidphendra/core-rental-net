@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>
-/// The markup discipline from ADR-0012, asserted rather than assumed. There is no axe gate by
+/// The markup discipline from, asserted rather than assumed. There is no axe gate by
 /// decision, but "everything clickable is a real control with a name" is cheap to check.
 /// </summary>
 public sealed class AccessibilityTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.BehaviourLock</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Stage 0 of the migration: the characterization ("behaviour lock") suite.
+       It references the same projects as the integration tests so it can pin behaviour at
+       both the domain and the application seam. It deliberately does NOT live inside a
+       module test project, because those projects are rewritten during the migration and
+       the lock must survive the rewrite. Assertions are re-pointed, never deleted. -->
+  <ItemGroup>
+    <ProjectReference Include="../../src/Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
+    <ProjectReference Include="../../src/Modules/Workspace/CoreRentalNet.Modules.Workspace.Infrastructure/CoreRentalNet.Modules.Workspace.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Application/CoreRentalNet.Modules.Rentals.Application.csproj" />
+    <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Infrastructure/CoreRentalNet.Modules.Rentals.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
+
+</Project>

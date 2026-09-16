@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Presentation;
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using Xunit;
 
@@ -63,18 +62,18 @@ public sealed class AccessoryGroupsTests
         }
     }
 
-    private static ProductListItem Lamp => Product("LMP0001", "Pererenan Clip Light", CatalogSubCategory.Lamp);
-    private static ProductListItem Plant => Product("PLT0001", "Monstera Plant", CatalogSubCategory.Plant);
-    private static ProductListItem Monitor => Product("MON0001", "Nusa Dua Touch", CatalogSubCategory.Monitor);
-    private static ProductListItem Coffee => Product("COF0001", "Berawa Espresso Duo", CatalogSubCategory.Coffee);
-    private static ProductListItem Beanbag => Product("BEA0001", "Seminyak Floor Seat", CatalogSubCategory.Beanbag);
-    private static ProductListItem Desk => Product("DSK0001", "Canggu Bamboo", null, CatalogCategory.Desk);
-    private static ProductListItem Chair => Product("CHA0001", "Seminyak Lounge", null, CatalogCategory.Chair);
+    private static ProductView Lamp => Product("LMP0001", "Pererenan Clip Light", CatalogSubCategory.Lamp);
+    private static ProductView Plant => Product("PLT0001", "Monstera Plant", CatalogSubCategory.Plant);
+    private static ProductView Monitor => Product("MON0001", "Nusa Dua Touch", CatalogSubCategory.Monitor);
+    private static ProductView Coffee => Product("COF0001", "Berawa Espresso Duo", CatalogSubCategory.Coffee);
+    private static ProductView Beanbag => Product("BEA0001", "Seminyak Floor Seat", CatalogSubCategory.Beanbag);
+    private static ProductView Desk => Product("DSK0001", "Canggu Bamboo", null, CatalogCategory.Desk);
+    private static ProductView Chair => Product("CHA0001", "Seminyak Lounge", null, CatalogCategory.Chair);
 
-    private static ProductListItem Product(
+    private static ProductView Product(
         string sku,
         string name,
         CatalogSubCategory? subCategory,
         CatalogCategory category = CatalogCategory.Accessory)
-        => new(sku, name, category, subCategory, Money.Idr(100000m), "A description.", "/images/vendored/product.png", true, false);
+        => new(sku, name, category, subCategory, new Money(100000m, Currencies.Idr), "A description.", "/images/vendored/product.png", true, false);
 }

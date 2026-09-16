@@ -1,13 +1,12 @@
-using CoreRentalNet.Modules.Rentals.Domain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.Infrastructure.Configuration;
 
-internal sealed class RentalEntityTypeConfiguration : IEntityTypeConfiguration<Domain.Rental>
+internal sealed class RentalEntityTypeConfiguration : IEntityTypeConfiguration<Rental>
 {
-    public void Configure(EntityTypeBuilder<Domain.Rental> builder)
+    public void Configure(EntityTypeBuilder<Rental> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -39,6 +38,11 @@ internal sealed class RentalEntityTypeConfiguration : IEntityTypeConfiguration<D
 
         builder.Property(rental => rental.Version).IsConcurrencyToken().IsRequired();
 
+        ConfigureLines(builder);
+    }
+
+    private static void ConfigureLines(EntityTypeBuilder<Rental> builder)
+    {
         builder.OwnsMany(rental => rental.Lines, lines =>
         {
             lines.ToTable("Rentals_RentalLine");
@@ -48,11 +52,6 @@ internal sealed class RentalEntityTypeConfiguration : IEntityTypeConfiguration<D
             lines.Property(line => line.Name).HasMaxLength(120).IsRequired();
             lines.Property(line => line.Quantity).IsRequired();
             lines.Property(line => line.UnitMonthlyPrice).HasConversion(MoneyConversion.Converter).HasPrecision(18, 2).IsRequired();
-            lines.Ignore(line => line.LineTotal);
         });
-
-        builder.Metadata
-            .FindNavigation(nameof(Domain.Rental.Lines))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

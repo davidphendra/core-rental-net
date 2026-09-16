@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Host.Infrastructure;
@@ -8,7 +9,7 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// <remarks>
 /// This lives in middleware rather than in a component because a Blazor Server event handler
 /// runs over the SignalR circuit, not in an HTTP response, so a component cannot set a cookie
-/// (ADR-0007). The resolved raw token is placed in <c>HttpContext.Items</c> so the root
+///. The resolved raw token is placed in <c>HttpContext.Items</c> so the root
 /// component can hand it to the interactive tree without reading the cookie again.
 /// <para>
 /// It is named for the draft, not for identity: the token it reads and issues is the anonymous
@@ -17,7 +18,7 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// does not exist here.
 /// </para>
 /// </remarks>
-public sealed class DraftTokenMiddleware(RequestDelegate next)
+public sealed class DraftTokenMiddleware(RequestDelegate next, IOpaqueTokenService tokens)
 {
     public const string CookieName = "corerental.draft";
 
@@ -36,7 +37,7 @@ public sealed class DraftTokenMiddleware(RequestDelegate next)
 
         if (rotates)
         {
-            Issue(context, DraftToken.IssueRawToken());
+            Issue(context, tokens.IssueRawToken());
 
             // Redirect so a refresh does not rotate again.
             context.Response.Redirect(StripRotateFlag(context.Request));
@@ -47,7 +48,7 @@ public sealed class DraftTokenMiddleware(RequestDelegate next)
 
         if (string.IsNullOrWhiteSpace(raw))
         {
-            raw = DraftToken.IssueRawToken();
+            raw = tokens.IssueRawToken();
             Issue(context, raw);
         }
 

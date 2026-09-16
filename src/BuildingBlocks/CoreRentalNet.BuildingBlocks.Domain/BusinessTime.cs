@@ -7,14 +7,17 @@ namespace CoreRentalNet.BuildingBlocks.Domain;
 /// <remarks>
 /// Indonesia observes no daylight saving, so this is a fixed offset and needs no timezone
 /// database. An order placed at 01:00 on 1 February in Denpasar anchors to 1 February rather
-/// than to 31 January (ADR-0011).
+/// than to 31 January.
 /// </remarks>
 public static class BusinessTime
 {
+    /// <summary>The fixed offset from UTC that Bali keeps all year.</summary>
     public static readonly TimeSpan UtcOffset = TimeSpan.FromHours(8);
 
+    /// <summary>The business date an instant falls on, which is the date it is in Bali.</summary>
     public static DateOnly BusinessDate(DateTimeOffset instant) => DateOnly.FromDateTime(instant.ToOffset(UtcOffset).DateTime);
 
+    /// <summary>Today's business date, read from an injected clock rather than the machine's.</summary>
     public static DateOnly Today(TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);

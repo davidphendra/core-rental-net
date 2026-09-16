@@ -3,9 +3,11 @@ using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
 using CoreRentalNet.Modules.Rentals.Application.Scheduling;
-using CoreRentalNet.Modules.Rentals.Domain;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
@@ -25,9 +27,14 @@ public sealed class SchedulingTests
             Invoices = new InMemoryInvoiceRepository();
             Numbers = new CountingNumberSequence();
             UnitOfWork = new RecordingUnitOfWork();
-            Settings = new RentalsSettings(Money.Idr(750_000m));
-            Scheduler = new RentalScheduler(Rentals, Invoices, Numbers, UnitOfWork, Settings);
-            PlaceOrder = new PlaceOrderService(Rentals, Invoices, Numbers, UnitOfWork, Settings, Clock);
+            Settings = new RentalsSettings(new Money(750_000m, Currencies.Idr));
+            Scheduler = new RentalScheduler(
+                Rentals, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries,
+                new RenewalInvoiceIssuer(Invoices, RentalsTestGraph.Lifecycle, RentalsTestGraph.Invoicing, RentalsTestGraph.Renewals, Numbers, Settings),
+                UnitOfWork);
+            PlaceOrder = new PlaceOrderService(
+                Rentals, Invoices, RentalsTestGraph.Tokens, RentalsTestGraph.Invoicing, RentalsTestGraph.Lifecycle,
+                RentalsTestGraph.Deliveries, Numbers, UnitOfWork, Settings, Clock);
         }
 
         public FakeTimeProvider Clock { get; }
@@ -50,7 +57,7 @@ public sealed class SchedulingTests
         {
             var lines = new List<OrderLineRequest>
             {
-                new("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m)),
+                new("CHA449AGLBB0", "Seminyak Lounge", 1, new Money(400_000m, Currencies.Idr)),
             };
 
             return await PlaceOrder.PlaceAsync(new PlaceOrderRequest(Guid.NewGuid(), lines, "Villa Lotus, Canggu"));
@@ -59,7 +66,7 @@ public sealed class SchedulingTests
         /// <summary>Moves the clock to a date, as the business calendar sees it.</summary>
         public void MoveTo(int year, int month, int day) => Clock.SetUtcNow(new DateTimeOffset(year, month, day, 6, 0, 0, TimeSpan.Zero));
 
-        public Domain.Rental TheRental => Rentals.All.Single();
+        public Rental TheRental => Rentals.All.Single();
 
         public Task<SchedulingOutcome> RunAsync(DateOnly asOf) => Scheduler.RunOnceAsync(asOf);
     }
@@ -167,7 +174,7 @@ public sealed class SchedulingTests
         await fixture.PlaceAsync();
         await fixture.RunAsync(new DateOnly(2026, 1, 12));
 
-        fixture.TheRental.RequestCancellation(new DateOnly(2026, 1, 20));
+        RentalsTestGraph.Lifecycle.RequestCancellation(fixture.TheRental, new DateOnly(2026, 1, 20));
 
         var outcome = await fixture.RunAsync(new DateOnly(2026, 2, 20));
 
@@ -182,7 +189,7 @@ public sealed class SchedulingTests
         var fixture = new Fixture();
         await fixture.PlaceAsync();
         await fixture.RunAsync(new DateOnly(2026, 1, 12));
-        fixture.TheRental.RequestCancellation(new DateOnly(2026, 1, 20));
+        RentalsTestGraph.Lifecycle.RequestCancellation(fixture.TheRental, new DateOnly(2026, 1, 20));
 
         var early = await fixture.RunAsync(new DateOnly(2026, 2, 9));
         early.CountOf(ScheduleActionKind.Ended).Should().Be(0);
@@ -199,7 +206,7 @@ public sealed class SchedulingTests
         var fixture = new Fixture();
         await fixture.PlaceAsync();
         await fixture.RunAsync(new DateOnly(2026, 1, 12));
-        fixture.TheRental.RequestCancellation(new DateOnly(2026, 1, 20));
+        RentalsTestGraph.Lifecycle.RequestCancellation(fixture.TheRental, new DateOnly(2026, 1, 20));
         await fixture.RunAsync(new DateOnly(2026, 2, 10)); // ended
 
         var later = await fixture.RunAsync(new DateOnly(2026, 6, 1));
@@ -242,7 +249,7 @@ public sealed class SchedulingTests
         fixture.TheRental.Status.Should().Be(RentalStatus.Active);
 
         await fixture.RunAsync(new DateOnly(2026, 2, 12));
-        fixture.TheRental.RequestCancellation(new DateOnly(2026, 2, 15));
+        RentalsTestGraph.Lifecycle.RequestCancellation(fixture.TheRental, new DateOnly(2026, 2, 15));
 
         await fixture.RunAsync(new DateOnly(2026, 3, 12));
 
@@ -282,17 +289,22 @@ public sealed class SchedulingTests
         var healthy = fixture.TheRental;
 
         // A second order that is already cancelled outright, so a further step is impossible.
-        var broken = Domain.Rental.Place(
-            RentalId.New(),
-            Guid.NewGuid(),
-            RentalNumber.Of(2026, 99),
-            AccessToken.HashOf("other"),
-            "Villa Lotus, Canggu",
-            Money.Idr(750_000m),
-            [new RentalLine("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))],
-            new DateOnly(2026, 1, 10));
-        broken.MarkPaid(new DateOnly(2026, 1, 10));
-        broken.CancelBeforeDelivery(new DateOnly(2026, 1, 10));
+        var broken = new Rental
+        {
+            Id = RentalId.New(),
+            WorkspaceId = Guid.NewGuid(),
+            Number = RentalNumber.Of(2026, 99),
+            AccessTokenHash = new OpaqueTokenService().HashOf("other"),
+            DeliveryAddress = "Villa Lotus, Canggu",
+            DeliveryFee = new Money(750_000m, Currencies.Idr),
+            PlacedOn = new DateOnly(2026, 1, 10),
+            AnchorDate = new DateOnly(2026, 1, 10),
+            Status = RentalStatus.Placed,
+            Version = 1,
+            Lines = [new RentalLine { Sku = "CHA449AGLBB0", Name = "Seminyak Lounge", Quantity = 1, UnitMonthlyPrice = new Money(400_000m, Currencies.Idr) }],
+        };
+        RentalsTestGraph.Lifecycle.MarkPaid(broken, new DateOnly(2026, 1, 10));
+        RentalsTestGraph.Lifecycle.CancelBeforeDelivery(broken, new DateOnly(2026, 1, 10));
         fixture.Rentals.Seed(broken);
 
         var outcome = await fixture.RunAsync(new DateOnly(2026, 1, 12));
@@ -307,7 +319,7 @@ public sealed class SchedulingTests
         var fixture = new Fixture();
         await fixture.PlaceAsync();
         await fixture.RunAsync(new DateOnly(2026, 1, 12));
-        fixture.TheRental.RequestCancellation(new DateOnly(2026, 1, 20));
+        RentalsTestGraph.Lifecycle.RequestCancellation(fixture.TheRental, new DateOnly(2026, 1, 20));
         await fixture.RunAsync(new DateOnly(2026, 2, 10));
 
         fixture.TheRental.Status.Should().Be(RentalStatus.Ended);

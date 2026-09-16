@@ -1,6 +1,7 @@
 @page "/orders/{Number}"
-@inject IGetRentalByToken RentalReader
-@inject IGetInvoicesByToken InvoiceReader
+@inject IGetRentalByTokenHandler RentalReader
+@inject IGetInvoicesByTokenHandler InvoiceReader
+@inject IMoneyService MoneyService
 <PageTitle>@($"Order {Number} — Core Rental")</PageTitle>
 
 <section class="section">
@@ -49,9 +50,9 @@
                                 <li class="line-item">
                                     <span class="stack-sm">
                                         <span class="label-md">@line.Name</span>
-                                        <span class="label-sm muted">Qty: @line.Quantity · @line.UnitMonthlyPrice.ToDisplayString()/mo each</span>
+                                        <span class="label-sm muted">Qty: @line.Quantity · @(line.UnitMonthlyPrice.Amount.ToString("C"))/mo each</span>
                                     </span>
-                                    <span class="body-md">@line.LineTotal.ToDisplayString()/mo</span>
+                                    <span class="body-md">@(line.LineTotal.Amount.ToString("C"))/mo</span>
                                 </li>
                             }
                         </ul>
@@ -59,23 +60,23 @@
                         <dl class="totals">
                             <div class="totals__row">
                                 <dt class="body-md muted">Subtotal</dt>
-                                <dd class="body-md">@Rental.MonthlyTotal.ToDisplayString()/mo</dd>
+                                <dd class="body-md">@(Rental.MonthlyTotal.Amount.ToString("C"))/mo</dd>
                             </div>
                             <div class="totals__row">
                                 <dt class="body-md muted">Delivery &amp; Setup (one-time)</dt>
-                                <dd class="body-md">@Rental.DeliveryFee.ToDisplayString()</dd>
+                                <dd class="body-md">@Rental.DeliveryFee.Amount.ToString("C")</dd>
                             </div>
                             @if (FirstInvoice?.HasTaxLine == true)
                             {
                                 <div class="totals__row">
                                     <dt class="body-md muted">Tax</dt>
-                                    <dd class="body-md">@FirstInvoice.TaxAmount.ToDisplayString()</dd>
+                                    <dd class="body-md">@FirstInvoice.TaxAmount.Amount.ToString("C")</dd>
                                 </div>
                             }
                             <div class="totals__row totals__row--grand">
                                 <dt class="headline-md">Grand Total</dt>
                                 <dd class="totals__grand">
-                                    <span class="headline-md primary-text">@GrandTotal.ToDisplayString()</span>
+                                    <span class="headline-md primary-text">@GrandTotal.Amount.ToString("C")</span>
                                     <span class="label-sm muted">First month due today</span>
                                 </dd>
                             </div>
@@ -134,7 +135,9 @@
 
     private InvoiceView? FirstInvoice { get; set; }
 
-    private Money GrandTotal => FirstInvoice?.Total ?? Rental?.MonthlyTotal.Add(Rental.DeliveryFee) ?? Money.Idr(0m);
+    private Money GrandTotal => FirstInvoice?.Total
+        ?? (Rental is { } rental ? MoneyService.Add(rental.MonthlyTotal, rental.DeliveryFee) : null)
+        ?? new Money(0m, Currencies.Idr);
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,7 +146,7 @@
             return;
         }
 
-        Rental = await RentalReader.HandleAsync(new GetRentalByToken(Token));
+        Rental = await RentalReader.HandleAsync(new GetRentalByTokenQuery(Token));
 
         if (Rental is null || !string.Equals(Rental.Number, Number, StringComparison.OrdinalIgnoreCase))
         {
@@ -151,7 +154,7 @@
             return;
         }
 
-        var invoices = await InvoiceReader.HandleAsync(new GetInvoicesByToken(Token));
+        var invoices = await InvoiceReader.HandleAsync(new GetInvoicesByTokenQuery(Token));
         FirstInvoice = invoices.FirstOrDefault();
     }
 }

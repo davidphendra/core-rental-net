@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Domain;
 using Xunit;
 
 namespace CoreRentalNet.ArchitectureTests;
@@ -30,6 +32,34 @@ public sealed class CommittedConfigurationTests
 
         offenders.Should().BeEmpty(
             "the client secret comes from user secrets locally and from the environment otherwise");
+    }
+
+    [Fact] // MON-06
+    public void The_configured_culture_is_the_one_whose_money_this_application_charges()
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(
+            RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "appsettings.json")));
+
+        var name = document.RootElement.GetProperty("Culture").GetProperty("Name").GetString();
+
+        name.Should().NotBeNullOrWhiteSpace(
+            "a server runs under the invariant culture, under which an amount reads \u00a4400,000.00");
+
+        var culture = new CultureInfo(name, useUserOverride: false);
+        var region = new RegionInfo(name);
+
+        // Which money a region uses is read from the locale rather than written here: en-ID names the
+        // rupiah and draws it "Rp", en-US names the dollar and draws it "$". This is the assertion
+        // that ties the two together - that the locale this application is configured with is the
+        // one whose money it charges. Configure en-US and it is the only thing that fails: every page
+        // still renders, every money unit test still passes, and every amount is simply dollars.
+        region.ISOCurrencySymbol.Should().Be(
+            Currencies.Idr,
+            $"the configured culture is '{name}', and its region uses {region.ISOCurrencySymbol}");
+
+        // And what an amount draws is that locale's symbol, because the symbol is the culture's and
+        // not a prefix in the markup. en-ID draws "Rp0" the way id-ID did.
+        0m.ToString("C", culture).Should().Be($"{region.CurrencySymbol}0");
     }
 
     [Fact] // AUTH-08

@@ -54,7 +54,7 @@ public sealed class DesignTokenTests
         }
 
         offenders.Should().BeEmpty(
-            "every colour must come from a custom property in tokens.css (ADR-0012)");
+            "every colour must come from a custom property in tokens.css");
     }
 
     [Fact] // UI-06

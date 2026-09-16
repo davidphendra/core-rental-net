@@ -1,19 +1,18 @@
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Support;
 using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.StartDraft;
 
-/// <summary>Starts a draft for a customer who has none, and hands back the view.</summary>
+/// <summary>Starts a draft for a customer who has none; leaves an existing one untouched.</summary>
 public sealed class StartDraftHandler(
     IWorkspaceRepository repository,
-    IOpaqueTokenService tokens,
-    IWorkspaceViewService views) : IStartDraft
+    IOpaqueTokenService tokens) : IStartDraftHandler
 {
-    public async Task<WorkspaceView> HandleAsync(StartDraft command, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task HandleAsync(StartDraftCommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -34,7 +33,5 @@ public sealed class StartDraftHandler(
             await repository.AddAsync(workspace, cancellationToken).ConfigureAwait(false);
             await repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        return views.Build(workspace);
     }
 }

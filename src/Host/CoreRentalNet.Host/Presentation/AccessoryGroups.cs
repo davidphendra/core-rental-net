@@ -1,26 +1,22 @@
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
+using System.Collections.Immutable;
+using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Host.Presentation;
-
-/// <summary>One subcategory's products under the label they are shown beneath.</summary>
-public sealed record CatalogGroup(
-    CatalogSubCategory? SubCategory,
-    string Label,
-    IReadOnlyList<ProductListItem> Products);
 
 /// <summary>
 /// The accessory subcategories in the order they are displayed, with the label above each.
 /// </summary>
 /// <remarks>
 /// The order is the one thing here the catalog cannot answer, because it is how the products are
-/// arranged on a screen rather than what they are; the wording comes from the catalog's own labels,
-/// which the search matches against as well. Held as data rather than as a condition in the markup
-/// so that the panel, the store and the picker cannot disagree about either.
+/// arranged on a screen rather than what they are; the wording is the label on the catalog's own
+/// subcategory. Held as data rather than as a condition in the markup so that the panel, the store
+/// and the picker cannot disagree about either. The order is an immutable constant, not global
+/// mutable state.
 /// </remarks>
 public static class AccessoryGroups
 {
-    private static readonly CatalogSubCategory[] Order =
+    private static readonly ImmutableArray<CatalogSubCategory> s_order =
     [
         CatalogSubCategory.Monitor,
         CatalogSubCategory.Lamp,
@@ -29,8 +25,8 @@ public static class AccessoryGroups
         CatalogSubCategory.Beanbag,
     ];
 
-    /// <summary>The label above this subcategory's products.</summary>
-    public static string LabelFor(CatalogSubCategory subCategory) => CatalogLabels.ForSubCategory(subCategory);
+    /// <summary>The label above this subcategory's products, from the catalog's own subcategory.</summary>
+    public static string LabelFor(CatalogSubCategory subCategory) => subCategory.Label();
 
     /// <summary>
     /// Splits products into their subcategories, in that order, leaving out the empty ones.
@@ -40,13 +36,13 @@ public static class AccessoryGroups
     /// caller can render groups unconditionally and never has to ask whether it should be grouping:
     /// a heading appears when there is a label, and only accessories have one.
     /// </remarks>
-    public static IReadOnlyList<CatalogGroup> Of(IReadOnlyList<ProductListItem> products)
+    public static IReadOnlyList<CatalogGroup> Of(IReadOnlyList<ProductView> products)
     {
         ArgumentNullException.ThrowIfNull(products);
 
         var groups = new List<CatalogGroup>();
 
-        foreach (var subCategory in Order)
+        foreach (var subCategory in s_order)
         {
             var matching = products.Where(product => product.SubCategory == subCategory).ToArray();
 

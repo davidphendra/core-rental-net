@@ -3,7 +3,6 @@ using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Support;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -15,10 +14,10 @@ public sealed class AssignProductHandler(
     IWorkspaceRepository repository,
     IOpaqueTokenService tokens,
     IProductCatalog catalog,
-    IWorkspaceService workspaceService,
-    IWorkspaceViewService views) : IAssignProduct
+    IWorkspaceService workspaceService) : IAssignProductHandler
 {
-    public async Task<WorkspaceView> HandleAsync(AssignProduct command, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task HandleAsync(AssignProductCommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -31,7 +30,5 @@ public sealed class AssignProductHandler(
         workspaceService.Assign(workspace, slot, price.Sku, command.Quantity);
 
         await repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        return views.Build(workspace);
     }
 }

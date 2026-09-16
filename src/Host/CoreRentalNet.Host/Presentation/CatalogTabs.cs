@@ -1,42 +1,26 @@
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
+using System.Collections.Immutable;
+using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.Modules.Catalog.Application.SearchCatalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Catalog.Application.Queries;
 
 namespace CoreRentalNet.Host.Presentation;
 
-/// <summary>The three entries in the Builder's selection panel and the store's pills.</summary>
-/// <remarks>
-/// Accessories used to be two entries, Accessories and Extras, split by subcategory. They are one
-/// entry now, which is why this maps onto the catalog's own three categories instead of carrying a
-/// grouping of its own: a tab that showed part of a category was a navigation idea, and there is
-/// only one accessory category to navigate.
-/// </remarks>
-public enum CatalogTab
-{
-    Desks = 1,
-    Chairs = 2,
-    Accessories = 3,
-}
-
+/// <summary>The tabs' names, icons, categories and loading.</summary>
 public static class CatalogTabs
 {
-    public static IReadOnlyList<CatalogTab> All { get; } =
+    /// <summary>Immutable constant data, not global mutable state.</summary>
+    public static ImmutableArray<CatalogTab> All { get; } =
     [
         CatalogTab.Desks,
         CatalogTab.Chairs,
         CatalogTab.Accessories,
     ];
 
-    public static string LabelFor(CatalogTab tab) => CatalogLabels.ForCategory(CategoryFor(tab));
+    /// <summary>What a tab is called, from the label on the catalog's own category.</summary>
+    public static string LabelFor(CatalogTab tab) => CategoryFor(tab).Label();
 
-    /// <summary>The icon the design gives each entry.</summary>
-    public static string GlyphFor(CatalogTab tab) => tab switch
-    {
-        CatalogTab.Desks => "desk",
-        CatalogTab.Chairs => "chair",
-        CatalogTab.Accessories => "keyboard",
-        _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, "Unknown catalog tab."),
-    };
+    /// <summary>The icon the design gives each tab, from the glyph on the catalog's own category.</summary>
+    public static string GlyphFor(CatalogTab tab) => CategoryFor(tab).Glyph();
 
     /// <summary>The one category a tab shows.</summary>
     public static CatalogCategory CategoryFor(CatalogTab tab) => tab switch
@@ -70,13 +54,13 @@ public static class CatalogTabs
 
     /// <summary>Everything a tab shows, in one query for one category.</summary>
     /// <param name="search">What the customer typed, or null for the whole tab.</param>
-    public static IReadOnlyList<ProductListItem> Load(
+    public static IReadOnlyList<ProductView> Load(
         CatalogTab tab,
-        IGetCatalogPage pageHandler,
+        ISearchCatalogHandler handlerService,
         string? search = null)
     {
-        ArgumentNullException.ThrowIfNull(pageHandler);
+        ArgumentNullException.ThrowIfNull(handlerService);
 
-        return pageHandler.Handle(new GetCatalogPage(Category: CategoryFor(tab), Search: search));
+        return handlerService.Handle(new SearchCatalogQuery(Category: CategoryFor(tab), Search: search));
     }
 }

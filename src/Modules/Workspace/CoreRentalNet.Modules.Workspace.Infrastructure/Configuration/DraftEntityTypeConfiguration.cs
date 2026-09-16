@@ -1,6 +1,5 @@
 using CoreRentalNet.Modules.Workspace.Domain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CoreRentalNet.Modules.Workspace.Infrastructure.Configuration;
@@ -26,7 +25,7 @@ internal sealed class DraftEntityTypeConfiguration : IEntityTypeConfiguration<Do
 
         builder.Property(draft => draft.State).HasConversion<int>().IsRequired();
 
-        // The concurrency token, bumped by the aggregate on every mutation (ADR-0003).
+        // The concurrency token, bumped by the aggregate on every mutation.
         builder.Property(draft => draft.Version).IsConcurrencyToken().IsRequired();
 
         builder.Property(draft => draft.DeliveryAddress).HasMaxLength(200).IsRequired(false);
@@ -42,9 +41,5 @@ internal sealed class DraftEntityTypeConfiguration : IEntityTypeConfiguration<Do
             assignments.Property(assignment => assignment.Sku).HasMaxLength(32).IsRequired();
             assignments.Property(assignment => assignment.Quantity).IsRequired();
         });
-
-        builder.Metadata
-            .FindNavigation(nameof(Domain.Workspace.Assignments))!
-            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

@@ -1,12 +1,8 @@
-using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Rentals.Application.Rentals;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Conversion;
-using CoreRentalNet.Modules.Rentals.Domain.Invoices;
 using CoreRentalNet.Modules.Rentals.Domain.Persistence;
-using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.Application.Checkout;
 
@@ -24,9 +20,7 @@ public sealed class CheckoutCommandHandler(
     IProductCatalog catalog,
     IRentalRepository rentals,
     IPlaceOrder placeOrder,
-    IMoneyService money,
-    IRentalLifecycleService lifecycle,
-    IDeliveryPolicyService deliveries) : ICheckoutCommandHandler
+    ICheckoutConfirmation confirmation) : ICheckoutCommandHandler
 {
     /// <summary>The shortest address the order will accept, matching the draft's own rule.</summary>
     private const int AddressMinimumLength = 5;
@@ -99,7 +93,7 @@ public sealed class CheckoutCommandHandler(
             .FindByWorkspaceIdAsync(workspaceId, cancellationToken)
             .ConfigureAwait(false);
 
-        return existing is null ? null : AlreadyPlaced(existing);
+        return existing is null ? null : confirmation.AlreadyPlaced(existing);
     }
 
     /// <summary>Another attempt converted the draft first, so its order is the one to return.</summary>
@@ -110,7 +104,7 @@ public sealed class CheckoutCommandHandler(
             .ConfigureAwait(false);
 
         return raced is not null
-            ? AlreadyPlaced(raced)
+            ? confirmation.AlreadyPlaced(raced)
             : throw new DomainRuleViolationException("This workspace has already been rented.");
     }
 
@@ -156,14 +150,4 @@ public sealed class CheckoutCommandHandler(
 
         return lines;
     }
-
-    private CheckoutResult AlreadyPlaced(Rental rental)
-        => new(
-            rental.Number.Value,
-            string.Empty,
-            string.Empty,
-            money.Add(lifecycle.MonthlyTotal(rental), rental.DeliveryFee),
-            rental.PlacedOn,
-            rental.DeliveryScheduledFor ?? deliveries.ScheduledFor(rental.PlacedOn),
-            WasAlreadyPlaced: true);
 }

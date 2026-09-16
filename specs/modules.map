@@ -1,0 +1,22 @@
+# modules.map — declared modular-monolith boundaries for CoreRentalNet.
+#
+# One `module` line per module. One `allow` line per permitted edge.
+# The checker treats an undeclared edge as a violation.
+#
+# Module = business capability. BuildingBlocks is the shared technical kernel,
+# declared so that every module's dependency on it is explicit and reviewed.
+
+module catalog       path=src/Modules/Catalog      ns=CoreRentalNet.Modules.Catalog   api=CoreRentalNet.Modules.Catalog.Application.Contracts
+module rentals       path=src/Modules/Rentals      ns=CoreRentalNet.Modules.Rentals   api=CoreRentalNet.Modules.Rentals.Application
+module workspace     path=src/Modules/Workspace    ns=CoreRentalNet.Modules.Workspace api=CoreRentalNet.Modules.Workspace.Application.Contracts
+module buildingblocks path=src/BuildingBlocks      ns=CoreRentalNet.BuildingBlocks
+
+# allow <consumer> -> <provider>[, <provider>...]
+#
+# Catalog depends on nothing but the shared kernel.
+# Workspace reads catalog data through the catalog's published contracts.
+# Rentals converts a workspace and prices catalog products through their contracts.
+
+allow catalog       -> buildingblocks
+allow workspace     -> catalog, buildingblocks
+allow rentals       -> catalog, workspace, buildingblocks

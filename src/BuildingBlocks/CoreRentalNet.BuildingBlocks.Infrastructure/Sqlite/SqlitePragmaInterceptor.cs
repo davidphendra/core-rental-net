@@ -13,14 +13,16 @@ namespace CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 /// </remarks>
 public sealed class SqlitePragmaInterceptor(SqliteDatabaseSettings settings) : DbConnectionInterceptor
 {
-    private readonly SqliteDatabaseSettings settings = settings ?? throw new ArgumentNullException(nameof(settings));
+    private readonly SqliteDatabaseSettings _settings = settings ?? throw new ArgumentNullException(nameof(settings));
 
+    /// <inheritdoc />
     public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
     {
         Apply(connection);
         base.ConnectionOpened(connection, eventData);
     }
 
+    /// <inheritdoc />
     public override async Task ConnectionOpenedAsync(
         DbConnection connection,
         ConnectionEndEventData eventData,
@@ -33,14 +35,14 @@ public sealed class SqlitePragmaInterceptor(SqliteDatabaseSettings settings) : D
     private void Apply(DbConnection connection)
     {
         using var command = connection.CreateCommand();
-        command.CommandText = settings.PragmaScript;
+        command.CommandText = _settings.PragmaScript;
         command.ExecuteNonQuery();
     }
 
     private async Task ApplyAsync(DbConnection connection, CancellationToken cancellationToken)
     {
         await using var command = connection.CreateCommand();
-        command.CommandText = settings.PragmaScript;
+        command.CommandText = _settings.PragmaScript;
         await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }

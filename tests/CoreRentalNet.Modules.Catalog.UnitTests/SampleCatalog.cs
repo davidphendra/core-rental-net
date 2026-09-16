@@ -1,28 +1,21 @@
-using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Catalog.Domain;
-using CoreRentalNet.Modules.Catalog.Infrastructure.Loading;
-
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
+/// <summary>The seven sample rows the catalog tests read from, written as the file would hold them.</summary>
 internal static class SampleCatalog
 {
-    public static Product Chair(string sku, decimal price, ProductBadge? badge = null)
-        => new(Sku.Of(sku), "Chair " + sku, ProductCategory.Chair, null, Money.Idr(price), "A chair.", "/images/chair.svg", badge, true);
-
-    public static Product Desk(string sku, decimal price, ProductBadge? badge = null)
-        => new(Sku.Of(sku), "Desk " + sku, ProductCategory.Desk, null, Money.Idr(price), "A desk.", "/images/desk.svg", badge, true);
-
-    public static Product Accessory(string sku, decimal price, ProductSubCategory subCategory, ProductBadge? badge = null)
-        => new(Sku.Of(sku), "Accessory " + sku, ProductCategory.Accessory, subCategory, Money.Idr(price), "An accessory.", "/images/accessory.svg", badge, true);
-
-    public static ProductCatalogSnapshot Snapshot() => new(
-    [
-        Chair("CHA0001", 400000m, ProductBadge.Popular),
-        Desk("DSK0001", 800000m),
-        Accessory("MON0001", 300000m, ProductSubCategory.Monitor),
-        Accessory("LMP0001", 120000m, ProductSubCategory.Lamp),
-        Accessory("PLT0001", 200000m, ProductSubCategory.Plant, ProductBadge.Popular),
-        Accessory("CFE0001", 750000m, ProductSubCategory.Coffee),
-        Accessory("BBG0001", 350000m, ProductSubCategory.Beanbag),
-    ]);
+    /// <summary>
+    /// One row per category, five accessories covering every subcategory, and two popular badges.
+    /// A subcategory is absent on the chair and the desk, which is the shape the loader has to accept.
+    /// </summary>
+    public const string SevenRows = """
+        [
+          { "skuNo": "CHA0001", "name": "Chair CHA0001", "category": "chair", "pricePerMonth": 400000, "description": "A chair.", "image": "/images/chair.svg", "badge": "popular" },
+          { "skuNo": "DSK0001", "name": "Desk DSK0001", "category": "desk", "pricePerMonth": 800000, "description": "A desk.", "image": "/images/desk.svg" },
+          { "skuNo": "MON0001", "name": "Monitor MON0001", "category": "accessory", "subCategory": "monitor", "pricePerMonth": 300000, "description": "A monitor.", "image": "/images/monitor.svg" },
+          { "skuNo": "LMP0001", "name": "Lamp LMP0001", "category": "accessory", "subCategory": "lamp", "pricePerMonth": 120000, "description": "A lamp.", "image": "/images/lamp.svg" },
+          { "skuNo": "PLT0001", "name": "Plant PLT0001", "category": "accessory", "subCategory": "plant", "pricePerMonth": 200000, "description": "A plant.", "image": "/images/plant.svg", "badge": "popular" },
+          { "skuNo": "CFE0001", "name": "Coffee CFE0001", "category": "accessory", "subCategory": "coffee", "pricePerMonth": 750000, "description": "A coffee machine.", "image": "/images/coffee.svg" },
+          { "skuNo": "BBG0001", "name": "Beanbag BBG0001", "category": "accessory", "subCategory": "beanbag", "pricePerMonth": 350000, "description": "A bean bag.", "image": "/images/beanbag.svg" }
+        ]
+        """;
 }

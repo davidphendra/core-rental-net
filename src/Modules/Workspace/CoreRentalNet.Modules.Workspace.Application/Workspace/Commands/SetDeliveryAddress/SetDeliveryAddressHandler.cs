@@ -1,6 +1,5 @@
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Support;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -11,10 +10,10 @@ namespace CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.SetDeli
 public sealed class SetDeliveryAddressHandler(
     IWorkspaceRepository repository,
     IOpaqueTokenService tokens,
-    IWorkspaceService workspaceService,
-    IWorkspaceViewService views) : ISetDeliveryAddress
+    IWorkspaceService workspaceService) : ISetDeliveryAddressHandler
 {
-    public async Task<WorkspaceView> HandleAsync(SetDeliveryAddress command, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task HandleAsync(SetDeliveryAddressCommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -23,7 +22,5 @@ public sealed class SetDeliveryAddressHandler(
         workspaceService.SetDeliveryAddress(workspace, command.Address);
 
         await repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        return views.Build(workspace);
     }
 }

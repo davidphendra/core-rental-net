@@ -16,33 +16,41 @@ namespace CoreRentalNet.Host.Presentation;
 /// </summary>
 /// <remarks>
 /// Deliberately a cache, never a source of truth: every value here came from the database via
-/// a handler, and every read refreshes it. A refusal from the domain
-/// is surfaced as a message rather than an exception, so the customer sees why nothing
-/// happened instead of the page breaking.
+/// a handler, and every read refreshes it. A command handler mutates and returns nothing, so a
+/// successful mutation is followed by one read through <see cref="IGetWorkspaceHandler"/> — the
+/// write path never builds the view. A refusal from the domain is surfaced as a message rather
+/// than an exception, so the customer sees why nothing happened instead of the page breaking.
 /// </remarks>
 public sealed class WorkspaceSession(
-    IStartDraft starter,
-    IGetWorkspace reader,
-    IAssignProduct assigner,
-    IRemoveAssignment remover,
-    IChangeQuantity quantityChanger,
-    ISetDeliveryAddress addressSetter) : IWorkspaceSession
+    IStartDraftHandler starter,
+    IGetWorkspaceHandler reader,
+    IAssignProductHandler assigner,
+    IRemoveAssignmentHandler remover,
+    IChangeQuantityHandler quantityChanger,
+    ISetDeliveryAddressHandler addressSetter) : IWorkspaceSession
 {
+    /// <inheritdoc />
     public WorkspaceView? Current { get; private set; }
 
+    /// <inheritdoc />
     public string? Error { get; private set; }
 
+    /// <inheritdoc />
     public bool IsLoaded => Current is not null;
 
+    /// <inheritdoc />
     public bool IsEmpty => Current is null || Current.IsEmpty;
 
+    /// <inheritdoc />
     public int TotalUnits => Current?.TotalUnits ?? 0;
 
+    /// <inheritdoc />
     public event Action? Changed;
 
+    /// <inheritdoc />
     public async Task RefreshAsync(string draftToken, CancellationToken cancellationToken = default)
     {
-        Current = await reader.HandleAsync(new GetWorkspace(draftToken), cancellationToken);
+        Current = await reader.HandleAsync(new GetWorkspaceQuery(draftToken), cancellationToken);
         Error = null;
         Notify();
     }
@@ -58,26 +66,30 @@ public sealed class WorkspaceSession(
             return;
         }
 
-        Current = await starter.HandleAsync(new StartDraft(draftToken), cancellationToken);
+        await starter.HandleAsync(new StartDraftCommand(draftToken), cancellationToken);
+        Current = await reader.HandleAsync(new GetWorkspaceQuery(draftToken), cancellationToken);
         Error = null;
         Notify();
     }
 
+    /// <inheritdoc />
     public Task AssignAsync(string draftToken, string sku, CancellationToken cancellationToken = default)
-        => MutateAsync(() => assigner.HandleAsync(new AssignProduct(draftToken, sku), cancellationToken));
+        => MutateAsync(draftToken, () => assigner.HandleAsync(new AssignProductCommand(draftToken, sku), cancellationToken), cancellationToken);
 
+    /// <inheritdoc />
     public Task RemoveAsync(string draftToken, SlotId slot, CancellationToken cancellationToken = default)
-        => MutateAsync(() => remover.HandleAsync(new RemoveAssignment(draftToken, slot), cancellationToken));
+        => MutateAsync(draftToken, () => remover.HandleAsync(new RemoveAssignmentCommand(draftToken, slot), cancellationToken), cancellationToken);
 
     /// <summary>
     /// Sets how many of one product a slot holds. Zero removes it, which is how a single box on the
     /// canvas is taken away when the same product stands in more than one.
     /// </summary>
     public Task SetQuantityAsync(string draftToken, SlotId slot, string sku, int quantity, CancellationToken cancellationToken = default)
-        => MutateAsync(() => quantityChanger.HandleAsync(new ChangeQuantity(draftToken, slot, sku, quantity), cancellationToken));
+        => MutateAsync(draftToken, () => quantityChanger.HandleAsync(new ChangeQuantityCommand(draftToken, slot, sku, quantity), cancellationToken), cancellationToken);
 
+    /// <inheritdoc />
     public Task SetDeliveryAddressAsync(string draftToken, string? address, CancellationToken cancellationToken = default)
-        => MutateAsync(() => addressSetter.HandleAsync(new SetDeliveryAddress(draftToken, address), cancellationToken));
+        => MutateAsync(draftToken, () => addressSetter.HandleAsync(new SetDeliveryAddressCommand(draftToken, address), cancellationToken), cancellationToken);
 
     /// <summary>
     /// Saves the address and hands any refusal back to the caller instead of leaving it on the
@@ -87,23 +99,25 @@ public sealed class WorkspaceSession(
     {
         Error = null;
 
-        return await AttemptAsync(() => addressSetter.HandleAsync(new SetDeliveryAddress(draftToken, address), cancellationToken))
+        return await AttemptAsync(draftToken, () => addressSetter.HandleAsync(new SetDeliveryAddressCommand(draftToken, address), cancellationToken), cancellationToken)
             .ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public void ClearError() => Error = null;
 
     /// <summary>
-    /// Runs one operation and keeps the session's refusal rule in one place: an expected domain
-    /// refusal is a message, not an exception. Returns null when the operation was accepted, and the
-    /// message when it was refused. It refreshes the cache from the answer either way, because the
-    /// cache is never the source of truth.
+    /// Runs one command and keeps the session's refusal rule in one place: an expected domain
+    /// refusal is a message, not an exception. Returns null when the command was accepted, and the
+    /// message when it was refused. On success it re-reads the cache from the database, because the
+    /// cache is never the source of truth and the command returned no view.
     /// </summary>
-    private async Task<string?> AttemptAsync(Func<Task<WorkspaceView>> operation)
+    private async Task<string?> AttemptAsync(string draftToken, Func<Task> operation, CancellationToken cancellationToken)
     {
         try
         {
-            Current = await operation().ConfigureAwait(false);
+            await operation().ConfigureAwait(false);
+            Current = await reader.HandleAsync(new GetWorkspaceQuery(draftToken), cancellationToken).ConfigureAwait(false);
             return null;
         }
         catch (Exception exception) when (exception is DomainRuleViolationException or NotFoundException)
@@ -113,9 +127,9 @@ public sealed class WorkspaceSession(
     }
 
     /// <summary>A mutation the customer is expected to see the result of: a refusal becomes the session's error.</summary>
-    private async Task MutateAsync(Func<Task<WorkspaceView>> operation)
+    private async Task MutateAsync(string draftToken, Func<Task> operation, CancellationToken cancellationToken)
     {
-        Error = await AttemptAsync(operation).ConfigureAwait(false);
+        Error = await AttemptAsync(draftToken, operation, cancellationToken).ConfigureAwait(false);
         Notify();
     }
 

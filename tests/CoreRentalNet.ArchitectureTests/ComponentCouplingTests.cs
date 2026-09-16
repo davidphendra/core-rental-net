@@ -23,10 +23,20 @@ public sealed class ComponentCouplingTests
         injected.Should().NotBeEmpty("the components inject the application, so there is a seam to check");
 
         injected
-            .Where(entry => entry.Line.Contains("Handler", StringComparison.Ordinal))
+            .Where(entry => IsConcreteHandlerInjection(entry.Line))
             .Select(entry => $"{entry.File}: {entry.Line}")
             .Should().BeEmpty(
                 "a component names the operation's interface; which handler implements it is the application's business");
+    }
+
+    /// <summary>An injected type that is a handler class rather than the interface a component may name.</summary>
+    private static bool IsConcreteHandlerInjection(string line)
+    {
+        var type = line.Split(' ', StringSplitOptions.RemoveEmptyEntries).ElementAtOrDefault(1);
+
+        return type is not null
+            && type.EndsWith("Handler", StringComparison.Ordinal)
+            && !type.StartsWith('I');
     }
 
     [Fact] // ARC-07

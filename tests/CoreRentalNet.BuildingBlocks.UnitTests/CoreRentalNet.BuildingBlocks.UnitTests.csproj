@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/BuildingBlocks/CoreRentalNet.BuildingBlocks.Application/CoreRentalNet.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/CoreRentalNet.BuildingBlocks.Domain/CoreRentalNet.BuildingBlocks.Domain.csproj" />
   </ItemGroup>
 

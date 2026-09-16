@@ -8,7 +8,7 @@ namespace CoreRentalNet.Modules.Rentals.Application;
 /// </summary>
 /// <remarks>
 /// The tax rate is seeded to zero so the designed totals read exactly as drawn; the pipeline is
-/// in place, so enabling it is configuration rather than a schema change (ADR-0004).
+/// in place, so enabling it is configuration rather than a schema change.
 /// </remarks>
 public sealed record RentalsSettings
 {

@@ -8,7 +8,7 @@ namespace CoreRentalNet.Host.Composition;
 /// <remarks>
 /// Registered before the modules that use it, because each of them resolves these settings when it
 /// builds its own context. Path and journal mode come from configuration so that moving to a
-/// deployed environment stays a settings change (ADR-0014).
+/// deployed environment stays a settings change.
 /// </remarks>
 internal static class SqliteRegistration
 {

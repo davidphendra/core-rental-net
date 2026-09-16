@@ -22,15 +22,15 @@
     </div>
 
     <h4 class="text-label-sm font-label-sm text-on-surface font-bold">@Product.Name</h4>
-    <p class="text-[10px] text-on-surface-variant mt-1">+@Product.MonthlyPrice.ToDisplayString()/mo</p>
+    <p class="text-[10px] text-on-surface-variant mt-1">+@(Product.MonthlyPrice.Amount.ToString("C"))/mo</p>
 </button>
 
 @code {
-    [Parameter, EditorRequired] public ProductListItem Product { get; set; } = default!;
+    [Parameter, EditorRequired] public ProductView Product { get; set; } = default!;
 
     [Parameter] public bool IsSelected { get; set; }
 
-    [Parameter] public EventCallback<ProductListItem> OnSelect { get; set; }
+    [Parameter] public EventCallback<ProductView> OnSelect { get; set; }
 
     private string Placement => IsSelected
         ? "bg-surface-container-lowest rounded-xl p-3 border-2 border-primary relative"

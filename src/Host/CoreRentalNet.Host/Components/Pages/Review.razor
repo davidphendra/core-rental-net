@@ -1,6 +1,6 @@
 @page "/review"
 @inject IWorkspaceSession Session
-@inject ICheckout Checkout
+@inject ICheckoutCommandHandler CheckoutCommandHandler
 @inject RentalsSettings Rentals
 @inject NavigationManager Navigation
 <PageTitle>Review Your Workspace — Core Rental</PageTitle>
@@ -78,7 +78,7 @@
                                     </div>
                                 </div>
                                 <span class="text-body-md font-body-md font-semibold text-on-surface">
-                                    @(line.LineMonthlyTotal is null ? "unavailable" : $"{line.LineMonthlyTotal.ToDisplayString()}/mo")
+                                    @(line.LineMonthlyTotal is null ? "unavailable" : $"{line.LineMonthlyTotal.Amount.ToString("C")}/mo")
                                 </span>
                             </div>
                         }
@@ -186,7 +186,7 @@
 
         try
         {
-            var result = await Checkout.CheckoutAsync(new CheckoutCommand(DraftToken, typed));
+            var result = await CheckoutCommandHandler.CheckoutAsync(new CheckoutCommand(DraftToken, typed));
 
             if (dialog is not null)
             {

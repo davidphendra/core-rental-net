@@ -3,11 +3,12 @@ using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
 using CoreRentalNet.Modules.Rentals.Application.Scheduling;
-using CoreRentalNet.Modules.Rentals.Domain;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.IntegrationTests;
 
@@ -28,15 +29,20 @@ public sealed class RenewalSchedulingTests
         var invoices = new InvoiceRepository(context);
         var numbers = new SqliteNumberSequence(context);
         var unitOfWork = new RentalsUnitOfWork(context);
-        var settings = new RentalsSettings(Money.Idr(750_000m));
+        var settings = new RentalsSettings(new Money(750_000m, Currencies.Idr));
 
-        var placed = await new PlaceOrderService(rentals, invoices, numbers, unitOfWork, settings, clock)
+        var placed = await new PlaceOrderService(
+            rentals, invoices, RentalsGraph.Tokens, RentalsGraph.Invoicing, RentalsGraph.Lifecycle, RentalsGraph.Deliveries,
+            numbers, unitOfWork, settings, clock)
             .PlaceAsync(new PlaceOrderRequest(
                 Guid.NewGuid(),
-                [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))],
+                [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, new Money(400_000m, Currencies.Idr))],
                 "Villa Lotus, Canggu"));
 
-        return (context, new RentalScheduler(rentals, invoices, numbers, unitOfWork, settings), placed.RawAccessToken);
+        return (context, new RentalScheduler(
+            rentals, RentalsGraph.Lifecycle, RentalsGraph.Deliveries,
+            new RenewalInvoiceIssuer(invoices, RentalsGraph.Lifecycle, RentalsGraph.Invoicing, RentalsGraph.Renewals, numbers, settings),
+            unitOfWork), placed.RawAccessToken);
     }
 
     [Fact] // SC-03
@@ -95,7 +101,7 @@ public sealed class RenewalSchedulingTests
         context.ChangeTracker.Clear();
         var rental = await context.Rentals.SingleAsync();
 
-        var duplicate = Invoice.IssueFor(
+        var duplicate = RentalsGraph.Invoicing.IssueFor(
             InvoiceId.New(), InvoiceNumber.Of(2026, 500), rental, periodIndex: 0, taxRate: 0m, new DateOnly(2026, 1, 10));
 
         await new InvoiceRepository(context).AddAsync(duplicate);
@@ -117,7 +123,7 @@ public sealed class RenewalSchedulingTests
 
         context.ChangeTracker.Clear();
         var rental = await context.Rentals.SingleAsync();
-        rental.RequestCancellation(new DateOnly(2026, 1, 20));
+        RentalsGraph.Lifecycle.RequestCancellation(rental, new DateOnly(2026, 1, 20));
         await context.SaveChangesAsync();
 
         var afterEnd = await scheduler.RunOnceAsync(new DateOnly(2026, 3, 1));
@@ -140,7 +146,7 @@ public sealed class RenewalSchedulingTests
 
         context.ChangeTracker.Clear();
         var rental = await context.Rentals.SingleAsync();
-        rental.RequestCancellation(new DateOnly(2026, 2, 5));
+        RentalsGraph.Lifecycle.RequestCancellation(rental, new DateOnly(2026, 2, 5));
         await context.SaveChangesAsync();
 
         var outcome = await scheduler.RunOnceAsync(new DateOnly(2026, 2, 20));

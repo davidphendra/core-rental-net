@@ -4,7 +4,7 @@ using Xunit;
 namespace CoreRentalNet.ArchitectureTests;
 
 /// <summary>
-/// ADR-0010 says this application takes no money. That is a claim about the code, so it is checked
+/// says this application takes no money. That is a claim about the code, so it is checked
 /// against the code rather than asserted in a document.
 /// </summary>
 public sealed class NoPaymentCodeTests
@@ -39,7 +39,7 @@ public sealed class NoPaymentCodeTests
         }
 
         offenders.Should().BeEmpty(
-            "there is no payment provider, no card handling and no webhook in this application (ADR-0010)");
+            "there is no payment provider, no card handling and no webhook in this application");
     }
 
     [Fact] // SEC-04

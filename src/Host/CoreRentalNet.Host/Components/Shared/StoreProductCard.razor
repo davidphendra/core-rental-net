@@ -27,7 +27,7 @@
     <div class="flex flex-wrap justify-between items-start gap-x-3 gap-y-1 mb-2">
         <h3 class="text-headline-md font-headline-md text-on-surface min-w-0 break-words">@Product.Name</h3>
         <span class="text-body-md font-body-md font-bold text-primary break-words">
-            @Product.MonthlyPrice.ToDisplayString()<span class="text-label-sm font-label-sm text-on-surface-variant">/mo</span>
+            @Product.MonthlyPrice.Amount.ToString("C")<span class="text-label-sm font-label-sm text-on-surface-variant">/mo</span>
         </span>
     </div>
 
@@ -40,7 +40,7 @@
 </button>
 
 @code {
-    [Parameter, EditorRequired] public ProductListItem Product { get; set; } = default!;
+    [Parameter, EditorRequired] public ProductView Product { get; set; } = default!;
 
-    [Parameter] public EventCallback<ProductListItem> OnSelect { get; set; }
+    [Parameter] public EventCallback<ProductView> OnSelect { get; set; }
 }

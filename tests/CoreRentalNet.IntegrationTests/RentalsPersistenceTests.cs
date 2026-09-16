@@ -2,12 +2,16 @@ using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Rentals.Application.Queries;
-using CoreRentalNet.Modules.Rentals.Domain;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetRentalByToken;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetInvoicesByToken;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Numbering;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.IntegrationTests;
 
@@ -19,7 +23,7 @@ public sealed class RentalsPersistenceTests
         => new(
             Guid.NewGuid(),
             lines.Length == 0
-                ? [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))]
+                ? [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, new Money(400_000m, Currencies.Idr))]
                 : lines,
             "Villa Lotus, Canggu");
 
@@ -27,9 +31,12 @@ public sealed class RentalsPersistenceTests
         => new(
             new RentalRepository(context),
             new InvoiceRepository(context),
+            RentalsGraph.Tokens, RentalsGraph.Invoicing,
+            RentalsGraph.Lifecycle,
+            RentalsGraph.Deliveries,
             new SqliteNumberSequence(context),
             new RentalsUnitOfWork(context),
-            new RentalsSettings(Money.Idr(750_000m)),
+            new RentalsSettings(new Money(750_000m, Currencies.Idr)),
             clock);
 
     [Fact] // CO-06, CO-07
@@ -43,8 +50,8 @@ public sealed class RentalsPersistenceTests
             var result = await Service(write, clock).PlaceAsync(Request());
             result.RentalNumber.Should().Be("CR-2026-0001");
 
-            var readBack = await new GetRentalByTokenHandler(new RentalRepository(write), clock)
-                .HandleAsync(new GetRentalByToken(result.RawAccessToken));
+            var readBack = await new GetRentalByTokenHandler(new RentalRepository(write), RentalsGraph.Tokens, RentalsGraph.Money, RentalsGraph.Lifecycle, clock)
+                .HandleAsync(new GetRentalByTokenQuery(result.RawAccessToken));
 
             readBack.Should().NotBeNull();
             readBack!.MonthlyTotal.Amount.Should().Be(400_000m);
@@ -125,7 +132,7 @@ public sealed class RentalsPersistenceTests
             .ToArrayAsync();
 
         hashes.Should().ContainSingle();
-        hashes[0].Should().Be(AccessToken.HashOf(result.RawAccessToken));
+        hashes[0].Should().Be(new OpaqueTokenService().HashOf(result.RawAccessToken));
         hashes[0].Should().NotContain(result.RawAccessToken);
     }
 
@@ -180,7 +187,7 @@ public sealed class RentalsPersistenceTests
         await using var context = await database.CreateMigratedRentalsContextAsync();
 
         await Service(context, clock).PlaceAsync(Request(
-            new OrderLineRequest("MONJVAP81NPQ", "Batu Bolong 27\" 4K", 3, Money.Idr(333_333.33m))));
+            new OrderLineRequest("MONJVAP81NPQ", "Batu Bolong 27\" 4K", 3, new Money(333_333.33m, Currencies.Idr))));
 
         context.ChangeTracker.Clear();
 
@@ -188,8 +195,8 @@ public sealed class RentalsPersistenceTests
 
         stored.Lines[0].UnitMonthlyPrice.Amount.Should().Be(333_333.33m);
         stored.Lines[0].UnitMonthlyPrice.Currency.Should().Be(Currencies.Idr);
-        stored.Lines[0].LineTotal.Amount.Should().Be(999_999.99m);
-        stored.MonthlyTotal.Amount.Should().Be(999_999.99m);
+        RentalsGraph.Money.Round(RentalsGraph.Money.Times(stored.Lines[0].UnitMonthlyPrice, stored.Lines[0].Quantity)).Amount.Should().Be(999_999.99m);
+        RentalsGraph.Lifecycle.MonthlyTotal(stored).Amount.Should().Be(999_999.99m);
         stored.DeliveryFee.Amount.Should().Be(750_000m);
     }
 
@@ -206,8 +213,8 @@ public sealed class RentalsPersistenceTests
         }
 
         await using var second = await database.CreateMigratedRentalsContextAsync();
-        var view = await new GetRentalByTokenHandler(new RentalRepository(second), clock)
-            .HandleAsync(new GetRentalByToken(rawToken));
+        var view = await new GetRentalByTokenHandler(new RentalRepository(second), RentalsGraph.Tokens, RentalsGraph.Money, RentalsGraph.Lifecycle, clock)
+            .HandleAsync(new GetRentalByTokenQuery(rawToken));
 
         view.Should().NotBeNull();
         view!.Lines.Should().ContainSingle();
@@ -226,9 +233,9 @@ public sealed class RentalsPersistenceTests
         var rentals = new RentalRepository(context);
         var invoices = new InvoiceRepository(context);
 
-        (await rentals.FindByTokenAsync(AccessToken.FromRawToken("guessed"))).Should().BeNull();
-        (await new GetRentalByTokenHandler(rentals, clock).HandleAsync(new GetRentalByToken("guessed"))).Should().BeNull();
-        (await new GetInvoicesByTokenHandler(rentals, invoices).HandleAsync(new GetInvoicesByToken("guessed"))).Should().BeEmpty();
+        (await rentals.FindByTokenAsync(new AccessToken(new OpaqueTokenService().HashOf("guessed")))).Should().BeNull();
+        (await new GetRentalByTokenHandler(rentals, RentalsGraph.Tokens, RentalsGraph.Money, RentalsGraph.Lifecycle, clock).HandleAsync(new GetRentalByTokenQuery("guessed"))).Should().BeNull();
+        (await new GetInvoicesByTokenHandler(rentals, invoices, RentalsGraph.Tokens, RentalsGraph.Invoicing).HandleAsync(new GetInvoicesByTokenQuery("guessed"))).Should().BeEmpty();
     }
 
     [Fact]
@@ -241,7 +248,7 @@ public sealed class RentalsPersistenceTests
         var result = await Service(context, clock).PlaceAsync(Request());
         var rental = await new RentalRepository(context).FindByIdAsync(RentalId.From(result.RentalId));
 
-        var duplicate = Invoice.IssueFor(
+        var duplicate = RentalsGraph.Invoicing.IssueFor(
             InvoiceId.New(),
             InvoiceNumber.Of(2026, 99),
             rental!,

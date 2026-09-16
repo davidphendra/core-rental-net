@@ -30,7 +30,7 @@ public sealed class PackagePolicyTests
             .Select(entry => $"{entry.File}: {entry.Line.Trim()}")
             .ToArray();
 
-        offenders.Should().BeEmpty("ADR-0015 excludes these packages and ADR-0001 excludes a mediator");
+        offenders.Should().BeEmpty(" excludes these packages and excludes a mediator");
     }
 
     [Fact] // ARC-05
@@ -44,7 +44,7 @@ public sealed class PackagePolicyTests
             .Where(line => line.Contains('*') || line.Contains("latest", StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        floating.Should().BeEmpty("a floating version is how a vulnerable transitive reappears (ADR-0015)");
+        floating.Should().BeEmpty("a floating version is how a vulnerable transitive reappears");
     }
 
     [Fact] // ARC-05

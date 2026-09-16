@@ -1,15 +1,9 @@
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Domain;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
 
 namespace CoreRentalNet.Modules.Rentals.Application.Views;
 
-public sealed record InvoiceLineView(
-    string Sku,
-    string Name,
-    int Quantity,
-    Money UnitMonthlyPrice,
-    Money LineTotal);
-
+/// <summary>An invoice as the statement page needs it, assembled from the frozen invoice.</summary>
 public sealed record InvoiceView(
     string Number,
     int PeriodIndex,

@@ -1,30 +1,46 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Domain;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
+/// <summary>
+/// Invoicing, now enforced by <see cref="Application.Invoicing.IInvoiceService"/> against a plain
+/// record. Amounts and messages are unchanged.
+/// </summary>
 public sealed class InvoiceTests
 {
     private static readonly DateOnly Placed = new(2026, 1, 10);
 
-    private static Domain.Rental Rental(decimal deliveryFee = 750_000m)
-        => Domain.Rental.Place(
-            RentalId.New(),
-            Guid.NewGuid(),
-            RentalNumber.Of(2026, 1),
-            AccessToken.HashOf("raw"),
-            "Villa Lotus, Canggu",
-            Money.Idr(deliveryFee),
-            [
-                new RentalLine("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m)),
-                new RentalLine("MONJVAP81NPQ", "Batu Bolong 27\" 4K", 2, Money.Idr(300_000m)),
-            ],
-            Placed);
+    private static Rental Rental(decimal deliveryFee = 750_000m, DateOnly? placedOn = null)
+    {
+        var on = placedOn ?? Placed;
 
-    private static Invoice Issue(Domain.Rental rental, int periodIndex = 0, decimal taxRate = 0m, int sequence = 1)
-        => Invoice.IssueFor(InvoiceId.New(), InvoiceNumber.Of(2026, sequence), rental, periodIndex, taxRate, Placed);
+        return new Rental
+        {
+            Id = RentalId.New(),
+            WorkspaceId = Guid.NewGuid(),
+            Number = RentalNumber.Of(2026, 1),
+            AccessTokenHash = new OpaqueTokenService().HashOf("raw"),
+            DeliveryAddress = "Villa Lotus, Canggu",
+            DeliveryFee = new Money(deliveryFee, Currencies.Idr),
+            PlacedOn = on,
+            AnchorDate = on,
+            Status = RentalStatus.Placed,
+            Version = 1,
+            Lines =
+            [
+                new RentalLine { Sku = "CHA449AGLBB0", Name = "Seminyak Lounge", Quantity = 1, UnitMonthlyPrice = new Money(400_000m, Currencies.Idr) },
+                new RentalLine { Sku = "MONJVAP81NPQ", Name = "Batu Bolong 27\" 4K", Quantity = 2, UnitMonthlyPrice = new Money(300_000m, Currencies.Idr) },
+            ],
+        };
+    }
+
+    private static Invoice Issue(Rental rental, int periodIndex = 0, decimal taxRate = 0m, int sequence = 1)
+        => RentalsTestGraph.Invoicing.IssueFor(InvoiceId.New(), InvoiceNumber.Of(2026, sequence), rental, periodIndex, taxRate, Placed);
 
     [Fact] // CO-06, CO-09
     public void The_first_invoice_carries_the_month_and_the_one_time_charge_with_no_tax_line()
@@ -37,7 +53,7 @@ public sealed class InvoiceTests
         invoice.Subtotal.Amount.Should().Be(1_000_000m);
         invoice.DeliveryFee.Amount.Should().Be(750_000m);
         invoice.TaxAmount.Amount.Should().Be(0m);
-        invoice.HasTaxLine.Should().BeFalse();
+        RentalsTestGraph.Invoicing.HasTaxLine(invoice).Should().BeFalse();
         invoice.Total.Amount.Should().Be(1_750_000m);
         invoice.Status.Should().Be(InvoiceStatus.Open);
         invoice.Lines.Should().HaveCount(2);
@@ -64,8 +80,12 @@ public sealed class InvoiceTests
 
         var invoice = Issue(rental);
 
-        invoice.Lines.Select(line => (line.Sku, line.Quantity, line.LineTotal.Amount)).Should().Equal(
-            rental.Lines.Select(line => (line.Sku, line.Quantity, line.LineTotal.Amount)));
+        // A rental line's total is derived (unit price x quantity, rounded once); the invoice freezes it.
+        var orderTotals = rental.Lines
+.Select(line => (line.Sku, line.Quantity, Total: RentalsTestGraph.Money.Round(RentalsTestGraph.Money.Times(line.UnitMonthlyPrice, line.Quantity)).Amount))
+            .ToArray();
+
+        invoice.Lines.Select(line => (line.Sku, line.Quantity, line.LineTotal.Amount)).Should().Equal(orderTotals);
         invoice.Lines[1].LineTotal.Amount.Should().Be(600_000m);
     }
 
@@ -79,7 +99,7 @@ public sealed class InvoiceTests
 
         atEleven.TaxRate.Should().Be(0.11m);
         atEleven.TaxAmount.Amount.Should().Be(110_000m, "tax applies to the rental, not the delivery charge");
-        atEleven.HasTaxLine.Should().BeTrue();
+        RentalsTestGraph.Invoicing.HasTaxLine(atEleven).Should().BeTrue();
         atEleven.Total.Amount.Should().Be(1_860_000m);
 
         atEleven.Subtotal.Amount.Should().Be(
@@ -92,7 +112,7 @@ public sealed class InvoiceTests
     {
         var invoice = Issue(Rental());
 
-        invoice.Settle(Placed);
+        RentalsTestGraph.Invoicing.Settle(invoice, Placed);
 
         invoice.Status.Should().Be(InvoiceStatus.Paid);
         invoice.PaidOn.Should().Be(Placed);
@@ -103,12 +123,12 @@ public sealed class InvoiceTests
     public void An_invoice_cannot_be_paid_twice_or_paid_before_it_was_issued()
     {
         var invoice = Issue(Rental());
-        invoice.Settle(Placed);
+        RentalsTestGraph.Invoicing.Settle(invoice, Placed);
 
-        ((Action)(() => invoice.Settle(Placed))).Should().Throw<DomainRuleViolationException>().WithMessage("*already been paid*");
+        ((Action)(() => RentalsTestGraph.Invoicing.Settle(invoice, Placed))).Should().Throw<DomainRuleViolationException>().WithMessage("*already been paid*");
 
         var fresh = Issue(Rental(), sequence: 2);
-        ((Action)(() => fresh.Settle(Placed.AddDays(-1)))).Should().Throw<DomainRuleViolationException>();
+        ((Action)(() => RentalsTestGraph.Invoicing.Settle(fresh, Placed.AddDays(-1)))).Should().Throw<DomainRuleViolationException>();
     }
 
     [Theory]
@@ -124,20 +144,13 @@ public sealed class InvoiceTests
     [Fact]
     public void A_month_that_spans_a_month_end_is_billed_for_the_whole_month()
     {
-        var rental = Domain.Rental.Place(
-            RentalId.New(),
-            Guid.NewGuid(),
-            RentalNumber.Of(2026, 3),
-            AccessToken.HashOf("raw"),
-            "Villa Lotus, Canggu",
-            Money.Idr(750_000m),
-            [new RentalLine("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))],
-            new DateOnly(2026, 1, 31));
+        var rental = Rental(placedOn: new DateOnly(2026, 1, 31));
 
-        var february = Invoice.IssueFor(InvoiceId.New(), InvoiceNumber.Of(2026, 1), rental, 1, 0m, new DateOnly(2026, 1, 31));
+        var february = RentalsTestGraph.Invoicing.IssueFor(
+            InvoiceId.New(), InvoiceNumber.Of(2026, 1), rental, 1, 0m, new DateOnly(2026, 1, 31));
 
         february.PeriodStart.Should().Be(new DateOnly(2026, 2, 28));
         february.PeriodEnd.Should().Be(new DateOnly(2026, 3, 31));
-        february.Subtotal.Amount.Should().Be(400_000m, "there is no proration; a month costs a month");
+        february.Subtotal.Amount.Should().Be(1_000_000m, "there is no proration; a month costs a month");
     }
 }

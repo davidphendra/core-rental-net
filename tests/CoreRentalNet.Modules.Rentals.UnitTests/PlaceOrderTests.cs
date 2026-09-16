@@ -2,10 +2,13 @@ using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Rentals.Application.Queries;
-using CoreRentalNet.Modules.Rentals.Domain;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetRentalByToken;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetInvoicesByToken;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
+using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 
@@ -21,8 +24,10 @@ public sealed class PlaceOrderTests
             Invoices = new InMemoryInvoiceRepository();
             Numbers = new CountingNumberSequence();
             UnitOfWork = new RecordingUnitOfWork();
-            Settings = new RentalsSettings(Money.Idr(750_000m));
-            Service = new PlaceOrderService(Rentals, Invoices, Numbers, UnitOfWork, Settings, Clock);
+            Settings = new RentalsSettings(new Money(750_000m, Currencies.Idr));
+            Service = new PlaceOrderService(
+                Rentals, Invoices, RentalsTestGraph.Tokens, RentalsTestGraph.Invoicing, RentalsTestGraph.Lifecycle,
+                RentalsTestGraph.Deliveries, Numbers, UnitOfWork, Settings, Clock);
         }
 
         public FakeTimeProvider Clock { get; }
@@ -43,7 +48,7 @@ public sealed class PlaceOrderTests
             => new(
                 Guid.NewGuid(),
                 lines.Length == 0
-                    ? [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))]
+                    ? [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, new Money(400_000m, Currencies.Idr))]
                     : lines,
                 "Villa Lotus, Canggu");
     }
@@ -58,6 +63,33 @@ public sealed class PlaceOrderTests
         var placing = async () => await fixture.Service.PlaceAsync(Fixture.Request() with { DeliveryAddress = address });
 
         await placing.Should().ThrowAsync<DomainRuleViolationException>().WithMessage("*delivery address*");
+    }
+
+    [Fact]
+    public async Task An_order_without_a_workspace_is_refused()
+    {
+        // The guard used to sit on Rental.Place; it lives in PlaceOrderService now.
+        var fixture = new Fixture();
+
+        var placing = async () => await fixture.Service.PlaceAsync(Fixture.Request() with { WorkspaceId = Guid.Empty });
+
+        await placing.Should().ThrowAsync<DomainRuleViolationException>()
+            .WithMessage("An order must remember the workspace it came from.");
+    }
+
+    [Fact]
+    public async Task A_line_with_no_units_is_refused()
+    {
+        // The guard used to sit on the RentalLine constructor; it lives in PlaceOrderService now.
+        var fixture = new Fixture();
+
+        var placing = async () => await fixture.Service.PlaceAsync(new PlaceOrderRequest(
+            Guid.NewGuid(),
+            [new OrderLineRequest("CHA449AGLBB0", "Chair", 0, new Money(400_000m, Currencies.Idr))],
+            "Villa Lotus, Canggu"));
+
+        await placing.Should().ThrowAsync<DomainRuleViolationException>()
+            .WithMessage("A line needs at least one unit, but 0 was given.");
     }
 
     [Fact] // CO-06, CO-07
@@ -106,7 +138,7 @@ public sealed class PlaceOrderTests
 
         var rental = fixture.Rentals.All[0];
         rental.AccessTokenHash.Should().NotBe(result.RawAccessToken);
-        rental.AccessTokenHash.Should().Be(AccessToken.HashOf(result.RawAccessToken));
+        rental.AccessTokenHash.Should().Be(new OpaqueTokenService().HashOf(result.RawAccessToken));
         rental.AccessTokenHash.Should().HaveLength(64);
     }
 
@@ -128,7 +160,8 @@ public sealed class PlaceOrderTests
         var clock = new FakeTimeProvider(new DateTimeOffset(2026, 1, 31, 19, 0, 0, TimeSpan.Zero));
         var fixture = new Fixture();
         var service = new PlaceOrderService(
-            fixture.Rentals, fixture.Invoices, fixture.Numbers, fixture.UnitOfWork, fixture.Settings, clock);
+            fixture.Rentals, fixture.Invoices, RentalsTestGraph.Tokens, RentalsTestGraph.Invoicing, RentalsTestGraph.Lifecycle,
+            RentalsTestGraph.Deliveries, fixture.Numbers, fixture.UnitOfWork, fixture.Settings, clock);
 
         var result = await service.PlaceAsync(Fixture.Request());
 
@@ -169,7 +202,7 @@ public sealed class PlaceOrderTests
 
         var action = async () => await fixture.Service.PlaceAsync(new PlaceOrderRequest(
             Guid.NewGuid(),
-            [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, Money.Idr(400_000m))],
+            [new OrderLineRequest("CHA449AGLBB0", "Seminyak Lounge", 1, new Money(400_000m, Currencies.Idr))],
             address));
 
         await action.Should().ThrowAsync<DomainRuleViolationException>();
@@ -181,9 +214,9 @@ public sealed class PlaceOrderTests
         var fixture = new Fixture();
 
         var result = await fixture.Service.PlaceAsync(Fixture.Request(
-            new OrderLineRequest("MONJVAP81NPQ", "Batu Bolong 27\" 4K", 3, Money.Idr(300_000m))));
+            new OrderLineRequest("MONJVAP81NPQ", "Batu Bolong 27\" 4K", 3, new Money(300_000m, Currencies.Idr))));
 
-        fixture.Rentals.All[0].MonthlyTotal.Amount.Should().Be(900_000m);
+        RentalsTestGraph.Lifecycle.MonthlyTotal(fixture.Rentals.All[0]).Amount.Should().Be(900_000m);
         result.FirstInvoiceTotal.Amount.Should().Be(1_650_000m);
     }
 
@@ -192,9 +225,9 @@ public sealed class PlaceOrderTests
     {
         var fixture = new Fixture();
         var result = await fixture.Service.PlaceAsync(Fixture.Request());
-        var handler = new GetRentalByTokenHandler(fixture.Rentals, fixture.Clock);
+        var handler = new GetRentalByTokenHandler(fixture.Rentals, RentalsTestGraph.Tokens, RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, fixture.Clock);
 
-        var view = await handler.HandleAsync(new GetRentalByToken(result.RawAccessToken));
+        var view = await handler.HandleAsync(new GetRentalByTokenQuery(result.RawAccessToken));
 
         view.Should().NotBeNull();
         view!.Number.Should().Be(result.RentalNumber);
@@ -212,12 +245,12 @@ public sealed class PlaceOrderTests
     {
         var fixture = new Fixture();
         await fixture.Service.PlaceAsync(Fixture.Request());
-        var rentalHandler = new GetRentalByTokenHandler(fixture.Rentals, fixture.Clock);
-        var invoiceHandler = new GetInvoicesByTokenHandler(fixture.Rentals, fixture.Invoices);
+        var rentalHandler = new GetRentalByTokenHandler(fixture.Rentals, RentalsTestGraph.Tokens, RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, fixture.Clock);
+        var invoiceHandler = new GetInvoicesByTokenHandler(fixture.Rentals, fixture.Invoices, RentalsTestGraph.Tokens, RentalsTestGraph.Invoicing);
 
-        (await rentalHandler.HandleAsync(new GetRentalByToken("guessed-token"))).Should().BeNull();
-        (await rentalHandler.HandleAsync(new GetRentalByToken("  "))).Should().BeNull();
-        (await invoiceHandler.HandleAsync(new GetInvoicesByToken("guessed-token"))).Should().BeEmpty();
+        (await rentalHandler.HandleAsync(new GetRentalByTokenQuery("guessed-token"))).Should().BeNull();
+        (await rentalHandler.HandleAsync(new GetRentalByTokenQuery("  "))).Should().BeNull();
+        (await invoiceHandler.HandleAsync(new GetInvoicesByTokenQuery("guessed-token"))).Should().BeEmpty();
     }
 
     [Fact] // ORD-04
@@ -225,10 +258,10 @@ public sealed class PlaceOrderTests
     {
         var fixture = new Fixture();
         var result = await fixture.Service.PlaceAsync(Fixture.Request());
-        var handler = new GetRentalByTokenHandler(fixture.Rentals, fixture.Clock);
+        var handler = new GetRentalByTokenHandler(fixture.Rentals, RentalsTestGraph.Tokens, RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, fixture.Clock);
 
-        var first = await handler.HandleAsync(new GetRentalByToken(result.RawAccessToken));
-        var second = await handler.HandleAsync(new GetRentalByToken(result.RawAccessToken));
+        var first = await handler.HandleAsync(new GetRentalByTokenQuery(result.RawAccessToken));
+        var second = await handler.HandleAsync(new GetRentalByTokenQuery(result.RawAccessToken));
 
         second.Should().BeEquivalentTo(first, "reopening the link must show the same order");
     }
@@ -238,9 +271,9 @@ public sealed class PlaceOrderTests
     {
         var fixture = new Fixture();
         var result = await fixture.Service.PlaceAsync(Fixture.Request());
-        var handler = new GetInvoicesByTokenHandler(fixture.Rentals, fixture.Invoices);
+        var handler = new GetInvoicesByTokenHandler(fixture.Rentals, fixture.Invoices, RentalsTestGraph.Tokens, RentalsTestGraph.Invoicing);
 
-        var invoices = await handler.HandleAsync(new GetInvoicesByToken(result.RawAccessToken));
+        var invoices = await handler.HandleAsync(new GetInvoicesByTokenQuery(result.RawAccessToken));
 
         invoices.Should().ContainSingle();
         invoices[0].Number.Should().Be(result.InvoiceNumber);

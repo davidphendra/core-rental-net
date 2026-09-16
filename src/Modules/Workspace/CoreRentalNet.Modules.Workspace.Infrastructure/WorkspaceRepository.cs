@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CoreRentalNet.Modules.Workspace.Infrastructure;
 
+/// <summary>The EF Core adapter behind <see cref="Domain.IWorkspaceRepository"/>.</summary>
 public sealed class WorkspaceRepository(WorkspaceContext context) : IWorkspaceRepository
 {
     public async Task<Domain.Workspace?> FindByTokenAsync(

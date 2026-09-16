@@ -5,7 +5,7 @@ using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Checkout;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Rentals.Application.Queries;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetRentalByToken;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.AssignProduct;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.SetDeliveryAddress;
@@ -62,15 +62,14 @@ public sealed class EndToEndCheckoutTests
         var prices = RealCatalog();
 
         var workspaceService = new WorkspaceService(new SlotRuleProvider());
-        var views = new WorkspaceViewService(new SlotRuleProvider(), new WorkspaceQuoteService(RentalsGraph.Money, prices), new WorkspaceQueryService(new SlotRuleProvider()));
 
         // A customer fills a workspace.
-        await new StartDraftHandler(workspaceRepository, RentalsGraph.Tokens, views).HandleAsync(new StartDraft(RawDraftToken));
+        await new StartDraftHandler(workspaceRepository, RentalsGraph.Tokens).HandleAsync(new StartDraftCommand(RawDraftToken));
         // The chair slot holds one unit; the monitor slot holds up to three.
-        await new AssignProductHandler(workspaceRepository, RentalsGraph.Tokens, prices, workspaceService, views).HandleAsync(new AssignProduct(RawDraftToken, Chair));
-        await new AssignProductHandler(workspaceRepository, RentalsGraph.Tokens, prices, workspaceService, views).HandleAsync(new AssignProduct(RawDraftToken, Monitor, 2));
-        await new SetDeliveryAddressHandler(workspaceRepository, RentalsGraph.Tokens, workspaceService, views)
-            .HandleAsync(new SetDeliveryAddress(RawDraftToken, "Villa Lotus, Canggu"));
+        await new AssignProductHandler(workspaceRepository, RentalsGraph.Tokens, prices, workspaceService).HandleAsync(new AssignProductCommand(RawDraftToken, Chair));
+        await new AssignProductHandler(workspaceRepository, RentalsGraph.Tokens, prices, workspaceService).HandleAsync(new AssignProductCommand(RawDraftToken, Monitor, 2));
+        await new SetDeliveryAddressHandler(workspaceRepository, RentalsGraph.Tokens, workspaceService)
+            .HandleAsync(new SetDeliveryAddressCommand(RawDraftToken, "Villa Lotus, Canggu"));
 
         var converter = new ConvertWorkspaceToOrder(workspaceRepository, RentalsGraph.Tokens, new WorkspaceQueryService(new SlotRuleProvider()), workspaceService);
 
@@ -86,7 +85,7 @@ public sealed class EndToEndCheckoutTests
             clock);
 
         var checkout = new CheckoutCommandHandler(
-            converter, prices, rentalRepository, placeOrder, RentalsGraph.Money, RentalsGraph.Lifecycle, RentalsGraph.Deliveries);
+            converter, prices, rentalRepository, placeOrder, new CheckoutConfirmation(RentalsGraph.Money, RentalsGraph.Lifecycle, RentalsGraph.Deliveries));
 
         return new Harness(workspaceContext, rentalsContext, checkout, converter, clock);
     }
@@ -131,7 +130,7 @@ public sealed class EndToEndCheckoutTests
 
         // The confirmation the customer is sent to.
         var view = await new GetRentalByTokenHandler(new RentalRepository(harness.Rentals), RentalsGraph.Tokens, RentalsGraph.Money, RentalsGraph.Lifecycle, clock)
-            .HandleAsync(new GetRentalByToken(result.RawAccessToken));
+            .HandleAsync(new GetRentalByTokenQuery(result.RawAccessToken));
 
         view.Should().NotBeNull();
         view!.Number.Should().Be(result.RentalNumber);
@@ -179,10 +178,9 @@ public sealed class EndToEndCheckoutTests
         var prices = RealCatalog();
 
         var workspaceService = new WorkspaceService(new SlotRuleProvider());
-        var views = new WorkspaceViewService(new SlotRuleProvider(), new WorkspaceQuoteService(RentalsGraph.Money, prices), new WorkspaceQueryService(new SlotRuleProvider()));
 
-        await new StartDraftHandler(workspaceRepository, RentalsGraph.Tokens, views).HandleAsync(new StartDraft("no-address"));
-        await new AssignProductHandler(workspaceRepository, RentalsGraph.Tokens, prices, workspaceService, views).HandleAsync(new AssignProduct("no-address", Chair));
+        await new StartDraftHandler(workspaceRepository, RentalsGraph.Tokens).HandleAsync(new StartDraftCommand("no-address"));
+        await new AssignProductHandler(workspaceRepository, RentalsGraph.Tokens, prices, workspaceService).HandleAsync(new AssignProductCommand("no-address", Chair));
 
         var checkout = new CheckoutCommandHandler(
             new ConvertWorkspaceToOrder(workspaceRepository, RentalsGraph.Tokens, new WorkspaceQueryService(new SlotRuleProvider()), workspaceService),
@@ -193,7 +191,7 @@ public sealed class EndToEndCheckoutTests
                 RentalsGraph.Tokens, RentalsGraph.Invoicing, RentalsGraph.Lifecycle, RentalsGraph.Deliveries,
                 new SqliteNumberSequence(rentalsContext), new RentalsUnitOfWork(rentalsContext),
                 new RentalsSettings(new Money(750_000m, Currencies.Idr)), Clock()),
-            RentalsGraph.Money, RentalsGraph.Lifecycle, RentalsGraph.Deliveries);
+            new CheckoutConfirmation(RentalsGraph.Money, RentalsGraph.Lifecycle, RentalsGraph.Deliveries));
 
         var refused = async () => await checkout.CheckoutAsync(new CheckoutCommand("no-address", "this is a demo"));
 
@@ -232,11 +230,10 @@ public sealed class EndToEndCheckoutTests
         var prices = RealCatalog();
 
         var workspaceService = new WorkspaceService(new SlotRuleProvider());
-        var views = new WorkspaceViewService(new SlotRuleProvider(), new WorkspaceQuoteService(RentalsGraph.Money, prices), new WorkspaceQueryService(new SlotRuleProvider()));
 
-        await new StartDraftHandler(workspaceRepository, RentalsGraph.Tokens, views).HandleAsync(new StartDraft("empty"));
-        await new SetDeliveryAddressHandler(workspaceRepository, RentalsGraph.Tokens, workspaceService, views)
-            .HandleAsync(new SetDeliveryAddress("empty", "Villa Lotus, Canggu"));
+        await new StartDraftHandler(workspaceRepository, RentalsGraph.Tokens).HandleAsync(new StartDraftCommand("empty"));
+        await new SetDeliveryAddressHandler(workspaceRepository, RentalsGraph.Tokens, workspaceService)
+            .HandleAsync(new SetDeliveryAddressCommand("empty", "Villa Lotus, Canggu"));
 
         var checkout = new CheckoutCommandHandler(
             new ConvertWorkspaceToOrder(workspaceRepository, RentalsGraph.Tokens, new WorkspaceQueryService(new SlotRuleProvider()), workspaceService), prices, new RentalRepository(rentalsContext),
@@ -244,7 +241,7 @@ public sealed class EndToEndCheckoutTests
                 RentalsGraph.Tokens, RentalsGraph.Invoicing, RentalsGraph.Lifecycle, RentalsGraph.Deliveries,
                 new SqliteNumberSequence(rentalsContext), new RentalsUnitOfWork(rentalsContext),
                 new RentalsSettings(new Money(750_000m, Currencies.Idr)), Clock()),
-            RentalsGraph.Money, RentalsGraph.Lifecycle, RentalsGraph.Deliveries);
+            new CheckoutConfirmation(RentalsGraph.Money, RentalsGraph.Lifecycle, RentalsGraph.Deliveries));
 
         var action = async () => await checkout.CheckoutAsync(new CheckoutCommand("empty", "this is a demo"));
 

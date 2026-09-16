@@ -1,7 +1,8 @@
 using System.Data.Common;
-using CoreRentalNet.Modules.Rentals.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using CoreRentalNet.Modules.Rentals.Domain.Numbering;
+using CoreRentalNet.Modules.Rentals.Domain.Persistence;
 
 namespace CoreRentalNet.Modules.Rentals.Infrastructure;
 

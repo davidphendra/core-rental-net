@@ -8,7 +8,7 @@ namespace CoreRentalNet.E2E;
 /// </summary>
 /// <remarks>
 /// A second host rather than the guest one, because identity is additive and the funnel must be
-/// exercised with it off as well (ADR-0016). Signing in here goes through the provider's own page:
+/// exercised with it off as well. Signing in here goes through the provider's own page:
 /// a real OIDC handshake over a real socket, with nothing intercepted.
 /// </remarks>
 public abstract class AuthenticatedE2ETest(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)

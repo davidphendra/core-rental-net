@@ -15,7 +15,7 @@ namespace CoreRentalNet.Modules.Workspace.Application.Workspace.Rules;
 /// </remarks>
 public sealed class SlotRuleProvider : ISlotRuleProvider
 {
-    private static readonly ImmutableArray<SlotRule> Rules =
+    private static readonly ImmutableArray<SlotRule> s_rules =
     [
         new(SlotId.Desk, "Desk", 1, IsMandatory: true),
         new(SlotId.Chair, "Chair", 1, IsMandatory: true),
@@ -26,13 +26,13 @@ public sealed class SlotRuleProvider : ISlotRuleProvider
         new(SlotId.RelaxZone, "Relax Zone", 1),
     ];
 
-    public IReadOnlyList<SlotRule> All => Rules;
+    public IReadOnlyList<SlotRule> All => s_rules;
 
-    public IReadOnlyList<SlotRule> Mandatory => [.. Rules.Where(rule => rule.IsMandatory)];
+    public IReadOnlyList<SlotRule> Mandatory => [.. s_rules.Where(rule => rule.IsMandatory)];
 
     public SlotRule For(SlotId slot)
     {
-        foreach (var rule in Rules)
+        foreach (var rule in s_rules)
         {
             if (rule.Slot == slot)
             {
@@ -43,5 +43,5 @@ public sealed class SlotRuleProvider : ISlotRuleProvider
         throw new DomainRuleViolationException($"No rule is defined for slot '{slot}'.");
     }
 
-    public int TotalCapacity => Rules.Sum(rule => rule.MaxQuantity);
+    public int TotalCapacity => s_rules.Sum(rule => rule.MaxQuantity);
 }

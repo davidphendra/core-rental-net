@@ -6,7 +6,7 @@ namespace CoreRentalNet.Modules.Rentals.Application.Checkout;
 /// The typed acknowledgement that stands in for payment.
 /// </summary>
 /// <remarks>
-/// There is no payment provider in this application (ADR-0010), so the deliberate act of typing
+/// There is no payment provider in this application, so the deliberate act of typing
 /// the phrase is the whole of checkout. It is checked in the browser to keep the confirm control
 /// disabled, and checked again here because a disabled button is a courtesy, never a boundary.
 /// Matching is trimmed and case-insensitive, otherwise exact: a demonstration should not fail on a

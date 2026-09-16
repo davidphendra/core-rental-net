@@ -1,7 +1,8 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Domain;
 using Xunit;
+using CoreRentalNet.Modules.Rentals.Domain.Invoices;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.UnitTests;
 

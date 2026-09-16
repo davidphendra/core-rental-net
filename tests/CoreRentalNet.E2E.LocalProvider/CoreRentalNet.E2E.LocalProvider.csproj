@@ -4,7 +4,7 @@
     <RootNamespace>CoreRentalNet.E2E.LocalProvider</RootNamespace>
     <IsPackable>false</IsPackable>
     <!-- Started as a process by the browser suite. It is not a test project itself; it is the
-         provider the suite's real OIDC handshake runs against (ADR-0020). -->
+         provider the suite's real OIDC handshake runs against. -->
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 

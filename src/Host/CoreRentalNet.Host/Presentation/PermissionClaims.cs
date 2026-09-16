@@ -13,7 +13,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// post-login Action cannot see them — its <c>event.authorization</c> carries roles only, an
 /// acknowledged gap. The one place they can be read is therefore the access token that arrives in
 /// the same code exchange as the ID token this application has already validated. The permissions
-/// become claims and the token itself is still not stored (ADR-0019).
+/// become claims and the token itself is still not stored.
 /// </para>
 /// <para>
 /// The signature is not verified again. The token arrived over TLS from the provider's own token

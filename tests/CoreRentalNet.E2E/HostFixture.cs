@@ -8,9 +8,9 @@ namespace CoreRentalNet.E2E;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Two hosts run, because identity is optional (ADR-0016): the guest host has it off, so the funnel
+/// Two hosts run, because identity is optional: the guest host has it off, so the funnel
 /// is exercised exactly as it ships without a provider, and the authenticated host has it on and
-/// points at the local provider in this repository (ADR-0020), so a real OIDC handshake can be
+/// points at the local provider in this repository, so a real OIDC handshake can be
 /// driven and the builder's gate can be observed from the browser.
 /// </para>
 /// <para>
@@ -231,10 +231,4 @@ public sealed class HostFixture : IAsyncLifetime
 
         return realTenantBaseUrl;
     }
-}
-
-[CollectionDefinition(Name)]
-public sealed class E2ECollection : ICollectionFixture<HostFixture>
-{
-    public const string Name = "e2e";
 }

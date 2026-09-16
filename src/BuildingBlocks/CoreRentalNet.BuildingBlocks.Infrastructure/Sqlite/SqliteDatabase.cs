@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 
 namespace CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
@@ -12,6 +13,7 @@ namespace CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 /// </remarks>
 public static class SqliteDatabase
 {
+    /// <summary>An open connection with the settings' pragmas already applied, and its directory created.</summary>
     public static SqliteConnection Open(SqliteDatabaseSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -25,6 +27,7 @@ public static class SqliteDatabase
         return connection;
     }
 
+    /// <summary>Runs the settings' pragma script against an already-open connection.</summary>
     public static void ApplyPragmas(SqliteConnection connection, SqliteDatabaseSettings settings)
     {
         ArgumentNullException.ThrowIfNull(connection);
@@ -36,6 +39,7 @@ public static class SqliteDatabase
         command.ExecuteNonQuery();
     }
 
+    /// <summary>Reads back the journal mode, so a caller can assert what the pragma actually set.</summary>
     public static string ReadJournalMode(SqliteConnection connection)
     {
         ArgumentNullException.ThrowIfNull(connection);
@@ -46,6 +50,7 @@ public static class SqliteDatabase
         return (command.ExecuteScalar() as string ?? string.Empty).ToUpperInvariant();
     }
 
+    /// <summary>Reads back the busy timeout in milliseconds, which is per connection rather than per file.</summary>
     public static int ReadBusyTimeoutMilliseconds(SqliteConnection connection)
     {
         ArgumentNullException.ThrowIfNull(connection);
@@ -53,7 +58,7 @@ public static class SqliteDatabase
         using var command = connection.CreateCommand();
         command.CommandText = "PRAGMA busy_timeout;";
 
-        return Convert.ToInt32(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
+        return Convert.ToInt32(command.ExecuteScalar(), CultureInfo.InvariantCulture);
     }
 
     private static void EnsureDirectoryExists(string databasePath)

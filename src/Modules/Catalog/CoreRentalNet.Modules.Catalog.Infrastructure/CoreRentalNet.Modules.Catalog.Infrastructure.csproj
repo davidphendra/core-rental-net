@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../CoreRentalNet.Modules.Catalog.Application/CoreRentalNet.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="..\CoreRentalNet.Modules.Catalog.Domain\CoreRentalNet.Modules.Catalog.Domain.csproj" />
+    <!-- Outward reference: this project implements the port the application project declares. -->
+    <ProjectReference Include="..\CoreRentalNet.Modules.Catalog.Application\CoreRentalNet.Modules.Catalog.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

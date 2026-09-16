@@ -46,7 +46,7 @@ public sealed class SourceLayoutTests
 
                 tableName.Should().StartWith(
                     $"{module}_",
-                    $"table '{tableName}' must be prefixed with its owning module (ADR-0002)");
+                    $"table '{tableName}' must be prefixed with its owning module");
             }
         }
     }
@@ -90,7 +90,7 @@ public sealed class SourceLayoutTests
         }
 
         offenders.Should().BeEmpty(
-            "code must take the time from an injected TimeProvider or from the caller so tests can control it (ADR-0011)");
+            "code must take the time from an injected TimeProvider or from the caller so tests can control it");
     }
 
     private static IEnumerable<string> ExistingModules()

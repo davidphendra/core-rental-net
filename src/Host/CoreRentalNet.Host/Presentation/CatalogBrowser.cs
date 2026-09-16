@@ -1,4 +1,4 @@
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
+using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Host.Presentation;
 
@@ -20,13 +20,13 @@ namespace CoreRentalNet.Host.Presentation;
 /// </remarks>
 public sealed class CatalogBrowser
 {
-    private readonly CatalogPageQuery ask;
+    private readonly CatalogPageQuery _ask;
 
     public CatalogBrowser(CatalogPageQuery ask)
     {
         ArgumentNullException.ThrowIfNull(ask);
 
-        this.ask = ask;
+        _ask = ask;
     }
 
     /// <summary>Which category is being shown.</summary>
@@ -36,7 +36,7 @@ public sealed class CatalogBrowser
     public string Query { get; private set; } = string.Empty;
 
     /// <summary>The catalog's answer for the tab and the search.</summary>
-    public IReadOnlyList<ProductListItem> Items { get; private set; } = [];
+    public IReadOnlyList<ProductView> Items { get; private set; } = [];
 
     /// <summary>
     /// Chooses a category and empties the search: a search that matched nothing in the last tab is
@@ -59,8 +59,8 @@ public sealed class CatalogBrowser
     }
 
     /// <summary>Asks the catalog again for what the tab and the search now describe.</summary>
-    public void Reload() => Items = ask(Tab, Query);
+    public void Reload() => Items = _ask(Tab, Query);
 }
 
 /// <summary>How the browser asks the catalog for what one tab and one search describe.</summary>
-public delegate IReadOnlyList<ProductListItem> CatalogPageQuery(CatalogTab tab, string search);
+public delegate IReadOnlyList<ProductView> CatalogPageQuery(CatalogTab tab, string search);

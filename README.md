@@ -117,7 +117,7 @@ application behaves exactly as described above. To turn it on against your own A
    The gate itself is `Authorization:CatalogRead:ClaimType` = `permissions` and `:ClaimValue` =
    `read:catalog`. An account that carries it may open the builder; a signed-in account that does
    not is told the builder is refused. The header's link is hidden unless the account carries the
-   claim, so the affordance and the gate agree. The trade-offs are recorded in ADR-0022.
+   claim, so the affordance and the gate agree.
 
 6. Run the app and use the sign-in link in the header.
 
@@ -165,7 +165,7 @@ green unit suite and to every command-line check.
 
 One test is opt-in and reaches a **real tenant**. It is skipped unless credentials are in the
 environment, because it needs a tenant, a real account and the network - none of which belongs in
-the hermetic suite (ADR-0020):
+the hermetic suite:
 
 ```bash
 CORERENTAL_TENANT_EMAIL=you@example.com CORERENTAL_TENANT_PASSWORD=... \
@@ -186,16 +186,19 @@ src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quot
 src/Modules/Rentals/    Orders, invoices, periods, the schedule
 src/Host/               The Blazor application, its components and its design tokens
 src/shared/data/        products.json, the single source of truth for every price
-specs/                  ADRs, architecture, the test matrix, epic capsules, verifications
+specs/                  architecture, the test matrix, epic capsules, verifications
 ```
 
 `specs/` is the record of why, not just what:
 
-- `specs/adr/` — 15 decisions, each with the reasoning and the facts behind it
+- `specs/tech-architecture/architecture-style.md` — the Domain-as-records / Application-services
+  style, the coding standards, and the invariant relocation map
+- `specs/REFACTOR_DDD_TO_CLEAN_LATEST.md` — the DDD → records/services complexity matrix and staged
+  plan
 - `specs/architecture.md` — the module map, the trust model, the measured SQLite constraints
 - `specs/test-matrix.md` — 101 scenarios and the layer that covers each one
 - `specs/verifications/` — what was actually run and observed, including what each run corrected
-- `specs/epics/archive/` — the eight epics with their evidence and their deliberate omissions
+- `specs/epics/` — the active epic capsules
 
 ## Decisions worth knowing before you read the code
 

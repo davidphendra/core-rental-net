@@ -7,6 +7,10 @@ using CoreRentalNet.Host.Presentation;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddLocalDevelopmentSettings();
+// Before anything formats a value: see BusinessCulture for why the culture is set here and read
+// from configuration rather than written beside each format string.
+builder.AddBusinessCulture();
+builder.AddBuildingBlocks();
 
 var identity = builder.AddOptionalIdentity();
 builder.AddCatalogAuthorization();

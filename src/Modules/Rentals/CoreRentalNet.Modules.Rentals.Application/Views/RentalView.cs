@@ -1,14 +1,7 @@
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Rentals.Domain;
+using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 
 namespace CoreRentalNet.Modules.Rentals.Application.Views;
-
-public sealed record RentalLineView(
-    string Sku,
-    string Name,
-    int Quantity,
-    Money UnitMonthlyPrice,
-    Money LineTotal);
 
 /// <summary>
 /// An order as the confirmation page needs it. Deliberately assembled from the frozen order, so

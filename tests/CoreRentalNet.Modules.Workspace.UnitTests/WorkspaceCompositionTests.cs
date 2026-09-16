@@ -17,11 +17,11 @@ public sealed class WorkspaceCompositionTests
         var catalog = new TestCatalog()
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("MON0001", 300000m);
-        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces, context.Views);
-        await assign.HandleAsync(new AssignProduct(context.Token, "CHA0001"));
-        await assign.HandleAsync(new AssignProduct(context.Token, "MON0001", 2));
-        await new SetDeliveryAddressHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces, context.Views)
-            .HandleAsync(new SetDeliveryAddress(context.Token, "Villa Lotus, Canggu"));
+        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces);
+        await assign.HandleAsync(new AssignProductCommand(context.Token, "CHA0001"));
+        await assign.HandleAsync(new AssignProductCommand(context.Token, "MON0001", 2));
+        await new SetDeliveryAddressHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
+            .HandleAsync(new SetDeliveryAddressCommand(context.Token, "Villa Lotus, Canggu"));
 
         IDefineWorkspaceComposition contract = new DefineWorkspaceComposition(context.Repository, WorkspaceTestContext.Tokens);
 

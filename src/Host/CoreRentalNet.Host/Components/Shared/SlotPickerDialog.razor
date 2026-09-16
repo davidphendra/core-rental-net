@@ -1,4 +1,4 @@
-@inject IGetCatalogPage CatalogPage
+@inject ISearchCatalogHandler CatalogSearch
 @* Opens already filtered to the slot that was clicked, so the choice is always valid.
 
    The query to ask arrives as an argument to ShowAsync rather than as a parameter, because a
@@ -61,13 +61,13 @@
 
 @code {
     private ModalDialog? dialog;
-    private IReadOnlyList<ProductListItem> products = [];
-    private GetCatalogPage request = new();
+    private IReadOnlyList<ProductView> products = [];
+    private SearchCatalogQuery request = new();
     private string query = string.Empty;
 
     [Parameter, EditorRequired] public string Title { get; set; } = "Choose an item";
 
-    [Parameter] public EventCallback<ProductListItem> OnPick { get; set; }
+    [Parameter] public EventCallback<ProductView> OnPick { get; set; }
 
     [Parameter] public EventCallback OnDismissed { get; set; }
 
@@ -89,7 +89,7 @@
     /// Opens on what the slot accepts, with an empty search, so a second visit does not inherit the
     /// first one's.
     /// </summary>
-    public Task ShowAsync(GetCatalogPage query)
+    public Task ShowAsync(SearchCatalogQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -111,9 +111,9 @@
         return Task.CompletedTask;
     }
 
-    private void Load() => products = CatalogPage.Handle(request with { Search = query });
+    private void Load() => products = CatalogSearch.Handle(request with { Search = query });
 
-    private async Task PickAsync(ProductListItem product)
+    private async Task PickAsync(ProductView product)
     {
         await OnPick.InvokeAsync(product);
         await CloseAsync();

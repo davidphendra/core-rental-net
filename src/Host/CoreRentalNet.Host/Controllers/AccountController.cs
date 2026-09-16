@@ -7,13 +7,13 @@ namespace CoreRentalNet.Host.Controllers;
 
 /// <summary>
 /// The only HTTP surface this application has, and the only place it can be: a circuit has no
-/// <c>HttpContext</c>, so it cannot challenge, set a cookie or redirect (ADR-0017).
+/// <c>HttpContext</c>, so it cannot challenge, set a cookie or redirect.
 /// </summary>
 /// <remarks>
 /// Written as endpoint mappings rather than an MVC controller on purpose. It is the whole of the
 /// application's controller layer, the two routes are redirects with no input to bind and no body
 /// to render, and an <c>MvcController</c> would bring the model binding and filter pipeline into an
-/// application that otherwise has none (ADR-0012). Converting it is a small change if the project
+/// application that otherwise has none. Converting it is a small change if the project
 /// ever grows real endpoints.
 /// </remarks>
 public static class AccountController

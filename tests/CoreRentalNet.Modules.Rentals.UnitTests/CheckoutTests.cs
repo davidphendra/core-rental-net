@@ -116,7 +116,7 @@ public sealed class CheckoutTests
             PlaceOrder = new FakePlaceOrder();
             Rentals = new InMemoryRentalRepository();
             CommandHandler = new CheckoutCommandHandler(
-                Converter, Prices, Rentals, PlaceOrder, RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries);
+                Converter, Prices, Rentals, PlaceOrder, new CheckoutConfirmation(RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries));
         }
 
         public static Guid WorkspaceId { get; } = Guid.NewGuid();
@@ -259,7 +259,7 @@ public sealed class CheckoutTests
 
         var service = new CheckoutCommandHandler(
             converter, new FakePrices().Add("CHA449AGLBB0", 400_000m), rentals, placeOrder,
-            RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries);
+            new CheckoutConfirmation(RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries));
 
         var result = await service.CheckoutAsync(Fixture.Command());
 
@@ -335,7 +335,7 @@ public sealed class CheckoutTests
 
         var service = new CheckoutCommandHandler(
             converter, new FakePrices(), new InMemoryRentalRepository(), new FakePlaceOrder(),
-            RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries);
+            new CheckoutConfirmation(RentalsTestGraph.Money, RentalsTestGraph.Lifecycle, RentalsTestGraph.Deliveries));
         var action = async () => await service.CheckoutAsync(Fixture.Command());
 
         await action.Should().ThrowAsync<NotFoundException>();

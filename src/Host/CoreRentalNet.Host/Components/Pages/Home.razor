@@ -1,5 +1,5 @@
 @page "/"
-@inject IGetFeaturedProducts FeaturedProducts
+@inject IGetFeaturedProductsHandler FeaturedProducts
 <PageTitle>Core Rental — your Bali office, delivered</PageTitle>
 
 @* The hero follows specs/design/moni_s_workspace_home/code.html: a 12-column split, the headline
@@ -80,7 +80,7 @@
                     <div class="mt-4 flex justify-between items-end">
                         <div>
                             <h3 class="text-body-md font-bold text-on-surface">@product.Name</h3>
-                            <p class="text-label-md text-on-surface-variant">@product.MonthlyPrice.ToDisplayString() / mo</p>
+                            <p class="text-label-md text-on-surface-variant">@product.MonthlyPrice.Amount.ToString("C") / mo</p>
                         </div>
                         @if (!tall)
                         {
@@ -138,7 +138,7 @@
 <div class="h-24 lg:hidden"></div>
 
 @code {
-    private IReadOnlyList<ProductListItem> featured = [];
+    private IReadOnlyList<ProductView> featured = [];
 
     protected override void OnInitialized()
         => featured = FeaturedProducts.Handle(new GetFeaturedProducts());

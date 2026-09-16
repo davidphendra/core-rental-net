@@ -27,7 +27,7 @@
         <span class="slot__name text-[10px] font-bold text-on-surface w-full truncate text-center">@Item.Name</span>
         @if (Item.UnitMonthlyPrice is not null)
         {
-            <span class="slot__price text-[10px] text-on-surface-variant @PricePlacement">@Item.UnitMonthlyPrice.ToDisplayString()/mo</span>
+            <span class="slot__price text-[10px] text-on-surface-variant @PricePlacement">@(Item.UnitMonthlyPrice.Amount.ToString("C"))/mo</span>
         }
         @if (IsDesk)
         {

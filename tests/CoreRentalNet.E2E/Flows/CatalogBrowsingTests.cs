@@ -59,11 +59,12 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await ChooseCategoryAsync("Accessories");
         await Expect(PanelCards).ToHaveCountAsync(42);
 
-        // "lamp" is not in any product's name - the lamps are Pererenan Clip Lights - so this is the
-        // kind of thing being matched as well as the name, which is what makes the field usable.
+        // The search matches the product's name only, so "lamp" finds the two accessories whose
+        // names carry that word - the Jimbaran Floor Lamp and the Canggu Desk Lamp - and not the
+        // four other lamps, whose names say Clip Light and Architect.
         await Page.Locator("#panel-search").FillAsync("lamp");
 
-        await Expect(PanelCards).ToHaveCountAsync(6);
+        await Expect(PanelCards).ToHaveCountAsync(2);
         await Expect(Panel.Locator("h3")).ToHaveTextAsync("Lamps");
 
         await Page.Locator("#panel-search").FillAsync("nothing like this");
@@ -103,7 +104,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
         await Page.Locator("#panel-search").FillAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(6);
+        await Expect(PanelCards).ToHaveCountAsync(2);
 
         await OpenSlotPickerAsync(".slot--chair");
 
@@ -119,7 +120,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
 
         // And the panel is exactly where it was left.
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(6);
+        await Expect(PanelCards).ToHaveCountAsync(2);
     }
 
     [Fact] // CAT-47
@@ -164,7 +165,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await Expect(clear).ToHaveCountAsync(0);
 
         await Page.Locator("#panel-search").FillAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(6);
+        await Expect(PanelCards).ToHaveCountAsync(2);
         await Expect(clear).ToHaveCountAsync(1);
 
         // The text keeps clear of the control on that side.

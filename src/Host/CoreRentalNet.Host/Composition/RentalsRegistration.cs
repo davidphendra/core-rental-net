@@ -4,7 +4,8 @@ using CoreRentalNet.Modules.Rentals.Application;
 using CoreRentalNet.Modules.Rentals.Application.Checkout;
 using CoreRentalNet.Modules.Rentals.Application.Invoicing;
 using CoreRentalNet.Modules.Rentals.Application.Orders;
-using CoreRentalNet.Modules.Rentals.Application.Queries;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetRentalByToken;
+using CoreRentalNet.Modules.Rentals.Application.Queries.GetInvoicesByToken;
 using CoreRentalNet.Modules.Rentals.Application.Rentals;
 using CoreRentalNet.Modules.Rentals.Application.Scheduling;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
@@ -56,18 +57,20 @@ internal static class RentalsRegistration
         builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
         builder.Services.AddScoped<IRentalLifecycleService, RentalLifecycleService>();
         builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+        builder.Services.AddScoped<IRenewalInvoiceIssuer, RenewalInvoiceIssuer>();
     }
 
     private static void RegisterUseCases(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IPlaceOrder, PlaceOrderService>();
         builder.Services.AddScoped<IConvertWorkspaceToOrder, ConvertWorkspaceToOrder>();
+        builder.Services.AddScoped<ICheckoutConfirmation, CheckoutConfirmation>();
         builder.Services.AddScoped<ICheckoutCommandHandler, CheckoutCommandHandler>();
 
         // By the operation, not by the handler's own type: the page asks for an order and its
         // invoices, and how they are assembled is the application's business.
-        builder.Services.AddScoped<IGetRentalByToken, GetRentalByTokenHandler>();
-        builder.Services.AddScoped<IGetInvoicesByToken, GetInvoicesByTokenHandler>();
+        builder.Services.AddScoped<IGetRentalByTokenHandler, GetRentalByTokenHandler>();
+        builder.Services.AddScoped<IGetInvoicesByTokenHandler, GetInvoicesByTokenHandler>();
     }
 
     private static void RegisterScheduler(WebApplicationBuilder builder)

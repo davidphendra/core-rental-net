@@ -1,5 +1,5 @@
 using AwesomeAssertions;
-using CoreRentalNet.Modules.Catalog.Infrastructure.Loading;
+using CoreRentalNet.Modules.Catalog.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.IntegrationTests;
@@ -17,7 +17,7 @@ public sealed class VendoredImageTests
     [Fact] // UI-06
     public void Loading_the_real_catalog_with_the_web_root_leaves_no_remote_image_path()
     {
-        var catalog = CatalogLoader.LoadFromFile(ProductsJson, WebRoot);
+        var catalog = new ProductCatalog(ProductsJson, WebRoot);
 
         catalog.All.Should().NotContain(
             product => product.ImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase),
@@ -27,7 +27,7 @@ public sealed class VendoredImageTests
     [Fact] // UI-06
     public void The_vendored_images_resolve_to_real_files()
     {
-        var catalog = CatalogLoader.LoadFromFile(ProductsJson, WebRoot);
+        var catalog = new ProductCatalog(ProductsJson, WebRoot);
 
         var vendored = catalog.All
             .Where(product => product.ImagePath.StartsWith("/images/vendored/", StringComparison.Ordinal))
@@ -46,7 +46,7 @@ public sealed class VendoredImageTests
     [Fact] // CAT-12, UI-05
     public void Products_without_an_image_file_are_flagged_so_the_ui_can_draw_a_placeholder()
     {
-        var catalog = CatalogLoader.LoadFromFile(ProductsJson, WebRoot);
+        var catalog = new ProductCatalog(ProductsJson, WebRoot);
 
         var missing = catalog.All.Where(product => !product.ImageAvailable).ToArray();
 

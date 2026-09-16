@@ -17,7 +17,7 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
-            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Invoice", b =>
+            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Invoices.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
@@ -83,7 +83,7 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                     b.ToTable("Rentals_Invoice", (string)null);
                 });
 
-            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Rental", b =>
+            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Rentals.Rental", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("TEXT");
@@ -165,9 +165,9 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                     b.ToTable("Rentals_NumberSequence", (string)null);
                 });
 
-            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Invoice", b =>
+            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Invoices.Invoice", b =>
                 {
-                    b.OwnsMany("CoreRentalNet.Modules.Rentals.Domain.InvoiceLine", "Lines", b1 =>
+                    b.OwnsMany("CoreRentalNet.Modules.Rentals.Domain.Invoices.InvoiceLine", "Lines", b1 =>
                         {
                             b1.Property<Guid>("InvoiceId")
                                 .HasColumnType("TEXT");
@@ -203,9 +203,9 @@ namespace CoreRentalNet.Modules.Rentals.Infrastructure.Migrations
                     b.Navigation("Lines");
                 });
 
-            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Rental", b =>
+            modelBuilder.Entity("CoreRentalNet.Modules.Rentals.Domain.Rentals.Rental", b =>
                 {
-                    b.OwnsMany("CoreRentalNet.Modules.Rentals.Domain.RentalLine", "Lines", b1 =>
+                    b.OwnsMany("CoreRentalNet.Modules.Rentals.Domain.Rentals.RentalLine", "Lines", b1 =>
                         {
                             b1.Property<Guid>("RentalId")
                                 .HasColumnType("TEXT");

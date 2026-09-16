@@ -1,6 +1,5 @@
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Modules.Workspace.Application.Queries.Services;
-using CoreRentalNet.Modules.Workspace.Application.Queries.Views;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Services;
 using CoreRentalNet.Modules.Workspace.Application.Workspace.Support;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -11,10 +10,10 @@ namespace CoreRentalNet.Modules.Workspace.Application.Workspace.Commands.RemoveA
 public sealed class RemoveAssignmentHandler(
     IWorkspaceRepository repository,
     IOpaqueTokenService tokens,
-    IWorkspaceService workspaceService,
-    IWorkspaceViewService views) : IRemoveAssignment
+    IWorkspaceService workspaceService) : IRemoveAssignmentHandler
 {
-    public async Task<WorkspaceView> HandleAsync(RemoveAssignment command, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task HandleAsync(RemoveAssignmentCommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -24,7 +23,5 @@ public sealed class RemoveAssignmentHandler(
         {
             await repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-
-        return views.Build(workspace);
     }
 }

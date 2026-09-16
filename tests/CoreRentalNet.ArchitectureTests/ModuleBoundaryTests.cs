@@ -22,6 +22,9 @@ public sealed class ModuleBoundaryTests
 
         foreach (var (module, assembly) in modules)
         {
+            // No exception: every module reaches every other module through its published
+            // application contracts and nothing else. The vocabulary a caller needs is published
+            // there, so a caller never has a reason to reach into another module's Domain.
             var foreign = modules
                 .Where(candidate => !string.Equals(candidate.Module, module, StringComparison.Ordinal))
                 .SelectMany(candidate => new[]
@@ -45,8 +48,14 @@ public sealed class ModuleBoundaryTests
     public void Domain_assemblies_do_not_depend_on_ef_core_or_asp_net()
     {
         var forbidden = new[] { "Microsoft.EntityFrameworkCore", "Microsoft.AspNetCore", "Microsoft.Data.Sqlite" };
+        var assemblies = DomainAssemblies().ToArray();
 
-        foreach (var assembly in DomainAssemblies())
+        // One shared kernel plus the three modules, so the rule cannot pass by discovering nothing.
+        assemblies.Length.Should().BeGreaterThanOrEqualTo(
+            4,
+            "every Domain assembly must be discovered, otherwise this rule proves nothing");
+
+        foreach (var assembly in assemblies)
         {
             var result = Types.InAssembly(assembly)
                 .That().ResideInNamespaceStartingWith("CoreRentalNet")
@@ -59,17 +68,48 @@ public sealed class ModuleBoundaryTests
     }
 
     [Fact] // ARC-01
-    public void Only_the_catalog_application_contracts_are_reachable_from_outside_the_module()
+    public void The_catalog_application_contracts_are_public_and_complete()
     {
         var catalogDomain = typeof(CoreRentalNet.Modules.Catalog.Domain.Product).Assembly;
-        var catalogApplication = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IDefineProductPrices).Assembly;
+        var catalogContracts = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalog).Assembly;
 
-        catalogDomain.Should().NotBeSameAs(catalogApplication);
+        catalogDomain.Should().NotBeSameAs(catalogContracts);
 
-        Types.InAssembly(catalogApplication)
+        var contracts = Types.InAssembly(catalogContracts)
             .That().ResideInNamespace("CoreRentalNet.Modules.Catalog.Application.Contracts")
-            .Should().BePublic()
-            .GetResult().IsSuccessful.Should().BeTrue();
+            .GetTypes()
+            .ToArray();
+
+        // Non-vacuity: the namespace holds the port, the view and the vocabulary. Without this
+        // check the rule below would pass on an empty namespace.
+        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalog));
+        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.ProductView));
+        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory));
+
+        contracts.Should().OnlyContain(type => type.IsPublic, "a published contract is public");
+    }
+
+    [Fact] // ARC-01
+    public void The_catalog_port_publishes_its_vocabulary_and_not_the_domain_types()
+    {
+        var port = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalog);
+
+        var mentioned = port.GetMethods()
+            .SelectMany(method => method.GetParameters()
+                .Select(parameter => parameter.ParameterType)
+                .Append(method.ReturnType))
+            .SelectMany(type => type.IsGenericType ? type.GetGenericArguments() : [type])
+            .ToArray();
+
+        mentioned.Should().NotContain(
+            typeof(CoreRentalNet.Modules.Catalog.Domain.Product),
+            "a published signature must not name a Domain type");
+        mentioned.Should().NotContain(typeof(CoreRentalNet.Modules.Catalog.Domain.ProductCategory));
+        mentioned.Should().NotContain(typeof(CoreRentalNet.Modules.Catalog.Domain.ProductSubCategory));
+
+        mentioned.Should().Contain(
+            typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory),
+            "otherwise this rule proves nothing");
     }
 
     private static IReadOnlyList<(string Module, Assembly Assembly)> ModuleAssemblies()
@@ -94,7 +134,12 @@ public sealed class ModuleBoundaryTests
     }
 
     private static IEnumerable<Assembly> DomainAssemblies()
-        => new[] { typeof(Money).Assembly, typeof(CoreRentalNet.Modules.Catalog.Domain.Product).Assembly };
+        => Directory
+            .GetFiles(AppContext.BaseDirectory, "CoreRentalNet.*.Domain.dll")
+            .Where(path => !path.EndsWith(".resources.dll", StringComparison.Ordinal))
+            .Select(Assembly.LoadFrom)
+            .Append(typeof(Money).Assembly)
+            .Distinct();
 
     private static string Describe(IEnumerable<string>? failingTypes)
         => failingTypes is null ? "(none reported)" : string.Join(", ", failingTypes);

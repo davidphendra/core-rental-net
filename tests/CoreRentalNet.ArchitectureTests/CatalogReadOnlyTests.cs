@@ -1,6 +1,8 @@
 using System.Reflection;
 using AwesomeAssertions;
+using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Domain;
+using CoreRentalNet.Modules.Catalog.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.ArchitectureTests;
@@ -28,7 +30,7 @@ public sealed class CatalogReadOnlyTests
             .ToArray();
 
         offenders.Should().BeEmpty(
-            "the catalog is a read-only source: no add, update or delete exists anywhere (ADR-0005)");
+            "the catalog is a read-only source: no add, update or delete exists anywhere");
     }
 
     [Fact] // CAT-13
@@ -38,14 +40,14 @@ public sealed class CatalogReadOnlyTests
 
         catalogTypes.Should().NotContain(
             type => HasEfCoreBaseType(type),
-            "Catalog is an in-memory snapshot with no database (ADR-0005)");
+            "Catalog is an in-memory snapshot with no database");
     }
 
     private static IEnumerable<Assembly> CatalogAssemblies() =>
     [
         typeof(Product).Assembly,
-        typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IDefineProductPrices).Assembly,
-        typeof(CoreRentalNet.Modules.Catalog.Infrastructure.Loading.ProductCatalogSnapshot).Assembly,
+        typeof(IProductCatalog).Assembly,
+        typeof(ProductCatalog).Assembly,
     ];
 
     /// <summary>Checked by name so this project needs no reference to EF Core.</summary>

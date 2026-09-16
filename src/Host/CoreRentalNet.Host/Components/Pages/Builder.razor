@@ -2,7 +2,7 @@
 @layout BuilderLayout
 @attribute [Authorize(Policy = CatalogPolicy.Name)]
 @inherits WorkspaceObserver
-@inject IGetCatalogPage CatalogPage
+@inject ISearchCatalogHandler CatalogSearch
 @inject NavigationManager Navigation
 <PageTitle>Workspace Builder — Core Rental</PageTitle>
 
@@ -79,7 +79,7 @@
         SelectionError = null;
         mobileTab = selected;
 
-        var request = new GetCatalogPage(Category: CatalogTabs.CategoryFor(selected));
+        var request = new SearchCatalogQuery(Category: CatalogTabs.CategoryFor(selected));
         pickerTitle = CatalogTabs.LabelFor(selected);
 
         if (picker is null)
@@ -89,7 +89,7 @@
 
         // Asked here as well, so that a category with nothing in it can be said out loud; the picker
         // asks again itself, once per keystroke, so that the search reaches the query.
-        if (CatalogPage.Handle(request).Count == 0)
+        if (CatalogSearch.Handle(request).Count == 0)
         {
             SelectionError = "Nothing in the catalog fits that category.";
             return;
@@ -98,7 +98,7 @@
         await picker.ShowAsync(request);
     }
 
-    private async Task AssignAsync(ProductListItem product)
+    private async Task AssignAsync(ProductView product)
     {
         if (string.IsNullOrEmpty(DraftToken))
         {
@@ -141,7 +141,7 @@
             return;
         }
 
-        if (CatalogPage.Handle(request).Count == 0)
+        if (CatalogSearch.Handle(request).Count == 0)
         {
             SelectionError = "Nothing in the catalog fits that slot.";
             return;

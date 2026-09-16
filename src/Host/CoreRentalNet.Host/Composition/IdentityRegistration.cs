@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 namespace CoreRentalNet.Host.Composition;
 
 /// <summary>
-/// Identity, which is optional and additive (ADR-0016). With no domain configured nothing is
+/// Identity, which is optional and additive. With no domain configured nothing is
 /// registered and the application runs exactly as it did before identity existed.
 /// </summary>
 /// <remarks>
@@ -93,7 +93,7 @@ internal static class IdentityRegistration
 
     /// <summary>
     /// The wrapper registers the cookie scheme; the policy it follows is still this application's,
-    /// and this states it (ADR-0019).
+    /// and this states it.
     /// </summary>
     private static void ConfigureCookie(WebApplicationBuilder builder)
     {

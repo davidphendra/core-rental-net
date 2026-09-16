@@ -78,7 +78,7 @@ public sealed class IdentitySettingsTests
             ["Auth0:Scope"] = "  openid profile email catalog:read  ",
         }).Build()).Scope.Should().Be("openid profile email catalog:read");
 
-    [Fact] // ADR-0020, the browser suite's authority
+    [Fact] //, the browser suite's authority
     public void A_named_authority_replaces_the_one_the_domain_implies()
         => IdentitySettings.From(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -87,7 +87,7 @@ public sealed class IdentitySettingsTests
             ["Auth0:Authority"] = "  http://127.0.0.1:5199/  ",
         }).Build()).Authority.Should().Be("http://127.0.0.1:5199", "a trailing slash would not match the issuer");
 
-    [Fact] // ADR-0020
+    [Fact] //
     public void Without_a_named_authority_the_domain_decides()
         => Settings("true").Authority.Should().BeNull();
 

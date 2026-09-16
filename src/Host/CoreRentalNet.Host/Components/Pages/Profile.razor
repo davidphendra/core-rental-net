@@ -1,10 +1,10 @@
 @page "/profile"
 @inject IdentitySettings Identity
 @* Who the account is, as the identity provider described it at sign-in. The values are the ones the
-   order was recorded with (ADR-0018), read from the same snapshot the header's menu is drawn from,
+   order was recorded with, read from the same snapshot the header's menu is drawn from,
    so the page and the menu cannot disagree.
 
-   The page is not gated by [Authorize], because authentication here is optional (ADR-0016): a
+   The page is not gated by [Authorize], because authentication here is optional: a
    deployment with no provider has no account to show, and sending that visitor to a sign-in route
    that is not mapped would be a dead end rather than a refusal. Each of the three states is drawn
    instead, and the guest is sent to sign in by the same component the router uses.

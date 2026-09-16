@@ -1,26 +1,14 @@
-using CoreRentalNet.BuildingBlocks.Domain;
-
 namespace CoreRentalNet.Modules.Workspace.Domain;
 
 /// <summary>
 /// The opaque handle that addresses a draft without an account. A distinct type from the order
-/// access token so the two cannot be confused, but the same mechanism underneath.
+/// access token so the two cannot be confused.
 /// </summary>
-public sealed record DraftToken
+/// <remarks>
+/// A plain record: issuing and hashing live in <c>IOpaqueTokenService</c>, and only the
+/// hash is ever stored.
+/// </remarks>
+public sealed record DraftToken(string Hash)
 {
-    private readonly OpaqueToken token;
-
-    private DraftToken(OpaqueToken token) => this.token = token;
-
-    public string Hash => token.Hash;
-
-    public static string IssueRawToken() => OpaqueToken.IssueRawToken();
-
-    public static DraftToken FromRawToken(string rawToken) => new(OpaqueToken.FromRawToken(rawToken));
-
-    public static DraftToken FromHash(string hash) => new(OpaqueToken.FromHash(hash));
-
-    public static string HashOf(string rawToken) => OpaqueToken.HashOf(rawToken);
-
     public override string ToString() => Hash;
 }

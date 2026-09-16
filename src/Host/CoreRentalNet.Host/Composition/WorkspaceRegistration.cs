@@ -42,11 +42,11 @@ internal static class WorkspaceRegistration
         // By the operation each one performs, not by its own type. The session is their only consumer,
         // and it names the operation too; how a draft is started or a quantity changed is the
         // application's business.
-        builder.Services.AddScoped<IGetWorkspace, GetWorkspaceHandler>();
-        builder.Services.AddScoped<IStartDraft, StartDraftHandler>();
-        builder.Services.AddScoped<IAssignProduct, AssignProductHandler>();
-        builder.Services.AddScoped<IRemoveAssignment, RemoveAssignmentHandler>();
-        builder.Services.AddScoped<IChangeQuantity, ChangeQuantityHandler>();
-        builder.Services.AddScoped<ISetDeliveryAddress, SetDeliveryAddressHandler>();
+        builder.Services.AddScoped<IGetWorkspaceHandler, GetWorkspaceHandler>();
+        builder.Services.AddScoped<IStartDraftHandler, StartDraftHandler>();
+        builder.Services.AddScoped<IAssignProductHandler, AssignProductHandler>();
+        builder.Services.AddScoped<IRemoveAssignmentHandler, RemoveAssignmentHandler>();
+        builder.Services.AddScoped<IChangeQuantityHandler, ChangeQuantityHandler>();
+        builder.Services.AddScoped<ISetDeliveryAddressHandler, SetDeliveryAddressHandler>();
     }
 }

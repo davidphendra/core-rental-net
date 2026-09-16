@@ -4,7 +4,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// Whether this deployment has an identity provider at all.
 /// </summary>
 /// <remarks>
-/// Authentication is optional and additive (ADR-0016). With no domain configured the application
+/// Authentication is optional and additive. With no domain configured the application
 /// registers no OIDC scheme, hides the sign-in affordance and behaves exactly as it did before
 /// identity existed — a working application must not refuse to start because of a feature nobody
 /// is using. The client secret is never read from a committed file; it comes from user secrets
@@ -53,7 +53,7 @@ public sealed record IdentitySettings
     /// Auth0's wrapper derives the authority from the domain as <c>https://{domain}</c>, which is
     /// right for a tenant and impossible for a provider running on localhost over plain HTTP. This
     /// overrides it, so the browser suite can drive a real OIDC handshake against a provider in this
-    /// repository through the same setting a real deployment would use (ADR-0020). Absent, the
+    /// repository through the same setting a real deployment would use. Absent, the
     /// domain decides, exactly as before.
     /// </remarks>
     public string? Authority { get; }

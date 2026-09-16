@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Presentation;
-using CoreRentalNet.Modules.Catalog.Application.Catalog;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using Xunit;
 
@@ -63,12 +62,12 @@ public sealed class CatalogBrowserTests
     [Fact] // STORE-08
     public void What_the_catalog_answers_is_what_the_surface_shows()
     {
-        var item = new ProductListItem(
+        var item = new ProductView(
             "LMP0001",
             "Pererenan Clip Light",
             CatalogCategory.Accessory,
             CatalogSubCategory.Lamp,
-            Money.Idr(180000m),
+            new Money(180000m, Currencies.Idr),
             "A lamp.",
             "/images/lamp.svg",
             true,

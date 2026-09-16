@@ -1,27 +1,33 @@
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
 using Xunit;
 
 namespace CoreRentalNet.BuildingBlocks.UnitTests;
 
+/// <summary>
+/// Issuing and hashing, now in <see cref="OpaqueTokenService"/>.
+/// </summary>
 public sealed class OpaqueTokenTests
 {
+    private static readonly IOpaqueTokenService Tokens = new OpaqueTokenService();
+
     [Fact] // DR-05, SEC-02
     public void The_stored_value_is_a_hash_of_the_raw_token_and_not_the_token()
     {
-        var raw = OpaqueToken.IssueRawToken();
+        var raw = Tokens.IssueRawToken();
 
-        var token = OpaqueToken.FromRawToken(raw);
+        var hash = Tokens.HashOf(raw);
 
-        token.Hash.Should().NotBe(raw);
-        token.Hash.Should().HaveLength(64);
-        token.Hash.Should().Be(OpaqueToken.HashOf(raw));
+        hash.Should().NotBe(raw);
+        hash.Should().HaveLength(64);
+        hash.Should().Be(Tokens.HashOf(raw));
     }
 
     [Fact]
     public void Issued_tokens_are_unique_and_carry_enough_entropy_to_be_unguessable()
     {
-        var issued = Enumerable.Range(0, 500).Select(_ => OpaqueToken.IssueRawToken()).ToArray();
+        var issued = Enumerable.Range(0, 500).Select(_ => Tokens.IssueRawToken()).ToArray();
 
         issued.Should().OnlyHaveUniqueItems();
         issued.Should().OnlyContain(token => token.Length >= 40, "32 random bytes, base64url encoded");
@@ -30,8 +36,8 @@ public sealed class OpaqueTokenTests
     [Fact]
     public void The_same_raw_token_always_hashes_the_same_way()
     {
-        OpaqueToken.FromRawToken("abc").Should().Be(OpaqueToken.FromRawToken("abc"));
-        OpaqueToken.FromRawToken("abc").Should().NotBe(OpaqueToken.FromRawToken("abd"));
+        Tokens.HashOf("abc").Should().Be(Tokens.HashOf("abc"));
+        Tokens.HashOf("abc").Should().NotBe(Tokens.HashOf("abd"));
     }
 
     [Theory]
@@ -39,33 +45,15 @@ public sealed class OpaqueTokenTests
     [InlineData("   ")]
     public void An_empty_token_is_refused(string raw)
     {
-        var action = () => OpaqueToken.FromRawToken(raw);
+        var action = () => Tokens.HashOf(raw);
 
         action.Should().Throw<DomainRuleViolationException>();
-    }
-
-    [Theory]
-    [InlineData("nonsense")]
-    [InlineData("0123456789abcdef")]
-    public void Something_that_is_not_a_hash_is_refused(string hash)
-    {
-        var action = () => OpaqueToken.FromHash(hash);
-
-        action.Should().Throw<DomainRuleViolationException>();
-    }
-
-    [Fact]
-    public void A_stored_hash_can_be_rehydrated()
-    {
-        var token = OpaqueToken.FromRawToken("raw-value");
-
-        OpaqueToken.FromHash(token.Hash).Should().Be(token);
     }
 
     [Fact]
     public void A_token_with_too_little_entropy_is_refused()
     {
-        var action = () => OpaqueToken.IssueRawToken(8);
+        var action = () => Tokens.IssueRawToken(8);
 
         action.Should().Throw<DomainRuleViolationException>().WithMessage("*entropy*");
     }

@@ -4,11 +4,12 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using CoreRentalNet.E2E.LocalProvider;
 
 // The browser suite's identity provider: just enough OpenID Connect for a real authorization-code
 // handshake with PKCE, on localhost, in this repository. The application points at it through the
 // ordinary Authority setting, so nothing between the browser and the servers is intercepted
-// (ADR-0020). It is a demonstration of a provider, not a provider: no persistence, no consent, no
+//. It is a demonstration of a provider, not a provider: no persistence, no consent, no
 // refresh tokens, and three accounts fixed in code.
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -319,15 +320,3 @@ static string LoginPage(string? queryString, IReadOnlyDictionary<string, Account
         </html>
         """;
 }
-
-
-internal sealed record Account(string Subject, string Name, string Email, string[] Permissions, string[] Roles);
-
-internal sealed record PendingCode(
-    string ClientId,
-    string RedirectUri,
-    string Account,
-    string? Nonce,
-    string? CodeChallenge,
-    string? CodeChallengeMethod,
-    DateTimeOffset ExpiresAt);

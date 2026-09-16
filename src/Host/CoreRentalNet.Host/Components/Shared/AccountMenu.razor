@@ -8,8 +8,7 @@
    needs no arrow-key handling to be correct, and the panel is not rendered while it is shut, so
    nothing inside it can be reached by a keyboard that cannot see it.
 
-   The initials are drawn instead of the provider's picture, so no page load reaches a third party
-   (ADR-0016). The click that lands outside the menu, and Escape, are the two events a circuit
+   The initials are drawn instead of the provider's picture, so no page load reaches a third party. The click that lands outside the menu, and Escape, are the two events a circuit
    cannot see for itself, so a small script reports them back. *@
 @if (Identity.IsConfigured)
 {

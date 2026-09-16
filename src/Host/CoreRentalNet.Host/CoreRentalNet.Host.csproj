@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Auth0's wrapper is the integration point (ADR-0016); the OpenID Connect handler it wraps
+    <!-- Auth0's wrapper is the integration point; the OpenID Connect handler it wraps
          is referenced directly because the session policy is applied on that handler. -->
     <PackageReference Include="Auth0.AspNetCore.Authentication" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />

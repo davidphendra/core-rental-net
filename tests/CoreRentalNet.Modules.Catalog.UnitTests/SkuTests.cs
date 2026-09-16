@@ -1,39 +1,30 @@
 using AwesomeAssertions;
-using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Catalog.Domain;
+using CoreRentalNet.Modules.Catalog.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
+/// <summary>
+/// SKU text is no longer normalised: the <c>SkuService</c> went with the value object, so a SKU is
+/// the string the file holds, and lookup is the one place letter case is ignored.
+/// </summary>
 public sealed class SkuTests
 {
-    [Theory]
-    [InlineData("CHA449AGLBB0", "CHA449AGLBB0")]
-    [InlineData("  cha449aglbb0  ", "CHA449AGLBB0")]
-    public void Valid_skus_are_trimmed_and_upper_cased(string input, string expected)
+    [Fact]
+    public void A_sku_is_kept_exactly_as_the_file_writes_it()
     {
-        Sku.Of(input).Value.Should().Be(expected);
-    }
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var catalog = new ProductCatalog(file.Path, null);
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData(null)]
-    [InlineData("CHA-449")]
-    [InlineData("CHA 449")]
-    [InlineData("CHA449AGLBB0CHA449AGLBB0CHA449AGLBB0")]
-    public void Invalid_skus_are_rejected(string? input)
-    {
-        Sku.TryParse(input, out _).Should().BeFalse();
-
-        var action = () => Sku.Of(input);
-        action.Should().Throw<DomainRuleViolationException>();
+        catalog.All.Select(product => product.Sku).Should().Contain("CHA0001");
     }
 
     [Fact]
-    public void Skus_compare_by_value()
+    public void The_same_sku_is_found_whatever_its_case()
     {
-        Sku.Of("CHA0001").Should().Be(Sku.Of("cha0001"));
-        Sku.Of("CHA0001").Should().NotBe(Sku.Of("CHA0002"));
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var catalog = new ProductCatalog(file.Path, null);
+
+        catalog.Find("CHA0001")!.Sku.Should().Be(catalog.Find("cha0001")!.Sku);
     }
 }

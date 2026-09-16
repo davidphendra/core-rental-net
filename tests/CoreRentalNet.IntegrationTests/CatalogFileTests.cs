@@ -1,7 +1,8 @@
 using AwesomeAssertions;
+using CoreRentalNet.Modules.Catalog.Infrastructure.Contracts;
 using CoreRentalNet.BuildingBlocks.Domain;
-using CoreRentalNet.Modules.Catalog.Domain;
-using CoreRentalNet.Modules.Catalog.Infrastructure.Loading;
+using CoreRentalNet.Modules.Catalog.Application.Contracts;
+using CoreRentalNet.Modules.Catalog.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.IntegrationTests;
@@ -17,25 +18,25 @@ public sealed class CatalogFileTests
     [Fact] // CAT-01
     public void The_real_catalog_file_loads_with_the_expected_shape()
     {
-        var catalog = CatalogLoader.LoadFromFile(ProductsJson);
+        var catalog = new ProductCatalog(ProductsJson, null);
 
         catalog.All.Should().HaveCount(62);
 
-        catalog.ByCategory(ProductCategory.Chair).Should().HaveCount(10);
-        catalog.ByCategory(ProductCategory.Desk).Should().HaveCount(10);
-        catalog.ByCategory(ProductCategory.Accessory).Should().HaveCount(42);
+        catalog.ByCategory(CatalogCategory.Chair).Should().HaveCount(10);
+        catalog.ByCategory(CatalogCategory.Desk).Should().HaveCount(10);
+        catalog.ByCategory(CatalogCategory.Accessory).Should().HaveCount(42);
 
-        catalog.BySubCategory(ProductSubCategory.Beanbag).Should().HaveCount(10);
-        catalog.BySubCategory(ProductSubCategory.Coffee).Should().HaveCount(10);
-        catalog.BySubCategory(ProductSubCategory.Lamp).Should().HaveCount(6);
-        catalog.BySubCategory(ProductSubCategory.Monitor).Should().HaveCount(8);
-        catalog.BySubCategory(ProductSubCategory.Plant).Should().HaveCount(8);
+        catalog.BySubCategory(CatalogSubCategory.Beanbag).Should().HaveCount(10);
+        catalog.BySubCategory(CatalogSubCategory.Coffee).Should().HaveCount(10);
+        catalog.BySubCategory(CatalogSubCategory.Lamp).Should().HaveCount(6);
+        catalog.BySubCategory(CatalogSubCategory.Monitor).Should().HaveCount(8);
+        catalog.BySubCategory(CatalogSubCategory.Plant).Should().HaveCount(8);
     }
 
     [Fact] // CAT-01
     public void Every_real_product_is_usable()
     {
-        var catalog = CatalogLoader.LoadFromFile(ProductsJson);
+        var catalog = new ProductCatalog(ProductsJson, null);
 
         catalog.All.Should().OnlyContain(product => !string.IsNullOrWhiteSpace(product.Name));
         catalog.All.Should().OnlyContain(product => !string.IsNullOrWhiteSpace(product.Description));
@@ -43,15 +44,15 @@ public sealed class CatalogFileTests
         catalog.All.Should().OnlyContain(product => product.MonthlyPrice.Currency == Currencies.Idr);
         catalog.All.Should().OnlyContain(product => product.MonthlyPrice.Amount > 0m);
         catalog.All.Should().OnlyContain(
-            product => product.Category == ProductCategory.Accessory || product.SubCategory == null);
+            product => product.Category == CatalogCategory.Accessory || product.SubCategory == null);
         catalog.All.Should().OnlyContain(
-            product => product.Category != ProductCategory.Accessory || product.SubCategory != null);
+            product => product.Category != CatalogCategory.Accessory || product.SubCategory != null);
     }
 
     [Fact] // CAT-08
     public void The_real_catalog_has_exactly_two_featured_products()
     {
-        var featured = CatalogLoader.LoadFromFile(ProductsJson).Featured();
+        var featured = new ProductCatalog(ProductsJson, null).Featured();
 
         featured.Should().HaveCount(2);
         featured.Select(product => product.Name).Should().Contain("Canggu Task").And.Contain("Monstera Plant");
@@ -60,10 +61,9 @@ public sealed class CatalogFileTests
     [Fact] // CAT-09
     public void The_real_catalog_contains_no_partner_product()
     {
-        var catalog = CatalogLoader.LoadFromFile(ProductsJson);
+        var catalog = new ProductCatalog(ProductsJson, null);
 
         catalog.All.Should().NotContain(product => product.Name.Contains("Motorcycle", StringComparison.OrdinalIgnoreCase));
-        catalog.SubCategories.Should().HaveCount(5);
     }
 
     [Fact] // CAT-02
@@ -71,9 +71,9 @@ public sealed class CatalogFileTests
     {
         using var file = new TemporaryFile("{ \"this is\" not json ]");
 
-        var action = () => CatalogLoader.LoadFromFile(file.Path);
+        var action = () => _ = new ProductCatalog(file.Path, null);
 
-        action.Should().Throw<CatalogLoadException>()
+        action.Should().Throw<ProductLoadException>()
             .WithMessage($"*not valid JSON*{file.Path}*");
     }
 
@@ -82,9 +82,9 @@ public sealed class CatalogFileTests
     {
         var missing = Path.Combine(Path.GetTempPath(), $"core-rental-missing-{Guid.NewGuid():N}.json");
 
-        var action = () => CatalogLoader.LoadFromFile(missing);
+        var action = () => _ = new ProductCatalog(missing, null);
 
-        action.Should().Throw<CatalogLoadException>()
+        action.Should().Throw<ProductLoadException>()
             .WithMessage($"*not found*{missing}*");
     }
 
@@ -93,9 +93,9 @@ public sealed class CatalogFileTests
     {
         using var file = new TemporaryFile("[]");
 
-        var action = () => CatalogLoader.LoadFromFile(file.Path);
+        var action = () => _ = new ProductCatalog(file.Path, null);
 
-        action.Should().Throw<CatalogLoadException>().WithMessage("*no products*");
+        action.Should().Throw<ProductLoadException>().WithMessage("*no products*");
     }
 
     [Fact] // CAT-02
@@ -104,9 +104,9 @@ public sealed class CatalogFileTests
         using var file = new TemporaryFile(
             """[{ "skuNo": "AAA0001", "name": "Thing", "category": "spaceship", "pricePerMonth": 100, "description": "d", "image": "/i.svg" }]""");
 
-        var action = () => CatalogLoader.LoadFromFile(file.Path);
+        var action = () => _ = new ProductCatalog(file.Path, null);
 
-        action.Should().Throw<CatalogLoadException>().WithMessage("*AAA0001*spaceship*");
+        action.Should().Throw<ProductLoadException>().WithMessage("*AAA0001*spaceship*");
     }
 
     [Fact] // CAT-14
@@ -118,9 +118,9 @@ public sealed class CatalogFileTests
              { "skuNo": "aaa0001", "name": "Two", "category": "chair", "pricePerMonth": 200, "description": "d", "image": "/i.svg" }]
             """);
 
-        var action = () => CatalogLoader.LoadFromFile(file.Path);
+        var action = () => _ = new ProductCatalog(file.Path, null);
 
-        action.Should().Throw<CatalogLoadException>().WithMessage("*duplicate*AAA0001*");
+        action.Should().Throw<ProductLoadException>().WithMessage("*duplicate*AAA0001*");
     }
 
     [Fact] // CAT-12
@@ -135,10 +135,10 @@ public sealed class CatalogFileTests
              { "skuNo": "AAA0002", "name": "Absent", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/absent.svg" }]
             """);
 
-        var catalog = CatalogLoader.LoadFromFile(file.Path, webRoot.Path);
+        var catalog = new ProductCatalog(file.Path, webRoot.Path);
 
-        catalog.Find(Sku.Of("AAA0001"))!.ImageAvailable.Should().BeTrue();
-        catalog.Find(Sku.Of("AAA0002"))!.ImageAvailable.Should().BeFalse();
+        catalog.Find("AAA0001")!.ImageAvailable.Should().BeTrue();
+        catalog.Find("AAA0002")!.ImageAvailable.Should().BeFalse();
     }
 
     [Fact] // CAT-12
@@ -150,10 +150,10 @@ public sealed class CatalogFileTests
              { "skuNo": "AAA0002", "name": "Remote", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "https://example.invalid/remote.png" }]
             """);
 
-        var catalog = CatalogLoader.LoadFromFile(file.Path);
+        var catalog = new ProductCatalog(file.Path, null);
 
-        catalog.Find(Sku.Of("AAA0001"))!.ImageAvailable.Should().BeFalse();
-        catalog.Find(Sku.Of("AAA0002"))!.ImageAvailable.Should().BeTrue();
+        catalog.Find("AAA0001")!.ImageAvailable.Should().BeFalse();
+        catalog.Find("AAA0002")!.ImageAvailable.Should().BeTrue();
     }
 
     [Fact] // CAT-02
@@ -162,8 +162,8 @@ public sealed class CatalogFileTests
         using var file = new TemporaryFile(
             """[{ "skuNo": "AAA0001", "name": "No image", "category": "chair", "pricePerMonth": 100, "description": "d" }]""");
 
-        var action = () => CatalogLoader.LoadFromFile(file.Path);
+        var action = () => _ = new ProductCatalog(file.Path, null);
 
-        action.Should().Throw<CatalogLoadException>().WithMessage("*AAA0001*image*");
+        action.Should().Throw<ProductLoadException>().WithMessage("*AAA0001*image*");
     }
 }

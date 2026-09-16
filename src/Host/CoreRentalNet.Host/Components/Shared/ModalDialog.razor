@@ -1,6 +1,6 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JavaScript
-@* Native <dialog>: focus trapping, Esc and an inert background come for free (ADR-0012). *@
+@* Native <dialog>: focus trapping, Esc and an inert background come for free. *@
 @* The frame is the design's classes rather than a scoped stylesheet. A .razor.css file is served
    in a bundle App.razor does not link, so anything written in one silently never loads - which is
    how this dialog came to have no padding at all. The classes below are kept as hooks: the browser

@@ -9,7 +9,7 @@ namespace CoreRentalNet.E2E;
 /// <para>
 /// Nothing here is a test double. The suite runs the published hosts exactly as a person would,
 /// because the requirement is full user interaction with no mocks and no intercepted calls: a
-/// stubbed server would make the suite a test of the stubs (ADR-0020).
+/// stubbed server would make the suite a test of the stubs.
 /// </para>
 /// <para>
 /// Every process is tracked from the moment it starts, so a failure part-way through starting the
