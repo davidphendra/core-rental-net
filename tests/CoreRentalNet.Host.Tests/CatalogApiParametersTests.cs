@@ -6,22 +6,12 @@ using Xunit;
 namespace CoreRentalNet.Host.Tests;
 
 /// <summary>
-/// The catalogue endpoint's query string, parsed from raw text. Unit level, because binding a filter
-/// is a pure decision: which one was asked for, or why it cannot be answered.
+/// The catalogue's filter vocabulary: which words a filter accepts, and what a caller is told when it
+/// sends one that is not among them. Unit level, because it is a decision about words rather than a
+/// step in the request.
 /// </summary>
 public sealed class CatalogApiParametersTests
 {
-    [Fact] // API-03
-    public void No_filter_is_no_narrowing()
-    {
-        var binding = CatalogApiParameters.Bind(null, null, null);
-
-        binding.IsValid.Should().BeTrue();
-        binding.Query!.Category.Should().BeNull();
-        binding.Query.SubCategory.Should().BeNull();
-        binding.Query.Search.Should().BeNull();
-    }
-
     [Theory] // API-02
     [InlineData("desk")]
     [InlineData("Desk")]
@@ -29,56 +19,49 @@ public sealed class CatalogApiParametersTests
     [InlineData("  desk  ")]
     public void A_category_is_matched_ignoring_case_and_surrounding_space(string value)
     {
-        var binding = CatalogApiParameters.Bind(value, null, null);
-
-        binding.IsValid.Should().BeTrue();
-        binding.Query!.Category.Should().Be(CatalogCategory.Desk);
+        CatalogApiParameters.TryMatch<CatalogCategory>(value, out var matched).Should().BeTrue();
+        matched.Should().Be(CatalogCategory.Desk);
     }
 
     [Fact] // API-02
     public void A_subcategory_is_matched_ignoring_case()
     {
-        var binding = CatalogApiParameters.Bind(null, "Monitor", null);
-
-        binding.IsValid.Should().BeTrue();
-        binding.Query!.SubCategory.Should().Be(CatalogSubCategory.Monitor);
+        CatalogApiParameters.TryMatch<CatalogSubCategory>("Monitor", out var matched).Should().BeTrue();
+        matched.Should().Be(CatalogSubCategory.Monitor);
     }
 
-    [Fact] // API-01
-    public void An_unknown_category_is_refused_and_names_the_allowed_values()
-    {
-        var binding = CatalogApiParameters.Bind("sofa", null, null);
-
-        binding.IsValid.Should().BeFalse();
-        binding.Query.Should().BeNull();
-        binding.Error.Should().Contain("sofa").And.Contain("chair").And.Contain("desk").And.Contain("accessory");
-    }
-
-    [Fact] // API-01
-    public void An_unknown_subcategory_is_refused_and_names_the_allowed_values()
-    {
-        var binding = CatalogApiParameters.Bind(null, "hammock", null);
-
-        binding.IsValid.Should().BeFalse();
-        binding.Error.Should().Contain("hammock").And.Contain("lamp").And.Contain("monitor").And.Contain("plant");
-    }
-
-    [Theory] // API-02
+    [Theory] // API-01, API-02
+    [InlineData("sofa")]
     [InlineData("1")]
     [InlineData("0")]
-    public void A_number_is_not_a_category(string value)
-        => CatalogApiParameters.Bind(value, null, null).IsValid.Should().BeFalse();
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void A_word_the_catalogue_does_not_publish_matches_nothing(string? value)
+        => CatalogApiParameters.TryMatch<CatalogCategory>(value, out _).Should().BeFalse();
 
-    [Fact] // API-03
-    public void A_blank_search_is_no_narrowing()
+    [Fact] // API-01
+    public void The_vocabulary_is_the_words_the_wire_writes()
+        => CatalogApiParameters.Names<CatalogCategory>().Should().Equal("chair", "desk", "accessory");
+
+    [Fact] // API-01
+    public void A_refusal_names_the_word_that_was_sent_and_the_words_that_would_have_worked()
     {
-        var binding = CatalogApiParameters.Bind(null, null, "   ");
+        var refusal =
+            CatalogApiParameters.Refusal("category", "  sofa  ", CatalogApiParameters.Names<CatalogCategory>());
 
-        binding.IsValid.Should().BeTrue();
-        binding.Query!.Search.Should().BeNull();
+        refusal.Should().Contain("sofa").And.Contain("chair").And.Contain("desk").And.Contain("accessory");
+        refusal.Should().NotContain("  sofa  ", "the word is repeated trimmed, not padded with what was typed");
     }
 
-    [Fact] // API-05
-    public void A_search_term_is_carried_through()
-        => CatalogApiParameters.Bind(null, null, "teak").Query!.Search.Should().Be("teak");
+    [Fact] // API-01
+    public void An_unknown_subcategory_is_refused_with_the_subcategory_vocabulary()
+        => CatalogApiParameters
+            .Refusal("subCategory", "hammock", CatalogApiParameters.Names<CatalogSubCategory>())
+            .Should()
+            .Contain("hammock")
+            .And.Contain("monitor")
+            .And.Contain("lamp")
+            .And.Contain("plant")
+            .And.Contain("beanbag");
 }

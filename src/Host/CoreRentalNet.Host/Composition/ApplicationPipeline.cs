@@ -33,7 +33,9 @@ internal static class ApplicationPipeline
 
         // Mapped always, provider or not: with no provider the catalog policy opens the endpoint,
         // exactly as it opens the store page, and with one the request is refused before it arrives.
-        CatalogController.MapEndpoints(app);
+        // Controllers are discovered, so a route added to a controller is reachable without a second
+        // place to remember, and a gate left off an action is a failing test rather than a live hole.
+        app.MapControllers();
         MapDevelopmentDocumentation(app);
 
         if (identity.IsConfigured)

@@ -76,9 +76,31 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
     {
         var response = await factory.CreateClient().GetAsync("/api/catalog?category=sofa");
 
+        // The framework's own error shape, not a hand-written string: a caller that already parses a
+        // problem-details response needs no special case for this endpoint.
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var body = await response.Content.ReadAsStringAsync();
-        body.Should().Contain("sofa").And.Contain("chair").And.Contain("desk").And.Contain("accessory");
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var body = problem.RootElement;
+
+        body.GetProperty("status").GetInt32().Should().Be(400);
+
+        var refusal = body.GetProperty("errors").GetProperty("category")[0].GetString()!;
+        refusal.Should().Contain("sofa").And.Contain("chair").And.Contain("desk").And.Contain("accessory");
+    }
+
+    [Fact] // API-01
+    public async Task An_unknown_subcategory_is_refused_the_same_way()
+    {
+        var response = await factory.CreateClient().GetAsync("/api/catalog?subCategory=hammock");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var refusal = problem.RootElement.GetProperty("errors").GetProperty("subCategory")[0].GetString()!;
+
+        refusal.Should().Contain("hammock").And.Contain("monitor").And.Contain("lamp");
     }
 
     [Fact] // API-07

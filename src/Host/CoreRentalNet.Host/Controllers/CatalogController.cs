@@ -2,7 +2,8 @@ using System.Security.Claims;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CoreRentalNet.Host.Controllers;
 
@@ -10,57 +11,61 @@ namespace CoreRentalNet.Host.Controllers;
 /// The catalogue's read endpoint: the one operation a machine caller asks for.
 /// </summary>
 /// <remarks>
-/// Endpoint mappings rather than an MVC controller, for the reason
-/// <see cref="AccountController"/> gives: the application has no model binding or filter pipeline, and
-/// a single read route does not justify bringing one in.
+/// A controller, so each of the endpoint's rules is declared where the operation is rather than
+/// attached from outside: the gate is an attribute, the query string is bound by the framework, the
+/// answers are documented by attributes, and a filter that is not one of the catalogue's words is
+/// refused by <c>[ApiController]</c> with a problem-details <c>400</c> before the action runs. The
+/// vocabulary those refusals name lives in <see cref="CatalogApiParameters"/>.
 /// </remarks>
-public static class CatalogController
+[ApiController]
+[Route(CatalogRoutes.Catalogue)]
+public sealed class CatalogController(
+    ISearchCatalogHandler catalog,
+    ILoggerFactory loggers) : ControllerBase
 {
-    /// <summary>Maps <c>GET /api/catalog</c>, the catalogue narrowed by what the caller asked for.</summary>
-    public static void MapEndpoints(IEndpointRouteBuilder endpoints)
+    /// <summary>Lists the catalogue, optionally narrowed by category, subcategory and product name.</summary>
+    /// <remarks>
+    /// Every filter is optional, and none of them returns the whole catalogue. A term matches a
+    /// product's name only. An unknown category or subcategory is refused with the values that would
+    /// have worked rather than answered with an empty list, and no match is an empty list rather than a
+    /// 404: "there are none of those" and "there is no such endpoint" are different answers.
+    /// </remarks>
+    [HttpGet]
+    [Authorize(Policy = CatalogApiPolicy.Name)]
+    [ProducesResponseType<IReadOnlyList<ProductView>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public ActionResult<IReadOnlyList<ProductView>> Search(
+        [FromQuery] CatalogCategory? category,
+        [FromQuery] CatalogSubCategory? subCategory,
+        [FromQuery] string? search)
     {
-        ArgumentNullException.ThrowIfNull(endpoints);
+        var products = catalog.Handle(new SearchCatalogQuery(category, subCategory, Blank(search)));
 
-        endpoints.MapGet(CatalogRoutes.Catalogue, (
-            HttpContext context,
-            string? category,
-            string? subCategory,
-            string? search,
-            ISearchCatalogHandler catalog,
-            ILoggerFactory loggers) =>
-        {
-            var binding = CatalogApiParameters.Bind(category, subCategory, search);
+        // Written after authorisation and after the answer: a refused call never reaches this line, and
+        // the count is what actually came back rather than what was asked for. The filters are logged
+        // as the caller wrote them, not as they were parsed.
+        CatalogApiLog.Called(
+            loggers.CreateLogger(CatalogApiLog.Category),
+            Caller(),
+            AsAsked("category"),
+            AsAsked("subCategory"),
+            AsAsked("search"),
+            products.Count);
 
-            if (binding.Query is null)
-            {
-                return Results.BadRequest(binding.Error);
-            }
-
-            var products = catalog.Handle(binding.Query);
-
-            // After authorisation and after the answer: a refused call never reaches this line, and
-            // the count is what actually came back rather than what was asked for.
-            CatalogApiLog.Called(loggers.CreateLogger(CatalogApiLog.Category), Caller(context), category, subCategory, search, products.Count);
-
-            return Results.Ok(products);
-        })
-            .WithName("SearchCatalog")
-            .WithSummary("Lists the catalogue, optionally narrowed by category, subcategory and name.")
-            .WithDescription(
-                "Every filter is optional, and none of them returns the whole catalogue. A term matches "
-                + "a product's name only. An unknown category or subcategory is refused with the values "
-                + "that would have worked rather than answered with an empty list.")
-            .WithTags("Catalog")
-            .Produces<IReadOnlyList<ProductView>>(StatusCodes.Status200OK)
-            .Produces<string>(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status401Unauthorized)
-            .Produces(StatusCodes.Status403Forbidden)
-            .RequireAuthorization(CatalogApiPolicy.Name);
+        return Ok(products);
     }
 
+    /// <summary>A search of nothing but spaces narrows nothing, so it is not a filter.</summary>
+    private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
+
+    /// <summary>The filter as the request wrote it, for the line this endpoint logs.</summary>
+    private string? AsAsked(string name) => Request.Query[name].FirstOrDefault();
+
     /// <summary>Who made the request, as the provider states it: the subject, or the client id.</summary>
-    private static string Caller(HttpContext context)
-        => context.User.FindFirst("sub")?.Value
-            ?? context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+    private string Caller()
+        => User.FindFirst("sub")?.Value
+            ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? "anonymous";
 }
