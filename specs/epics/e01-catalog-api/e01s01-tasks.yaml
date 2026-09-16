@@ -1,13 +1,13 @@
 story_id: e01s01
 title: An agent lists and filters the catalog over HTTP
-status: failing
+status: passing
 bcps: 5
 tasks:
   - id: 1
     description: "Add CatalogApiParameters binding the three filters to a SearchCatalogQuery, refusing an unknown value with the allowed list"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["API", "unit"]
@@ -15,7 +15,7 @@ tasks:
     description: "Add Host/Controllers/CatalogController.cs mapping GET /api/catalog onto ISearchCatalogHandler"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["API"]
@@ -23,7 +23,7 @@ tasks:
     description: "Configure endpoint JSON: camelCase and JsonStringEnumConverter with a camelCase naming policy"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["API", "contract"]
@@ -31,7 +31,7 @@ tasks:
     description: "Map the endpoint from ApplicationPipeline, always (not only when identity is configured)"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["API", "wiring"]
@@ -39,7 +39,7 @@ tasks:
     description: "Unit tests API-01 and API-02 for binding and refusal (CatalogApiParametersTests)"
     verify: "dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter \"FullyQualifiedName~CatalogApiParametersTests\""
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["API", "unit"]
@@ -47,7 +47,7 @@ tasks:
     description: "Add Microsoft.AspNetCore.Mvc.Testing [OK] (pinned) and the in-process fixture with a temp Sqlite:DatabasePath"
     verify: "dotnet build CoreRentalNet.sln -v q --nologo"
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["API", "test-harness"]
@@ -55,7 +55,7 @@ tasks:
     description: "In-process HTTP tests API-03 to API-07 for the behaviour and the serialized body (CatalogApiEndpointTests)"
     verify: "dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter \"FullyQualifiedName~CatalogApiEndpointTests\""
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["API", "integration", "contract"]
@@ -63,7 +63,7 @@ tasks:
     description: "Re-run the three baselines and record them under specs/verifications"
     verify: "dotnet test CoreRentalNet.sln --filter \"FullyQualifiedName!~CoreRentalNet.E2E\" --nologo"
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["baselines"]

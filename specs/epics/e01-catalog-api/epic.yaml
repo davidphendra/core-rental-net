@@ -17,7 +17,7 @@ stories:
     title: An agent lists and filters the catalog over HTTP
     bcps: 5
     risk: P0
-    status: failing
+    status: passing
   - id: e01s02
     slug: catalog-bearer-auth
     title: Only an entitled machine reads the catalog

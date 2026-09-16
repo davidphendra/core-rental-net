@@ -31,6 +31,10 @@ internal static class ApplicationPipeline
 
         app.UseAuthorization();
 
+        // Mapped always, provider or not: with no provider the catalog policy opens the endpoint,
+        // exactly as it opens the store page, and with one the request is refused before it arrives.
+        CatalogController.MapEndpoints(app);
+
         if (identity.IsConfigured)
         {
             // Mapped only when there is an identity provider, so an unconfigured deployment has no

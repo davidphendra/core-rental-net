@@ -18,6 +18,7 @@ builder.AddPresentation();
 
 builder.AddSqliteDatabase();
 builder.AddCatalog();
+builder.AddCatalogApi();
 builder.AddWorkspace();
 builder.AddRentals();
 
