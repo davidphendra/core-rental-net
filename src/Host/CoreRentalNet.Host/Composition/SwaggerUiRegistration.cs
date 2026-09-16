@@ -48,7 +48,7 @@ internal static class SwaggerUiRegistration
                 return;
             }
 
-            options.OAuthClientId(identity.ClientId);
+            options.OAuthClientId(ClientId(app, identity));
             options.OAuthScopes([.. identity.Scope.Split(' ', StringSplitOptions.RemoveEmptyEntries)]);
             options.OAuthUsePkce();
 
@@ -61,4 +61,19 @@ internal static class SwaggerUiRegistration
             }
         });
     }
+
+    /// <summary>
+    /// The client the page authorizes with: the one the application signs people in with, unless a
+    /// deployment names another.
+    /// </summary>
+    /// <remarks>
+    /// The flow is PKCE, which the provider documents for clients that cannot hold a secret - single-page
+    /// and native applications - while a regular web application is a confidential client. A deployment
+    /// whose provider refuses the exchange without a secret for that client registers a public one for
+    /// this page and names it here; everything else stays the same, and the sign-in client is untouched.
+    /// </remarks>
+    private static string ClientId(WebApplication app, IdentitySettings identity)
+        => app.Configuration["Swagger:ClientId"] is { Length: > 0 } configured
+            ? configured
+            : identity.ClientId!;
 }
