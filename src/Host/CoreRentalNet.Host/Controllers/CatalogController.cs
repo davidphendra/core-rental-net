@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
+using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Host.Controllers;
 
@@ -19,16 +21,33 @@ public static class CatalogController
         ArgumentNullException.ThrowIfNull(endpoints);
 
         endpoints.MapGet("/api/catalog", (
+            HttpContext context,
             string? category,
             string? subCategory,
             string? search,
-            ISearchCatalogHandler catalog) =>
+            ISearchCatalogHandler catalog,
+            ILoggerFactory loggers) =>
         {
             var binding = CatalogApiParameters.Bind(category, subCategory, search);
 
-            return binding.Query is null
-                ? Results.BadRequest(binding.Error)
-                : Results.Ok(catalog.Handle(binding.Query));
+            if (binding.Query is null)
+            {
+                return Results.BadRequest(binding.Error);
+            }
+
+            var products = catalog.Handle(binding.Query);
+
+            // After authorisation and after the answer: a refused call never reaches this line, and
+            // the count is what actually came back rather than what was asked for.
+            CatalogApiLog.Called(loggers.CreateLogger(CatalogApiLog.Category), Caller(context), category, subCategory, search, products.Count);
+
+            return Results.Ok(products);
         }).RequireAuthorization(CatalogApiPolicy.Name);
     }
+
+    /// <summary>Who made the request, as the provider states it: the subject, or the client id.</summary>
+    private static string Caller(HttpContext context)
+        => context.User.FindFirst("sub")?.Value
+            ?? context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? "anonymous";
 }

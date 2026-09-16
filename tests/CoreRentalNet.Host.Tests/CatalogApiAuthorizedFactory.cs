@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Host.Tests;
 
@@ -34,6 +35,9 @@ public sealed class CatalogApiAuthorizedFactory : WebApplicationFactory<Program>
     private readonly string _database =
         Path.Combine(Path.GetTempPath(), $"core-rental-api-auth-{Guid.NewGuid():N}.db");
 
+    /// <summary>What the application logged, so a test can assert the catalogue's line.</summary>
+    internal CapturingLoggerProvider Logs { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -46,6 +50,8 @@ public sealed class CatalogApiAuthorizedFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            services.AddSingleton<ILoggerProvider>(Logs);
+
             var identity = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {

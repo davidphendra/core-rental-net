@@ -23,6 +23,9 @@ internal sealed class CatalogApiTestHandler(
 
     public const string PermissionsHeader = "X-Test-Permissions";
 
+    /// <summary>The subject every authenticated test request is made as.</summary>
+    public const string Caller = "test-client";
+
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue(PermissionsHeader, out var values) || values.Count == 0)
@@ -32,7 +35,8 @@ internal sealed class CatalogApiTestHandler(
 
         var claims = values
             .SelectMany(value => value?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [])
-            .Select(permission => new Claim("permissions", permission));
+            .Select(permission => new Claim("permissions", permission))
+            .Append(new Claim("sub", Caller));
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, SchemeName));
 

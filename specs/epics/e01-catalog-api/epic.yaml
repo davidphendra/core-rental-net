@@ -1,7 +1,7 @@
 id: e01
 slug: catalog-api
 title: Catalog API endpoint for agent consumers
-status: planned
+status: done
 bcps: 12
 
 deltas:
@@ -29,4 +29,4 @@ stories:
     title: Every catalog call is attributable
     bcps: 2
     risk: P2
-    status: failing
+    status: passing
