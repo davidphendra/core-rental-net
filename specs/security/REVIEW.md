@@ -17,7 +17,6 @@ authorization bypass, secrets, and unsafe deserialization.
 | S4 | INFO | Operability | No health endpoint. | Pre-existing, outside this epic. |
 
 ## Checked and clean
-
 - **Injection.** No SQL, shell, file path or reflection is reachable from the request. The only
   arithmetic is `string.Contains` with `OrdinalIgnoreCase` over in-memory records; the catalogue is a
   snapshot loaded at start-up, so there is no query to inject into.
@@ -37,3 +36,18 @@ authorization bypass, secrets, and unsafe deserialization.
 - **CORS.** None configured, and the caller is not a browser.
 - **Response headers.** The application's existing security headers apply to API responses
   (`Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`) — verified on a real host.
+
+## Addendum — after the review response (`9122b65`)
+
+`CatalogApiAuthentication.cs` changed after this review, answering findings S2–S4:
+
+- the audience requirement is now stated explicitly (`TokenValidationParameters.RequireAudience = true`)
+  beside `options.Audience`, rather than relying on the framework default;
+- `RequireHttpsMetadata` is `false` only in development, and only when a non-tenant authority is named;
+- the redundant `MetadataAddress` assignment was removed (the handler derives it from the authority).
+
+The assessment is unchanged: **no HIGH finding**. Each change tightens what a token must satisfy rather
+than relaxing it. A real host with a provider configured and no audience answered `401` to both a
+missing and a malformed token (the first attempt at this fix dropped the bearer scheme and answered
+`302`, a login redirect; that shape was rejected).
+
