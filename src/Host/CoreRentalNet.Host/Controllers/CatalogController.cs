@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CoreRentalNet.Host.Infrastructure;
+using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +43,19 @@ public static class CatalogController
             CatalogApiLog.Called(loggers.CreateLogger(CatalogApiLog.Category), Caller(context), category, subCategory, search, products.Count);
 
             return Results.Ok(products);
-        }).RequireAuthorization(CatalogApiPolicy.Name);
+        })
+            .WithName("SearchCatalog")
+            .WithSummary("Lists the catalogue, optionally narrowed by category, subcategory and name.")
+            .WithDescription(
+                "Every filter is optional, and none of them returns the whole catalogue. A term matches "
+                + "a product's name only. An unknown category or subcategory is refused with the values "
+                + "that would have worked rather than answered with an empty list.")
+            .WithTags("Catalog")
+            .Produces<IReadOnlyList<ProductView>>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization(CatalogApiPolicy.Name);
     }
 
     /// <summary>Who made the request, as the provider states it: the subject, or the client id.</summary>

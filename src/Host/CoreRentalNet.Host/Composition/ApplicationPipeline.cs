@@ -34,6 +34,7 @@ internal static class ApplicationPipeline
         // Mapped always, provider or not: with no provider the catalog policy opens the endpoint,
         // exactly as it opens the store page, and with one the request is refused before it arrives.
         CatalogController.MapEndpoints(app);
+        MapDevelopmentDocumentation(app);
 
         if (identity.IsConfigured)
         {
@@ -44,6 +45,24 @@ internal static class ApplicationPipeline
 
         app.UseMiddleware<DraftTokenMiddleware>();
         app.UseAntiforgery();
+    }
+
+    /// <summary>
+    /// Publishes the OpenAPI document in development, and nowhere else.
+    /// </summary>
+    /// <remarks>
+    /// The document names every route and shape the application has, so it is served only where
+    /// whoever is writing a caller needs to read it. It is anonymous: a description of the API is not
+    /// the API, so it carries no gate of its own.
+    /// </remarks>
+    private static void MapDevelopmentDocumentation(WebApplication app)
+    {
+        if (!app.Environment.IsDevelopment())
+        {
+            return;
+        }
+
+        app.MapOpenApi();
     }
 
     private static void ConfigureTransport(WebApplication app)

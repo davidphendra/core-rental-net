@@ -24,6 +24,9 @@
     <!-- The bearer scheme a machine caller authenticates with. Its own package rather than left
          transitive: the catalogue API names it directly. MIT. -->
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
+    <!-- The OpenAPI document the catalogue endpoint publishes in development, so a caller can
+         discover the contract without reading the code. MIT. -->
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
     <!-- The token type used to read an access token's permissions. Referenced directly for the same
          reason as the handler above: the application reads it directly, so it is pinned here rather
          than left to whatever the OpenID Connect handler happens to resolve. -->

@@ -1,0 +1,40 @@
+# The catalogue endpoint, as a REST client sends it (Rider, or VS Code's REST Client extension).
+#
+# Before running these: `dotnet run` in Development loads appsettings.Local.json and the developer's
+# user secrets, so identity is configured and every request below is answered 401. That is correct
+# behaviour - the endpoint wants a token. Either run the application the way a machine caller meets an
+# unconfigured deployment, which leaves the catalogue open exactly as the store page is:
+#
+#   ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_URLS=http://127.0.0.1:5080 \
+#     dotnet run --no-launch-profile --project src/Host/CoreRentalNet.Host
+#
+# or keep Development and set @token to a machine-to-machine access token carrying read:catalog.
+
+@host = http://127.0.0.1:5080
+@token = paste-a-token-here
+
+### The whole catalogue - 62 products
+GET {{host}}/api/catalog
+Accept: application/json
+
+### One category: chair, desk or accessory
+GET {{host}}/api/catalog?category=desk
+
+### One subcategory: beanbag, coffee, lamp, monitor or plant
+GET {{host}}/api/catalog?subCategory=monitor
+
+### A name search - a term matches the product's name only
+GET {{host}}/api/catalog?search=teak
+
+### No match is an empty list, not a 404
+GET {{host}}/api/catalog?search=zzzzzzzz
+
+### An unknown filter is refused with the values that would have worked
+GET {{host}}/api/catalog?category=sofa
+
+### With identity configured, the read:catalog permission travels on a bearer token
+GET {{host}}/api/catalog
+Authorization: Bearer {{token}}
+
+### The machine-readable description of everything above (Development only)
+GET {{host}}/openapi/v1.json

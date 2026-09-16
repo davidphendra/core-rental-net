@@ -96,6 +96,16 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         first.GetProperty("category").GetString().Should().Be("desk");
     }
 
+    [Fact] // API-13
+    public async Task The_openapi_document_is_not_served_outside_development()
+    {
+        var response = await factory.CreateClient().GetAsync("/openapi/v1.json");
+
+        // The document names every route and shape the application has. Development is where a
+        // caller needs it; anywhere else it is a map handed to whoever asks.
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     private async Task<JsonElement> GetArrayAsync(string path)
     {
         var response = await factory.CreateClient().GetAsync(path);
