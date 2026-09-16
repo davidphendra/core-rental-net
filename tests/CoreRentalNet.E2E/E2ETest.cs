@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
@@ -27,8 +28,8 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
         Page = await Host.NewPageAsync(Viewport);
 
         // Every test asserts its own requests stay on this origin; see HermeticityTests.
-        Requests.Clear();
-        Page.Request += (_, request) => Requests.Add(request.Url);
+        _requests.Clear();
+        Page.Request += (_, request) => _requests.Enqueue(request.Url);
 
         // A Blazor circuit that fails to start looks exactly like a slow page. Forwarding the
         // browser's own console and unhandled errors turns that into a diagnosable failure.
@@ -45,7 +46,19 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
 
     public async Task DisposeAsync() => await Page.Context.DisposeAsync();
 
-    protected List<string> Requests { get; } = [];
+    private readonly ConcurrentQueue<string> _requests = new();
+
+    /// <summary>
+    /// The requests the page has made, read as a snapshot.
+    /// </summary>
+    /// <remarks>
+    /// The browser reports each request on its own thread while a test reads this from the test's, and
+    /// the page is usually still fetching images when the assertion runs - which is exactly the moment
+    /// the funnel test asserts. A list here is a race, and its failure ("collection was modified")
+    /// names nothing about the application; a concurrent queue is the collection for a writer on one
+    /// thread and a reader on another.
+    /// </remarks>
+    protected IReadOnlyList<string> Requests => [.. _requests];
 
     /// <summary>
     /// Navigates and waits for the circuit to be attached.
