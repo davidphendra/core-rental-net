@@ -3,7 +3,7 @@ epics:
   - id: e01
     slug: catalog-api
     title: Catalog API endpoint for agent consumers
-    status: planned
+    status: done
     bcps: 12
     wsjf: 8.0
     order: 1
