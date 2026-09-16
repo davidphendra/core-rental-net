@@ -1,0 +1,37 @@
+story_id: e01s03
+title: Every catalog call is attributable
+status: failing
+bcps: 2
+tasks:
+  - id: 1
+    description: "Log one structured line after authorization with Caller, Category, SubCategory, Search and Count"
+    verify: "dotnet build CoreRentalNet.sln -v q --nologo"
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["observability"]
+  - id: 2
+    description: "Unit test the log fields through a capturing logger (CatalogApiLogTests)"
+    verify: "dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter \"FullyQualifiedName~CatalogApiLogTests\""
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["observability", "unit"]
+  - id: 3
+    description: "In-process HTTP test API-12: one request emits exactly one log entry with the expected properties"
+    verify: "dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter \"FullyQualifiedName~CatalogApiEndpointTests\""
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["observability", "integration"]
+  - id: 4
+    description: "Re-run the three baselines"
+    verify: "dotnet test CoreRentalNet.sln --filter \"FullyQualifiedName!~CoreRentalNet.E2E\" --nologo"
+    risk: P3
+    status: failing
+    allure:
+      severity: minor
+      categories: ["baselines"]

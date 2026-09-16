@@ -1,0 +1,15 @@
+release: unreleased
+epics:
+  - id: e01
+    slug: catalog-api
+    title: Catalog API endpoint for agent consumers
+    status: planned
+    bcps: 12
+    wsjf: 8.0
+    order: 1
+    stories: [e01s01, e01s02, e01s03]
+
+notes: |
+  One epic, three stories. WSJF is heuristic: business value is high (an agent gains the catalog),
+  time criticality is low (no deadline), risk reduction is medium (the stories prove the first real
+  data endpoint and its authorization path), and the job is small (12 BCPs).

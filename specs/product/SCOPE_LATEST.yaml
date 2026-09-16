@@ -1,0 +1,77 @@
+feature_name: catalog-api
+core_value: >-
+  An autonomous agent can read and filter the product catalog over HTTP, under the same permission
+  that already governs the catalog for people.
+
+summary: |
+  CoreRentalNet's catalog is read-only and already exposes exactly the read operation an agent needs:
+  ISearchCatalogHandler answers SearchCatalogQuery with an optional category, subcategory and name
+  search, returning the module's published ProductView. What is missing is a transport for a machine
+  caller — the application's only HTTP surface today is the sign-in and sign-out redirects.
+
+  This initiative adds one read-only endpoint, GET /api/catalog, that binds those three filters and
+  serializes ProductView. It reuses the module's query unchanged, so the store and the builder keep
+  the behaviour they have. Access reuses the existing catalog authorization requirement: an Auth0
+  machine-to-machine client presents a bearer token carrying read:catalog, and the endpoint is open
+  where no identity provider is configured, exactly as the catalog pages already are.
+
+  The endpoint is deliberately the whole deliverable. How the agent is wired to it — an MCP server or
+  an OpenAPI tool in Azure Foundry — is deferred, and the endpoint is built so that neither choice
+  changes it.
+
+in_scope:
+  - id: e01s01
+    item: >-
+      A read-only GET /api/catalog that lists products and narrows them by category, subcategory and
+      name search, serializing ProductView as camelCase JSON with lowercase enum strings, and
+      refusing an unknown filter value with 400.
+  - id: e01s02
+    item: >-
+      Machine-to-machine access: an Auth0 client-credentials bearer token carrying read:catalog,
+      validated by a dedicated catalog-api policy that reuses the existing CatalogReadRequirement.
+  - id: e01s03
+    item: >-
+      One structured log line per call: the caller's identity, the filters it asked for, and the
+      number of results.
+
+out_of_scope:
+  - item: Wiring the endpoint to Azure Foundry as an MCP server or an OpenAPI tool.
+    reason: deferred — the tool-versus-MCP decision is parked; the endpoint stands alone until then.
+  - item: Publishing an OpenAPI document.
+    reason: deferred — the description format belongs with the consumer wiring that needs it.
+  - item: Pagination, result caps, or a response envelope.
+    reason: not valuable — the catalogue is a bounded, immutable 62-row in-memory snapshot.
+  - item: Broadening search to description, SKU, or the category vocabulary.
+    reason: a product change to the store's own search, raised separately; the endpoint reuses the query unchanged.
+  - item: API keys, Entra managed identity, anonymous production access, rate limiting, CORS.
+    reason: deferred — one credential system (the existing read:catalog permission) and a server-side caller.
+  - item: Any change to the Catalog module's Application or Domain layers.
+    reason: not valuable — the endpoint is a thin Host adapter over ISearchCatalogHandler.
+  - item: A write surface for the catalog.
+    reason: out of scope — the catalogue is an immutable snapshot loaded once at start-up.
+
+constraints:
+  platform: .NET 10; a minimal-API endpoint mapping, not an MVC controller
+  layering: the endpoint lives in the Host; Application must not reference ASP.NET (ARC-04)
+  auth: identity is optional; the endpoint is open when no provider is configured
+  packages: no banned package; every version pinned in Directory.Packages.props
+  baselines: BUILD, NONBROWSER and BROWSER stay green
+  reuse: the endpoint calls ISearchCatalogHandler and serializes ProductView; nothing new in the module
+
+success_criteria:
+  - criterion: An entitled machine lists and filters the catalog.
+    evidence: 'GET /api/catalog?category=desk returns the ten desks, each with "category": "desk".'
+  - criterion: A mis-typed filter is visible, not silent.
+    evidence: ?category=sofa returns 400 naming the allowed values; no match returns 200 [].
+  - criterion: Access is the same decision as it is for people.
+    evidence: no token -> 401; token without read:catalog -> 403; token with it -> 200; no provider -> 200.
+  - criterion: Every call is attributable.
+    evidence: one structured log line per request carrying caller, filters and result count.
+  - criterion: Behaviour did not move.
+    evidence: the store and builder searches are unchanged and the three baselines are green.
+
+references:
+  - specs/CQRS_DESIGN_LATEST.md
+  - specs/modules.map
+  - specs/LAYER_AUDIT_LATEST.md
+  - specs/verifications/

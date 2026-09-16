@@ -1,0 +1,32 @@
+id: e01
+slug: catalog-api
+title: Catalog API endpoint for agent consumers
+status: planned
+bcps: 12
+
+deltas:
+  - type: ADDED
+    what: >-
+      A read-only HTTP catalog endpoint (GET /api/catalog) with machine-to-machine bearer access and
+      per-call logging. Net-new surface: the application previously served only the sign-in and
+      sign-out redirects.
+
+stories:
+  - id: e01s01
+    slug: catalog-endpoint
+    title: An agent lists and filters the catalog over HTTP
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e01s02
+    slug: catalog-bearer-auth
+    title: Only an entitled machine reads the catalog
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e01s03
+    slug: catalog-call-logging
+    title: Every catalog call is attributable
+    bcps: 2
+    risk: P2
+    status: failing
