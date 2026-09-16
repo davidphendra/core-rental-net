@@ -1,5 +1,7 @@
 using System.Net;
+using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.Host.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
@@ -17,14 +19,28 @@ public sealed class CatalogApiAuthorizationTests(CatalogApiAuthorizedFactory fac
         var response = await factory.CreateClient().GetAsync("/api/catalog");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        // A refused caller is told which refusal it was, in a value it can branch on, and given the
+        // identifier to quote. An empty body left it guessing at all three.
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        problem.RootElement.GetProperty("code").GetString().Should().Be(ApiErrorCode.Unauthenticated);
+        problem.RootElement.GetProperty("traceId").GetString().Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact] // API-09
+    [Fact] // API-09, API-21
     public async Task With_a_token_that_lacks_the_permission_it_forbids_with_403()
     {
         var response = await SendAsync("read:something-else");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        problem.RootElement.GetProperty("code").GetString().Should().Be(ApiErrorCode.NotPermitted);
     }
 
     [Fact] // API-09
@@ -41,7 +57,11 @@ public sealed class CatalogApiAuthorizationTests(CatalogApiAuthorizedFactory fac
         var response = await SendAsync("read:catalog");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).Should().StartWith("[").And.Contain("\"category\"");
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        document.RootElement.GetProperty("count").GetInt32().Should().Be(62);
+        document.RootElement.GetProperty("value")[0].GetProperty("category").GetString().Should().NotBeNullOrWhiteSpace();
     }
 
     private async Task<HttpResponseMessage> SendAsync(string permissions)

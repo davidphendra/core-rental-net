@@ -101,3 +101,26 @@ http://+:5199`) would serve it — with the configured client id and audience on
 public values rather than secrets, and the guard is the same one that maps the page; the mitigation, if
 it is ever wanted, is to relax only for loopback requests.
 
+
+## Addendum — what the API's refusals say (`api-responses`)
+
+The API now answers every refusal with problem details carrying a `code` and a `traceId`, and an
+unhandled failure with a 500 rather than the 404-with-no-body it used to produce. Two rules were
+applied, and both are disclosure rules rather than formatting ones.
+
+**The response never carries the failure itself.** The 500's `detail` is the framework's own wording;
+the exception's message and type never reach the caller. An exception message is written for a
+developer reading a log and routinely names a path, a query or a value the caller was not entitled to
+see — and an unhandled exception is exactly the case where nobody has decided what is safe to say.
+Asserted, not assumed: `API-22` asserts the body does **not** contain the exception's message or its
+type name.
+
+**`traceId` is the framework's identifier, not a new one.** It is the W3C trace id the request was
+logged under, only added when the framework has not already supplied it — so the identifier a caller
+quotes is the one that will actually be found in the logs. It is not a secret: it identifies a request,
+and the request's content is not in it.
+
+**Residual risk.** The codes are a published contract, so they invite a caller to branch on them; a
+future change to a code string is therefore a breaking change and must be treated as one. The `errors`
+member of the 400 echoes the filter as it was sent, including a value the caller chose — that value is
+the caller's own input, not server state, so it discloses nothing it did not already know.

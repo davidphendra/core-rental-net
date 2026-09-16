@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CoreRentalNet.Host.Controllers;
@@ -39,6 +40,10 @@ internal sealed class CatalogEnumBinder<TEnum> : IModelBinder
         bindingContext.ModelState.TryAddModelError(
             bindingContext.ModelName,
             CatalogApiParameters.Refusal(bindingContext.ModelName, sent, CatalogApiParameters.Names<TEnum>()));
+
+        // Named, so the refusal that reaches the caller says which filter was wrong rather than only
+        // that the request was refused.
+        ApiErrorCode.Set(bindingContext.HttpContext, ApiErrorCode.UnknownFilter);
 
         return Task.CompletedTask;
     }

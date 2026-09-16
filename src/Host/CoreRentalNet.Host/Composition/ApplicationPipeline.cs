@@ -19,18 +19,57 @@ internal static class ApplicationPipeline
         // First, so every response carries the policy - the pages and the assets behind them alike.
         // What the policy is, and why it is written strictly, is stated once in the middleware.
         app.UseMiddleware<SecurityHeadersMiddleware>();
-        UseRevalidatingStaticFiles(app);
 
-        // Authorization answers every request, not only the ones with a provider: the catalog policy
-        // has something to say when identity is unconfigured too, which is that there is no reader to
-        // check. Authentication is still registered only when there is somewhere to authenticate.
+        UseApiResponses(app);
+        UseRevalidatingStaticFiles(app);
+        UseIdentity(app, identity);
+        UseApplicationEndpoints(app, identity);
+
+        app.UseMiddleware<DraftTokenMiddleware>();
+        app.UseAntiforgery();
+    }
+
+    /// <summary>
+    /// Every way the API can refuse, answered with one shape.
+    /// </summary>
+    /// <remarks>
+    /// Scoped to the API on purpose. A browser navigating to a bad address must still be given a page,
+    /// and Blazor has its own error UI for the circuit, so mounting this for the whole application
+    /// would answer page requests with problem details - a worse defect than the one it fixes. Neither
+    /// middleware writes the body: the problem-details service does, which is what supplies the trace
+    /// id, the error code and the instance. The exception handler turns an unhandled failure into a
+    /// 500 that can be reported, and the status-code pages give the otherwise-empty 401, 403, 404 and
+    /// 405 something to read.
+    /// </remarks>
+    private static void UseApiResponses(WebApplication app)
+        => app.UseWhen(
+            context => context.Request.Path.StartsWithSegments(
+                CatalogRoutes.Prefix,
+                StringComparison.OrdinalIgnoreCase),
+            api =>
+            {
+                api.UseExceptionHandler();
+                api.UseStatusCodePages();
+            });
+
+    /// <summary>Authorization answers every request; authentication only where there is a provider.</summary>
+    /// <remarks>
+    /// The catalog policy has something to say when identity is unconfigured too, which is that there
+    /// is no reader to check.
+    /// </remarks>
+    private static void UseIdentity(WebApplication app, IdentitySettings identity)
+    {
         if (identity.IsConfigured)
         {
             app.UseAuthentication();
         }
 
         app.UseAuthorization();
+    }
 
+    /// <summary>The routes the application answers, and the ones a deployment may not have.</summary>
+    private static void UseApplicationEndpoints(WebApplication app, IdentitySettings identity)
+    {
         // Mapped always, provider or not: with no provider the catalog policy opens the endpoint,
         // exactly as it opens the store page, and with one the request is refused before it arrives.
         // Controllers are discovered, so a route added to a controller is reachable without a second
@@ -44,9 +83,6 @@ internal static class ApplicationPipeline
             // account routes at all.
             AccountController.MapEndpoints(app);
         }
-
-        app.UseMiddleware<DraftTokenMiddleware>();
-        app.UseAntiforgery();
     }
 
     /// <summary>
@@ -75,7 +111,11 @@ internal static class ApplicationPipeline
             return;
         }
 
-        app.UseExceptionHandler("/error", createScopeForErrors: true);
+        // There is deliberately no exception handler for the pages here. The one that was configured
+        // pointed at "/error", which nothing serves: an unhandled failure was answered 404 with an
+        // empty body, which is the wrong status and no diagnosis at all. The API has its own handler
+        // above. A page-shaped error page for the browser is a separate, larger piece of work - it
+        // needs a component and a status code it can set - and is recorded rather than pretended to.
         app.UseHsts();
         // HSTS tells a browser to come back over HTTPS; this sends it there the first time. A
         // deployment with no HTTPS port configured logs a warning and does not redirect, so this

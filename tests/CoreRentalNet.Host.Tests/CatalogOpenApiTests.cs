@@ -41,19 +41,53 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
         responses.TryGetProperty("400", out _).Should().BeTrue();
     }
 
-    [Fact] // API-13
-    public async Task The_document_writes_the_filter_vocabulary_as_strings()
+    [Fact] // API-13, API-18
+    public async Task The_document_names_the_content_type_each_answer_arrives_as()
     {
         using var document = await GetDocumentAsync();
 
-        var product = document.RootElement
-            .GetProperty("components")
-            .GetProperty("schemas")
-            .EnumerateObject()
-            .Single(schema => schema.Name.Contains("ProductView", StringComparison.Ordinal))
-            .Value;
+        var responses = document.RootElement
+            .GetProperty("paths").GetProperty("/api/catalog").GetProperty("get").GetProperty("responses");
 
-        var category = Resolve(document.RootElement, product.GetProperty("properties").GetProperty("category"));
+        // Named rather than left to the formatters: without this the document offers text/plain and
+        // text/json beside the one shape the endpoint sends.
+        ContentTypes(responses.GetProperty("200")).Should().Equal("application/json");
+        ContentTypes(responses.GetProperty("400")).Should().Equal("application/problem+json");
+
+        foreach (var status in new[] { "401", "403", "404", "405", "500" })
+        {
+            ContentTypes(responses.GetProperty(status)).Should().Equal("application/problem+json");
+
+            // And the model behind it, so a generated client raises the same error type for a refusal
+            // whatever refused it.
+            responses.GetProperty(status).GetProperty("content")
+                .GetProperty("application/problem+json").GetProperty("schema")
+                .GetProperty("$ref").GetString()!.Should().EndWith("ProblemDetails");
+        }
+    }
+
+    [Fact] // API-13, API-17
+    public async Task The_document_writes_the_item_vocabulary_as_strings()
+    {
+        using var document = await GetDocumentAsync();
+        var root = document.RootElement;
+
+        var success = root
+            .GetProperty("paths").GetProperty("/api/catalog").GetProperty("get")
+            .GetProperty("responses").GetProperty("200")
+            .GetProperty("content").GetProperty("application/json").GetProperty("schema");
+
+        // The document describes the answer the endpoint actually sends - the envelope, with the
+        // products inside it - so the vocabulary below is reached the way a client reaches it.
+        var envelope = Resolve(root, success);
+
+        // The envelope's own members: exactly the two the endpoint sends, so a field added to it is a
+        // deliberate change to the contract rather than something that appeared in the document.
+        envelope.GetProperty("properties").EnumerateObject().Select(property => property.Name)
+            .Should().BeEquivalentTo(["value", "count"]);
+
+        var items = Resolve(root, envelope.GetProperty("properties").GetProperty("value").GetProperty("items"));
+        var category = Resolve(root, items.GetProperty("properties").GetProperty("category"));
 
         // A generated client and a machine reader both send back what they read, so the vocabulary is
         // asserted as the words themselves: described as numbers, a caller would be left looking for a
@@ -161,6 +195,10 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
 
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync());
     }
+
+    /// <summary>The media types a documented response declares.</summary>
+    private static string[] ContentTypes(JsonElement response)
+        => [.. response.GetProperty("content").EnumerateObject().Select(media => media.Name)];
 
     /// <summary>The schema a property points at, following a <c>$ref</c> when it is written as one.</summary>
     private static JsonElement Resolve(JsonElement document, JsonElement schema)

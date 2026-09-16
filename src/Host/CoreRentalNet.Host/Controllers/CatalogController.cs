@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CoreRentalNet.Host.Infrastructure;
+using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 using Microsoft.AspNetCore.Authorization;
@@ -23,6 +24,17 @@ public sealed class CatalogController(
     ISearchCatalogHandler catalog,
     ILoggerFactory loggers) : ControllerBase
 {
+    /// <summary>The content types the API actually answers with, named rather than left to the formatters.</summary>
+    /// <remarks>
+    /// Without these the document lists every output formatter the controller has - <c>text/plain</c>
+    /// and <c>text/json</c> beside <c>application/json</c> - so a generated client is told to expect
+    /// three shapes where the endpoint sends one, and told <c>application/json</c> for a refusal that
+    /// actually arrives as <c>application/problem+json</c>.
+    /// </remarks>
+    private const string Json = "application/json";
+
+    private const string ProblemJson = "application/problem+json";
+
     /// <summary>Lists the catalogue, optionally narrowed by category, subcategory and product name.</summary>
     /// <remarks>
     /// Every filter is optional, and none of them returns the whole catalogue. A term matches a
@@ -32,11 +44,17 @@ public sealed class CatalogController(
     /// </remarks>
     [HttpGet]
     [Authorize(Policy = CatalogApiPolicy.Name)]
-    [ProducesResponseType<IReadOnlyList<ProductView>>(StatusCodes.Status200OK)]
-    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public ActionResult<IReadOnlyList<ProductView>> Search(
+    [ProducesResponseType<ApiCollection<ProductView>>(StatusCodes.Status200OK, Json)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, ProblemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, ProblemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, ProblemJson)]
+    // Declared here rather than added to every operation by a transformer: the API has one operation,
+    // and a reader looking for what this route can answer should find it on the route. These carry the
+    // schema a generated client needs, which a transformer could only add by assuming one exists.
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, ProblemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status405MethodNotAllowed, ProblemJson)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
+    public ActionResult<ApiCollection<ProductView>> Search(
         [FromQuery] CatalogCategory? category,
         [FromQuery] CatalogSubCategory? subCategory,
         [FromQuery] string? search)
@@ -54,7 +72,9 @@ public sealed class CatalogController(
             AsAsked("search"),
             products.Count);
 
-        return Ok(products);
+        // A collection answer, not a bare array: the count travels with the items, and a page of them
+        // can be added later without breaking the callers who read this shape today.
+        return Ok(new ApiCollection<ProductView>(products, products.Count));
     }
 
     /// <summary>A search of nothing but spaces narrows nothing, so it is not a filter.</summary>

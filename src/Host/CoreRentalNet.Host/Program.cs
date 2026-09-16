@@ -21,6 +21,7 @@ builder.AddPresentation();
 builder.AddSqliteDatabase();
 builder.AddCatalog();
 builder.AddCatalogApi();
+builder.AddApiResponses();
 builder.AddCatalogOpenApi();
 builder.AddWorkspace();
 builder.AddRentals();

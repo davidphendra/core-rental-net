@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.Host.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
@@ -15,6 +16,23 @@ namespace CoreRentalNet.Host.Tests;
 /// </remarks>
 public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassFixture<CatalogApiFactory>
 {
+    [Fact] // API-17
+    public async Task The_answer_is_an_envelope_whose_count_is_its_own_length()
+    {
+        var response = await factory.CreateClient().GetAsync("/api/catalog");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var body = document.RootElement;
+
+        // Exactly these two, so a field added to the answer is a deliberate change to the contract
+        // rather than something that appeared in it.
+        body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(["value", "count"]);
+        body.GetProperty("value").GetArrayLength().Should().Be(62);
+        body.GetProperty("count").GetInt32().Should().Be(62);
+    }
+
     [Fact] // API-03
     public async Task No_filter_returns_the_whole_catalogue_in_catalog_order()
     {
@@ -68,10 +86,14 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         var response = await factory.CreateClient().GetAsync("/api/catalog?search=zzzzzzzz");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).Trim().Should().Be("[]");
+
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        document.RootElement.GetProperty("value").GetArrayLength().Should().Be(0);
+        document.RootElement.GetProperty("count").GetInt32().Should().Be(0);
     }
 
-    [Fact] // API-01
+    [Fact] // API-01, API-18
     public async Task An_unknown_category_is_a_400_naming_the_allowed_values()
     {
         var response = await factory.CreateClient().GetAsync("/api/catalog?category=sofa");
@@ -85,6 +107,10 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         var body = problem.RootElement;
 
         body.GetProperty("status").GetInt32().Should().Be(400);
+        body.GetProperty("instance").GetString().Should().Be("/api/catalog");
+
+        // Branch on this, not on the prose: the code is the part that is contract.
+        body.GetProperty("code").GetString().Should().Be(ApiErrorCode.UnknownFilter);
 
         var refusal = body.GetProperty("errors").GetProperty("category")[0].GetString()!;
         refusal.Should().Contain("sofa").And.Contain("chair").And.Contain("desk").And.Contain("accessory");
@@ -98,9 +124,52 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var refusal = problem.RootElement.GetProperty("errors").GetProperty("subCategory")[0].GetString()!;
+        var root = problem.RootElement;
 
+        root.GetProperty("code").GetString().Should().Be(ApiErrorCode.UnknownFilter);
+
+        var refusal = root.GetProperty("errors").GetProperty("subCategory")[0].GetString()!;
         refusal.Should().Contain("hammock").And.Contain("monitor").And.Contain("lamp");
+    }
+
+    [Fact] // API-19
+    public async Task An_address_under_the_api_that_answers_nothing_is_a_404_problem_detail()
+    {
+        var response = await factory.CreateClient().GetAsync("/api/no-such-thing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        problem.RootElement.GetProperty("code").GetString().Should().Be(ApiErrorCode.UnknownRoute);
+        problem.RootElement.GetProperty("status").GetInt32().Should().Be(404);
+        problem.RootElement.GetProperty("traceId").GetString().Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact] // API-20
+    public async Task A_method_the_route_does_not_answer_is_a_405_problem_detail()
+    {
+        var response = await factory.CreateClient().PostAsync("/api/catalog", content: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
+
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+
+        problem.RootElement.GetProperty("code").GetString().Should().Be(ApiErrorCode.MethodNotAllowed);
+    }
+
+    [Fact] // API-23
+    public async Task An_address_that_is_not_an_api_route_is_not_answered_with_json()
+    {
+        var response = await factory.CreateClient().GetAsync("/no-such-page");
+
+        // The error shape above is scoped to the API. A browser that mistyped an address is a page
+        // request, and answering it with problem details would be a defect of its own - it is the
+        // reason the middleware is mounted for the prefix rather than for the application.
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.Content.Headers.ContentType?.MediaType.Should().NotBe("application/problem+json");
     }
 
     [Fact] // API-07
@@ -138,6 +207,7 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    /// <summary>The items of a collection answer, which is where every catalogue assertion reads.</summary>
     private async Task<JsonElement> GetArrayAsync(string path)
     {
         var response = await factory.CreateClient().GetAsync(path);
@@ -146,6 +216,6 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
 
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
-        return document.RootElement.Clone();
+        return document.RootElement.GetProperty("value").Clone();
     }
 }
