@@ -1,0 +1,60 @@
+story_id: e01s02
+verified_at: "2026-09-16T05:41:47Z"
+verifier: verify-work
+risk: P0
+phases:
+  smoke:
+    passed: true
+    note: >-
+      Real host, cold start (Development, identity configured from the machine's own settings).
+      GET /api/catalog returned 401 with no token and 401 with a malformed token - the production
+      JwtBearer scheme rejecting, not a test stand-in.
+  build:
+    passed: true
+    command: "dotnet build CoreRentalNet.sln --configuration Release"
+    exit_code: 0
+  typecheck:
+    passed: true
+    note: "The build is the type gate: nullable enabled, warnings as errors."
+  lint:
+    passed: true
+    note: "No separate linter; the analyzers run in the build with TreatWarningsAsErrors."
+  tests:
+    passed: true
+    command: "dotnet test CoreRentalNet.sln --configuration Release --no-build --filter \"FullyQualifiedName!~CoreRentalNet.E2E\""
+    exit_code: 0
+  terminal_verdict:
+    command: "dotnet test CoreRentalNet.sln --configuration Release --no-build --filter \"FullyQualifiedName!~CoreRentalNet.E2E\""
+    exit_code: 0
+    captured_at: "2026-09-16T05:41:47Z"
+    note: "Single contiguous run: 523 passed, 0 failed. Output is not merged from any other attempt."
+  security:
+    passed: true
+    note: "specs/security/REVIEW.md — no HIGH findings; the authorization boundary was the focus."
+  manual:
+    passed: true
+    steps:
+      - step: "Real host with identity configured, no token"
+        expected: "401"
+        actual: "401"
+        passed: true
+      - step: "Real host with identity configured, malformed bearer token"
+        expected: "401"
+        actual: "401"
+        passed: true
+      - step: "In-process host with identity configured, token without read:catalog"
+        expected: "403"
+        actual: "403"
+        passed: true
+      - step: "In-process host with identity configured, token with read:catalog"
+        expected: "200 and the catalogue"
+        actual: "200, body begins with '[' and contains \"category\""
+        passed: true
+      - step: "Real host with no provider configured"
+        expected: "open — 200"
+        actual: "200, 62 products"
+        passed: true
+  gaps:
+    closed: true
+  residual:
+    - "A valid bearer token was not presented to a real host: that needs a machine-to-machine token from the provider. The accepted-token path is covered in-process; the production scheme is proven to reject."

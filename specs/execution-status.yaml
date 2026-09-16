@@ -1,0 +1,45 @@
+updated_at: "2026-09-16T05:41:47Z"
+branch: catalog-api
+base: main
+head: 6bdf991
+
+epics:
+  - id: e01
+    slug: catalog-api
+    status: done
+    stories:
+      - id: e01s01
+        status: passing
+        risk: P0
+        commits: [19211aa]
+        verify: specs/verifications/e01s01-verify.yaml
+        record: specs/verifications/catalog-api-e01s01-after.md
+      - id: e01s02
+        status: passing
+        risk: P0
+        commits: [c151858]
+        verify: specs/verifications/e01s02-verify.yaml
+        record: specs/verifications/catalog-api-e01s02-after.md
+      - id: e01s03
+        status: passing
+        risk: P2
+        commits: [6bdf991]
+        verify: specs/verifications/e01s03-verify.yaml
+        record: specs/verifications/catalog-api-e01s03-after.md
+
+baselines:
+  build: { result: "0 warnings, 0 errors" }
+  nonbrowser: { passed: 523, failed: 0, skipped: 0 }
+  browser: { passed: 103, failed: 0, skipped: 1 }
+
+gates:
+  verify_work: passed
+  security_review: { verdict: passed, high_findings: 0, file: specs/security/REVIEW.md }
+  nfr: { verdict: GO, file: specs/verifications/NFR-e01.json }
+  blind_spots: not_run
+  completeness_critic: not_run
+
+notes: |
+  blind_spots and completeness_critic are bigpowers scripts that do not ship in this repository
+  (no scripts/ directory). Their intent was covered by the manual consistency pass and the security
+  review. Recorded as not run rather than passed.

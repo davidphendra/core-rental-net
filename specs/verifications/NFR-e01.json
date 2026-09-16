@@ -1,0 +1,28 @@
+{
+  "epic": "e01",
+  "stories": ["e01s01", "e01s02", "e01s03"],
+  "verdict": "GO",
+  "measured_at": "2026-09-16T05:41:47Z",
+  "command_set": "single contiguous runs on branch catalog-api @ 6bdf991, Release configuration",
+  "dimensions": {
+    "performance": {
+      "verdict": "PASS",
+      "evidence": "20 sequential GET /api/catalog on a real host (62 products, 62 in-memory rows): min 0.6 ms, median 0.7 ms, max 4.5 ms.",
+      "note": "No threshold was promised by the epic; the measured cost is dominated by HTTP, not by the query."
+    },
+    "reliability": {
+      "verdict": "PASS",
+      "evidence": "Unknown filter -> 400 naming the allowed values; unsupported method -> 405; no match -> 200 []; 401/403/200 by permission. No unhandled exception observed in two real-host smoke runs.",
+      "note": "The endpoint is read-only, so it cannot corrupt state; the catalogue is an immutable snapshot."
+    },
+    "operability": {
+      "verdict": "PASS",
+      "evidence": "One structured log line per answered request carrying caller, filters and count; a refused request writes no line. Security headers present on API responses.",
+      "note": "No health endpoint exists in the application. Pre-existing, not promised by this epic."
+    }
+  },
+  "blocking_findings": [],
+  "residual_risk": [
+    "A valid bearer token was not exercised on a real host (that needs a real machine-to-machine token). A missing and a malformed token were both rejected 401 by the production JwtBearer scheme; the accepted-token path is covered in-process at the policy level."
+  ]
+}
