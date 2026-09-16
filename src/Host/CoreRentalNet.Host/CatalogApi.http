@@ -10,7 +10,7 @@
 #
 # or keep Development and set @token to a machine-to-machine access token carrying read:catalog.
 
-@host = http://127.0.0.1:5080
+@host = http://127.0.0.1:5199
 @token = paste-a-token-here
 
 ### The whole catalogue - 62 products
