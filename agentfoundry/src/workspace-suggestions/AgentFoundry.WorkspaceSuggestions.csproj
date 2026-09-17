@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>AgentFoundry.WorkspaceSuggestions</RootNamespace>
+  </PropertyGroup>
+
+  <!-- The four-agent workflow this container runs: the graph, the nodes and the contract they trade.
+       No dependency on CoreRentalNet: the catalogue is reached over HTTP, so the agent and the
+       application meet at a schema rather than at a project reference. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" />
+  </ItemGroup>
+
+</Project>

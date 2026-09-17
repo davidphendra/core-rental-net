@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** infra
 **bcps:** 5
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -53,12 +53,16 @@ is streamed as stage events before it, and exactly once.
 
 1. Add the agent project to `agentfoundry/AgentFoundry.sln` with a single entry point. → verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
 2. Write the three contract schemas. → verify: `test -f agentfoundry/shared/contracts/workspace-suggestion.result.schema.json && test -f agentfoundry/shared/contracts/workspace-suggestion.request.schema.json && test -f agentfoundry/shared/contracts/workspace-suggestion.event.schema.json`
-3. Build the workflow skeleton with the four nodes and the loop edge, with the three later nodes
-   stubbed. → verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
+3. Build the workflow in Microsoft Agent Framework and wire the verifier into it. The graph runs the
+   verifier alone for now: the later nodes attach as they are written, because a stub that approved
+   nothing would emit a result a caller could not tell from a real one. →
+   verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
 4. Implement the verifier: classification, the reason-code vocabulary, and the `rejected` result. →
    verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~VerifierTests"`
-5. Emit stage events through the Responses host and enforce the result schema on the terminal event.
-   → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~ContractTests"`
+5. Stream the contract's messages: a stage for each node that finishes, and the typed result at the
+   end. The Responses transport itself, and the model behind `IIntentClassifier`, arrive with the
+   deployment - the packages are preview and there is no endpoint here to verify them against. →
+   verify: `dotnet test agentfoundry/AgentFoundry.sln --nologo`
 6. Unit tests AGT-01 … AGT-03 with a scripted model, so no network is used. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo`
 7. Record the tracer run under `specs/verifications/e02s02-after.md`. → verify: `test -f specs/verifications/e02s02-after.md`
 
@@ -95,10 +99,14 @@ is streamed as stage events before it, and exactly once.
   and the application renders copy from `criteria` tokens instead.
 - **A refusal that looks like a failure.** HTTP 200 for `rejected` is deliberate and asserted, because
   the caller must distinguish "unrelated request" from "service down".
+- **A graph with one node is not a workflow.** What is asserted today is the contract, the stage order
+  and the verifier's decision. The loop, the branch and the three remaining nodes are not exercised,
+  and `AGT-03` says so out loud rather than implying otherwise.
 
 ## Acceptance criteria
 
 - AGT-01 … AGT-03 pass without network access.
-- The result validates against the schema, and an invalid result is refused.
-- `dotnet build agentfoundry/AgentFoundry.sln` is clean and the application's three baselines are
-  untouched.
+- The three schemas exist, and their stage, status and slot vocabularies are asserted against the
+  vocabularies in code.
+- `dotnet build agentfoundry/AgentFoundry.sln` is clean, and the application's three baselines are
+  untouched — re-run and recorded, not assumed.

@@ -26,7 +26,7 @@ stories:
     type: feat
     bcps: 5
     risk: P0
-    status: failing
+    status: passing
   - id: e02s03
     slug: rephraser
     title: The request becomes a specification

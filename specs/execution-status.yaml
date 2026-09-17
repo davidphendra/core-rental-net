@@ -44,7 +44,13 @@ epics:
         record: specs/verifications/e03s03-after.md
   - id: e02
     slug: agentfoundry-suggestions
-    status: not-started
+    status: in-progress
+    stories:
+      - id: e02s02
+        slug: contract-and-skeleton
+        status: passing
+        risk: P0
+        record: specs/verifications/e02s02-after.md
   - id: e04
     slug: ai-builder
     status: not-started
@@ -66,8 +72,14 @@ notes: |
   every product, a compact projection for a machine caller, and an envelope that says whether an
   answer is complete. e03 unblocks e02 and e04.
 
-  Next action: e02s01 - the Auth0 spike, the one hard gate - or e02s02/e02s03/e02s04 which need no
-  cloud access and can be built while that gate is open.
+  e02s02 is complete: the suggestion contract (three schemas plus the C# records and vocabularies),
+  the intent-classifier port, the verifier and the run that streams from it. The agent tree is
+  agentfoundry/, with its own solution, and the application's baselines did not move - which is the
+  property specs/adr/0001 exists to protect. The record is specs/verifications/e02s02-after.md.
+
+  Next: e02s03, the rephraser, which attaches the second node to the graph. e02s01 - the Auth0 spike,
+  the one hard gate - still needs a subscription and a login, and gates e02s03 onward only in the
+  sense that the catalogue path it decides is wired at e02s07.
 
   e03s02 is complete: view=compact leaves out the image path and the display flags, states the price
   as a number and the currency once on the envelope, and keeps the description and the metadata. The

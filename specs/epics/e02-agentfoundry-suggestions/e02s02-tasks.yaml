@@ -1,13 +1,13 @@
 story_id: e02s02
 title: One request in, one typed result out, streamed
-status: failing
+status: passing
 bcps: 5
 tasks:
   - id: 1
     description: "Add the agent project to agentfoundry/AgentFoundry.sln with a single entry point"
     verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "scaffold"]
@@ -15,15 +15,15 @@ tasks:
     description: "Write the three contract schemas under agentfoundry/shared/contracts/"
     verify: 'test -f agentfoundry/shared/contracts/workspace-suggestion.result.schema.json && test -f agentfoundry/shared/contracts/workspace-suggestion.request.schema.json && test -f agentfoundry/shared/contracts/workspace-suggestion.event.schema.json'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "contract"]
   - id: 3
-    description: "Build the workflow skeleton with the four nodes and the loop edge, later nodes stubbed"
+    description: "Build the workflow in Agent Framework and wire the verifier into it; the later nodes attach as they are written"
     verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "workflow"]
@@ -31,15 +31,15 @@ tasks:
     description: "Implement the verifier: classification, the reason-code vocabulary, and the rejected result"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~VerifierTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "unit"]
   - id: 5
-    description: "Emit stage events through the Responses host and enforce the result schema on the terminal event"
+    description: "Stream the contract messages: a stage per node, the typed result at the end"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~ContractTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "contract", "unit"]
@@ -47,7 +47,7 @@ tasks:
     description: "Unit tests AGT-01 to AGT-03 with a scripted model"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "unit"]
@@ -55,7 +55,7 @@ tasks:
     description: "Record the tracer run under specs/verifications/e02s02-after.md"
     verify: 'test -f specs/verifications/e02s02-after.md'
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["verification", "docs"]

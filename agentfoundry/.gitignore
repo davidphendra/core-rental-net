@@ -1,0 +1,19 @@
+# Build output
+bin/
+obj/
+
+# Local environment. Names only ever live in .env.example; values never do.
+.env
+.env.*
+!.env.example
+
+# azd and Foundry local state
+.azure/
+.foundry/results/
+.foundry/suites/
+.foundry/datasets/
+.foundry/evaluators/
+*.bicepparam.local.json
+
+# OS
+.DS_Store
