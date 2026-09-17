@@ -115,6 +115,7 @@ baselines:
   build: { result: "0 warnings, 0 errors" }
   nonbrowser: { passed: 643, failed: 0, skipped: 0 }
   browser: { passed: 118, failed: 0, skipped: 1 }
+  agentfoundry: { passed: 80, failed: 0, skipped: 0 }
 
 gates:
   verify_work: passed_e04s03
