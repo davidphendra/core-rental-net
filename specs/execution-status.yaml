@@ -85,15 +85,21 @@ epics:
         status: in-progress
         risk: P0
         record: specs/verifications/e04s02-after.md
-        deferred: "the Host adapter waits on e02s07's transport; the local stand-in waits on e04s03's page"
+        deferred: "the Host adapter is the next step; the local stand-in follows it"
+      - id: e04s03
+        slug: streamed-run
+        status: in-progress
+        risk: P0
+        record: specs/verifications/e04s03-after.md
+        deferred: "the streaming shape and the copy are in; the section needs the Host adapter first"
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 577, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 585, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
-  verify_work: passed_e04s02
+  verify_work: passed_e04s03
   security_review: { verdict: passed, file: specs/security/REVIEW.md }
   nfr: not-run
   blind_spots: not_run
@@ -132,6 +138,12 @@ notes: |
   answering four policies, the catalogue's rule preserved exactly and the AI section's two permissions
   closed by default. The security review carries an addendum, because this edited code it had already
   covered. The record is specs/verifications/e04s01-after.md.
+
+  e04s03 is delivered as far as it can be: the streaming contract on both sides of the port, the four
+  rules applied to the last message of a stream, and the application's own words for the agent's stage
+  ids. The section itself is not built, and neither is the stand-in - they are one chain, and the
+  missing link is the Host adapter, which is the next step. 8 new tests; the record is
+  specs/verifications/e04s03-after.md.
 
   e04s02 is delivered except for its two pieces that need something that does not exist yet: the Host
   adapter waits on e02s07's transport, and the local stand-in waits on e04s03's page. The rules

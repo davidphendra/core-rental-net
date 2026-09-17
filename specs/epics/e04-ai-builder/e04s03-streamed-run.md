@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** ui
 **bcps:** 5
-**status:** failing
+**status:** in-progress
 
 ## Context
 
@@ -42,7 +42,8 @@ chosen, so cancelling is safe by construction. Cancelling releases the run guard
 
 ## Steps
 
-1. Add the AI section component, hidden unless the entitlement holds. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
+1. Add the AI section component, hidden unless the entitlement holds. **Not started**: it needs the
+   Host adapter to call, which is the next step. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 2. Add the request field and the submit path calling the port. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 3. Add the stage-id to copy map, owned by the Host, with an unknown id rendering nothing. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~StageCopyTests"`
 4. Render the streamed stages with `aria-live="polite"`, and retain and collapse the list when the run

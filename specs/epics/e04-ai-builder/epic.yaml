@@ -37,7 +37,7 @@ stories:
     type: feat
     bcps: 5
     risk: P0
-    status: failing
+    status: in-progress
   - id: e04s04
     slug: outcome-paths
     title: Every outcome is said in the application's own words

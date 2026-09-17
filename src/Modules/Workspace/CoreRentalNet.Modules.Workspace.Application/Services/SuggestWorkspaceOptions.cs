@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Suggestion;
 
@@ -18,56 +19,99 @@ namespace CoreRentalNet.Modules.Workspace.Application.Services;
 /// whose lines all resolve to nothing is not shown at all: a candidate with no products in it is not a
 /// cheaper candidate, it is an empty one.
 /// </para>
+/// <para>
+/// Stages pass through as they arrive, before any of this applies: they say where the run is, and a page
+/// that waited for the checking before showing them would have nothing to show while a customer waits.
+/// </para>
 /// </remarks>
 public sealed class SuggestWorkspaceOptions(IAgentSuggestions agent, IProductCatalog catalog)
     : ISuggestWorkspaceOptions
 {
-    public async Task<WorkspaceSuggestion> SuggestAsync(
+    public async IAsyncEnumerable<SuggestionUpdate> SuggestAsync(
         WorkspaceSuggestionRequest request,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         if (!agent.IsConfigured)
         {
-            return Unavailable();
+            yield return SuggestionUpdate.Answer(Unavailable());
+
+            yield break;
         }
 
-        var answer = await AskAsync(request, cancellationToken);
-
-        if (answer is null)
+        await foreach (var message in MessagesAsync(request, cancellationToken))
         {
-            return Unavailable();
+            if (message.Result is { } answer)
+            {
+                yield return SuggestionUpdate.Answer(Checked(answer));
+
+                yield break;
+            }
+
+            yield return SuggestionUpdate.StageEvent(message.Stage ?? string.Empty, message.Attempt);
         }
 
-        return answer.Status == SuggestionStatus.Rejected
-            ? new WorkspaceSuggestion(SuggestionStatus.Rejected, [], answer.Code, [])
-            : Suggested(answer);
+        // The agent's stream ended without an answer. That is a transport failure, not a refusal.
+        yield return SuggestionUpdate.Answer(Unavailable());
     }
 
     /// <summary>
-    /// What the agent answered, or null when it could not be reached.
+    /// What the agent sent, or nothing when it could not be reached.
     /// </summary>
     /// <remarks>
     /// A failure to reach the agent is not a refusal: the page says something different for it, and only
-    /// one of the two invites a retry. A timeout counts as unreachable, because a customer waiting on a
-    /// request that will never arrive is in the same position as one whose agent is down.
+    /// one of the two invites a retry. The exception is caught around the enumeration rather than inside
+    /// it, because a stream fails while it is being read and not when it is asked for.
     /// </remarks>
-    private async Task<AgentSuggestion?> AskAsync(WorkspaceSuggestionRequest request, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<AgentSuggestionMessage> MessagesAsync(
+        WorkspaceSuggestionRequest request,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await using var stream = agent
+            .AskAsync(request.Query, cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
+
+        while (true)
+        {
+            var (moved, current) = await NextAsync(stream);
+
+            if (!moved)
+            {
+                yield break;
+            }
+
+            yield return current!;
+        }
+    }
+
+    /// <summary>The next message, or nothing when the stream ended or could not be read.</summary>
+    /// <remarks>
+    /// One step of the enumeration, in its own method so that the failure is caught at one nesting level
+    /// rather than four. A stream fails while it is read, which is why this is not a try around the call
+    /// that created it.
+    /// </remarks>
+    private static async Task<(bool Moved, AgentSuggestionMessage? Current)> NextAsync(
+        IAsyncEnumerator<AgentSuggestionMessage> stream)
     {
         try
         {
-            return await agent.AskAsync(request.Query, cancellationToken);
+            return (await stream.MoveNextAsync(), stream.Current);
         }
         catch (Exception failure) when (failure is HttpRequestException or TaskCanceledException)
         {
-            return null;
+            return (false, null);
         }
     }
 
     /// <summary>The candidates the catalogue can supply, with the SKUs it cannot supply removed.</summary>
-    private WorkspaceSuggestion Suggested(AgentSuggestion answer)
+    private WorkspaceSuggestion Checked(AgentSuggestion answer)
     {
+        if (answer.Status == SuggestionStatus.Rejected)
+        {
+            return new WorkspaceSuggestion(SuggestionStatus.Rejected, [], answer.Code, []);
+        }
+
         var dropped = new List<string>();
         var options = new List<SuggestedOption>(answer.Options.Count);
 

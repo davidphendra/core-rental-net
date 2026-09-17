@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Suggestion;
 using CoreRentalNet.Modules.Workspace.Application.Services;
@@ -97,9 +98,43 @@ public sealed class SuggestionTests
         unreachable.Status.Should().NotBe(refused.Status);
     }
 
-    private static Task<WorkspaceSuggestion> SuggestAsync(IAgentSuggestions agent, IProductCatalog catalog)
-        => new SuggestWorkspaceOptions(agent, catalog)
+    /// <summary>The answer at the end of the stream, which is what these tests are about.</summary>
+    private static async Task<WorkspaceSuggestion> SuggestAsync(IAgentSuggestions agent, IProductCatalog catalog)
+    {
+        WorkspaceSuggestion? outcome = null;
+
+        var updates = new SuggestWorkspaceOptions(agent, catalog)
             .SuggestAsync(new WorkspaceSuggestionRequest("a desk with two monitors"));
+
+        await foreach (var update in updates)
+        {
+            if (update.Outcome is { } answer)
+            {
+                outcome = answer;
+            }
+        }
+
+        return outcome!;
+    }
+
+    [Fact] // AIB-11
+    public async Task The_stages_arrive_before_the_answer_and_in_order()
+    {
+        var updates = new List<SuggestionUpdate>();
+
+        await foreach (var update in new SuggestWorkspaceOptions(
+            new FakeAgent().Answering(Ok(Option("low", ("Monitor", "MON0001", 1)))),
+            new TestCatalog().Add("MON0001", 350_000m))
+            .SuggestAsync(new WorkspaceSuggestionRequest("a desk")))
+        {
+            updates.Add(update);
+        }
+
+        updates.Select(update => update.Kind).Should().Equal("stage", "result");
+        updates[0].Stage.Should().Be("verifying");
+        updates[0].Outcome.Should().BeNull("a stage is not an answer");
+        updates[^1].Outcome.Should().NotBeNull();
+    }
 
     private static AgentSuggestion Ok(params AgentSuggestionOption[] options)
         => new(SuggestionStatus.Ok, Code: null, options, Findings: []);
@@ -145,13 +180,24 @@ public sealed class SuggestionTests
             return this;
         }
 
-        public Task<AgentSuggestion> AskAsync(string query, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<AgentSuggestionMessage> AskAsync(
+            string query,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             Asked++;
 
-            return _failing
-                ? throw new HttpRequestException("the agent is not answering")
-                : Task.FromResult(_answer);
+            if (_failing)
+            {
+                // Thrown from inside the stream, which is where a real one fails: a request that cannot
+                // be reached fails while it is being read, not when it is asked for.
+                throw new HttpRequestException("the agent is not answering");
+            }
+
+            yield return AgentSuggestionMessage.StageEvent("verifying", 1);
+
+            await Task.Yield();
+
+            yield return AgentSuggestionMessage.Answer(_answer);
         }
     }
 }
