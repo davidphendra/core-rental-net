@@ -8,8 +8,46 @@ epics:
     wsjf: 8.0
     order: 1
     stories: [e01s01, e01s02, e01s03]
+  - id: e03
+    slug: catalogue-contract
+    title: The catalogue's published shape for machine callers
+    status: planned
+    bcps: 16
+    wsjf: 6.0
+    order: 2
+    stories: [e03s01, e03s02, e03s03]
+  - id: e02
+    slug: agentfoundry-suggestions
+    title: The Foundry agent that composes three workspace candidates
+    status: planned
+    bcps: 36
+    wsjf: 4.0
+    order: 3
+    stories: [e02s01, e02s02, e02s03, e02s04, e02s05, e02s06, e02s07]
+  - id: e04
+    slug: ai-builder
+    title: The AI section in the builder
+    status: planned
+    bcps: 25
+    wsjf: 4.0
+    order: 4
+    stories: [e04s01, e04s02, e04s03, e04s04, e04s05, e04s06]
 
 notes: |
-  One epic, three stories. WSJF is heuristic: business value is high (an agent gains the catalog),
-  time criticality is low (no deadline), risk reduction is medium (the stories prove the first real
-  data endpoint and its authorization path), and the job is small (12 BCPs).
+  e01 is done. The three epics after it are one initiative with a strict internal order.
+
+  e03 comes first even though its WSJF is unremarkable, because it is a prerequisite: the agent
+  cannot match a request against a catalogue whose only discriminating text is a product name. Its
+  value is a precondition rather than a return, which is exactly what a WSJF ordering alone would get
+  wrong.
+
+  e02 and e04 share order 3 in effect and may run in parallel. Their only coupling is the suggestion
+  contract schema under agentfoundry/shared/contracts/, and the browser tier of e04 is driven by a
+  local stand-in process, so e04 does not wait for Foundry provisioning.
+
+  e02 carries the risk: 36 BCPs, a four-agent workflow, and one hard gate - e02s01, the Auth0 spike,
+  which decides between a Toolbox OpenAPI tool and the pre-committed fallback in which the container
+  mints its own token. Everything else in e02 can be built and unit-tested while that gate is open.
+
+  Scope is specs/product/SCOPE_LATEST.yaml. The 52 decisions these epics implement are recorded in
+  their epic.yaml notes by register id; the layout decision behind them is specs/adr/0001.

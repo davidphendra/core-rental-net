@@ -1,0 +1,88 @@
+id: e02
+slug: agentfoundry-suggestions
+title: The Foundry agent that composes three workspace candidates
+status: planned
+bcps: 36
+
+deltas:
+  - type: ADDED
+    what: >-
+      A Foundry hosted agent - one container running a four-agent Microsoft Agent Framework workflow -
+      that reads the catalogue, composes three candidates across low, middle and high budget, reviews
+      them, and answers with a typed result streamed as stage events. Nothing in the application
+      changes; the agent is a new deployable unit beside it.
+
+stories:
+  - id: e02s01
+    slug: auth-spike
+    title: A machine reads the catalogue through the agent's chosen path
+    type: spike
+    bcps: 2
+    risk: P0
+    status: failing
+  - id: e02s02
+    slug: contract-and-skeleton
+    title: One request in, one typed result out, streamed
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e02s03
+    slug: rephraser
+    title: The request becomes a specification
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e02s04
+    slug: suggestor
+    title: The catalogue becomes three candidates
+    type: feat
+    bcps: 8
+    risk: P0
+    status: failing
+  - id: e02s05
+    slug: reviewer
+    title: Nothing is returned that was not checked
+    type: feat
+    bcps: 8
+    risk: P0
+    status: failing
+  - id: e02s06
+    slug: safety-and-observability
+    title: The run is safe, and the run is measurable
+    type: feat
+    bcps: 3
+    risk: P1
+    status: failing
+  - id: e02s07
+    slug: deployment
+    title: The agent is deployed, and the application can call it
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+
+notes: |
+  Decisions this epic implements, by register id: W1 (one container, four agents), AGENT-2 (order),
+  AGENT-3 (P2 - the reviewer emits findings, the rephraser is the sole spec author, the verifier runs
+  once), AGENT-4/A (only the suggestor holds the catalogue), AGENT-5/R3 (a deterministic validator
+  gates; the LLM judges semantics only), AGENT-6/L2 (three attempts, then a disclosed exhaustion,
+  with an oscillation guard), AGENT-7/V1 (ok | exhausted | rejected, HTTP 200), AGENT-8/D1 (stateless,
+  complete compositions), AGENT-9/M-A (one model, named in configuration), AGENT-10/A-2 (the container
+  mints its own token if the connection turns out to be user-delegated). From the first half: TIER-1 to
+  TIER-6 (budget derived from the catalogue, per slot, price position), RET-1/RET-2 (the intent table
+  and its inferred fallback), RET-4/RET-5 (one catalogue read per request, reused), RET-8 (capacity in
+  the request), SAFE-1/C3 (map or disclose), SAFE-2/G3 (guardrails), OPS-1/E-B (tracing and one
+  structured record per run).
+
+  Hard gate: e02s01 decides between H1 (a Toolbox OpenAPI tool, if the connection performs client
+  credentials) and the pre-committed fallback A-2 (the container mints its own token). Only e02s03,
+  e02s04 and e02s07 differ between the two paths, and the fallback is the smaller change.
+
+  This epic owns the suggestion contract schema, which e04 (the builder feature) compiles against:
+  agentfoundry/shared/contracts/workspace-suggestion.{request,event,result}.schema.json. e02s02 writes
+  it; e04 depends on it and can otherwise proceed in parallel.
+
+  Size warning: 36 BCPs across seven stories, and most of it cannot be verified hermetically - the
+  unit tier covers the deterministic parts and the live tier (opt-in) covers the agent itself.

@@ -1,0 +1,61 @@
+story_id: e02s07
+title: The agent is deployed, and the application can call it
+status: failing
+bcps: 5
+tasks:
+  - id: 1
+    description: "Add the container definition and build it with the repository root as context"
+    verify: 'docker build -f agentfoundry/src/workspace-suggestions/Dockerfile -t agentfoundry-workspace-suggestions:local .'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["agent", "container"]
+  - id: 2
+    description: "Push the image to the registry the Foundry project uses"
+    verify: 'docker push <registry>/agentfoundry-workspace-suggestions:<version>'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["agent", "container"]
+  - id: 3
+    description: "Deploy the hosted agent with its configuration and the catalogue path e02s01 settled (Toolbox on H1, Auth0 client credentials on A-2)"
+    verify: 'azd deploy workspace-suggestions'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "foundry"]
+  - id: 4
+    description: "Attach the content-safety guardrail to the deployed agent"
+    verify: 'azd ai agent show agentfoundry-workspace-suggestions'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["agent", "security"]
+  - id: 5
+    description: "Live test AGT-20: three schema-valid candidates for a request"
+    verify: 'AGENTFOUNDRY_AGENT_ENDPOINT="$AGENT_ENDPOINT" dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~AgentLiveTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "live"]
+  - id: 6
+    description: "Live tests AGT-21 to AGT-23: the refusal without read:catalog, the endpoint's log line, and no invented products"
+    verify: 'AGENTFOUNDRY_AGENT_ENDPOINT="$AGENT_ENDPOINT" AGENTFOUNDRY_PROJECT_ENDPOINT="$PROJECT_ENDPOINT" dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~AgentLiveRiskTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "live", "security"]
+  - id: 7
+    description: "Record the image tag, agent version and configuration names in specs/verifications/e02s07-after.md"
+    verify: 'test -f specs/verifications/e02s07-after.md'
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["verification", "docs"]

@@ -1,0 +1,83 @@
+id: e04
+slug: ai-builder
+title: The AI section in the builder
+status: planned
+bcps: 25
+
+deltas:
+  - type: ADDED
+    what: >-
+      A permission-gated AI section on the builder page: a field for a request, a streamed run whose
+      stages are named by the application, four rendered outcomes, and a confirm-then-replace apply
+      path. The slots a candidate names replace the draft's slots; the delivery address is untouched.
+  - type: MODIFIED
+    what: >-
+      How entitlement is decided. One parameterised claim requirement replaces the catalogue-specific
+      one, so a second and third permission can be declared without copying the matching rule. The
+      catalogue's own behaviour - open when no identity provider is configured - is unchanged.
+
+stories:
+  - id: e04s01
+    slug: ai-permissions
+    title: Only an entitled account sees the AI section
+    type: feat
+    bcps: 3
+    risk: P0
+    status: failing
+  - id: e04s02
+    slug: suggestion-port
+    title: The application can ask the agent and understand the answer
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e04s03
+    slug: streamed-run
+    title: The customer sees the run happen, and can stop it
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e04s04
+    slug: outcome-paths
+    title: Every outcome is said in the application's own words
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e04s05
+    slug: choose-and-apply
+    title: Choosing a candidate replaces the workspace
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e04s06
+    slug: one-run-at-a-time
+    title: A double submit cannot spend a second run
+    type: feat
+    bcps: 2
+    risk: P1
+    status: failing
+
+notes: |
+  Decisions this epic implements, by register id: UI-1/P2 (additive gates, fail-closed when
+  unconfigured), UI-2/E1 (the agent returns three, the Host renders the middle one for a
+  non-poweruser, poweruser implies nothing), UI-3/M-1 (one parameterised claim requirement carrying
+  its unconfigured behaviour), UI-4/S-1 (stage ids from the agent, wording owned by the application,
+  polite announcements, cancellable, retained and collapsed), UI-5/D1 (only codes cross the boundary;
+  no agent prose rendered), UI-6 (four outcome paths), UI-7/G-2 (one in-flight run per principal plus
+  a cooldown, released on cancel), UI-8/C-1 (the application's own identity, no stored agent secret),
+  UI-9 (endpoint, agent name and model deployment in configuration), APPLY-1/R1 (replace the slots,
+  preserve the address, confirm only when non-empty), APPLY-2 (drop and report an unknown SKU),
+  APPLY-3/A1 (one atomic command, one version bump, loud on conflict), TEST-1/T-1 (a real local agent
+  process for the browser tier).
+
+  Dependency: this epic compiles against the suggestion contract written by e02s02
+  (agentfoundry/shared/contracts/). That is the only coupling between the two epics, and it can be
+  satisfied by the schema alone - the browser tier talks to a local stand-in, so nothing here needs
+  Foundry to exist.
+
+  Security note for the reviewer: e04s01 edits authentication code that specs/security/REVIEW.md
+  covers, in an epic that otherwise has nothing to do with authentication. It needs a review addendum,
+  and the story says so.

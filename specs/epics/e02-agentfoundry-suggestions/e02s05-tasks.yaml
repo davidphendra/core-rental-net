@@ -1,0 +1,61 @@
+story_id: e02s05
+title: Nothing is returned that was not checked
+status: failing
+bcps: 8
+tasks:
+  - id: 1
+    description: "Implement the deterministic validator over the candidates and the specification"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~ValidatorTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "unit", "validation"]
+  - id: 2
+    description: "Implement the in-code repairs and assert they consume no attempt"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~DeterministicRepairTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "unit", "validation"]
+  - id: 3
+    description: "Implement the semantic check emitting findings only, and assert it cannot return a specification"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~FindingsOnlyTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "unit"]
+  - id: 4
+    description: "Wire the loop: findings to the rephraser, three attempts maximum"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~LoopTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "unit"]
+  - id: 5
+    description: "Add the oscillation guard over the normalised specification"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~OscillationTests"'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["agent", "unit"]
+  - id: 6
+    description: "Implement the exhausted outcome with the outstanding findings"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~ExhaustionTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "unit", "contract"]
+  - id: 7
+    description: "Unit tests AGT-14 to AGT-17"
+    verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["agent", "unit"]

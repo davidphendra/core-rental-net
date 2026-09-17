@@ -1,0 +1,61 @@
+story_id: e04s03
+title: The customer sees the run happen, and can stop it
+status: failing
+bcps: 5
+tasks:
+  - id: 1
+    description: "Add the AI section component, hidden unless the entitlement holds"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["ui", "builder"]
+  - id: 2
+    description: "Add the request field and the submit path calling the port"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["ui", "builder"]
+  - id: 3
+    description: "Add the stage-id to copy map owned by the Host, with an unknown id rendering nothing"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~StageCopyTests"'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["host", "unit", "copy"]
+  - id: 4
+    description: "Render the streamed stages with aria-live polite, retained and collapsed when the run ends"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["ui", "accessibility"]
+  - id: 5
+    description: "Add cancel, aborting the stream and applying nothing"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["ui", "streaming"]
+  - id: 6
+    description: "Browser tests AIB-11 to AIB-13 against the local stand-in"
+    verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderStreamTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["ui", "e2e"]
+  - id: 7
+    description: "Re-run the three baselines and record them under specs/verifications"
+    verify: 'dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E" --nologo'
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["baselines"]

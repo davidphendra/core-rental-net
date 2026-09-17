@@ -1,0 +1,55 @@
+id: e03
+slug: catalogue-contract
+title: The catalogue's published shape for machine callers
+status: planned
+bcps: 16
+
+deltas:
+  - type: MODIFIED
+    what: >-
+      The catalogue file holds 140 products instead of 62 - 20 per slot instead of 6 to 10 - and two
+      products inside a slot now differ in what they say about themselves, not only in price. Every
+      product carries a typed metadata record, and ProductView publishes it.
+  - type: ADDED
+    what: >-
+      A compact projection of the catalogue for a machine caller, and an envelope that states how
+      many products matched and whether the answer was truncated.
+
+stories:
+  - id: e03s01
+    slug: catalogue-metadata
+    title: The catalogue carries what a request can be matched against
+    type: feat
+    bcps: 8
+    risk: P0
+    status: failing
+  - id: e03s02
+    slug: compact-projection
+    title: A machine caller reads only the fields it needs
+    type: feat
+    bcps: 5
+    risk: P0
+    status: failing
+  - id: e03s03
+    slug: envelope-completeness
+    title: The envelope says when an answer is incomplete
+    type: feat
+    bcps: 3
+    risk: P1
+    status: failing
+
+notes: |
+  Why this epic comes first: the agent that reads this catalogue cannot match a request against it
+  today. Measured on the current 62 products, the word "monitor" appears in 0 of the 8 monitors and
+  the word "desk" in 0 of the 10 desks, because the category is a field and not text; and the
+  descriptions carry one fixed phrase per slot after the product name, so two monitors say the same
+  thing. Typed metadata is what turns "reliable" or "standing" from an unmatchable word into an exact
+  tag or attribute, and it does so deterministically - which is the ground the agent epic stands on.
+
+  Decisions this epic implements, by register id: RET-6 (thin projection, metadata kept), RET-7
+  (total and truncated), 3-A (metadata published on ProductView), 4-A (today's price bands, round
+  increments), plus the metadata shape and criteria vocabulary agreed with it.
+
+  Size warning for the reviewer: e03s01 is a large diff - roughly 140 data rows plus the loader, the
+  domain record, ProductView and the file tests. It is isolated as its own story precisely so that it
+  can be reviewed and reverted on its own, and so that e03s02 and e03s03 stay contract-shaped.

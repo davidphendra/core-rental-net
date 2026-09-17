@@ -1,0 +1,85 @@
+story_id: e02s01
+title: A machine reads the catalogue through the agent's chosen path
+status: failing
+bcps: 2
+tasks:
+  - id: 1
+    description: "Create the throwaway resource group and record its name"
+    verify: 'az group show --name corerental-e03-dev --query name -o tsv'
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["foundry", "infra"]
+  - id: 2
+    description: "Auth0: enable client_credentials on the machine-to-machine client and assign read:catalog"
+    verify: 'verify-script: see e02s01 story Verification Script step 1'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["auth0", "security"]
+  - id: 3
+    description: "Prove outside Foundry that the credential yields an access token"
+    verify: 'curl -s -X POST "https://$AUTH0_DOMAIN/oauth/token" -H "content-type: application/json" -d "{\"grant_type\":\"client_credentials\",\"client_id\":\"$AUTH0_CLIENT_ID\",\"client_secret\":\"$AUTH0_CLIENT_SECRET\",\"audience\":\"$AUTH0_AUDIENCE\"}" | jq -r ".access_token" | wc -c'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["auth0"]
+  - id: 4
+    description: "Prove outside Foundry that the token reads the compact catalogue through the existing gate"
+    verify: 'curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $TOKEN" "$CATALOG_URL/api/catalog?view=compact"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["api", "auth0"]
+  - id: 5
+    description: "Provision the Foundry project and a model deployment whose region and model both support the OpenAPI tool"
+    verify: 'verify-script: see e02s01 story Verification Script step 2'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["foundry", "infra"]
+  - id: 6
+    description: "Create the oauth2 project connection pointing at Auth0"
+    verify: 'azd ai connection create agentfoundry-auth0 --kind remote-tool --target "$CATALOG_URL" --auth-type oauth2 --authorization-url "https://$AUTH0_DOMAIN/authorize" --token-url "https://$AUTH0_DOMAIN/oauth/token" --client-id "$AUTH0_CLIENT_ID" --client-secret "$AUTH0_CLIENT_SECRET" --scopes "read:catalog"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["foundry", "auth0", "security"]
+  - id: 7
+    description: "Expose the local host to Foundry, development only"
+    verify: 'curl -s -o /dev/null -w "%{http_code}" "$CATALOG_URL/openapi/v1.json"'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["foundry", "infra"]
+  - id: 8
+    description: "Create the Toolbox, invoke a throwaway agent through it, and observe the endpoint log line"
+    verify: 'verify-script: see e02s01 story Verification Script step 3'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["foundry", "integration"]
+  - id: 9
+    description: "Write the go/no-go note with the observed grant, the evidence and the chosen path"
+    verify: 'test -f specs/archive/spikes/SPIKE-auth0-client-credentials-foundry.md'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["spike", "docs"]
+  - id: 10
+    description: "Delete the throwaway Toolbox and agent; keep the resource group and the connection"
+    verify: 'azd ai toolbox delete agentfoundry-catalog --yes'
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["foundry", "hygiene"]

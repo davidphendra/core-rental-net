@@ -1,0 +1,53 @@
+story_id: e04s01
+title: Only an entitled account sees the AI section
+status: failing
+bcps: 3
+tasks:
+  - id: 1
+    description: "Add ClaimRequirement carrying claim type, claim value and unconfigured behaviour, with one handler"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["auth", "security"]
+  - id: 2
+    description: "Register the catalogue policies against Open and re-run the existing authorisation tests unchanged"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogApiAuthorizationTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["auth", "security", "integration"]
+  - id: 3
+    description: "Register the AI policies against Closed, with their own configuration keys and a typed claim record"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["auth", "security"]
+  - id: 4
+    description: "Gate the AI section and fold the affordance into the page's entitlement"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["ui", "security"]
+  - id: 5
+    description: "Unit tests AIB-01 to AIB-05, including the catalogue regression"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~ClaimRequirementTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["auth", "unit"]
+  - id: 6
+    description: "Add the security-review addendum naming this story"
+    verify: 'grep -c "e04s01" specs/security/REVIEW.md'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["security", "docs"]

@@ -1,0 +1,53 @@
+story_id: e04s02
+title: The application can ask the agent and understand the answer
+status: failing
+bcps: 5
+tasks:
+  - id: 1
+    description: "Add the suggestion request and outcome records to the Workspace application's contracts"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["workspace", "contract"]
+  - id: 2
+    description: "Add ISuggestWorkspaceOptions and its sealed implementation with the drop, no-padding and unavailability rules"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~WorkspaceSuggestionTests"'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["workspace", "application", "unit"]
+  - id: 3
+    description: "Add the Host adapter calling the agent with the application's identity, registered only when the endpoint is configured"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["host", "wiring"]
+  - id: 4
+    description: "Add the local stand-in process with its scenario switch, mirroring LocalProvider"
+    verify: 'dotnet build tests/CoreRentalNet.E2E.LocalAgent -v q --nologo'
+    risk: P1
+    status: failing
+    allure:
+      severity: high
+      categories: ["e2e", "harness"]
+  - id: 5
+    description: "Unit tests AIB-06 to AIB-10 with a hand-written fake, no mocking library"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo'
+    risk: P0
+    status: failing
+    allure:
+      severity: critical
+      categories: ["workspace", "unit"]
+  - id: 6
+    description: "Record the stand-in's contract under specs/verifications/e04s02-after.md"
+    verify: 'test -f specs/verifications/e04s02-after.md'
+    risk: P2
+    status: failing
+    allure:
+      severity: normal
+      categories: ["verification", "docs"]
