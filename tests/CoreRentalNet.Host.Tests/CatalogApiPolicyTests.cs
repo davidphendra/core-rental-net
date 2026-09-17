@@ -31,7 +31,7 @@ public sealed class CatalogApiPolicyTests
 
         var policy = Policy(services);
 
-        policy.Requirements.Should().ContainSingle().Which.Should().BeOfType<CatalogReadRequirement>();
+        policy.Requirements.Should().ContainSingle().Which.Should().BeOfType<ClaimRequirement>();
         policy.AuthenticationSchemes.Should().ContainSingle().Which.Should().Be(JwtBearerDefaults.AuthenticationScheme);
     }
 

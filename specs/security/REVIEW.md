@@ -124,3 +124,44 @@ and the request's content is not in it.
 future change to a code string is therefore a breaking change and must be treated as one. The `errors`
 member of the 400 echoes the filter as it was sent, including a value the caller chose — that value is
 the caller's own input, not server state, so it discloses nothing it did not already know.
+
+
+## Addendum — one rule for four permissions (`e04s01`)
+
+The entitlement mechanism was generalised so the AI section can have its own permission. One
+`ClaimRequirement` now carries the claim it checks and what it means in a deployment with no identity
+provider, one handler answers every requirement, and three policies are declared where there was one.
+This is an edit to code this review had already covered, in an epic that otherwise has nothing to do
+with authentication, so it is reviewed here rather than left implicit.
+
+**What was preserved, and asserted rather than assumed.** The catalogue's own rule is unchanged: it
+opens when no provider is configured, it requires an authenticated account and an **exact,
+case-sensitive** claim match, it fails closed on a half-configured claim, and no claim type or value is
+written into code. The tests that asserted these were carried across unchanged in substance — the
+classes were renamed, the assertions were not.
+
+**What is new, and is the reason the change was needed.** The AI section's two permissions answer
+`Closed`: a deployment with no identity provider does **not** open them, where it does open the
+catalogue. The asymmetry is the point. Reading the catalogue is served from memory and costs nothing to
+allow, so opening it keeps an unconfigured demonstration usable; generating a suggestion spends model
+calls and an external round trip, so opening it would make the demo an unmetered spend endpoint.
+
+**Threats considered.**
+
+- *A permission that opens by accident.* The behaviour is a value on the requirement rather than a
+  branch in the handler, and each of the four policies passes it explicitly. A test asserts both
+  behaviours against the same handler, so a handler that answered one of them for both would fail.
+- *One handler drifting from another.* There is one handler. The alternative — a handler per permission
+  — is four copies of an exact comparison, and four copies is four chances for three of them to be
+  right.
+- *A half-configured claim.* Unchanged and now asserted for both behaviours: a provider with an
+  incompletely configured claim denies, whichever way the permission answers a missing provider.
+- *A claim value leaking into configuration history.* The two new sections in `appsettings.json` name
+  permission **strings** — public values, of the same kind the catalogue's already were — and no secret
+  is added. `AUTH-15` still fails the build if a claim value reaches *code*.
+
+**Residual risk.** The AI permissions are declared and tested but **nothing consumes them yet**: the
+section they guard arrives with `e04s03`. Until then a misconfiguration of `AiBuilderRead` or
+`AiBuilderPower` would be invisible, because no route or page asks. The mitigating fact is that both
+are `Closed`, so the failure mode in the meantime is a section that cannot be reached rather than one
+that can be reached by everyone.

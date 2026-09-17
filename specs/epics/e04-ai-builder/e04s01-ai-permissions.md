@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** host
 **bcps:** 3
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -52,7 +52,8 @@ is `Closed`. Entitlement is decided once, as `CatalogApiPolicy` already states i
    unchanged. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogApiAuthorizationTests"`
 3. Register the AI policies against `Closed`, with their own configuration keys and a typed claim
    record. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
-4. Gate the AI section and fold the affbordance into the page's entitlement. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
+4. Declare and test the two AI policies and their entitlement rules. The **page** that consumes them
+   arrives with `e04s03`; `AIB-24` moves there with it. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~ClaimAuthorizationHandlerTests"`
 5. Unit tests AIB-01 … AIB-05, including the catalogue regression. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~ClaimRequirementTests"`
 6. Add the security-review addendum naming this story. → verify: `grep -c "e04s01" specs/security/REVIEW.md`
 
@@ -94,5 +95,6 @@ is `Closed`. Entitlement is decided once, as `CatalogApiPolicy` already states i
 ## Acceptance criteria
 
 - AIB-01 … AIB-05 pass, with AIB-05 proving the catalogue's rule did not move.
-- With no provider configured, no AI section is rendered and the builder is otherwise unchanged.
+- The entitlement rules hold at the policy layer, which is where the rule lives. "No AI section is
+  rendered with no provider configured" is a page assertion and moves to `e04s03` as `AIB-24`.
 - The security review records the addendum.

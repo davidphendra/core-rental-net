@@ -64,7 +64,7 @@ public sealed class CatalogApiAuthorizedFactory : WebApplicationFactory<Program>
                 .Build();
 
             services.AddSingleton(IdentitySettings.From(identity));
-            services.AddSingleton(CatalogReadClaim.From(identity));
+            services.AddSingleton(ClaimSettings.From(identity, ClaimSettings.CatalogRead));
 
             services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, CatalogApiTestHandler>(
                 CatalogApiTestHandler.SchemeName,
@@ -74,7 +74,9 @@ public sealed class CatalogApiAuthorizedFactory : WebApplicationFactory<Program>
                 CatalogApiPolicy.Name,
                 policy =>
                 {
-                    policy.AddRequirements(new CatalogReadRequirement());
+                    policy.AddRequirements(new ClaimRequirement(
+                        ClaimSettings.From(identity, ClaimSettings.CatalogRead),
+                        ClaimBehavior.Open));
                     policy.AddAuthenticationSchemes(CatalogApiTestHandler.SchemeName);
                 }));
         });

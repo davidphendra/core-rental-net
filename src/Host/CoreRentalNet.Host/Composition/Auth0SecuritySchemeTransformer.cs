@@ -17,7 +17,7 @@ namespace CoreRentalNet.Host.Composition;
 /// The two endpoint paths are the provider's convention rather than something discovered here: an
 /// issuer that published different ones would be read from its discovery document instead.
 /// </remarks>
-internal sealed class Auth0SecuritySchemeTransformer(IdentitySettings identity, CatalogReadClaim claim)
+internal sealed class Auth0SecuritySchemeTransformer(IdentitySettings identity, ClaimSettings claim)
     : IOpenApiDocumentTransformer
 {
     public const string SchemeName = "Auth0";

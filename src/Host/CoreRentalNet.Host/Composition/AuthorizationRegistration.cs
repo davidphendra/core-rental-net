@@ -6,19 +6,41 @@ using Microsoft.AspNetCore.Authorization;
 namespace CoreRentalNet.Host.Composition;
 
 /// <summary>
-/// The catalog policy, and who answers it.
+/// Every permission the application checks, and the one handler that answers them.
 /// </summary>
+/// <remarks>
+/// <para>
+/// One handler for four policies, because the rule is the same rule: an account is entitled when it
+/// carries the configured claim, and what a deployment with no provider does is the requirement's to
+/// say. A handler per permission would be four copies of an exact, case-sensitive comparison, and four
+/// copies of a rule is four chances for three of them to be right.
+/// </para>
+/// <para>
+/// The catalogue's two policies answer <c>Open</c> and the AI section's answer <c>Closed</c>. That
+/// difference is the whole reason the requirement carries anything: reading the catalogue is served
+/// from memory and costs nothing to allow, and generating a suggestion spends model calls and an
+/// external round trip.
+/// </para>
+/// </remarks>
 internal static class AuthorizationRegistration
 {
     public static void AddCatalogAuthorization(this WebApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddAuthorization(options => options.AddPolicy(
-            CatalogPolicy.Name,
-            policy => policy.AddRequirements(new CatalogReadRequirement())));
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy(CatalogPolicy.Name, policy => policy.AddRequirements(
+                Catalogue(builder.Configuration)));
 
-        builder.Services.AddSingleton<IAuthorizationHandler, CatalogReadAuthorizationHandler>();
+            options.AddPolicy(AiBuilderReadPolicy.Name, policy => policy.AddRequirements(
+                Permission(builder.Configuration, ClaimSettings.AiBuilderRead)));
+
+            options.AddPolicy(AiBuilderPowerPolicy.Name, policy => policy.AddRequirements(
+                Permission(builder.Configuration, ClaimSettings.AiBuilderPower)));
+        });
+
+        builder.Services.AddSingleton<IAuthorizationHandler, ClaimAuthorizationHandler>();
     }
 
     /// <summary>
@@ -38,7 +60,7 @@ internal static class AuthorizationRegistration
             CatalogApiPolicy.Name,
             policy =>
             {
-                policy.AddRequirements(new CatalogReadRequirement());
+                policy.AddRequirements(Catalogue(builder.Configuration));
 
                 if (identity.IsConfigured)
                 {
@@ -46,4 +68,12 @@ internal static class AuthorizationRegistration
                 }
             }));
     }
+
+    /// <summary>Reading the catalogue: whatever it guards, a demonstration with no provider opens it.</summary>
+    private static ClaimRequirement Catalogue(IConfiguration configuration)
+        => new(ClaimSettings.From(configuration, ClaimSettings.CatalogRead), ClaimBehavior.Open);
+
+    /// <summary>The AI section's permissions, which spend money and are therefore closed by default.</summary>
+    private static ClaimRequirement Permission(IConfiguration configuration, string section)
+        => new(ClaimSettings.From(configuration, section), ClaimBehavior.Closed);
 }

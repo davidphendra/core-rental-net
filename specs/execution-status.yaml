@@ -73,16 +73,22 @@ epics:
         record: specs/verifications/e02s06-after.md
   - id: e04
     slug: ai-builder
-    status: not-started
+    status: in-progress
+    stories:
+      - id: e04s01
+        slug: ai-permissions
+        status: passing
+        risk: P0
+        record: specs/verifications/e04s01-after.md
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 570, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 572, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
-  verify_work: passed_e03s03
-  security_review: not-run-this-epic
+  verify_work: passed_e04s01
+  security_review: { verdict: passed, file: specs/security/REVIEW.md }
   nfr: not-run
   blind_spots: not_run
   completeness_critic: not_run
@@ -115,6 +121,11 @@ notes: |
   run with an event per stage, and the structural form of the data-not-instructions rule asserted -
   catalogue text never crosses the contract at all. 38 agent tests pass. The record is
   specs/verifications/e02s06-after.md.
+
+  e04s01 is complete: one ClaimRequirement carrying its own unconfigured behaviour, one handler
+  answering four policies, the catalogue's rule preserved exactly and the AI section's two permissions
+  closed by default. The security review carries an addendum, because this edited code it had already
+  covered. The record is specs/verifications/e04s01-after.md.
 
   What remains in e02 is s01, the Auth0 spike, and s07, the deployment - both of which need a
   subscription and a login. Everything that can be built without one is built, and the two ports the

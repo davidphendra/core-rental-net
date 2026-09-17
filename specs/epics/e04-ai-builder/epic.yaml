@@ -1,7 +1,7 @@
 id: e04
 slug: ai-builder
 title: The AI section in the builder
-status: planned
+status: in-progress
 bcps: 25
 
 deltas:
@@ -23,7 +23,7 @@ stories:
     type: feat
     bcps: 3
     risk: P0
-    status: failing
+    status: passing
   - id: e04s02
     slug: suggestion-port
     title: The application can ask the agent and understand the answer

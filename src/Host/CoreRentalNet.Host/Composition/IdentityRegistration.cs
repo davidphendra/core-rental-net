@@ -24,7 +24,7 @@ internal static class IdentityRegistration
         ArgumentNullException.ThrowIfNull(builder);
 
         var settings = IdentitySettings.From(builder.Configuration);
-        var permissionClaim = CatalogReadClaim.From(builder.Configuration);
+        var permissionClaim = ClaimSettings.From(builder.Configuration, ClaimSettings.CatalogRead);
         builder.Services.AddSingleton(settings);
         builder.Services.AddSingleton(permissionClaim);
 
@@ -131,7 +131,7 @@ internal static class IdentityRegistration
     private static void ConfigureOpenIdConnect(
         WebApplicationBuilder builder,
         IdentitySettings settings,
-        CatalogReadClaim permissionClaim)
+        ClaimSettings permissionClaim)
     {
         builder.Services
             .AddOptions<OpenIdConnectOptions>(Auth0Constants.AuthenticationScheme)
