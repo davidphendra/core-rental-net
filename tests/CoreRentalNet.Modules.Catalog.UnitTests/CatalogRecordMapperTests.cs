@@ -18,7 +18,7 @@ public sealed class CatalogRecordMapperTests
     public void A_complete_record_becomes_a_product()
     {
         var product = Single(
-            """[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "description": "A desk.", "image": "/images/desk.svg" }]""");
+            """[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "description": "A desk.", "image": "/images/desk.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""");
 
         product.Sku.Should().Be("DSK0001");
         product.Name.Should().Be("A desk");
@@ -30,12 +30,12 @@ public sealed class CatalogRecordMapperTests
 
     [Fact] // CAT-52
     public void A_price_without_a_currency_is_stated_in_the_settlement_currency()
-        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "description": "A desk.", "image": "/images/desk.svg" }]""")
+        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "description": "A desk.", "image": "/images/desk.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""")
             .MonthlyPrice.Currency.Should().Be(Currencies.Idr);
 
     [Fact] // CAT-52
     public void A_currency_is_read_and_normalised()
-        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "currency": "idr", "description": "A desk.", "image": "/images/desk.svg" }]""")
+        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 800000, "currency": "idr", "description": "A desk.", "image": "/images/desk.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""")
             .MonthlyPrice.Currency.Should().Be(Currencies.Idr);
 
     [Fact] // CAT-52
@@ -44,7 +44,7 @@ public sealed class CatalogRecordMapperTests
         // The file writes lowercase words; the enum members are capitalized. This is the mismatch
         // that used to reject the whole file.
         var product = Single(
-            """[{ "skuNo": "ACC0001", "name": "A lamp", "category": "accessory", "subCategory": "lamp", "pricePerMonth": 100, "description": "A lamp.", "image": "/i.svg" }]""");
+            """[{ "skuNo": "ACC0001", "name": "A lamp", "category": "accessory", "subCategory": "lamp", "pricePerMonth": 100, "description": "A lamp.", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""");
 
         product.Category.Should().Be(ProductCategory.Accessory);
         product.SubCategory.Should().Be(ProductSubCategory.Lamp);
@@ -53,28 +53,28 @@ public sealed class CatalogRecordMapperTests
     [Fact] // CAT-52
     public void A_subcategory_is_read_when_it_is_there_and_left_empty_when_it_is_not()
     {
-        Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "/i.svg" }]""")
+        Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""")
             .SubCategory.Should().BeNull();
 
-        Single("""[{ "skuNo": "ACC0001", "name": "A lamp", "category": "accessory", "subCategory": "lamp", "pricePerMonth": 100, "description": "d", "image": "/i.svg" }]""")
+        Single("""[{ "skuNo": "ACC0001", "name": "A lamp", "category": "accessory", "subCategory": "lamp", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""")
             .SubCategory.Should().Be(ProductSubCategory.Lamp);
     }
 
     [Fact] // CAT-52
     public void The_popular_badge_is_read()
-        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "badge": "popular" }]""")
+        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "badge": "popular", "metadata": { "tags": ["desk"], "attributes": { "type": "task" }, "bestFor": [], "notFor": [] } }]""")
             .IsFeatured.Should().BeTrue();
 
     [Fact] // CAT-52
     public void A_product_without_a_badge_is_not_featured()
-        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "/i.svg" }]""")
+        => Single("""[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""")
             .IsFeatured.Should().BeFalse();
 
     [Fact] // CAT-53
     public void The_image_resolver_decides_the_path_and_whether_it_is_there()
     {
         using var file = new TemporaryCatalogFile(
-            """[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "https://example.test/desk.png" }]""");
+            """[{ "skuNo": "DSK0001", "name": "A desk", "category": "desk", "pricePerMonth": 100, "description": "d", "image": "https://example.test/desk.png", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""");
 
         var images = new StubProductImage(new ResolvedProductImage("/images/vendored/DSK0001.svg", Available: true));
 

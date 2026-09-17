@@ -38,7 +38,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
 
-        await Expect(PanelCards).ToHaveCountAsync(42);
+        await Expect(PanelCards).ToHaveCountAsync(100);
         await Expect(Panel.Locator("h3")).ToHaveTextAsync(
             ["Monitors", "Lamps", "Plants", "Coffee Machines", "Bean bags"]);
     }
@@ -48,7 +48,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
 
-        await Expect(PanelCards).ToHaveCountAsync(10);
+        await Expect(PanelCards).ToHaveCountAsync(20);
         await Expect(Panel.Locator("h3")).ToHaveCountAsync(0);
     }
 
@@ -57,14 +57,14 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
-        await Expect(PanelCards).ToHaveCountAsync(42);
+        await Expect(PanelCards).ToHaveCountAsync(100);
 
-        // The search matches the product's name only, so "lamp" finds the two accessories whose
-        // names carry that word - the Jimbaran Floor Lamp and the Canggu Desk Lamp - and not the
-        // four other lamps, whose names say Clip Light and Architect.
+        // The search matches the product's name only, so "lamp" finds the five accessories whose
+        // names carry that word - Desk Lamp, Floor Lamp, Reading Lamp, Arc Lamp and Table Lamp -
+        // and not the other fifteen lamps, whose names say Clip Light, Architect and so on.
         await Page.Locator("#panel-search").FillAsync("lamp");
 
-        await Expect(PanelCards).ToHaveCountAsync(2);
+        await Expect(PanelCards).ToHaveCountAsync(5);
         await Expect(Panel.Locator("h3")).ToHaveTextAsync("Lamps");
 
         await Page.Locator("#panel-search").FillAsync("nothing like this");
@@ -82,7 +82,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await ChooseCategoryAsync("Chairs");
 
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PanelCards).ToHaveCountAsync(10);
+        await Expect(PanelCards).ToHaveCountAsync(20);
     }
 
     [Fact] // CAT-45
@@ -94,7 +94,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         // accessory category, and asks the catalog nothing about desks or chairs.
         await OpenSlotPickerAsync(".slot--lamp");
 
-        await Expect(PickerCards).ToHaveCountAsync(6);
+        await Expect(PickerCards).ToHaveCountAsync(20);
         await Expect(Page.Locator("dialog[open] h3")).ToHaveCountAsync(0);
     }
 
@@ -104,23 +104,23 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
         await Page.Locator("#panel-search").FillAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(2);
+        await Expect(PanelCards).ToHaveCountAsync(5);
 
         await OpenSlotPickerAsync(".slot--chair");
 
         // The picker opens with a search of its own, empty, showing everything the chair box holds.
         await Expect(Page.Locator("#picker-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PickerCards).ToHaveCountAsync(10);
+        await Expect(PickerCards).ToHaveCountAsync(20);
 
         await Page.Locator("#picker-search").FillAsync("seminyak");
 
-        // One chair is called Seminyak Lounge. Waiting on the count rather than reading it once:
+        // One chair is called Seminyak Armless. Waiting on the count rather than reading it once:
         // the list is re-rendered by the same keystroke that narrows it.
         await Expect(PickerCards).ToHaveCountAsync(1);
 
         // And the panel is exactly where it was left.
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(2);
+        await Expect(PanelCards).ToHaveCountAsync(5);
     }
 
     [Fact] // CAT-47
@@ -129,7 +129,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/extras");
         await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
 
-        await Expect(Page.Locator(".grid-store button.product-card")).ToHaveCountAsync(42);
+        await Expect(Page.Locator(".grid-store button.product-card")).ToHaveCountAsync(100);
         await Expect(Page.Locator("section:has(.grid-store) h2")).ToHaveTextAsync(
             ["Monitors", "Lamps", "Plants", "Coffee Machines", "Bean bags"]);
     }
@@ -156,7 +156,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
-        await Expect(PanelCards).ToHaveCountAsync(42);
+        await Expect(PanelCards).ToHaveCountAsync(100);
 
         var clear = Panel.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Clear the search" });
 
@@ -165,7 +165,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await Expect(clear).ToHaveCountAsync(0);
 
         await Page.Locator("#panel-search").FillAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(2);
+        await Expect(PanelCards).ToHaveCountAsync(5);
         await Expect(clear).ToHaveCountAsync(1);
 
         // The text keeps clear of the control on that side.
@@ -175,7 +175,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await clear.ClickAsync();
 
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PanelCards).ToHaveCountAsync(42);
+        await Expect(PanelCards).ToHaveCountAsync(100);
     }
 
     [Fact] // CAT-50
@@ -183,7 +183,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
         await OpenSlotPickerAsync(".slot--chair");
-        await Expect(PickerCards).ToHaveCountAsync(10);
+        await Expect(PickerCards).ToHaveCountAsync(20);
 
         var clear = Page.Locator("dialog[open]")
             .GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Clear the search" });
@@ -196,7 +196,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await clear.ClickAsync();
 
         await Expect(Page.Locator("#picker-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PickerCards).ToHaveCountAsync(10);
+        await Expect(PickerCards).ToHaveCountAsync(20);
     }
 
     [Fact] // CAT-51

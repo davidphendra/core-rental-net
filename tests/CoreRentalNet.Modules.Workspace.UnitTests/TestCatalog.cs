@@ -25,6 +25,7 @@ internal sealed class TestCatalog : IProductCatalog
             subCategory,
             new Money(monthlyPrice, Currencies.Idr),
             "A description.",
+            new CatalogMetadata([], new Dictionary<string, string>(), [], []),
             "/images/test.svg",
             imageAvailable,
             false);

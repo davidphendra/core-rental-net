@@ -47,9 +47,11 @@ public sealed class SlotCatalogTests
     public void What_a_slot_asks_for_is_what_it_gets()
     {
         var lamps = new ProductView("LMP0001", "Pererenan Clip Light", CatalogCategory.Accessory,
-            CatalogSubCategory.Lamp, new Money(150000m, Currencies.Idr), "A clip light.", "/images/vendored/one.png", true, false);
+            CatalogSubCategory.Lamp, new Money(150000m, Currencies.Idr), "A clip light.",
+            new CatalogMetadata([], new Dictionary<string, string>(), [], []), "/images/vendored/one.png", true, false);
         var desks = new ProductView("DSK0001", "Canggu Bamboo", CatalogCategory.Desk,
-            null, new Money(900000m, Currencies.Idr), "A desk.", "/images/vendored/two.png", true, false);
+            null, new Money(900000m, Currencies.Idr), "A desk.",
+            new CatalogMetadata([], new Dictionary<string, string>(), [], []), "/images/vendored/two.png", true, false);
         var catalog = new[] { lamps, desks };
 
         SlotCatalog.ForSlot(catalog, SlotId.Lamp).Should().BeEquivalentTo([lamps]);

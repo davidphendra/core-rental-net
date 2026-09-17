@@ -20,17 +20,35 @@ public sealed class CatalogFileTests
     {
         var catalog = new ProductCatalog(ProductsJson, null);
 
-        catalog.All.Should().HaveCount(62);
+        catalog.All.Should().HaveCount(140);
 
-        catalog.ByCategory(CatalogCategory.Chair).Should().HaveCount(10);
-        catalog.ByCategory(CatalogCategory.Desk).Should().HaveCount(10);
-        catalog.ByCategory(CatalogCategory.Accessory).Should().HaveCount(42);
+        catalog.ByCategory(CatalogCategory.Chair).Should().HaveCount(20);
+        catalog.ByCategory(CatalogCategory.Desk).Should().HaveCount(20);
+        catalog.ByCategory(CatalogCategory.Accessory).Should().HaveCount(100);
 
-        catalog.BySubCategory(CatalogSubCategory.Beanbag).Should().HaveCount(10);
-        catalog.BySubCategory(CatalogSubCategory.Coffee).Should().HaveCount(10);
-        catalog.BySubCategory(CatalogSubCategory.Lamp).Should().HaveCount(6);
-        catalog.BySubCategory(CatalogSubCategory.Monitor).Should().HaveCount(8);
-        catalog.BySubCategory(CatalogSubCategory.Plant).Should().HaveCount(8);
+        catalog.BySubCategory(CatalogSubCategory.Beanbag).Should().HaveCount(20);
+        catalog.BySubCategory(CatalogSubCategory.Coffee).Should().HaveCount(20);
+        catalog.BySubCategory(CatalogSubCategory.Lamp).Should().HaveCount(20);
+        catalog.BySubCategory(CatalogSubCategory.Monitor).Should().HaveCount(20);
+        catalog.BySubCategory(CatalogSubCategory.Plant).Should().HaveCount(20);
+    }
+
+    [Fact] // CAT-01, API-26
+    public void Two_products_in_the_same_slot_differ_in_what_they_say_about_themselves()
+    {
+        var catalog = new ProductCatalog(ProductsJson, null);
+
+        // The reason metadata exists: before it, every product in a slot carried the same sentence
+        // and a request could only be matched against the product's name.
+        foreach (var subCategory in Enum.GetValues<CatalogSubCategory>())
+        {
+            var readings = catalog.BySubCategory(subCategory)
+                .Select(product => string.Join('|', product.Metadata.Tags))
+                .Distinct()
+                .Count();
+
+            readings.Should().BeGreaterThan(1, $"the {subCategory} slot must not say one thing about all of its products");
+        }
     }
 
     [Fact] // CAT-01
@@ -47,6 +65,8 @@ public sealed class CatalogFileTests
             product => product.Category == CatalogCategory.Accessory || product.SubCategory == null);
         catalog.All.Should().OnlyContain(
             product => product.Category != CatalogCategory.Accessory || product.SubCategory != null);
+        catalog.All.Should().OnlyContain(product => product.Metadata.Tags.Count > 0);
+        catalog.All.Should().OnlyContain(product => product.Metadata.Tags.All(tag => tag == tag.Trim() && tag.Length > 0));
     }
 
     [Fact] // CAT-08
@@ -55,7 +75,24 @@ public sealed class CatalogFileTests
         var featured = new ProductCatalog(ProductsJson, null).Featured();
 
         featured.Should().HaveCount(2);
-        featured.Select(product => product.Name).Should().Contain("Canggu Task").And.Contain("Monstera Plant");
+        featured.Select(product => product.Name).Should().Contain("Seminyak Sit-Stand").And.Contain("Tabanan Monstera Plant");
+    }
+
+    [Fact] // CAT-01, API-31
+    public void The_matching_vocabulary_is_closed_and_predictable()
+    {
+        var catalog = new ProductCatalog(ProductsJson, null);
+
+        // What a criterion is matched against is `tag:<token>` or `attribute:<slot>:<key>:<value>`,
+        // so the vocabulary has to be well formed rather than merely present: a tag with a space in
+        // it, or one written two ways, would be a criterion that silently never matches.
+        foreach (var product in catalog.All)
+        {
+            product.Metadata.Tags.Should().OnlyContain(tag => tag == tag.ToLowerInvariant() && !tag.Contains(' '));
+            product.Metadata.Tags.Should().OnlyHaveUniqueItems();
+            product.Metadata.Attributes.Keys.Should().OnlyContain(key => key == key.ToLowerInvariant() && !key.Contains(' '));
+            product.Metadata.Attributes.Values.Should().OnlyContain(value => !string.IsNullOrWhiteSpace(value));
+        }
     }
 
     [Fact] // CAT-09
@@ -102,7 +139,7 @@ public sealed class CatalogFileTests
     public void An_unknown_category_fails_loudly_and_names_the_sku()
     {
         using var file = new TemporaryFile(
-            """[{ "skuNo": "AAA0001", "name": "Thing", "category": "spaceship", "pricePerMonth": 100, "description": "d", "image": "/i.svg" }]""");
+            """[{ "skuNo": "AAA0001", "name": "Thing", "category": "spaceship", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""");
 
         var action = () => _ = new ProductCatalog(file.Path, null);
 
@@ -114,8 +151,8 @@ public sealed class CatalogFileTests
     {
         using var file = new TemporaryFile(
             """
-            [{ "skuNo": "AAA0001", "name": "One", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/i.svg" },
-             { "skuNo": "aaa0001", "name": "Two", "category": "chair", "pricePerMonth": 200, "description": "d", "image": "/i.svg" }]
+            [{ "skuNo": "AAA0001", "name": "One", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } },
+             { "skuNo": "aaa0001", "name": "Two", "category": "chair", "pricePerMonth": 200, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
         var action = () => _ = new ProductCatalog(file.Path, null);
@@ -131,8 +168,8 @@ public sealed class CatalogFileTests
 
         using var file = new TemporaryFile(
             """
-            [{ "skuNo": "AAA0001", "name": "Present", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/present.svg" },
-             { "skuNo": "AAA0002", "name": "Absent", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/absent.svg" }]
+            [{ "skuNo": "AAA0001", "name": "Present", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/present.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } },
+             { "skuNo": "AAA0002", "name": "Absent", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/absent.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
         var catalog = new ProductCatalog(file.Path, webRoot.Path);
@@ -146,8 +183,8 @@ public sealed class CatalogFileTests
     {
         using var file = new TemporaryFile(
             """
-            [{ "skuNo": "AAA0001", "name": "Local", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/local.svg" },
-             { "skuNo": "AAA0002", "name": "Remote", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "https://example.invalid/remote.png" }]
+            [{ "skuNo": "AAA0001", "name": "Local", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/local.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } },
+             { "skuNo": "AAA0002", "name": "Remote", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "https://example.invalid/remote.png", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
         var catalog = new ProductCatalog(file.Path, null);

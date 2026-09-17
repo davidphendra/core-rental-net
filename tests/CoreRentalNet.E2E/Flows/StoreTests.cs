@@ -14,17 +14,17 @@ namespace CoreRentalNet.E2E.Flows;
 /// </summary>
 public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
-    /// <summary>The catalog holds ten desks, and the beanbags are a different category entirely.</summary>
+    /// <summary>The catalog holds twenty desks, and the beanbags are a different category entirely.</summary>
     private const string ADesk = "Canggu Bamboo";
-    private const string ABeanbag = "Seminyak Floor Seat";
-    private const string AChair = "Seminyak Lounge";
+    private const string ABeanbag = "Seminyak Floor Cushion Set";
+    private const string AChair = "Seminyak Armless";
 
     [Fact] // STORE-01
     public async Task The_store_opens_on_desks_and_loads_only_them()
     {
         await GotoAsync("/extras");
 
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(10);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ADesk })).ToHaveCountAsync(1);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ABeanbag })).ToHaveCountAsync(0);
     }
@@ -48,8 +48,8 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ADesk })).ToHaveCountAsync(0);
 
-        // Ten, not twenty: the desks are gone, they were not added to.
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(10);
+        // Twenty, not forty: the desks are gone, they were not added to.
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
     }
 
     [Fact] // STORE-06
@@ -85,7 +85,7 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
 
         await GotoAsync("/extras");
 
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(10);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ADesk })).ToHaveCountAsync(1);
     }
 
@@ -105,7 +105,7 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
         // could read - and it is a session cookie, so it is the browser that forgets it.
         await Expect(chairs).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(10);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
     }
 
     [Fact] // STORE-07
@@ -113,9 +113,9 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
     {
         await GotoAsync("/extras");
 
-        // The worst case in the catalogue: a long name at the largest price, in the narrowest grid
-        // the design draws (four columns).
-        var card = Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = "Jimbaran Executive" });
+        // The worst case in the catalogue: the longest desk name, at a near-top price, in the
+        // narrowest grid the design draws (four columns).
+        var card = Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = "Tampaksiring Workbench" });
         await Expect(card).ToHaveCountAsync(1);
 
         var name = await card.Locator("h3").BoundingBoxAsync();

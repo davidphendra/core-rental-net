@@ -75,5 +75,7 @@ public sealed class AccessoryGroupsTests
         string name,
         CatalogSubCategory? subCategory,
         CatalogCategory category = CatalogCategory.Accessory)
-        => new(sku, name, category, subCategory, new Money(100000m, Currencies.Idr), "A description.", "/images/vendored/product.png", true, false);
+        => new(sku, name, category, subCategory, new Money(100000m, Currencies.Idr), "A description.",
+            new CatalogMetadata([], new Dictionary<string, string>(), [], []),
+            "/images/vendored/product.png", true, false);
 }

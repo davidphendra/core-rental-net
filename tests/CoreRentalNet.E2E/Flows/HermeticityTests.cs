@@ -53,9 +53,9 @@ public sealed class HermeticityTests(HostFixture host, ITestOutputHelper output)
         // remote images - two chairs, a plant, a beanbag and a coffee machine - are the ones that
         // were vendored, and none of them is a desk. This chooses the listing the test was written
         // against, so that there is an image on the page to have an opinion about. Accessories is
-        // one entry now rather than two, so it is the whole accessory category: 42 products.
+        // one entry now rather than two, so it is the whole accessory category: 100 products.
         await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(42);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(100);
 
         var sources = await Page.Locator("img").EvaluateAllAsync<string[]>(
             "images => images.map(image => image.getAttribute('src') || '')");

@@ -60,6 +60,7 @@ public sealed class CheckoutTests
             views[sku] = new ProductView(
                 sku.ToUpperInvariant(), name ?? $"Product {sku}", CatalogCategory.Accessory,
                 CatalogSubCategory.Monitor, new Money(price, Currencies.Idr), "A description.",
+                new CatalogMetadata([], new Dictionary<string, string>(), [], []),
                 "/images/x.svg", true, false);
             return this;
         }

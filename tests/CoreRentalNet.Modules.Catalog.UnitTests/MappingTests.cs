@@ -20,6 +20,7 @@ public sealed class MappingTests
             null,
             new Money(800000m, Currencies.Idr),
             "A desk.",
+            new ProductMetadata(["desk", "standing"], new Dictionary<string, string> { ["type"] = "sit-stand" }, ["focused work"], ["outdoor use"]),
             "/images/desk.svg",
             IsFeatured: true,
             ImageAvailable: true);
@@ -32,6 +33,9 @@ public sealed class MappingTests
         view.SubCategory.Should().BeNull();
         view.MonthlyPrice.Should().Be(product.MonthlyPrice);
         view.Description.Should().Be(product.Description);
+        view.Metadata.Tags.Should().BeEquivalentTo(["desk", "standing"]);
+        view.Metadata.Attributes["type"].Should().Be("sit-stand");
+        view.Metadata.BestFor.Should().ContainSingle().Which.Should().Be("focused work");
         view.ImagePath.Should().Be(product.ImagePath);
         view.ImageAvailable.Should().Be(product.ImageAvailable);
         view.IsFeatured.Should().BeTrue();
@@ -47,6 +51,7 @@ public sealed class MappingTests
             ProductSubCategory.Lamp,
             new Money(180000m, Currencies.Idr),
             "A lamp.",
+            new ProductMetadata(["lamp", "warm"], new Dictionary<string, string> { ["quality"] = "warm" }, ["reading"], ["outdoor use"]),
             "/images/lamp.svg",
             IsFeatured: false,
             ImageAvailable: true);
@@ -77,6 +82,7 @@ public sealed class MappingTests
                 subCategory,
                 new Money(1m, Currencies.Idr),
                 "A thing.",
+                new ProductMetadata(["thing"], new Dictionary<string, string>(), [], []),
                 "/images/x.svg",
                 IsFeatured: false,
                 ImageAvailable: true));

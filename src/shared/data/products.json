@@ -1,624 +1,4219 @@
 [
   {
-    "skuNo": "CHA449AGLBB0",
-    "name": "Seminyak Lounge",
-    "category": "chair",
-    "pricePerMonth": 400000,
+    "skuNo": "DSKWWZEB3USL",
+    "name": "Seminyak Sit-Stand",
+    "category": "desk",
+    "pricePerMonth": 600000,
     "currency": "IDR",
-    "description": "Seminyak Lounge: ergonomic support for deep-work sessions.",
+    "description": "Seminyak Sit-Stand: a sit-stand surface for focused work.",
     "subCategory": null,
-    "image": "/placeholders/chair-seminyak-lounge.svg"
+    "image": "/placeholders/desk-seminyak-sit-stand.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "budget",
+        "desk",
+        "laminate",
+        "standing"
+      ],
+      "attributes": {
+        "type": "sit-stand",
+        "height": "adjustable",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "focused work"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    },
+    "badge": "Popular"
   },
   {
-    "skuNo": "CHA5HT5BIT9F",
-    "name": "Jimbaran High-Back",
-    "category": "chair",
+    "skuNo": "DSKVP9M9TXOH",
+    "name": "Jimbaran Standing",
+    "category": "desk",
     "pricePerMonth": 650000,
     "currency": "IDR",
-    "description": "Jimbaran High-Back: ergonomic support for deep-work sessions.",
+    "description": "Jimbaran Standing: a standing surface for all-day use.",
     "subCategory": null,
-    "image": "/placeholders/chair-jimbaran-high-back.svg"
+    "image": "/placeholders/desk-jimbaran-standing.svg",
+    "metadata": {
+      "tags": [
+        "bamboo",
+        "budget",
+        "desk",
+        "fixed",
+        "standing"
+      ],
+      "attributes": {
+        "type": "standing",
+        "height": "fixed",
+        "surface": "bamboo"
+      },
+      "bestFor": [
+        "all-day use"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
   },
   {
-    "skuNo": "CHABMH9N2O0V",
-    "name": "Sanur Mesh",
-    "category": "chair",
-    "pricePerMonth": 500000,
-    "currency": "IDR",
-    "description": "Sanur Mesh: ergonomic support for deep-work sessions.",
-    "subCategory": null,
-    "image": "/placeholders/chair-sanur-mesh.svg"
-  },
-  {
-    "skuNo": "CHAEHOLSGPSA",
-    "name": "Nusa Dua Executive",
-    "category": "chair",
-    "pricePerMonth": 450000,
-    "currency": "IDR",
-    "description": "Nusa Dua Executive: ergonomic support for deep-work sessions.",
-    "subCategory": null,
-    "image": "/placeholders/chair-nusa-dua-executive.svg"
-  },
-  {
-    "skuNo": "CHAH1V9VTLIV",
-    "name": "Ubud Recline",
-    "category": "chair",
-    "pricePerMonth": 600000,
-    "currency": "IDR",
-    "description": "Ubud Recline: ergonomic support for deep-work sessions.",
-    "subCategory": null,
-    "image": "/placeholders/chair-ubud-recline.svg"
-  },
-  {
-    "skuNo": "CHAM6ECR76VJ",
-    "name": "Bingin Draft",
-    "category": "chair",
-    "pricePerMonth": 750000,
-    "currency": "IDR",
-    "description": "Bingin Draft: ergonomic support for deep-work sessions.",
-    "subCategory": null,
-    "image": "/placeholders/chair-bingin-draft.svg"
-  },
-  {
-    "skuNo": "CHAN9NIJKIU7",
-    "name": "Canggu Task",
-    "category": "chair",
-    "subCategory": null,
-    "pricePerMonth": 600000,
-    "currency": "IDR",
-    "description": "Premium black ergonomic task chair with headrest. Built for long coding sessions.",
-    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuAL1X4LeQqM58AEA417piC29Bo082Rq3vt0dnBCgetkEQSr4AFtNRdji1Bl4FLNnQnxKDBURZyQor1m9EYvlQ7rPNw2bV67NV9y6ngGjh5bVUmAvT3u-Y3KVSq2AWoCd1lJ9N6BK8_eRWI5oaRweuNqMNP_6zFF0Eraf3cv1pc5YcQo6W9yfZbBXqucJ58Rt3-_6yjsuV6BxHc4NQHuM2AAdI7WumWlCcaK-dc2wKUwUX4j4NoAnO2JGA",
-    "badge": "popular"
-  },
-  {
-    "skuNo": "CHAV6KWDBAKD",
-    "name": "Kuta Flex",
-    "category": "chair",
-    "pricePerMonth": 550000,
-    "currency": "IDR",
-    "description": "Kuta Flex: ergonomic support for deep-work sessions.",
-    "subCategory": null,
-    "image": "/placeholders/chair-kuta-flex.svg"
-  },
-  {
-    "skuNo": "CHAVYQ0F444B",
-    "name": "Amed Gaming",
-    "category": "chair",
+    "skuNo": "DSKZQXQBRLH2",
+    "name": "Sanur Corner",
+    "category": "desk",
     "pricePerMonth": 700000,
     "currency": "IDR",
-    "description": "Amed Gaming: ergonomic support for deep-work sessions.",
+    "description": "Sanur Corner: a corner surface for a small room.",
     "subCategory": null,
-    "image": "/placeholders/chair-amed-gaming.svg"
+    "image": "/placeholders/desk-sanur-corner.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "corner",
+        "desk",
+        "l-shape",
+        "laminate"
+      ],
+      "attributes": {
+        "type": "corner",
+        "shape": "l-shape",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "a small room"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
   },
   {
-    "skuNo": "CHAX7C7LZ5PH",
-    "name": "Uluwatu Chair",
-    "category": "chair",
-    "subCategory": null,
-    "pricePerMonth": 450000,
+    "skuNo": "DSKSC1ZBQWW7",
+    "name": "Nusa Dua Compact",
+    "category": "desk",
+    "pricePerMonth": 750000,
     "currency": "IDR",
-    "description": "Light gray mesh ergonomic chair. Clean, modern, island-cafe approved.",
-    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBBwHPiawlGW3969dKW5o0XTGnhWLB7SwZJ1dya2tRUgjUU4aJ57EsoC07NsBbECvVj-A89woj0Z4N4KP6MsUv6P_tniwCxhkludiVF1furDdZHeHwnPAj6ThoyWccd5LnFpPNYQH-ECtHmwM9bZDxSJ0KRfTOEiCKql5T_MUOfhh7MvV2neUNSSqUjZTPBbdHNldnhg5bJNETbvOcBADObdhNzdVWWPkDGp7Y60N8A28SLf_WwO-rMZg"
+    "description": "Nusa Dua Compact: a compact surface for a shared studio.",
+    "subCategory": null,
+    "image": "/placeholders/desk-nusa-dua-compact.svg",
+    "metadata": {
+      "tags": [
+        "100cm",
+        "budget",
+        "compact",
+        "desk",
+        "laminate"
+      ],
+      "attributes": {
+        "type": "compact",
+        "width": "100cm",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "a shared studio"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    }
   },
   {
-    "skuNo": "DSK6VE4Q6KEY",
-    "name": "Canggu Bamboo",
+    "skuNo": "DSK1D8X93QDF",
+    "name": "Ubud Executive",
     "category": "desk",
     "pricePerMonth": 800000,
     "currency": "IDR",
-    "description": "Canggu Bamboo: a sturdy, island-tested work surface.",
+    "description": "Ubud Executive: a executive surface for focused work.",
     "subCategory": null,
-    "image": "/placeholders/desk-canggu-bamboo.svg"
+    "image": "/placeholders/desk-ubud-executive.svg",
+    "metadata": {
+      "tags": [
+        "180cm",
+        "budget",
+        "desk",
+        "executive",
+        "walnut"
+      ],
+      "attributes": {
+        "type": "executive",
+        "width": "180cm",
+        "surface": "walnut"
+      },
+      "bestFor": [
+        "focused work"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
   },
   {
-    "skuNo": "DSK7TI4BIQ1B",
-    "name": "Ubud Solid Teak",
+    "skuNo": "DSKSTSXHHDO1",
+    "name": "Bingin Heavy-Duty",
     "category": "desk",
-    "pricePerMonth": 700000,
+    "pricePerMonth": 825000,
     "currency": "IDR",
-    "description": "Ubud Solid Teak: a sturdy, island-tested work surface.",
+    "description": "Bingin Heavy-Duty: a heavy-duty surface for all-day use.",
     "subCategory": null,
-    "image": "/placeholders/desk-ubud-solid-teak.svg"
+    "image": "/placeholders/desk-bingin-heavy-duty.svg",
+    "metadata": {
+      "tags": [
+        "120kg",
+        "budget",
+        "desk",
+        "heavy-duty",
+        "steel"
+      ],
+      "attributes": {
+        "type": "heavy-duty",
+        "load": "120kg",
+        "surface": "steel"
+      },
+      "bestFor": [
+        "all-day use"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
   },
   {
-    "skuNo": "DSKAAV28F480",
-    "name": "Kerobokan Sit-Stand",
+    "skuNo": "DSKJBJ6H5LL2",
+    "name": "Kuta Writing",
     "category": "desk",
-    "pricePerMonth": 900000,
+    "pricePerMonth": 875000,
     "currency": "IDR",
-    "description": "Kerobokan Sit-Stand: a sturdy, island-tested work surface.",
+    "description": "Kuta Writing: a writing surface for a small room.",
     "subCategory": null,
-    "image": "/placeholders/desk-kerobokan-sit-stand.svg"
+    "image": "/placeholders/desk-kuta-writing.svg",
+    "metadata": {
+      "tags": [
+        "120cm",
+        "desk",
+        "mid-range",
+        "teak",
+        "writing"
+      ],
+      "attributes": {
+        "type": "writing",
+        "width": "120cm",
+        "surface": "teak"
+      },
+      "bestFor": [
+        "a small room"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    }
   },
   {
-    "skuNo": "DSKGSGPYGLGA",
-    "name": "Sanur Writing",
+    "skuNo": "DSK9F7ADSDLG",
+    "name": "Amed Minimal",
     "category": "desk",
-    "pricePerMonth": 1400000,
+    "pricePerMonth": 925000,
     "currency": "IDR",
-    "description": "Sanur Writing: a sturdy, island-tested work surface.",
+    "description": "Amed Minimal: a minimal surface for a shared studio.",
     "subCategory": null,
-    "image": "/placeholders/desk-sanur-writing.svg"
+    "image": "/placeholders/desk-amed-minimal.svg",
+    "metadata": {
+      "tags": [
+        "110cm",
+        "desk",
+        "mid-range",
+        "minimal",
+        "oak"
+      ],
+      "attributes": {
+        "type": "minimal",
+        "width": "110cm",
+        "surface": "oak"
+      },
+      "bestFor": [
+        "a shared studio"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
   },
   {
-    "skuNo": "DSKH57QRNDWN",
-    "name": "Denpasar Heavy-Duty",
+    "skuNo": "DSKXLXUIEGN8",
+    "name": "Canggu Bamboo",
     "category": "desk",
-    "pricePerMonth": 1200000,
+    "pricePerMonth": 975000,
     "currency": "IDR",
-    "description": "Denpasar Heavy-Duty: a sturdy, island-tested work surface.",
+    "description": "Canggu Bamboo: a task surface for focused work.",
     "subCategory": null,
-    "image": "/placeholders/desk-denpasar-heavy-duty.svg"
+    "image": "/placeholders/desk-canggu-bamboo.svg",
+    "metadata": {
+      "tags": [
+        "bamboo",
+        "desk",
+        "mid-range",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "material": "bamboo",
+        "surface": "bamboo"
+      },
+      "bestFor": [
+        "focused work"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
   },
   {
-    "skuNo": "DSKIZJBQTS2Y",
-    "name": "Berawa Corner",
+    "skuNo": "DSKHDGDSTPJR",
+    "name": "Kerobokan Teak",
     "category": "desk",
-    "pricePerMonth": 1100000,
+    "pricePerMonth": 1025000,
     "currency": "IDR",
-    "description": "Berawa Corner: a sturdy, island-tested work surface.",
+    "description": "Kerobokan Teak: a task surface for all-day use.",
     "subCategory": null,
-    "image": "/placeholders/desk-berawa-corner.svg"
+    "image": "/placeholders/desk-kerobokan-teak.svg",
+    "metadata": {
+      "tags": [
+        "desk",
+        "mid-range",
+        "task",
+        "teak"
+      ],
+      "attributes": {
+        "type": "task",
+        "material": "teak",
+        "surface": "teak"
+      },
+      "bestFor": [
+        "all-day use"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    }
   },
   {
-    "skuNo": "DSKNWDV00VXG",
-    "name": "Pererenan Minimal",
+    "skuNo": "DSK72C2U9DMR",
+    "name": "Denpasar Glass",
     "category": "desk",
-    "pricePerMonth": 1000000,
+    "pricePerMonth": 1075000,
     "currency": "IDR",
-    "description": "Pererenan Minimal: a sturdy, island-tested work surface.",
+    "description": "Denpasar Glass: a task surface for a small room.",
     "subCategory": null,
-    "image": "/placeholders/desk-pererenan-minimal.svg"
+    "image": "/placeholders/desk-denpasar-glass.svg",
+    "metadata": {
+      "tags": [
+        "desk",
+        "glass",
+        "mid-range",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "material": "glass",
+        "surface": "glass"
+      },
+      "bestFor": [
+        "a small room"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
   },
   {
-    "skuNo": "DSKQ8PZL95PL",
-    "name": "Uluwatu Compact",
+    "skuNo": "DSKQXMYV6FFX",
+    "name": "Berawa Trestle",
+    "category": "desk",
+    "pricePerMonth": 1125000,
+    "currency": "IDR",
+    "description": "Berawa Trestle: a trestle surface for a shared studio.",
+    "subCategory": null,
+    "image": "/placeholders/desk-berawa-trestle.svg",
+    "metadata": {
+      "tags": [
+        "desk",
+        "mid-range",
+        "pine",
+        "trestle"
+      ],
+      "attributes": {
+        "type": "trestle",
+        "material": "pine",
+        "surface": "pine"
+      },
+      "bestFor": [
+        "a shared studio"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSKZDRWTFNEQ",
+    "name": "Pererenan Drafting",
+    "category": "desk",
+    "pricePerMonth": 1175000,
+    "currency": "IDR",
+    "description": "Pererenan Drafting: a drafting surface for focused work.",
+    "subCategory": null,
+    "image": "/placeholders/desk-pererenan-drafting.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "desk",
+        "drafting",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "drafting",
+        "height": "adjustable",
+        "tilt": "true"
+      },
+      "bestFor": [
+        "focused work"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSKXGDNMPZI7",
+    "name": "Uluwatu Studio",
+    "category": "desk",
+    "pricePerMonth": 1225000,
+    "currency": "IDR",
+    "description": "Uluwatu Studio: a studio surface for all-day use.",
+    "subCategory": null,
+    "image": "/placeholders/desk-uluwatu-studio.svg",
+    "metadata": {
+      "tags": [
+        "160cm",
+        "desk",
+        "laminate",
+        "mid-range",
+        "studio"
+      ],
+      "attributes": {
+        "type": "studio",
+        "width": "160cm",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "all-day use"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSKSIMZTRAPX",
+    "name": "Batu Bolong Twin",
+    "category": "desk",
+    "pricePerMonth": 1275000,
+    "currency": "IDR",
+    "description": "Batu Bolong Twin: a twin surface for a small room.",
+    "subCategory": null,
+    "image": "/placeholders/desk-batu-bolong-twin.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "desk",
+        "laminate",
+        "premium",
+        "twin"
+      ],
+      "attributes": {
+        "type": "twin",
+        "seats": "2",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "a small room"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSKSO570KKMC",
+    "name": "Sidemen Folding",
     "category": "desk",
     "pricePerMonth": 1300000,
     "currency": "IDR",
-    "description": "Uluwatu Compact: a sturdy, island-tested work surface.",
+    "description": "Sidemen Folding: a folding surface for a shared studio.",
     "subCategory": null,
-    "image": "/placeholders/desk-uluwatu-compact.svg"
+    "image": "/placeholders/desk-sidemen-folding.svg",
+    "metadata": {
+      "tags": [
+        "90cm",
+        "desk",
+        "folding",
+        "laminate",
+        "premium"
+      ],
+      "attributes": {
+        "type": "folding",
+        "width": "90cm",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "a shared studio"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    }
   },
   {
-    "skuNo": "DSKSKDOLUXSH",
-    "name": "Jimbaran Executive",
+    "skuNo": "DSK0XQRFWFV0",
+    "name": "Munduk Oak",
+    "category": "desk",
+    "pricePerMonth": 1350000,
+    "currency": "IDR",
+    "description": "Munduk Oak: a task surface for focused work.",
+    "subCategory": null,
+    "image": "/placeholders/desk-munduk-oak.svg",
+    "metadata": {
+      "tags": [
+        "desk",
+        "oak",
+        "premium",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "material": "oak",
+        "surface": "oak"
+      },
+      "bestFor": [
+        "focused work"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSKZDT5Y1AST",
+    "name": "Tabanan Walnut",
+    "category": "desk",
+    "pricePerMonth": 1400000,
+    "currency": "IDR",
+    "description": "Tabanan Walnut: a task surface for all-day use.",
+    "subCategory": null,
+    "image": "/placeholders/desk-tabanan-walnut.svg",
+    "metadata": {
+      "tags": [
+        "desk",
+        "premium",
+        "task",
+        "walnut"
+      ],
+      "attributes": {
+        "type": "task",
+        "material": "walnut",
+        "surface": "walnut"
+      },
+      "bestFor": [
+        "all-day use"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSK0BRDGILOO",
+    "name": "Tampaksiring Workbench",
+    "category": "desk",
+    "pricePerMonth": 1450000,
+    "currency": "IDR",
+    "description": "Tampaksiring Workbench: a workbench surface for a small room.",
+    "subCategory": null,
+    "image": "/placeholders/desk-tampaksiring-workbench.svg",
+    "metadata": {
+      "tags": [
+        "150kg",
+        "desk",
+        "premium",
+        "steel",
+        "workbench"
+      ],
+      "attributes": {
+        "type": "workbench",
+        "load": "150kg",
+        "surface": "steel"
+      },
+      "bestFor": [
+        "a small room"
+      ],
+      "notFor": [
+        "a move every month"
+      ]
+    }
+  },
+  {
+    "skuNo": "DSKQXUN06SC1",
+    "name": "Penestanan Reception",
     "category": "desk",
     "pricePerMonth": 1500000,
     "currency": "IDR",
-    "description": "Jimbaran Executive: a sturdy, island-tested work surface.",
+    "description": "Penestanan Reception: a reception surface for a shared studio.",
     "subCategory": null,
-    "image": "/placeholders/desk-jimbaran-executive.svg"
+    "image": "/placeholders/desk-penestanan-reception.svg",
+    "metadata": {
+      "tags": [
+        "200cm",
+        "desk",
+        "laminate",
+        "premium",
+        "reception"
+      ],
+      "attributes": {
+        "type": "reception",
+        "width": "200cm",
+        "surface": "laminate"
+      },
+      "bestFor": [
+        "a shared studio"
+      ],
+      "notFor": [
+        "heavy machinery"
+      ]
+    }
   },
   {
-    "skuNo": "DSKUBUTUEHMA",
-    "name": "Seminyak Standing",
-    "category": "desk",
-    "pricePerMonth": 600000,
-    "currency": "IDR",
-    "description": "Seminyak Standing: a sturdy, island-tested work surface.",
-    "subCategory": null,
-    "image": "/placeholders/desk-seminyak-standing.svg"
-  },
-  {
-    "skuNo": "BBG26TT9WKQD",
-    "name": "Seminyak Floor Seat",
-    "category": "accessory",
-    "pricePerMonth": 350000,
-    "currency": "IDR",
-    "description": "Seminyak Floor Seat: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-seminyak-floor-seat.svg"
-  },
-  {
-    "skuNo": "BBG3FDN4UP6Y",
-    "name": "Zero-Gravity Lounger",
-    "category": "accessory",
-    "pricePerMonth": 325000,
-    "currency": "IDR",
-    "description": "Zero-Gravity Lounger: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-zero-gravity-lounger.svg"
-  },
-  {
-    "skuNo": "BBG3KDU9A2B5",
-    "name": "Pouf Ottoman",
-    "category": "accessory",
-    "pricePerMonth": 250000,
-    "currency": "IDR",
-    "description": "Pouf Ottoman: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-pouf-ottoman.svg"
-  },
-  {
-    "skuNo": "BBGAWADNDZ8F",
-    "name": "Pererenan Lounger",
-    "category": "accessory",
-    "pricePerMonth": 425000,
-    "currency": "IDR",
-    "description": "Pererenan Lounger: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-pererenan-lounger.svg"
-  },
-  {
-    "skuNo": "BBGD41M3CEEF",
-    "name": "Canggu Bean Pod",
-    "category": "accessory",
+    "skuNo": "CHAE2V0VGJZ8",
+    "name": "Nusa Dua Task",
+    "category": "chair",
     "pricePerMonth": 400000,
     "currency": "IDR",
-    "description": "Canggu Bean Pod: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-canggu-bean-pod.svg"
+    "description": "Nusa Dua Task: mesh support for deep work.",
+    "subCategory": null,
+    "image": "https://images.example.invalid/nusa-dua-task.png",
+    "metadata": {
+      "tags": [
+        "budget",
+        "chair",
+        "fixed",
+        "mesh",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "back": "mesh",
+        "headrest": "false"
+      },
+      "bestFor": [
+        "deep work"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
   },
   {
-    "skuNo": "BBGJ0QGYQC5K",
-    "name": "Berawa Sofa Sack",
-    "category": "accessory",
-    "pricePerMonth": 450000,
+    "skuNo": "CHA6QARE0VME",
+    "name": "Ubud High-Back",
+    "category": "chair",
+    "pricePerMonth": 420000,
     "currency": "IDR",
-    "description": "Berawa Sofa Sack: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-berawa-sofa-sack.svg"
+    "description": "Ubud High-Back: mesh support for long sessions.",
+    "subCategory": null,
+    "image": "https://images.example.invalid/ubud-high-back.png",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "budget",
+        "chair",
+        "mesh",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "back": "mesh",
+        "headrest": "true"
+      },
+      "bestFor": [
+        "long sessions"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
   },
   {
-    "skuNo": "BBGM2P366F2Q",
-    "name": "Ubud Cushion Lounge",
-    "category": "accessory",
-    "pricePerMonth": 375000,
+    "skuNo": "CHACOTNOZD54",
+    "name": "Bingin Mesh",
+    "category": "chair",
+    "pricePerMonth": 440000,
     "currency": "IDR",
-    "description": "Ubud Cushion Lounge: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-ubud-cushion-lounge.svg"
+    "description": "Bingin Mesh: mesh support for a shared desk.",
+    "subCategory": null,
+    "image": "/placeholders/chair-bingin-mesh.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "chair",
+        "fixed",
+        "mesh",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "back": "mesh",
+        "headrest": "false"
+      },
+      "bestFor": [
+        "a shared desk"
+      ],
+      "notFor": [
+        "a standing-only desk"
+      ]
+    }
   },
   {
-    "skuNo": "BBGQ9TM1HXUL",
-    "name": "Bean Bag Lounge",
-    "category": "accessory",
-    "subCategory": "beanbag",
-    "pricePerMonth": 350000,
+    "skuNo": "CHAPMM3GZ2QO",
+    "name": "Kuta Lounge",
+    "category": "chair",
+    "pricePerMonth": 460000,
     "currency": "IDR",
-    "description": "Perfect for brainstorming or a quick creative break away from the desk.",
-    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDTzT4Tf58tkbo6X7I2a_aF5XrHlXm7pV5GAMydtstbloGCCC5_LoXb0tmuXW4wxWFYp-K9r_DSFRd1FhGZfwlTIYs9u_Sjj1mFpCjduawANJZfqSIyG6At13g6nueBMlme0wHSmw-E-EfohvvNKC2bxhS5hjAytlxV74b3eU4-sS57APj0jGatARBLneuXhfgqykyMcCtzQkWzlSZRG8qSUB5-oQ8bepiLtS2v0uGGLiAqRSWf3aYV7A"
+    "description": "Kuta Lounge: fabric support for a reading corner.",
+    "subCategory": null,
+    "image": "/placeholders/chair-kuta-lounge.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "chair",
+        "fabric",
+        "fixed",
+        "lounge"
+      ],
+      "attributes": {
+        "type": "lounge",
+        "back": "fabric",
+        "headrest": "false"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
   },
   {
-    "skuNo": "BBGQWIMKKA9M",
-    "name": "Hammock Seat",
-    "category": "accessory",
-    "pricePerMonth": 275000,
+    "skuNo": "CHAEGPPRDA66",
+    "name": "Amed Executive",
+    "category": "chair",
+    "pricePerMonth": 470000,
     "currency": "IDR",
-    "description": "Hammock Seat: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-hammock-seat.svg"
+    "description": "Amed Executive: leather support for deep work.",
+    "subCategory": null,
+    "image": "/placeholders/chair-amed-executive.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "budget",
+        "chair",
+        "executive",
+        "leather"
+      ],
+      "attributes": {
+        "type": "executive",
+        "back": "leather",
+        "headrest": "true"
+      },
+      "bestFor": [
+        "deep work"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
   },
   {
-    "skuNo": "BBGZT9EADBQM",
-    "name": "Floor Cushion Set",
+    "skuNo": "CHA7BJWDM2AB",
+    "name": "Canggu Recline",
+    "category": "chair",
+    "pricePerMonth": 490000,
+    "currency": "IDR",
+    "description": "Canggu Recline: mesh support for long sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-canggu-recline.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "budget",
+        "chair",
+        "mesh",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "back": "mesh",
+        "recline": "true"
+      },
+      "bestFor": [
+        "long sessions"
+      ],
+      "notFor": [
+        "a standing-only desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHAIT9CRJ90L",
+    "name": "Kerobokan Gaming",
+    "category": "chair",
+    "pricePerMonth": 510000,
+    "currency": "IDR",
+    "description": "Kerobokan Gaming: pu support for a shared desk.",
+    "subCategory": null,
+    "image": "/placeholders/chair-kerobokan-gaming.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "chair",
+        "gaming",
+        "mid-range",
+        "pu"
+      ],
+      "attributes": {
+        "type": "gaming",
+        "back": "pu",
+        "headrest": "true"
+      },
+      "bestFor": [
+        "a shared desk"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHA3P6678U73",
+    "name": "Denpasar Drafting",
+    "category": "chair",
+    "pricePerMonth": 530000,
+    "currency": "IDR",
+    "description": "Denpasar Drafting: fabric support for a reading corner.",
+    "subCategory": null,
+    "image": "/placeholders/chair-denpasar-drafting.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "chair",
+        "drafting",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "drafting",
+        "footrest": "true",
+        "height": "adjustable"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHA0JBNBZ3KV",
+    "name": "Berawa Visitor",
+    "category": "chair",
+    "pricePerMonth": 550000,
+    "currency": "IDR",
+    "description": "Berawa Visitor: fabric support for deep work.",
+    "subCategory": null,
+    "image": "/placeholders/chair-berawa-visitor.svg",
+    "metadata": {
+      "tags": [
+        "chair",
+        "fabric",
+        "fixed",
+        "mid-range",
+        "visitor"
+      ],
+      "attributes": {
+        "type": "visitor",
+        "back": "fabric",
+        "armrest": "fixed"
+      },
+      "bestFor": [
+        "deep work"
+      ],
+      "notFor": [
+        "a standing-only desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHAXTER56GIL",
+    "name": "Pererenan Stool",
+    "category": "chair",
+    "pricePerMonth": 570000,
+    "currency": "IDR",
+    "description": "Pererenan Stool: none support for long sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-pererenan-stool.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "chair",
+        "mid-range",
+        "minimal",
+        "stool"
+      ],
+      "attributes": {
+        "type": "stool",
+        "back": "none",
+        "height": "adjustable"
+      },
+      "bestFor": [
+        "long sessions"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHA9COSVF201",
+    "name": "Uluwatu Saddle",
+    "category": "chair",
+    "pricePerMonth": 580000,
+    "currency": "IDR",
+    "description": "Uluwatu Saddle: none support for a shared desk.",
+    "subCategory": null,
+    "image": "/placeholders/chair-uluwatu-saddle.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "chair",
+        "mid-range",
+        "minimal",
+        "saddle"
+      ],
+      "attributes": {
+        "type": "saddle",
+        "back": "none",
+        "ergonomic": "true"
+      },
+      "bestFor": [
+        "a shared desk"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHACN8QO143Y",
+    "name": "Batu Bolong Wingback",
+    "category": "chair",
+    "pricePerMonth": 600000,
+    "currency": "IDR",
+    "description": "Batu Bolong Wingback: fabric support for a reading corner.",
+    "subCategory": null,
+    "image": "/placeholders/chair-batu-bolong-wingback.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "chair",
+        "fabric",
+        "lounge",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "lounge",
+        "back": "fabric",
+        "headrest": "true"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "a standing-only desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHAPT1447066",
+    "name": "Sidemen Accent",
+    "category": "chair",
+    "pricePerMonth": 620000,
+    "currency": "IDR",
+    "description": "Sidemen Accent: fabric support for deep work.",
+    "subCategory": null,
+    "image": "/placeholders/chair-sidemen-accent.svg",
+    "metadata": {
+      "tags": [
+        "accent",
+        "chair",
+        "fabric",
+        "fixed",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "accent",
+        "back": "fabric",
+        "headrest": "false"
+      },
+      "bestFor": [
+        "deep work"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHA7W374K9X6",
+    "name": "Munduk Stacking",
+    "category": "chair",
+    "pricePerMonth": 640000,
+    "currency": "IDR",
+    "description": "Munduk Stacking: plastic support for long sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-munduk-stacking.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "chair",
+        "mid-range",
+        "plastic",
+        "stacking"
+      ],
+      "attributes": {
+        "type": "stacking",
+        "back": "plastic",
+        "stackable": "true"
+      },
+      "bestFor": [
+        "long sessions"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHASY9WXA251",
+    "name": "Tabanan Conference",
+    "category": "chair",
+    "pricePerMonth": 660000,
+    "currency": "IDR",
+    "description": "Tabanan Conference: mesh support for a shared desk.",
+    "subCategory": null,
+    "image": "/placeholders/chair-tabanan-conference.svg",
+    "metadata": {
+      "tags": [
+        "chair",
+        "conference",
+        "fixed",
+        "mesh",
+        "premium"
+      ],
+      "attributes": {
+        "type": "conference",
+        "back": "mesh",
+        "armrest": "fixed"
+      },
+      "bestFor": [
+        "a shared desk"
+      ],
+      "notFor": [
+        "a standing-only desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHADIKDB30CK",
+    "name": "Tampaksiring Side",
+    "category": "chair",
+    "pricePerMonth": 680000,
+    "currency": "IDR",
+    "description": "Tampaksiring Side: wood support for a reading corner.",
+    "subCategory": null,
+    "image": "/placeholders/chair-tampaksiring-side.svg",
+    "metadata": {
+      "tags": [
+        "chair",
+        "minimal",
+        "premium",
+        "side",
+        "wood"
+      ],
+      "attributes": {
+        "type": "side",
+        "back": "wood",
+        "armrest": "none"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHA94BPJTMQP",
+    "name": "Penestanan Rocking",
+    "category": "chair",
+    "pricePerMonth": 690000,
+    "currency": "IDR",
+    "description": "Penestanan Rocking: fabric support for deep work.",
+    "subCategory": null,
+    "image": "/placeholders/chair-penestanan-rocking.svg",
+    "metadata": {
+      "tags": [
+        "chair",
+        "fabric",
+        "premium",
+        "rocking"
+      ],
+      "attributes": {
+        "type": "rocking",
+        "back": "fabric",
+        "motion": "rocking"
+      },
+      "bestFor": [
+        "deep work"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHAJGJV721VN",
+    "name": "Seminyak Armless",
+    "category": "chair",
+    "pricePerMonth": 710000,
+    "currency": "IDR",
+    "description": "Seminyak Armless: mesh support for long sessions.",
+    "subCategory": null,
+    "image": "/placeholders/chair-seminyak-armless.svg",
+    "metadata": {
+      "tags": [
+        "chair",
+        "mesh",
+        "minimal",
+        "premium",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "back": "mesh",
+        "armrest": "none"
+      },
+      "bestFor": [
+        "long sessions"
+      ],
+      "notFor": [
+        "a standing-only desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHALJJ5QYE0R",
+    "name": "Jimbaran Bar",
+    "category": "chair",
+    "pricePerMonth": 730000,
+    "currency": "IDR",
+    "description": "Jimbaran Bar: metal support for a shared desk.",
+    "subCategory": null,
+    "image": "/placeholders/chair-jimbaran-bar.svg",
+    "metadata": {
+      "tags": [
+        "bar",
+        "chair",
+        "metal",
+        "premium",
+        "tall"
+      ],
+      "attributes": {
+        "type": "bar",
+        "back": "metal",
+        "height": "tall"
+      },
+      "bestFor": [
+        "a shared desk"
+      ],
+      "notFor": [
+        "a dining table"
+      ]
+    }
+  },
+  {
+    "skuNo": "CHA3ELOX8PP8",
+    "name": "Sanur Bench",
+    "category": "chair",
+    "pricePerMonth": 750000,
+    "currency": "IDR",
+    "description": "Sanur Bench: none support for a reading corner.",
+    "subCategory": null,
+    "image": "/placeholders/chair-sanur-bench.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "bench",
+        "chair",
+        "minimal",
+        "premium"
+      ],
+      "attributes": {
+        "type": "bench",
+        "seats": "2",
+        "back": "none"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "MONAA5DU36L3",
+    "name": "Kuta 15.6\" Portable",
     "category": "accessory",
     "pricePerMonth": 300000,
     "currency": "IDR",
-    "description": "Floor Cushion Set: the relax-zone essential.",
-    "subCategory": "beanbag",
-    "image": "/placeholders/accessory-floor-cushion-set.svg"
+    "description": "Kuta 15.6\" Portable: a 15.6in FHD panel for coding.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-kuta-15-6-portable.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "fhd",
+        "ips",
+        "monitor",
+        "travel"
+      ],
+      "attributes": {
+        "size": "15.6in",
+        "resolution": "FHD",
+        "panel": "IPS",
+        "use": "travel"
+      },
+      "bestFor": [
+        "coding"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
   },
   {
-    "skuNo": "CFE2LPSBMNRB",
-    "name": "Berawa Espresso Duo",
+    "skuNo": "MONRLD3G4OVK",
+    "name": "Amed 22\" FHD",
     "category": "accessory",
-    "pricePerMonth": 800000,
+    "pricePerMonth": 310000,
     "currency": "IDR",
-    "description": "Berawa Espresso Duo: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-berawa-espresso-duo.svg"
+    "description": "Amed 22\" FHD: a 22in FHD panel for creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-amed-22-fhd.svg",
+    "metadata": {
+      "tags": [
+        "22in",
+        "60hz",
+        "budget",
+        "fhd",
+        "monitor",
+        "va"
+      ],
+      "attributes": {
+        "size": "22in",
+        "resolution": "FHD",
+        "panel": "VA",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "creative work"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
   },
   {
-    "skuNo": "CFE6KEPZP8LF",
-    "name": "Seminyak Cold Drip",
+    "skuNo": "MON9HH7TNU81",
+    "name": "Canggu 24\" QHD",
     "category": "accessory",
-    "pricePerMonth": 600000,
+    "pricePerMonth": 320000,
     "currency": "IDR",
-    "description": "Seminyak Cold Drip: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-seminyak-cold-drip.svg"
+    "description": "Canggu 24\" QHD: a 24in QHD panel for spreadsheets.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-canggu-24-qhd.svg",
+    "metadata": {
+      "tags": [
+        "24in",
+        "75hz",
+        "budget",
+        "ips",
+        "monitor",
+        "qhd"
+      ],
+      "attributes": {
+        "size": "24in",
+        "resolution": "QHD",
+        "panel": "IPS",
+        "refresh": "75Hz"
+      },
+      "bestFor": [
+        "spreadsheets"
+      ],
+      "notFor": [
+        "a wall mount"
+      ]
+    }
   },
   {
-    "skuNo": "CFE6UP8CUECI",
-    "name": "Espresso Machine",
+    "skuNo": "MONDIDZFBMED",
+    "name": "Kerobokan 27\" 4K",
     "category": "accessory",
-    "subCategory": "coffee",
-    "pricePerMonth": 750000,
+    "pricePerMonth": 330000,
     "currency": "IDR",
-    "description": "Premium bean-to-cup machine. Keep your energy up for those long coding sessions.",
-    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuATDymSt-AcHwZo3PpW0B2MasVp31eN2xETL6HE47QwVmUWSdXfr-qebhbti1geNj2S4aMEcJMq27UHmxy529UDQVfz-wvP1qG47iXhoRJ6JE94YTqOytJXeiNu-RpHVidaOks0Rqec_ZG3bxs_cCkz1LHDRGPAbPPeM5S-gX5Pn2iRmP6ALD028fqVXigofgft6xjAXAJH1dkI1xqBho3iv1Yh5a72Xhq1BLbi-2Nrx9Miaguq30crjA"
+    "description": "Kerobokan 27\" 4K: a 27in 4K panel for video calls.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-kerobokan-27-4k.svg",
+    "metadata": {
+      "tags": [
+        "27in",
+        "4k",
+        "60hz",
+        "budget",
+        "ips",
+        "monitor"
+      ],
+      "attributes": {
+        "size": "27in",
+        "resolution": "4K",
+        "panel": "IPS",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
   },
   {
-    "skuNo": "CFE8GP1YC67Q",
-    "name": "Ubud French Press",
+    "skuNo": "MONI0GA1NQCR",
+    "name": "Denpasar 27\" 144Hz",
     "category": "accessory",
-    "pricePerMonth": 650000,
+    "pricePerMonth": 335000,
     "currency": "IDR",
-    "description": "Ubud French Press: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-ubud-french-press.svg"
+    "description": "Denpasar 27\" 144Hz: a 27in QHD panel for coding.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-denpasar-27-144hz.svg",
+    "metadata": {
+      "tags": [
+        "144hz",
+        "27in",
+        "budget",
+        "ips",
+        "monitor",
+        "qhd"
+      ],
+      "attributes": {
+        "size": "27in",
+        "resolution": "QHD",
+        "panel": "IPS",
+        "refresh": "144Hz"
+      },
+      "bestFor": [
+        "coding"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
   },
   {
-    "skuNo": "CFEBT0A8IIHK",
-    "name": "Pour-Over Kit",
+    "skuNo": "MON1WI9G2W08",
+    "name": "Berawa 27\" Touch",
+    "category": "accessory",
+    "pricePerMonth": 345000,
+    "currency": "IDR",
+    "description": "Berawa 27\" Touch: a 27in FHD panel for creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-berawa-27-touch.svg",
+    "metadata": {
+      "tags": [
+        "27in",
+        "adjustable",
+        "budget",
+        "fhd",
+        "ips",
+        "monitor"
+      ],
+      "attributes": {
+        "size": "27in",
+        "resolution": "FHD",
+        "panel": "IPS",
+        "touch": "true"
+      },
+      "bestFor": [
+        "creative work"
+      ],
+      "notFor": [
+        "a wall mount"
+      ]
+    }
+  },
+  {
+    "skuNo": "MONLXS0H7C0O",
+    "name": "Pererenan 32\" UHD",
+    "category": "accessory",
+    "pricePerMonth": 355000,
+    "currency": "IDR",
+    "description": "Pererenan 32\" UHD: a 32in 4K panel for spreadsheets.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-pererenan-32-uhd.svg",
+    "metadata": {
+      "tags": [
+        "32in",
+        "4k",
+        "60hz",
+        "mid-range",
+        "monitor",
+        "va"
+      ],
+      "attributes": {
+        "size": "32in",
+        "resolution": "4K",
+        "panel": "VA",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "spreadsheets"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
+  },
+  {
+    "skuNo": "MONX8S19CGQO",
+    "name": "Uluwatu 34\" Ultrawide",
+    "category": "accessory",
+    "pricePerMonth": 365000,
+    "currency": "IDR",
+    "description": "Uluwatu 34\" Ultrawide: a 34in UWQHD panel for video calls.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-uluwatu-34-ultrawide.svg",
+    "metadata": {
+      "tags": [
+        "34in",
+        "ips",
+        "mid-range",
+        "monitor",
+        "ultrawide",
+        "uwqhd"
+      ],
+      "attributes": {
+        "size": "34in",
+        "resolution": "UWQHD",
+        "panel": "IPS",
+        "shape": "ultrawide"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
+  },
+  {
+    "skuNo": "MONSM1QPYKNA",
+    "name": "Batu Bolong 24\" IPS",
+    "category": "accessory",
+    "pricePerMonth": 375000,
+    "currency": "IDR",
+    "description": "Batu Bolong 24\" IPS: a 24in FHD panel for coding.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-batu-bolong-24-ips.svg",
+    "metadata": {
+      "tags": [
+        "24in",
+        "60hz",
+        "fhd",
+        "ips",
+        "mid-range",
+        "monitor"
+      ],
+      "attributes": {
+        "size": "24in",
+        "resolution": "FHD",
+        "panel": "IPS",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "coding"
+      ],
+      "notFor": [
+        "a wall mount"
+      ]
+    }
+  },
+  {
+    "skuNo": "MONJEJEIG2FI",
+    "name": "Sidemen 28\" 4K",
+    "category": "accessory",
+    "pricePerMonth": 385000,
+    "currency": "IDR",
+    "description": "Sidemen 28\" 4K: a 28in 4K panel for creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-sidemen-28-4k.svg",
+    "metadata": {
+      "tags": [
+        "28in",
+        "4k",
+        "60hz",
+        "ips",
+        "mid-range",
+        "monitor"
+      ],
+      "attributes": {
+        "size": "28in",
+        "resolution": "4K",
+        "panel": "IPS",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "creative work"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
+  },
+  {
+    "skuNo": "MONWBHJHV4BD",
+    "name": "Munduk 29\" Ultrawide",
+    "category": "accessory",
+    "pricePerMonth": 390000,
+    "currency": "IDR",
+    "description": "Munduk 29\" Ultrawide: a 29in UWHD panel for spreadsheets.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-munduk-29-ultrawide.svg",
+    "metadata": {
+      "tags": [
+        "29in",
+        "ips",
+        "mid-range",
+        "monitor",
+        "ultrawide",
+        "uwhd"
+      ],
+      "attributes": {
+        "size": "29in",
+        "resolution": "UWHD",
+        "panel": "IPS",
+        "shape": "ultrawide"
+      },
+      "bestFor": [
+        "spreadsheets"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
+  },
+  {
+    "skuNo": "MON1K2AOMD51",
+    "name": "Tabanan 21.5\" FHD",
     "category": "accessory",
     "pricePerMonth": 400000,
     "currency": "IDR",
-    "description": "Pour-Over Kit: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-pour-over-kit.svg"
+    "description": "Tabanan 21.5\" FHD: a 21.5in FHD panel for video calls.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-tabanan-21-5-fhd.svg",
+    "metadata": {
+      "tags": [
+        "60hz",
+        "fhd",
+        "mid-range",
+        "monitor",
+        "tn"
+      ],
+      "attributes": {
+        "size": "21.5in",
+        "resolution": "FHD",
+        "panel": "TN",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "a wall mount"
+      ]
+    }
   },
   {
-    "skuNo": "CFEFUWHGVPI4",
-    "name": "Cold Brew Tower",
+    "skuNo": "MONRSU8ONTV7",
+    "name": "Tampaksiring 32\" QHD",
     "category": "accessory",
-    "pricePerMonth": 500000,
+    "pricePerMonth": 410000,
     "currency": "IDR",
-    "description": "Cold Brew Tower: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-cold-brew-tower.svg"
+    "description": "Tampaksiring 32\" QHD: a 32in QHD panel for coding.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-tampaksiring-32-qhd.svg",
+    "metadata": {
+      "tags": [
+        "32in",
+        "75hz",
+        "mid-range",
+        "monitor",
+        "qhd",
+        "va"
+      ],
+      "attributes": {
+        "size": "32in",
+        "resolution": "QHD",
+        "panel": "VA",
+        "refresh": "75Hz"
+      },
+      "bestFor": [
+        "coding"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
   },
   {
-    "skuNo": "CFEPSCM6MUV8",
-    "name": "Moka Pot Set",
+    "skuNo": "MON3MWL8NSAC",
+    "name": "Penestanan 43\" 4K",
     "category": "accessory",
-    "pricePerMonth": 450000,
+    "pricePerMonth": 420000,
     "currency": "IDR",
-    "description": "Moka Pot Set: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-moka-pot-set.svg"
+    "description": "Penestanan 43\" 4K: a 43in 4K panel for creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-penestanan-43-4k.svg",
+    "metadata": {
+      "tags": [
+        "43in",
+        "4k",
+        "60hz",
+        "mid-range",
+        "monitor",
+        "va"
+      ],
+      "attributes": {
+        "size": "43in",
+        "resolution": "4K",
+        "panel": "VA",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "creative work"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
   },
   {
-    "skuNo": "CFER19IR6FWF",
-    "name": "Canggu Siphon",
+    "skuNo": "MONGMDZ8F0AD",
+    "name": "Seminyak 24\" Curved",
     "category": "accessory",
-    "pricePerMonth": 700000,
+    "pricePerMonth": 430000,
     "currency": "IDR",
-    "description": "Canggu Siphon: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-canggu-siphon.svg"
+    "description": "Seminyak 24\" Curved: a 24in FHD panel for spreadsheets.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-seminyak-24-curved.svg",
+    "metadata": {
+      "tags": [
+        "24in",
+        "curved",
+        "fhd",
+        "monitor",
+        "premium",
+        "va"
+      ],
+      "attributes": {
+        "size": "24in",
+        "resolution": "FHD",
+        "panel": "VA",
+        "shape": "curved"
+      },
+      "bestFor": [
+        "spreadsheets"
+      ],
+      "notFor": [
+        "a wall mount"
+      ]
+    }
   },
   {
-    "skuNo": "CFEXJN350XWL",
-    "name": "Kerobokan Drip Bar",
+    "skuNo": "MON0W7Q7EHP2",
+    "name": "Jimbaran 27\" QHD",
     "category": "accessory",
-    "pricePerMonth": 750000,
+    "pricePerMonth": 440000,
     "currency": "IDR",
-    "description": "Kerobokan Drip Bar: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-kerobokan-drip-bar.svg"
+    "description": "Jimbaran 27\" QHD: a 27in QHD panel for video calls.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-jimbaran-27-qhd.svg",
+    "metadata": {
+      "tags": [
+        "27in",
+        "75hz",
+        "ips",
+        "monitor",
+        "premium",
+        "qhd"
+      ],
+      "attributes": {
+        "size": "27in",
+        "resolution": "QHD",
+        "panel": "IPS",
+        "refresh": "75Hz"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
   },
   {
-    "skuNo": "CFEZ6NVZXEKB",
-    "name": "Barista Bundle",
+    "skuNo": "MONUKSNB5JDV",
+    "name": "Sanur 34\" QHD",
     "category": "accessory",
-    "pricePerMonth": 550000,
+    "pricePerMonth": 445000,
     "currency": "IDR",
-    "description": "Barista Bundle: keep the caffeine pipeline flowing.",
-    "subCategory": "coffee",
-    "image": "/placeholders/accessory-barista-bundle.svg"
+    "description": "Sanur 34\" QHD: a 34in QHD panel for coding.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-sanur-34-qhd.svg",
+    "metadata": {
+      "tags": [
+        "34in",
+        "monitor",
+        "premium",
+        "qhd",
+        "ultrawide",
+        "va"
+      ],
+      "attributes": {
+        "size": "34in",
+        "resolution": "QHD",
+        "panel": "VA",
+        "shape": "ultrawide"
+      },
+      "bestFor": [
+        "coding"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
   },
   {
-    "skuNo": "LMP088XRUVM3",
-    "name": "Pererenan Clip Light",
+    "skuNo": "MON55K13ICX8",
+    "name": "Nusa Dua 25\" FHD",
     "category": "accessory",
-    "pricePerMonth": 180000,
+    "pricePerMonth": 455000,
     "currency": "IDR",
-    "description": "Pererenan Clip Light: soft, adjustable light for late sessions.",
-    "subCategory": "lamp",
-    "image": "/placeholders/accessory-pererenan-clip-light.svg"
+    "description": "Nusa Dua 25\" FHD: a 25in FHD panel for creative work.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-nusa-dua-25-fhd.svg",
+    "metadata": {
+      "tags": [
+        "100hz",
+        "25in",
+        "fhd",
+        "ips",
+        "monitor",
+        "premium"
+      ],
+      "attributes": {
+        "size": "25in",
+        "resolution": "FHD",
+        "panel": "IPS",
+        "refresh": "100Hz"
+      },
+      "bestFor": [
+        "creative work"
+      ],
+      "notFor": [
+        "a wall mount"
+      ]
+    }
   },
   {
-    "skuNo": "LMP1LYB5QL81",
-    "name": "Jimbaran Floor Lamp",
+    "skuNo": "MONPGVPRN7J6",
+    "name": "Ubud 23.8\" FHD",
     "category": "accessory",
-    "pricePerMonth": 200000,
+    "pricePerMonth": 465000,
     "currency": "IDR",
-    "description": "Jimbaran Floor Lamp: soft, adjustable light for late sessions.",
-    "subCategory": "lamp",
-    "image": "/placeholders/accessory-jimbaran-floor-lamp.svg"
+    "description": "Ubud 23.8\" FHD: a 23.8in FHD panel for spreadsheets.",
+    "subCategory": "monitor",
+    "image": "/placeholders/accessory-ubud-23-8-fhd.svg",
+    "metadata": {
+      "tags": [
+        "60hz",
+        "fhd",
+        "ips",
+        "monitor",
+        "premium"
+      ],
+      "attributes": {
+        "size": "23.8in",
+        "resolution": "FHD",
+        "panel": "IPS",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "spreadsheets"
+      ],
+      "notFor": [
+        "competitive gaming"
+      ]
+    }
   },
   {
-    "skuNo": "LMP6V7MXB4G5",
-    "name": "Seminyak Architect",
-    "category": "accessory",
-    "pricePerMonth": 140000,
-    "currency": "IDR",
-    "description": "Seminyak Architect: soft, adjustable light for late sessions.",
-    "subCategory": "lamp",
-    "image": "/placeholders/accessory-seminyak-architect.svg"
-  },
-  {
-    "skuNo": "LMP7GDS3M86F",
-    "name": "Canggu Desk Lamp",
-    "category": "accessory",
-    "pricePerMonth": 100000,
-    "currency": "IDR",
-    "description": "Canggu Desk Lamp: soft, adjustable light for late sessions.",
-    "subCategory": "lamp",
-    "image": "/placeholders/accessory-canggu-desk-lamp.svg"
-  },
-  {
-    "skuNo": "LMPFN3UXKQUL",
-    "name": "Ubud Warm Glow",
-    "category": "accessory",
-    "pricePerMonth": 120000,
-    "currency": "IDR",
-    "description": "Ubud Warm Glow: soft, adjustable light for late sessions.",
-    "subCategory": "lamp",
-    "image": "/placeholders/accessory-ubud-warm-glow.svg"
-  },
-  {
-    "skuNo": "LMPJ8G9H90RX",
-    "name": "Berawa LED Bar",
-    "category": "accessory",
-    "pricePerMonth": 160000,
-    "currency": "IDR",
-    "description": "Berawa LED Bar: soft, adjustable light for late sessions.",
-    "subCategory": "lamp",
-    "image": "/placeholders/accessory-berawa-led-bar.svg"
-  },
-  {
-    "skuNo": "MON5F4827B9G",
-    "name": "Nusa Dua 27\" Touch",
+    "skuNo": "MON3Q5UEGB63",
+    "name": "Bingin 30\" 6K",
     "category": "accessory",
     "pricePerMonth": 475000,
     "currency": "IDR",
-    "description": "Nusa Dua 27\" Touch: crisp pixels for code and creative work.",
+    "description": "Bingin 30\" 6K: a 30in 6K panel for video calls.",
     "subCategory": "monitor",
-    "image": "/placeholders/accessory-nusa-dua-27-touch.svg"
+    "image": "/placeholders/accessory-bingin-30-6k.svg",
+    "metadata": {
+      "tags": [
+        "30in",
+        "60hz",
+        "6k",
+        "ips",
+        "monitor",
+        "premium"
+      ],
+      "attributes": {
+        "size": "30in",
+        "resolution": "6K",
+        "panel": "IPS",
+        "refresh": "60Hz"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "colour-critical print"
+      ]
+    }
   },
   {
-    "skuNo": "MONHMHMGMFF2",
-    "name": "Seminyak 32\" UHD",
-    "category": "accessory",
-    "pricePerMonth": 350000,
-    "currency": "IDR",
-    "description": "Seminyak 32\" UHD: crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-seminyak-32-uhd.svg"
-  },
-  {
-    "skuNo": "MONJVAP81NPQ",
-    "name": "Batu Bolong 27\" 4K",
-    "category": "accessory",
-    "pricePerMonth": 300000,
-    "currency": "IDR",
-    "description": "Batu Bolong 27\" 4K: crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-batu-bolong-27-4k.svg"
-  },
-  {
-    "skuNo": "MONM8S9DUP01",
-    "name": "Canggu Portable 15.6\"",
-    "category": "accessory",
-    "pricePerMonth": 375000,
-    "currency": "IDR",
-    "description": "Canggu Portable 15.6\": crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-canggu-portable-15-6.svg"
-  },
-  {
-    "skuNo": "MONVEUY2CJU4",
-    "name": "Berawa 24\" QHD",
-    "category": "accessory",
-    "pricePerMonth": 325000,
-    "currency": "IDR",
-    "description": "Berawa 24\" QHD: crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-berawa-24-qhd.svg"
-  },
-  {
-    "skuNo": "MONYGJQLAYJ1",
-    "name": "Ubud 34\" Ultrawide",
-    "category": "accessory",
-    "pricePerMonth": 400000,
-    "currency": "IDR",
-    "description": "Ubud 34\" Ultrawide: crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-ubud-34-ultrawide.svg"
-  },
-  {
-    "skuNo": "MONZBGXDCJ8P",
-    "name": "Pererenan 27\" 144Hz",
-    "category": "accessory",
-    "pricePerMonth": 425000,
-    "currency": "IDR",
-    "description": "Pererenan 27\" 144Hz: crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-pererenan-27-144hz.svg"
-  },
-  {
-    "skuNo": "MONZLCUQ9JVS",
-    "name": "Kuta 22\" FHD",
-    "category": "accessory",
-    "pricePerMonth": 450000,
-    "currency": "IDR",
-    "description": "Kuta 22\" FHD: crisp pixels for code and creative work.",
-    "subCategory": "monitor",
-    "image": "/placeholders/accessory-kuta-22-fhd.svg"
-  },
-  {
-    "skuNo": "PLT0Y6PHJWV1",
-    "name": "Monstera Plant",
-    "category": "accessory",
-    "subCategory": "plant",
-    "pricePerMonth": 200000,
-    "currency": "IDR",
-    "description": "Breathe fresh island air into your setup. Low maintenance, high vibes.",
-    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuBNM8NClz_4yWCUaLWIxUl0VPsSwgzpS59SzMt0oeaXq5pGtVdSkC_qDItbd-HAgqnVyUtLH-m5VqKPqRAtEPISuAm251n7PkVt1ryhwJ4Dj0EJ6poWJpX0frBBEqDW0sliyEsIJFl8ceIC7iFvn10G_cBFqr5urj_3NK1nKDh6C89ACSPSxxwk26WN_eqbSgCqurzJo5NuHocB4Gi30a1MnfutsimRiply4I4hnqATq-QtK8lgaJzBuQ",
-    "badge": "popular"
-  },
-  {
-    "skuNo": "PLT2HJ908KI2",
-    "name": "ZZ Plant",
-    "category": "accessory",
-    "pricePerMonth": 160000,
-    "currency": "IDR",
-    "description": "ZZ Plant: living greenery that survives (almost) anything.",
-    "subCategory": "plant",
-    "image": "/placeholders/accessory-zz-plant.svg"
-  },
-  {
-    "skuNo": "PLT3RN3T0OOD",
-    "name": "Rubber Tree",
-    "category": "accessory",
-    "pricePerMonth": 140000,
-    "currency": "IDR",
-    "description": "Rubber Tree: living greenery that survives (almost) anything.",
-    "subCategory": "plant",
-    "image": "/placeholders/accessory-rubber-tree.svg"
-  },
-  {
-    "skuNo": "PLT4RYTRRWMZ",
-    "name": "Peace Lily",
-    "category": "accessory",
-    "pricePerMonth": 220000,
-    "currency": "IDR",
-    "description": "Peace Lily: living greenery that survives (almost) anything.",
-    "subCategory": "plant",
-    "image": "/placeholders/accessory-peace-lily.svg"
-  },
-  {
-    "skuNo": "PLTH3L2679JO",
-    "name": "Bamboo Stalk",
-    "category": "accessory",
-    "pricePerMonth": 180000,
-    "currency": "IDR",
-    "description": "Bamboo Stalk: living greenery that survives (almost) anything.",
-    "subCategory": "plant",
-    "image": "/placeholders/accessory-bamboo-stalk.svg"
-  },
-  {
-    "skuNo": "PLTH5HSE1F92",
-    "name": "Snake Plant",
+    "skuNo": "LMPWXUZ5CVDH",
+    "name": "Kerobokan Desk Lamp",
     "category": "accessory",
     "pricePerMonth": 100000,
     "currency": "IDR",
-    "description": "Snake Plant: living greenery that survives (almost) anything.",
-    "subCategory": "plant",
-    "image": "/placeholders/accessory-snake-plant.svg"
+    "description": "Kerobokan Desk Lamp: warm light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-kerobokan-desk-lamp.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "budget",
+        "desk",
+        "lamp",
+        "warm"
+      ],
+      "attributes": {
+        "type": "desk",
+        "quality": "warm",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "late sessions"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
   },
   {
-    "skuNo": "PLTK2MAFZG83",
-    "name": "Fiddle Leaf Fig",
+    "skuNo": "LMP6O4HAVR63",
+    "name": "Denpasar Clip Light",
     "category": "accessory",
-    "pricePerMonth": 200000,
+    "pricePerMonth": 105000,
     "currency": "IDR",
-    "description": "Fiddle Leaf Fig: living greenery that survives (almost) anything.",
-    "subCategory": "plant",
-    "image": "/placeholders/accessory-fiddle-leaf-fig.svg"
+    "description": "Denpasar Clip Light: warm light for reading.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-denpasar-clip-light.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "budget",
+        "clip",
+        "lamp",
+        "warm"
+      ],
+      "attributes": {
+        "type": "clip",
+        "quality": "warm",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "reading"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
   },
   {
-    "skuNo": "PLTV3GHR000R",
-    "name": "Palm Areca",
+    "skuNo": "LMPV4YTVCFMC",
+    "name": "Berawa Floor Lamp",
+    "category": "accessory",
+    "pricePerMonth": 110000,
+    "currency": "IDR",
+    "description": "Berawa Floor Lamp: warm light for video calls.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-berawa-floor-lamp.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "fixed",
+        "floor",
+        "lamp",
+        "warm"
+      ],
+      "attributes": {
+        "type": "floor",
+        "quality": "warm",
+        "adjustable": "false"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "a workshop"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPY8OTA8JQ1",
+    "name": "Pererenan Architect",
+    "category": "accessory",
+    "pricePerMonth": 115000,
+    "currency": "IDR",
+    "description": "Pererenan Architect: neutral light for a dim corner.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-pererenan-architect.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "architect",
+        "budget",
+        "lamp",
+        "neutral"
+      ],
+      "attributes": {
+        "type": "architect",
+        "quality": "neutral",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "a dim corner"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPIW0OSMTJC",
+    "name": "Uluwatu LED Bar",
     "category": "accessory",
     "pricePerMonth": 120000,
     "currency": "IDR",
-    "description": "Palm Areca: living greenery that survives (almost) anything.",
+    "description": "Uluwatu LED Bar: neutral light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-uluwatu-led-bar.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "bar",
+        "budget",
+        "lamp",
+        "neutral"
+      ],
+      "attributes": {
+        "type": "bar",
+        "quality": "neutral",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "late sessions"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP1ZN1BL929",
+    "name": "Batu Bolong Warm Glow",
+    "category": "accessory",
+    "pricePerMonth": 125000,
+    "currency": "IDR",
+    "description": "Batu Bolong Warm Glow: warm light for reading.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-batu-bolong-warm-glow.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "fixed",
+        "lamp",
+        "table",
+        "warm"
+      ],
+      "attributes": {
+        "type": "table",
+        "quality": "warm",
+        "adjustable": "false"
+      },
+      "bestFor": [
+        "reading"
+      ],
+      "notFor": [
+        "a workshop"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP7L85KXH6N",
+    "name": "Sidemen Task Light",
+    "category": "accessory",
+    "pricePerMonth": 130000,
+    "currency": "IDR",
+    "description": "Sidemen Task Light: neutral light for video calls.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-sidemen-task-light.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "lamp",
+        "mid-range",
+        "neutral",
+        "task"
+      ],
+      "attributes": {
+        "type": "task",
+        "quality": "neutral",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPI0CY83J3N",
+    "name": "Munduk Reading Lamp",
+    "category": "accessory",
+    "pricePerMonth": 135000,
+    "currency": "IDR",
+    "description": "Munduk Reading Lamp: warm light for a dim corner.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-munduk-reading-lamp.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "lamp",
+        "mid-range",
+        "reading",
+        "warm"
+      ],
+      "attributes": {
+        "type": "reading",
+        "quality": "warm",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "a dim corner"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP4QZOU1SYK",
+    "name": "Tabanan Pendant",
+    "category": "accessory",
+    "pricePerMonth": 140000,
+    "currency": "IDR",
+    "description": "Tabanan Pendant: warm light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-tabanan-pendant.svg",
+    "metadata": {
+      "tags": [
+        "ceiling",
+        "lamp",
+        "mid-range",
+        "pendant",
+        "warm"
+      ],
+      "attributes": {
+        "type": "pendant",
+        "quality": "warm",
+        "mode": "ceiling"
+      },
+      "bestFor": [
+        "late sessions"
+      ],
+      "notFor": [
+        "a workshop"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPXFLMF4DVB",
+    "name": "Tampaksiring Arc Lamp",
+    "category": "accessory",
+    "pricePerMonth": 145000,
+    "currency": "IDR",
+    "description": "Tampaksiring Arc Lamp: neutral light for reading.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-tampaksiring-arc-lamp.svg",
+    "metadata": {
+      "tags": [
+        "arc",
+        "floor",
+        "lamp",
+        "mid-range",
+        "neutral"
+      ],
+      "attributes": {
+        "type": "arc",
+        "quality": "neutral",
+        "mode": "floor"
+      },
+      "bestFor": [
+        "reading"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP0BXI3AFX3",
+    "name": "Penestanan Table Lamp",
+    "category": "accessory",
+    "pricePerMonth": 155000,
+    "currency": "IDR",
+    "description": "Penestanan Table Lamp: warm light for video calls.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-penestanan-table-lamp.svg",
+    "metadata": {
+      "tags": [
+        "fixed",
+        "lamp",
+        "mid-range",
+        "table",
+        "warm"
+      ],
+      "attributes": {
+        "type": "table",
+        "quality": "warm",
+        "adjustable": "false"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP8AKUMVAW7",
+    "name": "Seminyak Gooseneck",
+    "category": "accessory",
+    "pricePerMonth": 160000,
+    "currency": "IDR",
+    "description": "Seminyak Gooseneck: neutral light for a dim corner.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-seminyak-gooseneck.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "gooseneck",
+        "lamp",
+        "mid-range",
+        "neutral"
+      ],
+      "attributes": {
+        "type": "gooseneck",
+        "quality": "neutral",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "a dim corner"
+      ],
+      "notFor": [
+        "a workshop"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPWZ1N9DZWB",
+    "name": "Jimbaran Ring Light",
+    "category": "accessory",
+    "pricePerMonth": 165000,
+    "currency": "IDR",
+    "description": "Jimbaran Ring Light: cool light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-jimbaran-ring-light.svg",
+    "metadata": {
+      "tags": [
+        "cool",
+        "lamp",
+        "mid-range",
+        "ring"
+      ],
+      "attributes": {
+        "type": "ring",
+        "quality": "cool",
+        "use": "video calls"
+      },
+      "bestFor": [
+        "late sessions"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPVDYSNK4YH",
+    "name": "Sanur Bedside",
+    "category": "accessory",
+    "pricePerMonth": 170000,
+    "currency": "IDR",
+    "description": "Sanur Bedside: warm light for reading.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-sanur-bedside.svg",
+    "metadata": {
+      "tags": [
+        "bedside",
+        "fixed",
+        "lamp",
+        "mid-range",
+        "warm"
+      ],
+      "attributes": {
+        "type": "bedside",
+        "quality": "warm",
+        "adjustable": "false"
+      },
+      "bestFor": [
+        "reading"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP6NTRTEG12",
+    "name": "Nusa Dua Panel Light",
+    "category": "accessory",
+    "pricePerMonth": 175000,
+    "currency": "IDR",
+    "description": "Nusa Dua Panel Light: neutral light for video calls.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-nusa-dua-panel-light.svg",
+    "metadata": {
+      "tags": [
+        "ceiling",
+        "lamp",
+        "neutral",
+        "panel",
+        "premium"
+      ],
+      "attributes": {
+        "type": "panel",
+        "quality": "neutral",
+        "mode": "ceiling"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "a workshop"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPQBQ0KJE57",
+    "name": "Ubud Spot Light",
+    "category": "accessory",
+    "pricePerMonth": 180000,
+    "currency": "IDR",
+    "description": "Ubud Spot Light: cool light for a dim corner.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-ubud-spot-light.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "cool",
+        "lamp",
+        "premium",
+        "spot"
+      ],
+      "attributes": {
+        "type": "spot",
+        "quality": "cool",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "a dim corner"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPLMMB60E94",
+    "name": "Bingin Torchiere",
+    "category": "accessory",
+    "pricePerMonth": 185000,
+    "currency": "IDR",
+    "description": "Bingin Torchiere: warm light for late sessions.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-bingin-torchiere.svg",
+    "metadata": {
+      "tags": [
+        "floor",
+        "lamp",
+        "premium",
+        "torchiere",
+        "warm"
+      ],
+      "attributes": {
+        "type": "torchiere",
+        "quality": "warm",
+        "mode": "floor"
+      },
+      "bestFor": [
+        "late sessions"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMP8FVS3M7K8",
+    "name": "Kuta Shelf Light",
+    "category": "accessory",
+    "pricePerMonth": 190000,
+    "currency": "IDR",
+    "description": "Kuta Shelf Light: neutral light for reading.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-kuta-shelf-light.svg",
+    "metadata": {
+      "tags": [
+        "fixed",
+        "lamp",
+        "neutral",
+        "premium",
+        "shelf"
+      ],
+      "attributes": {
+        "type": "shelf",
+        "quality": "neutral",
+        "adjustable": "false"
+      },
+      "bestFor": [
+        "reading"
+      ],
+      "notFor": [
+        "a workshop"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPM2957CC37",
+    "name": "Amed Picture Light",
+    "category": "accessory",
+    "pricePerMonth": 195000,
+    "currency": "IDR",
+    "description": "Amed Picture Light: warm light for video calls.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-amed-picture-light.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "lamp",
+        "picture",
+        "premium",
+        "warm"
+      ],
+      "attributes": {
+        "type": "picture",
+        "quality": "warm",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "video calls"
+      ],
+      "notFor": [
+        "a large room"
+      ]
+    }
+  },
+  {
+    "skuNo": "LMPLF6PW3O6R",
+    "name": "Canggu Workbench Light",
+    "category": "accessory",
+    "pricePerMonth": 200000,
+    "currency": "IDR",
+    "description": "Canggu Workbench Light: neutral light for a dim corner.",
+    "subCategory": "lamp",
+    "image": "/placeholders/accessory-canggu-workbench-light.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "lamp",
+        "neutral",
+        "premium",
+        "workbench"
+      ],
+      "attributes": {
+        "type": "workbench",
+        "quality": "neutral",
+        "adjustable": "true"
+      },
+      "bestFor": [
+        "a dim corner"
+      ],
+      "notFor": [
+        "outdoor use"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTEHWRFSEQL",
+    "name": "Pererenan Snake Plant",
+    "category": "accessory",
+    "pricePerMonth": 100000,
+    "currency": "IDR",
+    "description": "Pererenan Snake Plant: a low-care plant for low light.",
     "subCategory": "plant",
-    "image": "/placeholders/accessory-palm-areca.svg"
+    "image": "https://images.example.invalid/pererenan-snake-plant.png",
+    "metadata": {
+      "tags": [
+        "budget",
+        "low",
+        "plant",
+        "sansevieria"
+      ],
+      "attributes": {
+        "species": "sansevieria",
+        "care": "low",
+        "light": "low"
+      },
+      "bestFor": [
+        "low light"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT1K6XFTCNU",
+    "name": "Uluwatu Palm Areca",
+    "category": "accessory",
+    "pricePerMonth": 105000,
+    "currency": "IDR",
+    "description": "Uluwatu Palm Areca: a low-care plant for a bright corner.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-uluwatu-palm-areca.svg",
+    "metadata": {
+      "tags": [
+        "areca",
+        "budget",
+        "low",
+        "medium",
+        "plant"
+      ],
+      "attributes": {
+        "species": "areca",
+        "care": "low",
+        "light": "medium"
+      },
+      "bestFor": [
+        "a bright corner"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTH6GAEONA9",
+    "name": "Batu Bolong Rubber Tree",
+    "category": "accessory",
+    "pricePerMonth": 115000,
+    "currency": "IDR",
+    "description": "Batu Bolong Rubber Tree: a medium-care plant for a low-maintenance setup.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-batu-bolong-rubber-tree.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "budget",
+        "ficus-elastica",
+        "medium",
+        "plant"
+      ],
+      "attributes": {
+        "species": "ficus-elastica",
+        "care": "medium",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a low-maintenance setup"
+      ],
+      "notFor": [
+        "pets that chew"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTH4LT7P21G",
+    "name": "Sidemen ZZ Plant",
+    "category": "accessory",
+    "pricePerMonth": 120000,
+    "currency": "IDR",
+    "description": "Sidemen ZZ Plant: a low-care plant for a small desk.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-sidemen-zz-plant.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "low",
+        "plant",
+        "zamioculcas"
+      ],
+      "attributes": {
+        "species": "zamioculcas",
+        "care": "low",
+        "light": "low"
+      },
+      "bestFor": [
+        "a small desk"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT9BYXBCS3L",
+    "name": "Munduk Bamboo Stalk",
+    "category": "accessory",
+    "pricePerMonth": 125000,
+    "currency": "IDR",
+    "description": "Munduk Bamboo Stalk: a low-care plant for low light.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-munduk-bamboo-stalk.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "dracaena-sanderiana",
+        "low",
+        "medium",
+        "plant"
+      ],
+      "attributes": {
+        "species": "dracaena-sanderiana",
+        "care": "low",
+        "light": "medium"
+      },
+      "bestFor": [
+        "low light"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTVBDEF16J7",
+    "name": "Tabanan Monstera Plant",
+    "category": "accessory",
+    "pricePerMonth": 130000,
+    "currency": "IDR",
+    "description": "Tabanan Monstera Plant: a low-care plant for a bright corner.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-tabanan-monstera-plant.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "budget",
+        "low",
+        "monstera",
+        "plant"
+      ],
+      "attributes": {
+        "species": "monstera",
+        "care": "low",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a bright corner"
+      ],
+      "notFor": [
+        "pets that chew"
+      ]
+    },
+    "badge": "Popular"
+  },
+  {
+    "skuNo": "PLTXI43KD0U9",
+    "name": "Tampaksiring Fiddle Leaf Fig",
+    "category": "accessory",
+    "pricePerMonth": 140000,
+    "currency": "IDR",
+    "description": "Tampaksiring Fiddle Leaf Fig: a high-care plant for a low-maintenance setup.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-tampaksiring-fiddle-leaf-fig.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "ficus-lyrata",
+        "high",
+        "mid-range",
+        "plant"
+      ],
+      "attributes": {
+        "species": "ficus-lyrata",
+        "care": "high",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a low-maintenance setup"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT9D65H9ZE7",
+    "name": "Penestanan Peace Lily",
+    "category": "accessory",
+    "pricePerMonth": 145000,
+    "currency": "IDR",
+    "description": "Penestanan Peace Lily: a medium-care plant for a small desk.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-penestanan-peace-lily.svg",
+    "metadata": {
+      "tags": [
+        "low",
+        "medium",
+        "mid-range",
+        "plant",
+        "spathiphyllum"
+      ],
+      "attributes": {
+        "species": "spathiphyllum",
+        "care": "medium",
+        "light": "low"
+      },
+      "bestFor": [
+        "a small desk"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT3XWVYQ4TO",
+    "name": "Seminyak Pothos",
+    "category": "accessory",
+    "pricePerMonth": 150000,
+    "currency": "IDR",
+    "description": "Seminyak Pothos: a low-care plant for low light.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-seminyak-pothos.svg",
+    "metadata": {
+      "tags": [
+        "epipremnum",
+        "low",
+        "mid-range",
+        "plant"
+      ],
+      "attributes": {
+        "species": "epipremnum",
+        "care": "low",
+        "light": "low"
+      },
+      "bestFor": [
+        "low light"
+      ],
+      "notFor": [
+        "pets that chew"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT6JMVRYNYF",
+    "name": "Jimbaran Philodendron",
+    "category": "accessory",
+    "pricePerMonth": 155000,
+    "currency": "IDR",
+    "description": "Jimbaran Philodendron: a low-care plant for a bright corner.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-jimbaran-philodendron.svg",
+    "metadata": {
+      "tags": [
+        "low",
+        "medium",
+        "mid-range",
+        "philodendron",
+        "plant"
+      ],
+      "attributes": {
+        "species": "philodendron",
+        "care": "low",
+        "light": "medium"
+      },
+      "bestFor": [
+        "a bright corner"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTIFZ7U8DEN",
+    "name": "Sanur Bird of Paradise",
+    "category": "accessory",
+    "pricePerMonth": 165000,
+    "currency": "IDR",
+    "description": "Sanur Bird of Paradise: a medium-care plant for a low-maintenance setup.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-sanur-bird-of-paradise.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "medium",
+        "mid-range",
+        "plant",
+        "strelitzia"
+      ],
+      "attributes": {
+        "species": "strelitzia",
+        "care": "medium",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a low-maintenance setup"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT10EL7DRU3",
+    "name": "Nusa Dua Aloe Vera",
+    "category": "accessory",
+    "pricePerMonth": 170000,
+    "currency": "IDR",
+    "description": "Nusa Dua Aloe Vera: a low-care plant for a small desk.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-nusa-dua-aloe-vera.svg",
+    "metadata": {
+      "tags": [
+        "aloe",
+        "bright",
+        "low",
+        "mid-range",
+        "plant"
+      ],
+      "attributes": {
+        "species": "aloe",
+        "care": "low",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a small desk"
+      ],
+      "notFor": [
+        "pets that chew"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTUX8DB6SST",
+    "name": "Ubud Jade Plant",
+    "category": "accessory",
+    "pricePerMonth": 175000,
+    "currency": "IDR",
+    "description": "Ubud Jade Plant: a low-care plant for low light.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-ubud-jade-plant.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "crassula",
+        "low",
+        "mid-range",
+        "plant"
+      ],
+      "attributes": {
+        "species": "crassula",
+        "care": "low",
+        "light": "bright"
+      },
+      "bestFor": [
+        "low light"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT16IRM43GV",
+    "name": "Bingin Boston Fern",
+    "category": "accessory",
+    "pricePerMonth": 180000,
+    "currency": "IDR",
+    "description": "Bingin Boston Fern: a high-care plant for a bright corner.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-bingin-boston-fern.svg",
+    "metadata": {
+      "tags": [
+        "high",
+        "medium",
+        "mid-range",
+        "nephrolepis",
+        "plant"
+      ],
+      "attributes": {
+        "species": "nephrolepis",
+        "care": "high",
+        "light": "medium"
+      },
+      "bestFor": [
+        "a bright corner"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLT31L2GYD0D",
+    "name": "Kuta Calathea",
+    "category": "accessory",
+    "pricePerMonth": 190000,
+    "currency": "IDR",
+    "description": "Kuta Calathea: a high-care plant for a low-maintenance setup.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-kuta-calathea.svg",
+    "metadata": {
+      "tags": [
+        "calathea",
+        "high",
+        "medium",
+        "plant",
+        "premium"
+      ],
+      "attributes": {
+        "species": "calathea",
+        "care": "high",
+        "light": "medium"
+      },
+      "bestFor": [
+        "a low-maintenance setup"
+      ],
+      "notFor": [
+        "pets that chew"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTZ1PX0OR42",
+    "name": "Amed Spider Plant",
+    "category": "accessory",
+    "pricePerMonth": 195000,
+    "currency": "IDR",
+    "description": "Amed Spider Plant: a low-care plant for a small desk.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-amed-spider-plant.svg",
+    "metadata": {
+      "tags": [
+        "chlorophytum",
+        "low",
+        "medium",
+        "plant",
+        "premium"
+      ],
+      "attributes": {
+        "species": "chlorophytum",
+        "care": "low",
+        "light": "medium"
+      },
+      "bestFor": [
+        "a small desk"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTC5H9C3M8I",
+    "name": "Canggu Dracaena",
+    "category": "accessory",
+    "pricePerMonth": 200000,
+    "currency": "IDR",
+    "description": "Canggu Dracaena: a low-care plant for low light.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-canggu-dracaena.svg",
+    "metadata": {
+      "tags": [
+        "dracaena-marginata",
+        "low",
+        "medium",
+        "plant",
+        "premium"
+      ],
+      "attributes": {
+        "species": "dracaena-marginata",
+        "care": "low",
+        "light": "medium"
+      },
+      "bestFor": [
+        "low light"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTQO9OE48TF",
+    "name": "Kerobokan Anthurium",
+    "category": "accessory",
+    "pricePerMonth": 205000,
+    "currency": "IDR",
+    "description": "Kerobokan Anthurium: a medium-care plant for a bright corner.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-kerobokan-anthurium.svg",
+    "metadata": {
+      "tags": [
+        "anthurium",
+        "bright",
+        "medium",
+        "plant",
+        "premium"
+      ],
+      "attributes": {
+        "species": "anthurium",
+        "care": "medium",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a bright corner"
+      ],
+      "notFor": [
+        "pets that chew"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTSCAIK20I2",
+    "name": "Denpasar Succulent Trio",
+    "category": "accessory",
+    "pricePerMonth": 215000,
+    "currency": "IDR",
+    "description": "Denpasar Succulent Trio: a low-care plant for a low-maintenance setup.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-denpasar-succulent-trio.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "low",
+        "mixed-succulent",
+        "plant",
+        "premium"
+      ],
+      "attributes": {
+        "species": "mixed-succulent",
+        "care": "low",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a low-maintenance setup"
+      ],
+      "notFor": [
+        "a dark room"
+      ]
+    }
+  },
+  {
+    "skuNo": "PLTGVFQMJ8S8",
+    "name": "Berawa Olive Tree",
+    "category": "accessory",
+    "pricePerMonth": 220000,
+    "currency": "IDR",
+    "description": "Berawa Olive Tree: a medium-care plant for a small desk.",
+    "subCategory": "plant",
+    "image": "/placeholders/accessory-berawa-olive-tree.svg",
+    "metadata": {
+      "tags": [
+        "bright",
+        "medium",
+        "olea-europaea",
+        "plant",
+        "premium"
+      ],
+      "attributes": {
+        "species": "olea-europaea",
+        "care": "medium",
+        "light": "bright"
+      },
+      "bestFor": [
+        "a small desk"
+      ],
+      "notFor": [
+        "a draughty doorway"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFECDOJ0EYT9",
+    "name": "Sidemen Pour-Over Kit",
+    "category": "accessory",
+    "pricePerMonth": 400000,
+    "currency": "IDR",
+    "description": "Sidemen Pour-Over Kit: a pour-over kit for a slow morning.",
+    "subCategory": "coffee",
+    "image": "https://images.example.invalid/sidemen-pour-over-kit.png",
+    "metadata": {
+      "tags": [
+        "budget",
+        "coffee",
+        "minimal",
+        "pour-over"
+      ],
+      "attributes": {
+        "type": "pour-over",
+        "capacity": "1 cup",
+        "power": "none"
+      },
+      "bestFor": [
+        "a slow morning"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFE6M9E9USWH",
+    "name": "Munduk Moka Pot Set",
+    "category": "accessory",
+    "pricePerMonth": 420000,
+    "currency": "IDR",
+    "description": "Munduk Moka Pot Set: a moka kit for a small team.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-munduk-moka-pot-set.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "coffee",
+        "hob",
+        "moka"
+      ],
+      "attributes": {
+        "type": "moka",
+        "capacity": "3 cup",
+        "power": "hob"
+      },
+      "bestFor": [
+        "a small team"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEHIPJZ88MY",
+    "name": "Tabanan Cold Brew Tower",
+    "category": "accessory",
+    "pricePerMonth": 440000,
+    "currency": "IDR",
+    "description": "Tabanan Cold Brew Tower: a cold-brew kit for a small kitchen.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-tabanan-cold-brew-tower.svg",
+    "metadata": {
+      "tags": [
+        "1l",
+        "budget",
+        "coffee",
+        "cold-brew",
+        "minimal"
+      ],
+      "attributes": {
+        "type": "cold-brew",
+        "capacity": "1L",
+        "power": "none"
+      },
+      "bestFor": [
+        "a small kitchen"
+      ],
+      "notFor": [
+        "a dairy-free kitchen"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEBN2D4CR1O",
+    "name": "Tampaksiring Barista Bundle",
+    "category": "accessory",
+    "pricePerMonth": 460000,
+    "currency": "IDR",
+    "description": "Tampaksiring Barista Bundle: a bundle kit for an early start.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-tampaksiring-barista-bundle.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "bundle",
+        "coffee",
+        "minimal"
+      ],
+      "attributes": {
+        "type": "bundle",
+        "capacity": "2 cup",
+        "power": "none"
+      },
+      "bestFor": [
+        "an early start"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFE3HRC2XQ2I",
+    "name": "Penestanan Cold Drip",
+    "category": "accessory",
+    "pricePerMonth": 480000,
+    "currency": "IDR",
+    "description": "Penestanan Cold Drip: a cold-drip kit for a slow morning.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-penestanan-cold-drip.svg",
+    "metadata": {
+      "tags": [
+        "600ml",
+        "budget",
+        "coffee",
+        "cold-drip",
+        "minimal"
+      ],
+      "attributes": {
+        "type": "cold-drip",
+        "capacity": "600ml",
+        "power": "none"
+      },
+      "bestFor": [
+        "a slow morning"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEL1RCEBHAB",
+    "name": "Seminyak French Press",
+    "category": "accessory",
+    "pricePerMonth": 510000,
+    "currency": "IDR",
+    "description": "Seminyak French Press: a french-press kit for a small team.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-seminyak-french-press.svg",
+    "metadata": {
+      "tags": [
+        "budget",
+        "coffee",
+        "french-press",
+        "minimal"
+      ],
+      "attributes": {
+        "type": "french-press",
+        "capacity": "4 cup",
+        "power": "none"
+      },
+      "bestFor": [
+        "a small team"
+      ],
+      "notFor": [
+        "a dairy-free kitchen"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEACEZ77FNY",
+    "name": "Jimbaran Siphon",
+    "category": "accessory",
+    "pricePerMonth": 530000,
+    "currency": "IDR",
+    "description": "Jimbaran Siphon: a siphon kit for a small kitchen.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-jimbaran-siphon.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "hob",
+        "mid-range",
+        "siphon"
+      ],
+      "attributes": {
+        "type": "siphon",
+        "capacity": "2 cup",
+        "power": "hob"
+      },
+      "bestFor": [
+        "a small kitchen"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEF5413X0VC",
+    "name": "Sanur Espresso Machine",
+    "category": "accessory",
+    "pricePerMonth": 550000,
+    "currency": "IDR",
+    "description": "Sanur Espresso Machine: a espresso kit for an early start.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-sanur-espresso-machine.svg",
+    "metadata": {
+      "tags": [
+        "9bar",
+        "coffee",
+        "electric",
+        "espresso",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "espresso",
+        "capacity": "2 cup",
+        "power": "electric",
+        "pressure": "9bar"
+      },
+      "bestFor": [
+        "an early start"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEPKG512KLH",
+    "name": "Nusa Dua Drip Bar",
+    "category": "accessory",
+    "pricePerMonth": 570000,
+    "currency": "IDR",
+    "description": "Nusa Dua Drip Bar: a drip kit for a slow morning.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-nusa-dua-drip-bar.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "drip",
+        "electric",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "drip",
+        "capacity": "10 cup",
+        "power": "electric"
+      },
+      "bestFor": [
+        "a slow morning"
+      ],
+      "notFor": [
+        "a dairy-free kitchen"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFE97L7MRTQH",
+    "name": "Ubud Espresso Duo",
+    "category": "accessory",
+    "pricePerMonth": 590000,
+    "currency": "IDR",
+    "description": "Ubud Espresso Duo: a espresso kit for a small team.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-ubud-espresso-duo.svg",
+    "metadata": {
+      "tags": [
+        "adjustable",
+        "coffee",
+        "electric",
+        "espresso",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "espresso",
+        "capacity": "2 cup",
+        "power": "electric",
+        "grinder": "true"
+      },
+      "bestFor": [
+        "a small team"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFES0K6L7O9O",
+    "name": "Bingin Grinder Station",
+    "category": "accessory",
+    "pricePerMonth": 610000,
+    "currency": "IDR",
+    "description": "Bingin Grinder Station: a grinder kit for a small kitchen.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-bingin-grinder-station.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "electric",
+        "grinder",
+        "mid-range",
+        "tool"
+      ],
+      "attributes": {
+        "type": "grinder",
+        "capacity": "n/a",
+        "power": "electric"
+      },
+      "bestFor": [
+        "a small kitchen"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEGUB4H4YY9",
+    "name": "Kuta Capsule Machine",
+    "category": "accessory",
+    "pricePerMonth": 630000,
+    "currency": "IDR",
+    "description": "Kuta Capsule Machine: a capsule kit for an early start.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-kuta-capsule-machine.svg",
+    "metadata": {
+      "tags": [
+        "capsule",
+        "coffee",
+        "electric",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "capsule",
+        "capacity": "1 cup",
+        "power": "electric"
+      },
+      "bestFor": [
+        "an early start"
+      ],
+      "notFor": [
+        "a dairy-free kitchen"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFE95TOHECNG",
+    "name": "Amed Aeropress Kit",
+    "category": "accessory",
+    "pricePerMonth": 650000,
+    "currency": "IDR",
+    "description": "Amed Aeropress Kit: a aeropress kit for a slow morning.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-amed-aeropress-kit.svg",
+    "metadata": {
+      "tags": [
+        "aeropress",
+        "coffee",
+        "mid-range",
+        "minimal"
+      ],
+      "attributes": {
+        "type": "aeropress",
+        "capacity": "1 cup",
+        "power": "none"
+      },
+      "bestFor": [
+        "a slow morning"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEKXHHHVSVI",
+    "name": "Canggu Chemex Set",
+    "category": "accessory",
+    "pricePerMonth": 670000,
+    "currency": "IDR",
+    "description": "Canggu Chemex Set: a chemex kit for a small team.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-canggu-chemex-set.svg",
+    "metadata": {
+      "tags": [
+        "chemex",
+        "coffee",
+        "mid-range",
+        "minimal"
+      ],
+      "attributes": {
+        "type": "chemex",
+        "capacity": "6 cup",
+        "power": "none"
+      },
+      "bestFor": [
+        "a small team"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFE6MJH2JWHF",
+    "name": "Kerobokan Turkish Set",
+    "category": "accessory",
+    "pricePerMonth": 690000,
+    "currency": "IDR",
+    "description": "Kerobokan Turkish Set: a turkish kit for a small kitchen.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-kerobokan-turkish-set.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "hob",
+        "premium",
+        "turkish"
+      ],
+      "attributes": {
+        "type": "turkish",
+        "capacity": "2 cup",
+        "power": "hob"
+      },
+      "bestFor": [
+        "a small kitchen"
+      ],
+      "notFor": [
+        "a dairy-free kitchen"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEES1OCU91V",
+    "name": "Denpasar Percolator",
+    "category": "accessory",
+    "pricePerMonth": 720000,
+    "currency": "IDR",
+    "description": "Denpasar Percolator: a percolator kit for an early start.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-denpasar-percolator.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "electric",
+        "percolator",
+        "premium"
+      ],
+      "attributes": {
+        "type": "percolator",
+        "capacity": "8 cup",
+        "power": "electric"
+      },
+      "bestFor": [
+        "an early start"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFE4KRPLGW19",
+    "name": "Berawa Milk Frother",
+    "category": "accessory",
+    "pricePerMonth": 740000,
+    "currency": "IDR",
+    "description": "Berawa Milk Frother: a frother kit for a slow morning.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-berawa-milk-frother.svg",
+    "metadata": {
+      "tags": [
+        "300ml",
+        "coffee",
+        "electric",
+        "frother",
+        "premium"
+      ],
+      "attributes": {
+        "type": "frother",
+        "capacity": "300ml",
+        "power": "electric"
+      },
+      "bestFor": [
+        "a slow morning"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFECFKMCJWG6",
+    "name": "Pererenan Tamper Station",
+    "category": "accessory",
+    "pricePerMonth": 760000,
+    "currency": "IDR",
+    "description": "Pererenan Tamper Station: a tamper kit for a small team.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-pererenan-tamper-station.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "minimal",
+        "premium",
+        "tamper",
+        "tool"
+      ],
+      "attributes": {
+        "type": "tamper",
+        "capacity": "n/a",
+        "power": "none"
+      },
+      "bestFor": [
+        "a small team"
+      ],
+      "notFor": [
+        "a dairy-free kitchen"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEOAQR1QDNC",
+    "name": "Uluwatu Knock Box Set",
+    "category": "accessory",
+    "pricePerMonth": 780000,
+    "currency": "IDR",
+    "description": "Uluwatu Knock Box Set: a knock-box kit for a small kitchen.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-uluwatu-knock-box-set.svg",
+    "metadata": {
+      "tags": [
+        "coffee",
+        "knock-box",
+        "minimal",
+        "premium",
+        "tool"
+      ],
+      "attributes": {
+        "type": "knock-box",
+        "capacity": "n/a",
+        "power": "none"
+      },
+      "bestFor": [
+        "a small kitchen"
+      ],
+      "notFor": [
+        "a large cafe"
+      ]
+    }
+  },
+  {
+    "skuNo": "CFEFGAUCY1QR",
+    "name": "Batu Bolong Coffee Cart",
+    "category": "accessory",
+    "pricePerMonth": 800000,
+    "currency": "IDR",
+    "description": "Batu Bolong Coffee Cart: a cart kit for an early start.",
+    "subCategory": "coffee",
+    "image": "/placeholders/accessory-batu-bolong-coffee-cart.svg",
+    "metadata": {
+      "tags": [
+        "cart",
+        "coffee",
+        "minimal",
+        "premium",
+        "tool"
+      ],
+      "attributes": {
+        "type": "cart",
+        "capacity": "n/a",
+        "power": "none"
+      },
+      "bestFor": [
+        "an early start"
+      ],
+      "notFor": [
+        "an unfiltered brew"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGCN3QS7YV4",
+    "name": "Tampaksiring Pouf Ottoman",
+    "category": "accessory",
+    "pricePerMonth": 250000,
+    "currency": "IDR",
+    "description": "Tampaksiring Pouf Ottoman: a pouf seat for a reading corner.",
+    "subCategory": "beanbag",
+    "image": "https://images.example.invalid/tampaksiring-pouf-ottoman.png",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "budget",
+        "foam",
+        "pouf"
+      ],
+      "attributes": {
+        "type": "pouf",
+        "seats": "1",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBG00F8S0HNY",
+    "name": "Penestanan Hammock Seat",
+    "category": "accessory",
+    "pricePerMonth": 260000,
+    "currency": "IDR",
+    "description": "Penestanan Hammock Seat: a hammock seat for a nap.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-penestanan-hammock-seat.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "budget",
+        "hammock",
+        "rope"
+      ],
+      "attributes": {
+        "type": "hammock",
+        "seats": "1",
+        "fill": "rope"
+      },
+      "bestFor": [
+        "a nap"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGZHX9V4GZ8",
+    "name": "Seminyak Floor Cushion Set",
+    "category": "accessory",
+    "pricePerMonth": 270000,
+    "currency": "IDR",
+    "description": "Seminyak Floor Cushion Set: a cushion seat for a children's room.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-seminyak-floor-cushion-set.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "beanbag",
+        "budget",
+        "cushion",
+        "foam"
+      ],
+      "attributes": {
+        "type": "cushion",
+        "seats": "2",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "a children's room"
+      ],
+      "notFor": [
+        "a cramped corner"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGEPTDAPFA8",
+    "name": "Jimbaran Zero-Gravity Lounger",
+    "category": "accessory",
+    "pricePerMonth": 280000,
+    "currency": "IDR",
+    "description": "Jimbaran Zero-Gravity Lounger: a lounger seat for an outdoor corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-jimbaran-zero-gravity-lounger.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "adjustable",
+        "beanbag",
+        "budget",
+        "lounger"
+      ],
+      "attributes": {
+        "type": "lounger",
+        "seats": "1",
+        "recline": "true"
+      },
+      "bestFor": [
+        "an outdoor corner"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBG26AJZ24DG",
+    "name": "Sanur Floor Seat",
+    "category": "accessory",
+    "pricePerMonth": 290000,
+    "currency": "IDR",
+    "description": "Sanur Floor Seat: a floor seat for a reading corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-sanur-floor-seat.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "beans",
+        "budget",
+        "floor"
+      ],
+      "attributes": {
+        "type": "floor",
+        "seats": "1",
+        "fill": "beans"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGU8KW6D9D1",
+    "name": "Nusa Dua Bean Bag Lounge",
+    "category": "accessory",
+    "pricePerMonth": 300000,
+    "currency": "IDR",
+    "description": "Nusa Dua Bean Bag Lounge: a lounge seat for a nap.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-nusa-dua-bean-bag-lounge.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "beanbag",
+        "beans",
+        "budget",
+        "lounge"
+      ],
+      "attributes": {
+        "type": "lounge",
+        "seats": "2",
+        "fill": "beans"
+      },
+      "bestFor": [
+        "a nap"
+      ],
+      "notFor": [
+        "a cramped corner"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGPL1H5YAMC",
+    "name": "Ubud Cushion Lounge",
+    "category": "accessory",
+    "pricePerMonth": 310000,
+    "currency": "IDR",
+    "description": "Ubud Cushion Lounge: a lounge seat for a children's room.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-ubud-cushion-lounge.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "beanbag",
+        "foam",
+        "lounge",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "lounge",
+        "seats": "2",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "a children's room"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGP2BT2MA7M",
+    "name": "Bingin Bean Pod",
+    "category": "accessory",
+    "pricePerMonth": 320000,
+    "currency": "IDR",
+    "description": "Bingin Bean Pod: a pod seat for an outdoor corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-bingin-bean-pod.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "beans",
+        "mid-range",
+        "pod"
+      ],
+      "attributes": {
+        "type": "pod",
+        "seats": "1",
+        "fill": "beans"
+      },
+      "bestFor": [
+        "an outdoor corner"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGDL8L7HXRQ",
+    "name": "Kuta Lounger",
+    "category": "accessory",
+    "pricePerMonth": 330000,
+    "currency": "IDR",
+    "description": "Kuta Lounger: a lounger seat for a reading corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-kuta-lounger.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "fixed",
+        "lounger",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "lounger",
+        "seats": "1",
+        "recline": "false"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "a cramped corner"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBG61MYNSCWC",
+    "name": "Amed Sofa Sack",
+    "category": "accessory",
+    "pricePerMonth": 340000,
+    "currency": "IDR",
+    "description": "Amed Sofa Sack: a sack seat for a nap.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-amed-sofa-sack.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "beanbag",
+        "beans",
+        "mid-range",
+        "sack"
+      ],
+      "attributes": {
+        "type": "sack",
+        "seats": "2",
+        "fill": "beans"
+      },
+      "bestFor": [
+        "a nap"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGAF8MYYEV5",
+    "name": "Canggu Giant Beanbag",
+    "category": "accessory",
+    "pricePerMonth": 360000,
+    "currency": "IDR",
+    "description": "Canggu Giant Beanbag: a sack seat for a children's room.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-canggu-giant-beanbag.svg",
+    "metadata": {
+      "tags": [
+        "3",
+        "beanbag",
+        "beans",
+        "mid-range",
+        "sack"
+      ],
+      "attributes": {
+        "type": "sack",
+        "seats": "3",
+        "fill": "beans"
+      },
+      "bestFor": [
+        "a children's room"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBG9O3TCHKMD",
+    "name": "Kerobokan Recliner Seat",
+    "category": "accessory",
+    "pricePerMonth": 370000,
+    "currency": "IDR",
+    "description": "Kerobokan Recliner Seat: a recliner seat for an outdoor corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-kerobokan-recliner-seat.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "adjustable",
+        "beanbag",
+        "mid-range",
+        "recliner"
+      ],
+      "attributes": {
+        "type": "recliner",
+        "seats": "1",
+        "recline": "true"
+      },
+      "bestFor": [
+        "an outdoor corner"
+      ],
+      "notFor": [
+        "a cramped corner"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGAVG6VXYWC",
+    "name": "Denpasar Floor Sofa",
+    "category": "accessory",
+    "pricePerMonth": 380000,
+    "currency": "IDR",
+    "description": "Denpasar Floor Sofa: a sofa seat for a reading corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-denpasar-floor-sofa.svg",
+    "metadata": {
+      "tags": [
+        "3",
+        "beanbag",
+        "foam",
+        "mid-range",
+        "sofa"
+      ],
+      "attributes": {
+        "type": "sofa",
+        "seats": "3",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGM6WNR11OL",
+    "name": "Berawa Meditation Cushion",
+    "category": "accessory",
+    "pricePerMonth": 390000,
+    "currency": "IDR",
+    "description": "Berawa Meditation Cushion: a meditation seat for a nap.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-berawa-meditation-cushion.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "buckwheat",
+        "meditation",
+        "mid-range"
+      ],
+      "attributes": {
+        "type": "meditation",
+        "seats": "1",
+        "fill": "buckwheat"
+      },
+      "bestFor": [
+        "a nap"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGHMGV1L5LT",
+    "name": "Pererenan Nook Seat",
+    "category": "accessory",
+    "pricePerMonth": 400000,
+    "currency": "IDR",
+    "description": "Pererenan Nook Seat: a nook seat for a children's room.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-pererenan-nook-seat.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "foam",
+        "nook",
+        "premium"
+      ],
+      "attributes": {
+        "type": "nook",
+        "seats": "1",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "a children's room"
+      ],
+      "notFor": [
+        "a cramped corner"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGQQ977YBC4",
+    "name": "Uluwatu Kids Beanbag",
+    "category": "accessory",
+    "pricePerMonth": 410000,
+    "currency": "IDR",
+    "description": "Uluwatu Kids Beanbag: a kids seat for an outdoor corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-uluwatu-kids-beanbag.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "beans",
+        "kids",
+        "premium"
+      ],
+      "attributes": {
+        "type": "kids",
+        "seats": "1",
+        "fill": "beans"
+      },
+      "bestFor": [
+        "an outdoor corner"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGMYBRYOQGI",
+    "name": "Batu Bolong Outdoor Beanbag",
+    "category": "accessory",
+    "pricePerMonth": 420000,
+    "currency": "IDR",
+    "description": "Batu Bolong Outdoor Beanbag: a outdoor seat for a reading corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-batu-bolong-outdoor-beanbag.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "outdoor",
+        "premium",
+        "resistant"
+      ],
+      "attributes": {
+        "type": "outdoor",
+        "seats": "1",
+        "weather": "resistant"
+      },
+      "bestFor": [
+        "a reading corner"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGHRC4AUPX2",
+    "name": "Sidemen Convertible Lounger",
+    "category": "accessory",
+    "pricePerMonth": 430000,
+    "currency": "IDR",
+    "description": "Sidemen Convertible Lounger: a convertible seat for a nap.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-sidemen-convertible-lounger.svg",
+    "metadata": {
+      "tags": [
+        "2",
+        "adjustable",
+        "beanbag",
+        "convertible",
+        "premium"
+      ],
+      "attributes": {
+        "type": "convertible",
+        "seats": "2",
+        "recline": "true"
+      },
+      "bestFor": [
+        "a nap"
+      ],
+      "notFor": [
+        "a cramped corner"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBG880BA9636",
+    "name": "Munduk Ottoman Cube",
+    "category": "accessory",
+    "pricePerMonth": 440000,
+    "currency": "IDR",
+    "description": "Munduk Ottoman Cube: a cube seat for a children's room.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-munduk-ottoman-cube.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "cube",
+        "foam",
+        "premium"
+      ],
+      "attributes": {
+        "type": "cube",
+        "seats": "1",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "a children's room"
+      ],
+      "notFor": [
+        "an upright desk"
+      ]
+    }
+  },
+  {
+    "skuNo": "BBGIL3GGT2L0",
+    "name": "Tabanan Nest Chair",
+    "category": "accessory",
+    "pricePerMonth": 450000,
+    "currency": "IDR",
+    "description": "Tabanan Nest Chair: a nest seat for an outdoor corner.",
+    "subCategory": "beanbag",
+    "image": "/placeholders/accessory-tabanan-nest-chair.svg",
+    "metadata": {
+      "tags": [
+        "1",
+        "beanbag",
+        "foam",
+        "nest",
+        "premium"
+      ],
+      "attributes": {
+        "type": "nest",
+        "seats": "1",
+        "fill": "foam"
+      },
+      "bestFor": [
+        "an outdoor corner"
+      ],
+      "notFor": [
+        "a formal office"
+      ]
+    }
   }
 ]

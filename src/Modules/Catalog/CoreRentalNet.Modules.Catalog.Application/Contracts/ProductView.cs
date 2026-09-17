@@ -14,6 +14,7 @@ public sealed record ProductView(
     CatalogSubCategory? SubCategory,
     Money MonthlyPrice,
     string Description,
+    CatalogMetadata Metadata,
     string ImagePath,
     bool ImageAvailable,
     bool IsFeatured);

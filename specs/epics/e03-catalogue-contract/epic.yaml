@@ -22,7 +22,7 @@ stories:
     type: feat
     bcps: 8
     risk: P0
-    status: failing
+    status: passing
   - id: e03s02
     slug: compact-projection
     title: A machine caller reads only the fields it needs

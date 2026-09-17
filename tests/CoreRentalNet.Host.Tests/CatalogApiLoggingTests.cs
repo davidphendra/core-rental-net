@@ -29,7 +29,7 @@ public sealed class CatalogApiLoggingTests(CatalogApiAuthorizedFactory factory)
 
         entry.Property("Caller").Should().Be(CatalogApiTestHandler.Caller);
         entry.Property("Category").Should().Be("desk");
-        entry.Property("Count").Should().Be(10);
+        entry.Property("Count").Should().Be(20);
     }
 
     [Fact] // API-08, API-12

@@ -31,19 +31,18 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         await ChooseCategoryAsync("Chairs");
         var cards = Page.Locator("button.product-card");
 
+        // The panel lists the catalog in its own order, so the first two chairs are these.
         await cards.First.ClickAsync();
         await Expect(Page.Locator(".slot--chair.slot--filled")).ToHaveCountAsync(1);
-        var first = await Page.Locator(".slot--chair").InnerTextAsync();
+        await Expect(Page.Locator(".slot--chair")).ToContainTextAsync("Nusa Dua Task");
 
         await cards.Nth(1).ClickAsync();
 
         // A count of one is true before and after a replacement, so it is not a place to wait.
-        // Waiting for the text to change is.
-        await Expect(Page.Locator(".slot--chair")).Not.ToContainTextAsync("Seminyak Lounge");
+        // Waiting for the text to change is - and it has to be the second product's name, because
+        // waiting for the first one to be absent is satisfied before the click is even handled.
+        await Expect(Page.Locator(".slot--chair")).ToContainTextAsync("Ubud High-Back");
         await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(1);
-
-        var second = await Page.Locator(".slot--chair").InnerTextAsync();
-        second.Should().NotBe(first, "a single-capacity slot is replaced, not stacked");
     }
 
     [Fact] // WS-05
@@ -113,7 +112,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         // in the catalog is named in inches, so the quote in this one is escaped.
         await ChooseCategoryAsync("Accessories");
         await Page.Locator("aside button.product-card")
-            .Filter(new LocatorFilterOptions { HasTextString = "Seminyak 32\" UHD" }).First.ClickAsync();
+            .Filter(new LocatorFilterOptions { HasTextString = "Canggu 24\" QHD" }).First.ClickAsync();
 
         await Expect(Page.Locator(".alert")).ToContainTextAsync("at most 3");
         await Expect(Page.Locator(".slot--monitor.slot--filled")).ToHaveCountAsync(3);
@@ -196,7 +195,7 @@ public sealed class BuilderTests(HostFixture host, ITestOutputHelper output) : E
         // and the desk could not be added at all. The picker is opened by clicking the desk's own
         // box, in its middle, with no position hint to work around anything.
         await OpenSlotPickerAsync(".slot--desk");
-        await Expect(Page.Locator("dialog[open] button.product-card")).ToHaveCountAsync(10);
+        await Expect(Page.Locator("dialog[open] button.product-card")).ToHaveCountAsync(20);
 
         await PickFirstCandidateAsync();
 

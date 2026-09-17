@@ -1,13 +1,13 @@
 story_id: e03s01
 title: The catalogue carries what a request can be matched against
-status: failing
+status: passing
 bcps: 8
 tasks:
   - id: 1
     description: "Generate 140 products with a seeded scratch script outside the repo and commit only src/shared/data/products.json"
     verify: 'python3 -c "import json;print(len(json.load(open(''src/shared/data/products.json''))))"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["catalogue", "data"]
@@ -15,7 +15,7 @@ tasks:
     description: "Add ProductMetadata to the Catalog domain and to Product"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["catalogue", "domain"]
@@ -23,7 +23,7 @@ tasks:
     description: "Extend ProductJsonRecord with metadata and validate it in ProductLoader, naming the SKU and field on failure"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["catalogue", "loader"]
@@ -31,7 +31,7 @@ tasks:
     description: "Publish Metadata on ProductView and map it in ProductViewMapper"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["catalogue", "contract"]
@@ -39,7 +39,7 @@ tasks:
     description: "Add the criteria vocabulary derivation resolving tag: and attribute: tokens against the loaded catalogue"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["catalogue", "matching"]
@@ -47,7 +47,7 @@ tasks:
     description: "Rewrite CatalogFileTests for the new counts and metadata invariants (API-24 to API-28)"
     verify: 'dotnet test tests/CoreRentalNet.IntegrationTests --nologo --filter "FullyQualifiedName~CatalogFileTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["catalogue", "integration"]
@@ -55,7 +55,7 @@ tasks:
     description: "Rewrite VendoredImageTests against a synthetic remote path and a temp file; remove the unused vendored images (API-29)"
     verify: 'dotnet test tests/CoreRentalNet.IntegrationTests --nologo --filter "FullyQualifiedName~VendoredImageTests"'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["catalogue", "test-harness"]
@@ -63,7 +63,7 @@ tasks:
     description: "Unit tests for metadata validation and the closed criteria vocabulary (API-27, API-31)"
     verify: 'dotnet test tests/CoreRentalNet.Modules.Catalog.UnitTests --nologo --filter "FullyQualifiedName~Metadata"'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["catalogue", "unit"]
@@ -71,7 +71,7 @@ tasks:
     description: "Update the body-shape assertion so every published product carries metadata (API-30), and re-run the count-sensitive suites"
     verify: 'dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E" --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["catalogue", "contract", "integration"]
@@ -79,7 +79,7 @@ tasks:
     description: "Re-run the three baselines and record counts and the new payload size in specs/verifications/e03s01-after.md"
     verify: 'dotnet test tests/CoreRentalNet.E2E --nologo'
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["baselines"]

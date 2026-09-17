@@ -18,6 +18,7 @@ public sealed record Product(
     ProductSubCategory? SubCategory,
     Money MonthlyPrice,
     string Description,
+    ProductMetadata Metadata,
     string ImagePath,
     bool IsFeatured,
     bool ImageAvailable);

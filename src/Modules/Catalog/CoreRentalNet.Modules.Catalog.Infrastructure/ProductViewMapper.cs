@@ -23,10 +23,14 @@ public static class ProductViewMapper
             product.SubCategory is { } subCategory ? SubCategory(subCategory) : null,
             product.MonthlyPrice,
             product.Description,
+            Metadata(product.Metadata),
             product.ImagePath,
             product.ImageAvailable,
             product.IsFeatured);
     }
+
+    private static CatalogMetadata Metadata(ProductMetadata metadata)
+        => new(metadata.Tags, metadata.Attributes, metadata.BestFor, metadata.NotFor);
 
     private static CatalogCategory Category(ProductCategory category)
         => category switch

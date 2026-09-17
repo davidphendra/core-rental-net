@@ -26,6 +26,9 @@ internal class ProductJsonRecord
     [JsonPropertyName("description")]
     public string? Description { get; set; }
 
+    [JsonPropertyName("metadata")]
+    public ProductMetadataJsonRecord? Metadata { get; set; }
+
     [JsonPropertyName("image")]
     public string? Image { get; set; }
 

@@ -72,6 +72,39 @@ public sealed class ProductRuleTests
         action.Should().Throw<ProductLoadException>().WithMessage("*duplicate*AAA0001*");
     }
 
+    [Fact]
+    public void A_row_without_metadata_is_refused()
+        => Refuses(Row(metadata: null), "has no metadata");
+
+    [Fact]
+    public void Metadata_with_an_unknown_key_is_refused_and_named()
+        => Refuses(Row(metadata: """{ "tags": ["desk"], "useCases": ["x"] }"""), "unknown metadata key 'useCases'");
+
+    [Fact]
+    public void Metadata_with_an_attribute_that_is_not_text_is_refused_and_named()
+        => Refuses(Row(metadata: """{ "tags": ["desk"], "attributes": { "load": 120 } }"""), "attribute 'load' that is not text");
+
+    [Fact]
+    public void Metadata_with_a_blank_tag_is_refused()
+        => Refuses(Row(metadata: """{ "tags": ["desk", "  "] }"""), "blank tag");
+
+    [Fact]
+    public void Metadata_with_no_tags_is_refused()
+        => Refuses(Row(metadata: """{ "tags": [], "attributes": { "type": "task" } }"""), "no tags");
+
+    [Fact]
+    public void Metadata_is_kept_on_the_product()
+    {
+        const string metadata = """{ "tags": ["desk", "standing"], "attributes": { "type": "sit-stand" } }""";
+
+        using var file = new TemporaryCatalogFile($"[{Row(metadata: metadata)}]");
+
+        var product = ProductLoader.Read(file.Path, Images).Single();
+
+        product.Metadata.Tags.Should().BeEquivalentTo(["desk", "standing"]);
+        product.Metadata.Attributes["type"].Should().Be("sit-stand");
+    }
+
     private static void Refuses(string row, string expected)
     {
         using var file = new TemporaryCatalogFile($"[{row}]");
@@ -90,7 +123,8 @@ public sealed class ProductRuleTests
         string? currency = null,
         string description = "A desk.",
         string image = "/images/desk.svg",
-        string? badge = null)
+        string? badge = null,
+        string? metadata = "{\"tags\":[\"desk\",\"task\"],\"attributes\":{\"type\":\"task\"},\"bestFor\":[\"focused work\"],\"notFor\":[\"outdoor use\"]}")
     {
         var fields = new List<string>
         {
@@ -101,6 +135,11 @@ public sealed class ProductRuleTests
             $"\"description\": {Text(description)}",
             $"\"image\": {Text(image)}",
         };
+
+        if (metadata is not null)
+        {
+            fields.Add($"\"metadata\": {metadata}");
+        }
 
         if (subCategory is not null)
         {

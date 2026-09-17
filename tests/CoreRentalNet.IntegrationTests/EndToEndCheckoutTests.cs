@@ -33,8 +33,8 @@ namespace CoreRentalNet.IntegrationTests;
 public sealed class EndToEndCheckoutTests
 {
     private const string RawDraftToken = "integration-draft-token";
-    private const string Chair = "CHA449AGLBB0";
-    private const string Monitor = "MONJVAP81NPQ";
+    private const string Chair = "CHAE2V0VGJZ8";
+    private const string Monitor = "MONAA5DU36L3";
 
     private static IProductCatalog RealCatalog()
         => new ProductCatalog(

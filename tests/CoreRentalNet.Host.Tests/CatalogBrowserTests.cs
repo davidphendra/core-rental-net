@@ -69,6 +69,7 @@ public sealed class CatalogBrowserTests
             CatalogSubCategory.Lamp,
             new Money(180000m, Currencies.Idr),
             "A lamp.",
+            new CatalogMetadata([], new Dictionary<string, string>(), [], []),
             "/images/lamp.svg",
             true,
             false);

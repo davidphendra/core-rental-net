@@ -53,6 +53,7 @@ internal static class ProductLoader
             subCategory,
             ParsePrice(record, sku, path),
             Require(record.Description, "description", sku, path),
+            ProductMetadataMapper.Map(record.Metadata, sku, path),
             resolved.Path,
             ParseBadge(record.Badge, sku, path),
             resolved.Available);
