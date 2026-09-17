@@ -118,9 +118,10 @@ public sealed class SuggestWorkspaceOptions(IAgentSuggestions agent, IProductCat
     /// <summary>The candidates the catalogue can supply, with the SKUs it cannot supply removed.</summary>
     private WorkspaceSuggestion Checked(AgentSuggestion answer)
     {
+        // A refusal carries nothing: no options and no findings, because there was nothing to object to.
         if (answer.Status == SuggestionStatus.Rejected)
         {
-            return new WorkspaceSuggestion(SuggestionStatus.Rejected, [], answer.Code, []);
+            return new WorkspaceSuggestion(SuggestionStatus.Rejected, [], answer.Code, [], []);
         }
 
         var dropped = new List<string>();
@@ -141,7 +142,12 @@ public sealed class SuggestWorkspaceOptions(IAgentSuggestions agent, IProductCat
             }
         }
 
-        return new WorkspaceSuggestion(answer.Status, options, answer.Code, dropped);
+        return new WorkspaceSuggestion(
+            answer.Status,
+            options,
+            answer.Code,
+            dropped,
+            [.. answer.Findings.Select(finding => new SuggestionFinding(finding.Kind, finding.Slot))]);
     }
 
     /// <summary>The lines whose SKUs the catalogue holds, in the order the agent gave them.</summary>
@@ -166,6 +172,15 @@ public sealed class SuggestWorkspaceOptions(IAgentSuggestions agent, IProductCat
         return lines;
     }
 
+    /// <summary>
+    /// The application's own state, and never the agent's.
+    /// </summary>
+    /// <remarks>
+    /// The agent's contract has three statuses and all of them are answers, so <c>unavailable</c> exists
+    /// only here: it means no agent is configured, or the one that is could not be reached. That is why
+    /// it is the only outcome offering a retry - a refusal and an exhaustion are answers, and asking
+    /// again with the same words would produce the same one.
+    /// </remarks>
     private static WorkspaceSuggestion Unavailable()
-        => new(SuggestionStatus.Unavailable, [], Code: null, DroppedSkus: []);
+        => new(SuggestionStatus.Unavailable, [], Code: null, DroppedSkus: [], Findings: []);
 }

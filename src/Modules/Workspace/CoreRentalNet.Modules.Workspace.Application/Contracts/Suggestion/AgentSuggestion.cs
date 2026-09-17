@@ -1,8 +1,8 @@
 namespace CoreRentalNet.Modules.Workspace.Application.Contracts.Suggestion;
 
-/// <summary>What the agent answered, as it answered it.</summary>
+/// <summary>The agent's answer as it crossed the boundary: a status, an optional code, and what it composed.</summary>
 public sealed record AgentSuggestion(
     string Status,
     string? Code,
     IReadOnlyList<AgentSuggestionOption> Options,
-    IReadOnlyList<string> Findings);
+    IReadOnlyList<AgentFinding> Findings);

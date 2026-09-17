@@ -1,17 +1,22 @@
 namespace CoreRentalNet.Modules.Workspace.Application.Contracts.Suggestion;
 
-/// <summary>What the application answers with, after checking everything the agent said.</summary>
-/// <param name="Status">One of <see cref="SuggestionStatus"/>; <c>unavailable</c> is the application's own.</param>
-/// <param name="Code">
-/// Why the request was refused, when it was. A code rather than a sentence: the page owns the words,
-/// so the same refusal reads the same way wherever it is shown.
-/// </param>
-/// <param name="DroppedSkus">
-/// Products the agent named that the catalogue does not hold. Reported rather than hidden: an option
-/// quietly missing a line is a candidate the customer was promised and cannot have.
-/// </param>
+/// <summary>
+/// What a run answered, with everything the application checked and everything it could not.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="DroppedSkus"/> is the honest half of checking: an agent that named a SKU the catalogue does
+/// not hold had that line removed, and the customer is told rather than shown a candidate that is quietly
+/// smaller than the agent proposed.
+/// </para>
+/// <para>
+/// <see cref="Findings"/> is present on an exhausted run, which is a result rather than a failure: the
+/// candidates travel with what was wrong with them.
+/// </para>
+/// </remarks>
 public sealed record WorkspaceSuggestion(
     string Status,
     IReadOnlyList<SuggestedOption> Options,
     string? Code,
-    IReadOnlyList<string> DroppedSkus);
+    IReadOnlyList<string> DroppedSkus,
+    IReadOnlyList<SuggestionFinding> Findings);

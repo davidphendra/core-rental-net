@@ -3,6 +3,7 @@
    this is one thing it can additionally offer. A customer without the entitlement sees the builder
    unchanged, which is what a closed feature looks like from the outside. *@
 @inject ISuggestWorkspaceOptions Suggestions
+@inject IAuthorizationService Authorization
 @implements IDisposable
 
 <AuthorizeView Policy="@AiBuilderReadPolicy.Name">
@@ -83,27 +84,82 @@
             @if (outcome is not null)
             {
                 <div class="ai__outcome" data-testid="ai-outcome" data-status="@outcome.Status">
-                    @if (outcome.Options.Count == 0)
+                    @switch (outcome.Status)
                     {
-                        @* What each outcome says is the next story's; this one only has to not claim
-                           candidates it does not have. *@
-                        <p class="ai__none" data-testid="ai-outcome-none">No options this time.</p>
-                    }
+                        case SuggestionStatus.Rejected:
+                            @* Guidance rather than a retry: the same words sent again produce the same
+                               refusal, so what helps is being told what would. *@
+                            <p class="ai__message" data-testid="ai-refusal" role="status">
+                                @OutcomeCopy.Refusal(outcome.Code)
+                            </p>
+                            break;
 
-                    @foreach (var option in outcome.Options)
-                    {
-                        <article class="ai__option" data-testid="ai-option" data-tier="@option.Tier">
-                            <h3 class="text-title-md font-title-md text-primary">@option.Tier</h3>
-                            <ul class="ai__lines">
-                                @foreach (var line in option.Lines)
-                                {
-                                    <li class="ai__line" data-sku="@line.Sku">
-                                        @line.Name
-                                        <span class="ai__quantity">&times; @line.Quantity</span>
-                                    </li>
-                                }
-                            </ul>
-                        </article>
+                        case SuggestionStatus.Unavailable:
+                            @* The application's own outcome, and the only one offering another go. *@
+                            <p class="ai__message" data-testid="ai-error" role="alert">
+                                @OutcomeCopy.Unreachable
+                            </p>
+                            <button type="button" class="ai__retry" data-testid="ai-retry" @onclick="SubmitAsync">
+                                @OutcomeCopy.Retry
+                            </button>
+                            break;
+
+                        default:
+                            @if (outcome.Status == SuggestionStatus.Exhausted)
+                            {
+                                @* A result with a caveat rather than a failure: the candidates are here
+                                   and they can be chosen. *@
+                                <p class="ai__caveat" data-testid="ai-caveat" role="status">
+                                    @OutcomeCopy.Caveat
+                                </p>
+                            }
+
+                            @if (outcome.Findings.Count > 0)
+                            {
+                                <ul class="ai__findings" data-testid="ai-findings">
+                                    @foreach (var finding in outcome.Findings)
+                                    {
+                                        <li class="ai__finding">@OutcomeCopy.Finding(finding)</li>
+                                    }
+                                </ul>
+                            }
+
+                            @foreach (var option in CandidateChoices.Visible(outcome.Options, threeCandidates))
+                            {
+                                <article class="ai__option" data-testid="ai-option" data-tier="@option.Tier">
+                                    <h3 class="text-title-md font-title-md text-primary">@OutcomeCopy.Tier(option.Tier)</h3>
+                                    <ul class="ai__lines">
+                                        @foreach (var line in option.Lines)
+                                        {
+                                            <li class="ai__line" data-sku="@line.Sku">
+                                                @line.Name
+                                                <span class="ai__quantity">&times; @line.Quantity</span>
+                                            </li>
+                                        }
+                                    </ul>
+
+                                    @if (option.Criteria.Count > 0)
+                                    {
+                                        <p class="ai__criteria" data-testid="ai-criteria">
+                                            @string.Join(", ", option.Criteria.Select(OutcomeCopy.Criterion))
+                                        </p>
+                                    }
+
+                                    @if (option.Unevaluated.Count > 0)
+                                    {
+                                        @* The customer's own words, quoted, because they are the only
+                                           free text in the contract and they came from the request. *@
+                                        <p class="ai__unevaluated" data-testid="ai-unevaluated">
+                                            We could not check:
+                                            @foreach (var phrase in option.Unevaluated)
+                                            {
+                                                <span class="ai__unevaluated-item">&ldquo;@phrase&rdquo;</span>
+                                            }
+                                        </p>
+                                    }
+                                </article>
+                            }
+                            break;
                     }
                 </div>
             }
@@ -121,6 +177,30 @@
 
     /// <summary>What a screen reader is told, which is the stage the run has just reached.</summary>
     private string announcement = string.Empty;
+
+    /// <summary>
+    /// Whether this account is entitled to all three candidates.
+    /// </summary>
+    /// <remarks>
+    /// Read from the permission rather than from the markup, because the count is a decision about what
+    /// to offer. Truncating in the render would leave the other candidates in the document, which is a
+    /// control a customer can reach by looking rather than a choice we made.
+    /// </remarks>
+    private bool threeCandidates;
+
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is null)
+        {
+            return;
+        }
+
+        var state = await AuthenticationState;
+
+        threeCandidates = (await Authorization.AuthorizeAsync(state.User, AiBuilderPowerPolicy.Name)).Succeeded;
+    }
 
     /// <summary>
     /// Runs the suggestion, rendering what it says as it says it.

@@ -92,7 +92,7 @@ internal sealed class FoundryAgentAdapter(IAgentTextStream stream, string? agent
             Text(root, "status") ?? SuggestionStatus.Unavailable,
             Text(root, "code"),
             Options(root),
-            Texts(root, "findings"));
+            Findings(root));
 
     private static IReadOnlyList<AgentSuggestionOption> Options(JsonElement root)
     {
@@ -110,6 +110,37 @@ internal sealed class FoundryAgentAdapter(IAgentTextStream stream, string? agent
                 Texts(option, "unevaluated"),
                 Texts(option, "pinnedSlots"))),
         ];
+    }
+
+    /// <summary>
+    /// The reviewer's objections, as kind-and-slot pairs.
+    /// </summary>
+    /// <remarks>
+    /// Read as objects rather than through the string reader the other lists use, because a finding is
+    /// two fields and flattening it to the kind would leave the application able to say only that
+    /// something was wrong. A finding without a slot is not one the application can place, so it is
+    /// skipped the same way an unreadable line is.
+    /// </remarks>
+    private static IReadOnlyList<AgentFinding> Findings(JsonElement root)
+    {
+        if (!root.TryGetProperty("findings", out var findings) || findings.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var read = new List<AgentFinding>();
+
+        foreach (var finding in findings.EnumerateArray())
+        {
+            if (finding.ValueKind == JsonValueKind.Object
+                && Text(finding, "kind") is { Length: > 0 } kind
+                && Text(finding, "slot") is { Length: > 0 } slot)
+            {
+                read.Add(new AgentFinding(kind, slot));
+            }
+        }
+
+        return read;
     }
 
     private static IReadOnlyList<AgentSuggestionLine> Lines(JsonElement option)

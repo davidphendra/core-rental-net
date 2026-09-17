@@ -40,17 +40,88 @@ public sealed class LocalAgentFixtureTests
     }
 
     [Fact]
-    public void The_happy_path_offers_the_three_tiers_the_application_renders()
+    public void The_happy_path_offers_the_three_tiers_the_contract_defines()
     {
         var body = ScenarioLibrary.For("essential");
 
         Assert.Contains("\"status\":\"ok\"", body, StringComparison.Ordinal);
 
-        foreach (var tier in new[] { "essential", "balanced", "premium" })
+        foreach (var tier in new[] { "low", "middle", "high" })
         {
             Assert.Contains($"\"tier\":\"{tier}\"", body, StringComparison.Ordinal);
         }
     }
+
+    /// <summary>
+    /// Every scenario stays inside the contract's closed vocabularies.
+    /// </summary>
+    /// <remarks>
+    /// The first version of the fixture offered tiers named "essential" and "premium" and a status of
+    /// "unavailable", and the schema allows none of them - and every test passed, because the
+    /// application faithfully rendered what it was handed. A fixture outside the contract tests the
+    /// application against a language it will never hear, so this is the test that keeps the stand-in
+    /// speaking the agent's own.
+    /// </remarks>
+    [Fact]
+    public void Every_scenario_stays_inside_the_contracts_closed_vocabularies()
+    {
+        var statuses = new[] { "ok", "exhausted", "rejected" };
+        var tiers = new[] { "low", "middle", "high" };
+        var findings = new[] { "criteria_not_met", "tier_composition" };
+        var criteria = new System.Text.RegularExpressions.Regex("^(slot|quantity|tag|attribute):[a-z0-9:.-]+$");
+
+        foreach (var (name, body) in ScenarioLibrary.All)
+        {
+            foreach (var line in Lines(body))
+            {
+                using var document = JsonDocument.Parse(line);
+                var root = document.RootElement;
+
+                if (root.TryGetProperty("kind", out var kind) && kind.GetString() == "stage")
+                {
+                    continue;
+                }
+
+                Assert.Contains(root.GetProperty("status").GetString()!, statuses);
+
+                if (root.GetProperty("status").GetString() == "rejected")
+                {
+                    Assert.True(root.TryGetProperty("code", out _), $"{name}: a refusal carries its code");
+                    Assert.Empty(root.GetProperty("options").EnumerateArray());
+                }
+
+                foreach (var option in root.GetProperty("options").EnumerateArray())
+                {
+                    Assert.Contains(option.GetProperty("tier").GetString()!, tiers);
+
+                    foreach (var token in option.GetProperty("criteria").EnumerateArray())
+                    {
+                        Assert.Matches(criteria, token.GetString());
+                    }
+
+                    foreach (var unmet in option.GetProperty("unevaluated").EnumerateArray())
+                    {
+                        Assert.False(string.IsNullOrWhiteSpace(unmet.GetProperty("phrase").GetString()));
+                    }
+                }
+
+                if (root.TryGetProperty("findings", out var objections))
+                {
+                    foreach (var finding in objections.EnumerateArray())
+                    {
+                        Assert.Contains(finding.GetProperty("kind").GetString()!, findings);
+                        Assert.False(string.IsNullOrWhiteSpace(finding.GetProperty("slot").GetString()));
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>The lines that are JSON, which is not all of them in the scenario that says so.</summary>
+    private static IEnumerable<string> Lines(string body)
+        => body.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(line => line.TrimStart().StartsWith('{'))
+            .Select(line => line.Trim());
 
     private static HashSet<string> Catalogue()
     {

@@ -1,4 +1,3 @@
-using System.Net.Http.Json;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
 using Xunit;
@@ -21,10 +20,8 @@ namespace CoreRentalNet.E2E.Flows;
 /// which is a rule with its own story.
 /// </para>
 /// </remarks>
-public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper output) : AuthenticatedE2ETest(host, output)
+public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper output) : AiBuilderTest(host, output)
 {
-    private const string SignedInAccount = "Sari Builder";
-
     /// <summary>AIB-11 — the run shows its stages while it happens, then the candidates.</summary>
     /// <remarks>
     /// The slow scenario, because the point is the stages being <em>visible during</em> the run. Against
@@ -34,7 +31,7 @@ public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper out
     [Fact]
     public async Task AIB_11_a_submitted_request_shows_stages_then_candidates()
     {
-        await SignedInAsync();
+        await SignedInAsync(PowerAccount);
         await ScenarioAsync("slow");
 
         // The announcing region is on the page before the run is, which is the only way it can be
@@ -44,7 +41,7 @@ public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper out
         await Expect(announcement).ToBeAttachedAsync();
         await Expect(announcement).ToBeEmptyAsync();
 
-        await AskAsync("a desk, a chair and a monitor");
+        await AskAsync(ADeskAChairAMonitor);
 
         var stages = Page.Locator("[data-testid='ai-stages']");
 
@@ -80,10 +77,10 @@ public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper out
     [Fact]
     public async Task AIB_12_the_stage_list_is_retained_after_the_run_and_collapsed()
     {
-        await SignedInAsync();
+        await SignedInAsync(PowerAccount);
         await ScenarioAsync("essential");
 
-        await AskAsync("a desk, a chair and a monitor");
+        await AskAsync(ADeskAChairAMonitor);
 
         await Expect(Page.Locator("[data-testid='ai-option']")).ToHaveCountAsync(3);
 
@@ -110,12 +107,12 @@ public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper out
     [Fact]
     public async Task AIB_13_cancelling_a_run_applies_nothing()
     {
-        await SignedInAsync();
+        await SignedInAsync(PowerAccount);
         await ScenarioAsync("slow");
 
         await Expect(Page.Locator(".slot--filled")).ToHaveCountAsync(0);
 
-        await AskAsync("a desk, a chair and a monitor");
+        await AskAsync(ADeskAChairAMonitor);
 
         var cancel = Page.Locator("[data-testid='ai-cancel']");
 
@@ -147,30 +144,4 @@ public sealed class AiBuilderStreamTests(HostFixture host, ITestOutputHelper out
         await Expect(Page.Locator("[data-testid='ai-query']")).ToHaveCountAsync(0);
     }
 
-    /// <summary>Signed in as the account that holds both AI permissions, with the circuit attached.</summary>
-    private async Task SignedInAsync()
-    {
-        await SignInAsync(SignedInAccount);
-
-        await WaitForCircuitAsync(".workspace-stage");
-    }
-
-    private async Task AskAsync(string query)
-    {
-        await Page.Locator("[data-testid='ai-query']").FillAsync(query);
-        await Page.Locator("[data-testid='ai-submit']").ClickAsync();
-    }
-
-    /// <summary>
-    /// Chooses what the stand-in will answer, so a run's outcome is decided by the test rather than
-    /// guessed from the customer's words.
-    /// </summary>
-    private async Task ScenarioAsync(string name)
-    {
-        using var client = new HttpClient();
-
-        var response = await client.PostAsJsonAsync($"{Host.AgentUrl}/scenario", new { name });
-
-        response.EnsureSuccessStatusCode();
-    }
 }

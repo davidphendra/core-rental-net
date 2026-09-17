@@ -43,6 +43,8 @@ var accounts = new Dictionary<string, Account>(StringComparer.Ordinal)
     // Holds the AI section's permission on top of the builder's, which is the only account that can
     // see the section at all.
     ["builder"] = new("auth0|builder", "Sari Builder", "sari@example.com", ["read:catalog", "read:aibuilder", "poweruser:aibuilder"], []),
+    // Entitled to the section and not to the power permission, so exactly one candidate is shown.
+    ["viewer"] = new("auth0|viewer", "Andi Viewer", "andi@example.com", ["read:catalog", "read:aibuilder"], []),
     // Signed in, but entitled to nothing.
     ["guest"] = new("auth0|guest", "Bagus Guest", "bagus@example.com", [], []),
     // Holds the gate's words in the other order, so it is refused. Its role is named only inside

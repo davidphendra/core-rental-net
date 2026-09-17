@@ -99,7 +99,7 @@ public sealed class AgentClientTests : IAsyncLifetime
 
         Assert.Equal(SuggestionStatus.Ok, result.Status);
         Assert.Equal(3, result.Options.Count);
-        Assert.Equal(["essential", "balanced", "premium"], result.Options.Select(option => option.Tier));
+        Assert.Equal(["low", "middle", "high"], result.Options.Select(option => option.Tier));
     }
 
     /// <summary>
@@ -136,10 +136,14 @@ public sealed class AgentClientTests : IAsyncLifetime
     }
 
     /// <summary>A run the agent could not settle arrives as itself, not as a failure to read it.</summary>
+    /// <remarks>
+    /// Only two scenarios, because the agent's contract has three statuses and all of them are answers.
+    /// <c>unavailable</c> is not among them: it belongs to the application, and it is reached by the agent
+    /// failing to answer rather than by the agent answering badly.
+    /// </remarks>
     [Theory]
     [InlineData("exhausted", SuggestionStatus.Exhausted)]
     [InlineData("rejected", SuggestionStatus.Rejected)]
-    [InlineData("unavailable", SuggestionStatus.Unavailable)]
     public async Task An_outcome_other_than_ok_is_read_as_that_outcome(string scenario, string status)
     {
         await Choose(scenario);
@@ -153,7 +157,21 @@ public sealed class AgentClientTests : IAsyncLifetime
 
         Assert.NotNull(result);
         Assert.Equal(status, result.Status);
-        Assert.False(string.IsNullOrWhiteSpace(result.Code));
+
+        // A refusal carries its code and nothing else; an exhaustion carries neither a code nor nothing
+        // at all - it carries the candidates and what was wrong with them. The two are different shapes
+        // on purpose, and asserting one shape for both is how that distinction would be lost.
+        if (status == SuggestionStatus.Rejected)
+        {
+            Assert.False(string.IsNullOrWhiteSpace(result.Code));
+            Assert.Empty(result.Options);
+        }
+        else
+        {
+            Assert.Null(result.Code);
+            Assert.NotEmpty(result.Options);
+            Assert.NotEmpty(result.Findings);
+        }
     }
 
     /// <summary>
@@ -203,6 +221,51 @@ public sealed class AgentClientTests : IAsyncLifetime
         var agent = builder.Build().Services.GetRequiredService<IAgentSuggestions>();
 
         Assert.False(agent.IsConfigured);
+    }
+
+    /// <summary>
+    /// An agent that fails becomes the one failure the application layer understands.
+    /// </summary>
+    /// <remarks>
+    /// The SDK reports a refused connection, a rejected call and a broken stream as its own exception
+    /// types, and the module must not know them. Everything that is not a cancellation leaves as
+    /// <see cref="HttpRequestException"/>, so "the agent could not be reached" has one meaning on the
+    /// inside however many ways the client finds to say it - and a status the contract does not have can
+    /// never be mistaken for an answer.
+    /// </remarks>
+    [Fact]
+    public async Task An_agent_that_fails_is_reported_as_one_kind_of_failure()
+    {
+        await Choose("broken");
+
+        var agent = Agent();
+
+        await Assert.ThrowsAsync<HttpRequestException>(async () =>
+        {
+            await foreach (var _ in agent.AskAsync("a desk"))
+            {
+                // Nothing to read: the stand-in refuses the call outright.
+            }
+        });
+    }
+
+    /// <summary>A cancellation is the customer's, and passes through as itself.</summary>
+    [Fact]
+    public async Task A_cancelled_run_is_not_reported_as_an_unreachable_agent()
+    {
+        await Choose("slow");
+
+        using var stop = new CancellationTokenSource();
+
+        var agent = Agent();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await foreach (var _ in agent.AskAsync("a desk", stop.Token))
+            {
+                await stop.CancelAsync();
+            }
+        });
     }
 
     private async Task Choose(string scenario)

@@ -40,6 +40,17 @@ internal static class LocalAgentEndpoints
             selection.Current,
             body.Length);
 
+        if (ScenarioLibrary.IsBroken(selection.Current))
+        {
+            // The scenario where nothing answers, which is the only way to reach the application's own
+            // outcome: an agent that refuses and an agent that exhausts itself are both answering.
+            logger.LogWarning("stand-in failing {Scenario} deliberately", selection.Current);
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+            return;
+        }
+
         context.Response.ContentType = "text/event-stream";
         context.Response.Headers.CacheControl = "no-cache";
 

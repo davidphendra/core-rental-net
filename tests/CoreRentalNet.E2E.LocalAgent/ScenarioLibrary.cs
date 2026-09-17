@@ -10,22 +10,38 @@ namespace CoreRentalNet.E2E.LocalAgent;
 /// invented its own shape would prove the application reads something, not that it reads this.
 /// </para>
 /// <para>
+/// Everything here is inside the contract's closed vocabularies, and a test holds it there. That is not
+/// ceremony: the first version of this file offered tiers named "essential" and "premium" and a status of
+/// "unavailable", and the schema allows none of them. Every test passed, because the application
+/// faithfully rendered what it was handed - so a fixture outside the contract tests the application
+/// against a language it will never hear.
+/// </para>
+/// <para>
 /// The SKUs are real catalogue SKUs, and a test asserts that: a stand-in holding a SKU the catalogue does
 /// not would exercise the drop path in every scenario and quietly make the happy path untested.
 /// </para>
 /// </remarks>
 internal static class ScenarioLibrary
 {
-    // Desk, chair and monitor, at the three price levels the picker chooses between.
+    /// <summary>The happy path: four stages, then three tiers of three lines.</summary>
     private const string Essential = """
         {"kind":"stage","stage":"verifying","attempt":1}
         {"kind":"stage","stage":"rephrasing","attempt":1}
         {"kind":"stage","stage":"selecting","attempt":1}
         {"kind":"stage","stage":"reviewing","attempt":1}
-        {"kind":"result","status":"ok","options":[{"tier":"essential","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["desk","chair","monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"balanced","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["desk","chair","monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"premium","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["desk","chair","monitor"],"unevaluated":[],"pinnedSlots":[]}]}
-        """;
+        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]}]}
+""";
 
-    /// <summary>The run with an objection it could not settle.</summary>
+    /// <summary>A word the catalogue cannot express, carried back as the customer wrote it.</summary>
+    private const string Unmet = """
+        {"kind":"stage","stage":"verifying","attempt":1}
+        {"kind":"stage","stage":"rephrasing","attempt":1}
+        {"kind":"stage","stage":"selecting","attempt":1}
+        {"kind":"stage","stage":"reviewing","attempt":1}
+        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]}]}
+""";
+
+    /// <summary>A run that spent its attempts and still had an objection.</summary>
     private const string Exhausted = """
         {"kind":"stage","stage":"verifying","attempt":1}
         {"kind":"stage","stage":"rephrasing","attempt":1}
@@ -33,26 +49,18 @@ internal static class ScenarioLibrary
         {"kind":"stage","stage":"reviewing","attempt":1}
         {"kind":"stage","stage":"selecting","attempt":2}
         {"kind":"stage","stage":"reviewing","attempt":2}
-        {"kind":"result","status":"exhausted","code":"budget","options":[],"findings":["budget"]}
-        """;
+        {"kind":"result","status":"exhausted","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]}],"findings":[{"kind":"criteria_not_met","slot":"Chair"}]}
+""";
 
-    /// <summary>A request that is not about a workspace, and is declined.</summary>
+    /// <summary>A request that is not about a workspace, declined rather than failed.</summary>
     private const string Rejected = """
         {"kind":"stage","stage":"verifying","attempt":1}
-        {"kind":"result","status":"rejected","code":"not-a-workspace-request","options":[],"findings":["not-a-workspace-request"]}
-        """;
-
-    /// <summary>A request nothing in the catalogue satisfies.</summary>
-    private const string Unavailable = """
-        {"kind":"stage","stage":"verifying","attempt":1}
-        {"kind":"stage","stage":"rephrasing","attempt":1}
-        {"kind":"stage","stage":"selecting","attempt":1}
-        {"kind":"result","status":"unavailable","code":"nothing-satisfies","options":[],"findings":["nothing-satisfies"]}
-        """;
+        {"kind":"result","status":"rejected","code":"not_workspace_request","options":[]}
+""";
 
     /// <summary>
-    /// A run that says something the contract does not allow: a line that is not JSON, a stage the
-    /// application has no words for, and an unparseable result.
+    /// A run that says something the contract does not allow: a line that is not JSON, and a stage the
+    /// application has no words for.
     /// </summary>
     /// <remarks>
     /// Kept as a scenario because the adapter's promise is that a message it cannot read costs a line of
@@ -63,20 +71,23 @@ internal static class ScenarioLibrary
         {"kind":"stage","stage":"verifying","attempt":1}
         not json at all
         {"kind":"stage","stage":"a-stage-nobody-defined","attempt":1}
-        {"kind":"result","status":"ok","options":[{"tier":"essential","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1}],"criteria":[],"unevaluated":[],"pinnedSlots":[]}]}
-        """;
+        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1}],"criteria":["slot:desk"],"unevaluated":[],"pinnedSlots":[]}]}
+""";
 
     public static string For(string name) => name switch
     {
+        "unmet" => Unmet,
         "exhausted" => Exhausted,
         "rejected" => Rejected,
-        "unavailable" => Unavailable,
         "malformed" => Malformed,
         // The same answer as the happy path, delivered slowly. A run is up to ten model calls across
-        // three attempts, so a fixture that only ever answered instantly would leave the two things
-        // that matter about a long run untestable: a cancel with something to interrupt, and a stage
-        // list with time to be read.
+        // three attempts, so a fixture that only ever answered instantly would leave the two things that
+        // matter about a long run untestable: a cancel with something to interrupt, and a stage list
+        // with time to be read.
         "slow" => Essential,
+        // Nothing answers at all, which is the only way to reach the outcome the application reaches by
+        // itself: an agent that refuses and an agent that exhausts itself are both answering.
+        "broken" => Essential,
         _ => Essential,
     };
 
@@ -88,15 +99,24 @@ internal static class ScenarioLibrary
     /// </remarks>
     public static int DelayMilliseconds(string name) => name == "slow" ? 900 : 0;
 
+    /// <summary>True when the scenario is one where nothing answers.</summary>
+    public static bool IsBroken(string name) => name == "broken";
+
     /// <summary>Every scenario's name, for the endpoint that lists them and the tests that drive them.</summary>
-    public static IReadOnlyList<string> Names => ["essential", "slow", "exhausted", "rejected", "unavailable", "malformed"];
+    public static IReadOnlyList<string> Names
+        => ["essential", "unmet", "slow", "exhausted", "rejected", "malformed", "broken"];
+
+    /// <summary>Every scenario by name, so a test can hold each body against the contract.</summary>
+    public static IReadOnlyList<(string Name, string Body)> All
+        => [.. Names.Select(name => (name, For(name)))];
 
     /// <summary>Every SKU any scenario names, so a test can hold them against the catalogue.</summary>
-    public static IReadOnlyList<string> Skus
-        => [.. Names.SelectMany(name => SkusOf(For(name)))];
+    public static IReadOnlyList<string> Skus => [.. All.SelectMany(scenario => SkusOf(scenario.Body))];
 
     private static IEnumerable<string> SkusOf(string body)
         => body.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .SelectMany(line => System.Text.RegularExpressions.Regex.Matches(line, "\"sku\":\"([^\"]+)\""))
+            .SelectMany(line => SkuPattern.Matches(line))
             .Select(match => match.Groups[1].Value);
+
+    private static readonly System.Text.RegularExpressions.Regex SkuPattern = new("\"sku\":\"([^\"]+)\"");
 }

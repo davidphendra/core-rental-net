@@ -82,21 +82,27 @@ epics:
         record: specs/verifications/e04s01-after.md
       - id: e04s02
         slug: suggestion-port
-        status: in-progress
+        status: done
         risk: P0
-        record: specs/verifications/e04s02-after.md
-        delivered: "the section, its streamed run, its cancel and its browser tests"
+        record: specs/verifications/e04s02-agent-client-after.md
+        delivered: "the port, its four rules, and the Host adapter on the documented client"
       - id: e04s03
         slug: streamed-run
         status: done
         risk: P0
         record: specs/verifications/e04s03-page-after.md
         delivered: "the section, its streamed run, its live region, its cancel, and the browser tests"
+      - id: e04s04
+        slug: outcome-paths
+        status: done
+        risk: P0
+        record: specs/verifications/e04s04-after.md
+        delivered: "four outcomes, the code-to-copy map, and the one-candidate rule"
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 601, failed: 0, skipped: 0 }
-  browser: { passed: 108, failed: 0, skipped: 1 }
+  nonbrowser: { passed: 626, failed: 0, skipped: 0 }
+  browser: { passed: 113, failed: 0, skipped: 1 }
 
 gates:
   verify_work: passed_e04s03
