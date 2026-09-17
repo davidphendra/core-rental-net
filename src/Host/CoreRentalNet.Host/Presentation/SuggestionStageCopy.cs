@@ -28,6 +28,25 @@ internal static class SuggestionStageCopy
         };
 
     /// <summary>The sentence for a stage, or null when this application does not know the id.</summary>
+    /// <summary>
+    /// How many attempts a run may take, as the application states it.
+    /// </summary>
+    /// <remarks>
+    /// Mirrors the agent's bound rather than asking for it, because the number is part of what a
+    /// customer is told while waiting and not part of what the agent is asked. A run that says
+    /// "attempt 2 of 3" is describing how long this may take; if the agent's own bound changed and this
+    /// did not, the words would be wrong and the run would still be right.
+    /// </remarks>
+    public const int Attempts = 3;
+
     public static string? For(string? stage)
         => stage is not null && Words.TryGetValue(stage, out var words) ? words : null;
+
+    /// <summary>
+    /// Which attempt is running, or nothing for the first - a first attempt is not news.
+    /// </summary>
+    public static string? Attempt(int attempt)
+        => attempt > 1 && attempt <= Attempts
+            ? $"attempt {attempt} of {Attempts}"
+            : null;
 }

@@ -85,18 +85,18 @@ epics:
         status: in-progress
         risk: P0
         record: specs/verifications/e04s02-after.md
-        deferred: "the page that drives it - the section, its streaming and its browser tests"
+        delivered: "the section, its streamed run, its cancel and its browser tests"
       - id: e04s03
         slug: streamed-run
-        status: in-progress
+        status: done
         risk: P0
-        record: specs/verifications/e04s03-after.md
-        deferred: "the streaming shape and the copy are in; the section needs the Host adapter first"
+        record: specs/verifications/e04s03-page-after.md
+        delivered: "the section, its streamed run, its live region, its cancel, and the browser tests"
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
   nonbrowser: { passed: 601, failed: 0, skipped: 0 }
-  browser: { passed: 104, failed: 0, skipped: 1 }
+  browser: { passed: 108, failed: 0, skipped: 1 }
 
 gates:
   verify_work: passed_e04s03

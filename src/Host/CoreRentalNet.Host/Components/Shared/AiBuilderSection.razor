@@ -1,0 +1,199 @@
+@* The AI section: ask for a suggestion, watch the run, and stop it if it takes too long.
+   Gated by its own permission rather than the page's, because the page is a workspace builder and
+   this is one thing it can additionally offer. A customer without the entitlement sees the builder
+   unchanged, which is what a closed feature looks like from the outside. *@
+@inject ISuggestWorkspaceOptions Suggestions
+@implements IDisposable
+
+<AuthorizeView Policy="@AiBuilderReadPolicy.Name">
+    <Authorized>
+        <section class="ai mb-section-gap" data-testid="ai-section" aria-labelledby="ai-heading">
+            <h2 id="ai-heading" class="text-headline-sm font-display-lg text-primary mb-2">
+                Not sure where to start?
+            </h2>
+            <p class="text-body-md font-body-md text-outline mb-stack-md">
+                Describe the workspace you need, and we will put three options together.
+            </p>
+
+            @* In the document from the start, and empty until a run says something. A live region
+               added to the page at the same moment as its first content is not reliably announced:
+               the browser has to be observing the element before it changes, and an element that
+               arrives already full never changes at all. So the region outlives the runs and only
+               its text moves. *@
+            <p class="sr-only" data-testid="ai-announcement" aria-live="polite">@announcement</p>
+
+            <form class="ai__request flex flex-wrap gap-2 items-end" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+                <label class="sr-only" for="ai-query">Describe your workspace</label>
+                <input id="ai-query"
+                       class="ai__query flex-1 min-w-0"
+                       data-testid="ai-query"
+                       placeholder="A desk, a chair and a monitor"
+                       disabled="@running"
+                       @bind="query"
+                       @bind:event="oninput" />
+
+                <button type="submit" class="ai__submit" data-testid="ai-submit"
+                        disabled="@(running || string.IsNullOrWhiteSpace(query))">
+                    Suggest
+                </button>
+
+                @if (running)
+                {
+                    <button type="button" class="ai__cancel" data-testid="ai-cancel" @onclick="Cancel">
+                        Cancel
+                    </button>
+                }
+            </form>
+
+            @* Polite, and never assertive: a run passes through four stages, and interrupting a screen
+               reader four times to say so is worse than not announcing them at all. The region is in
+               the document from the first stage, because a live region added at the same time as its
+               content is not announced. *@
+            @if (stages.Count > 0)
+            {
+                @if (collapsed)
+                {
+                    <button type="button" class="ai__toggle" data-testid="ai-stages-toggle"
+                            aria-expanded="false" @onclick="Expand">
+                        What took so long?
+                    </button>
+                }
+                else
+                {
+                    <ol class="ai__stages" data-testid="ai-stages">
+                        @foreach (var (stage, attempt) in stages)
+                        {
+                            @* An id the application has no words for renders nothing rather than
+                               leaking the agent's vocabulary onto the page. *@
+                            @if (SuggestionStageCopy.For(stage) is { } words)
+                            {
+                                <li class="ai__stage" data-stage="@stage">
+                                    @words
+                                    @if (SuggestionStageCopy.Attempt(attempt) is { } which)
+                                    {
+                                        <span class="ai__attempt">@which</span>
+                                    }
+                                </li>
+                            }
+                        }
+                    </ol>
+                }
+            }
+
+            @if (outcome is not null)
+            {
+                <div class="ai__outcome" data-testid="ai-outcome" data-status="@outcome.Status">
+                    @if (outcome.Options.Count == 0)
+                    {
+                        @* What each outcome says is the next story's; this one only has to not claim
+                           candidates it does not have. *@
+                        <p class="ai__none" data-testid="ai-outcome-none">No options this time.</p>
+                    }
+
+                    @foreach (var option in outcome.Options)
+                    {
+                        <article class="ai__option" data-testid="ai-option" data-tier="@option.Tier">
+                            <h3 class="text-title-md font-title-md text-primary">@option.Tier</h3>
+                            <ul class="ai__lines">
+                                @foreach (var line in option.Lines)
+                                {
+                                    <li class="ai__line" data-sku="@line.Sku">
+                                        @line.Name
+                                        <span class="ai__quantity">&times; @line.Quantity</span>
+                                    </li>
+                                }
+                            </ul>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private readonly List<(string Stage, int Attempt)> stages = [];
+    private string query = string.Empty;
+    private WorkspaceSuggestion? outcome;
+    private CancellationTokenSource? run;
+    private bool running;
+    private bool collapsed;
+
+    /// <summary>What a screen reader is told, which is the stage the run has just reached.</summary>
+    private string announcement = string.Empty;
+
+    /// <summary>
+    /// Runs the suggestion, rendering what it says as it says it.
+    /// </summary>
+    /// <remarks>
+    /// Nothing is applied here and nothing is written: the run proposes options and the page holds them
+    /// until one is chosen, which is what makes cancelling safe by construction rather than by
+    /// remembering to undo something.
+    /// </remarks>
+    private async Task SubmitAsync()
+    {
+        run?.Dispose();
+        run = new CancellationTokenSource();
+
+        var token = run.Token;
+
+        stages.Clear();
+        outcome = null;
+        announcement = string.Empty;
+        collapsed = false;
+        running = true;
+
+        try
+        {
+            await foreach (var update in Suggestions.SuggestAsync(new WorkspaceSuggestionRequest(query), token))
+            {
+                if (update.Kind == "stage")
+                {
+                    stages.Add((update.Stage ?? string.Empty, update.Attempt));
+                    announcement = Announced(update.Stage, update.Attempt);
+                }
+                else
+                {
+                    outcome = update.Outcome;
+                }
+
+                StateHasChanged();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // The customer stopped it. There is nothing to undo, and no outcome to report: a cancelled
+            // run is not an answer, and saying "unavailable" would blame the agent for our own cancel.
+        }
+        finally
+        {
+            running = false;
+
+            // Retained, and collapsed: the answer to "why did that take so long" outlives the run, and
+            // the options take the visual focus.
+            collapsed = stages.Count > 0;
+        }
+    }
+
+    /// <summary>Stops the run. The stream ends, and no candidate is left behind.</summary>
+    private void Cancel() => run?.Cancel();
+
+    private void Expand() => collapsed = false;
+
+    /// <summary>The stage as a screen reader hears it, or nothing for an id we have no words for.</summary>
+    /// <remarks>
+    /// The attempt is part of the sentence on purpose: two attempts at the same stage would otherwise
+    /// produce identical text, and a live region whose text does not change is not announced at all - so
+    /// the second attempt would pass in silence.
+    /// </remarks>
+    private static string Announced(string? stage, int attempt)
+        => SuggestionStageCopy.For(stage) is { } words
+            ? SuggestionStageCopy.Attempt(attempt) is { } which ? $"{words}, {which}" : words
+            : string.Empty;
+
+    public void Dispose()
+    {
+        run?.Cancel();
+        run?.Dispose();
+    }
+}

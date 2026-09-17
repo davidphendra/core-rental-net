@@ -27,6 +27,7 @@ internal static class SseWriter
         HttpResponse response,
         string model,
         string text,
+        int delayMilliseconds,
         CancellationToken cancellationToken)
     {
         await response.WriteAsync($"event: response.created\ndata: {Created(model)}\n\n", cancellationToken)
@@ -37,6 +38,8 @@ internal static class SseWriter
 
         foreach (var piece in Pieces(text))
         {
+            await Pause(delayMilliseconds, cancellationToken).ConfigureAwait(false);
+
             await response.WriteAsync($"event: response.output_text.delta\ndata: {Delta(piece, sequence++)}\n\n", cancellationToken)
                 .ConfigureAwait(false);
             await response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
@@ -48,6 +51,19 @@ internal static class SseWriter
             .ConfigureAwait(false);
         await response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Waits, so that a run has time to be watched - and to be cancelled.
+    /// </summary>
+    /// <remarks>
+    /// The delay is before each event rather than between runs, and the wait is cancellable: a client
+    /// that hangs up mid-stream must stop the stand-in, or the fixture would carry on writing to a
+    /// socket nobody is reading and the next test would find it busy.
+    /// </remarks>
+    private static Task Pause(int delayMilliseconds, CancellationToken cancellationToken)
+        => delayMilliseconds > 0
+            ? Task.Delay(delayMilliseconds, cancellationToken)
+            : Task.CompletedTask;
 
     /// <summary>
     /// The text in pieces, cut on line boundaries.

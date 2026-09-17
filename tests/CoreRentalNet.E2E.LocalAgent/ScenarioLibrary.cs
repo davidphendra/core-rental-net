@@ -72,11 +72,24 @@ internal static class ScenarioLibrary
         "rejected" => Rejected,
         "unavailable" => Unavailable,
         "malformed" => Malformed,
+        // The same answer as the happy path, delivered slowly. A run is up to ten model calls across
+        // three attempts, so a fixture that only ever answered instantly would leave the two things
+        // that matter about a long run untestable: a cancel with something to interrupt, and a stage
+        // list with time to be read.
+        "slow" => Essential,
         _ => Essential,
     };
 
+    /// <summary>How long the stand-in waits between events, in milliseconds.</summary>
+    /// <remarks>
+    /// Long enough that a watching test has time to observe each state: a run that moved faster than the
+    /// browser could be read would make the assertions that matter - a stage list with stages in it, a
+    /// cancel with something to interrupt - into races rather than checks.
+    /// </remarks>
+    public static int DelayMilliseconds(string name) => name == "slow" ? 900 : 0;
+
     /// <summary>Every scenario's name, for the endpoint that lists them and the tests that drive them.</summary>
-    public static IReadOnlyList<string> Names => ["essential", "exhausted", "rejected", "unavailable", "malformed"];
+    public static IReadOnlyList<string> Names => ["essential", "slow", "exhausted", "rejected", "unavailable", "malformed"];
 
     /// <summary>Every SKU any scenario names, so a test can hold them against the catalogue.</summary>
     public static IReadOnlyList<string> Skus

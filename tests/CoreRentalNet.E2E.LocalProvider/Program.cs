@@ -40,6 +40,9 @@ var accounts = new Dictionary<string, Account>(StringComparer.Ordinal)
     // Holds the permission the builder's gate requires, and the role twice: the Action writes it
     // into the ID token and the permission's name states it too.
     ["reader"] = new("auth0|reader", "Dewi Reader", "dewi@example.com", ["read:catalog", "manager:role"], ["Manager"]),
+    // Holds the AI section's permission on top of the builder's, which is the only account that can
+    // see the section at all.
+    ["builder"] = new("auth0|builder", "Sari Builder", "sari@example.com", ["read:catalog", "read:aibuilder", "poweruser:aibuilder"], []),
     // Signed in, but entitled to nothing.
     ["guest"] = new("auth0|guest", "Bagus Guest", "bagus@example.com", [], []),
     // Holds the gate's words in the other order, so it is refused. Its role is named only inside

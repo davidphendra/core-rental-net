@@ -74,7 +74,7 @@ public sealed class SuggestWorkspaceOptions(IAgentSuggestions agent, IProductCat
 
         while (true)
         {
-            var (moved, current) = await NextAsync(stream);
+            var (moved, current) = await NextAsync(stream, cancellationToken);
 
             if (!moved)
             {
@@ -91,14 +91,25 @@ public sealed class SuggestWorkspaceOptions(IAgentSuggestions agent, IProductCat
     /// rather than four. A stream fails while it is read, which is why this is not a try around the call
     /// that created it.
     /// </remarks>
+    /// <summary>
+    /// The next message, or nothing when the agent could not be reached.
+    /// </summary>
+    /// <remarks>
+    /// A timeout and a caller who cancelled both arrive as <see cref="TaskCanceledException"/>, and they
+    /// mean opposite things: the first is the agent being unavailable, and the second is a customer who
+    /// asked us to stop. Swallowing the second would let a cancelled run report itself as an unavailable
+    /// service, so it is passed on and only an unreachable agent becomes that answer.
+    /// </remarks>
     private static async Task<(bool Moved, AgentSuggestionMessage? Current)> NextAsync(
-        IAsyncEnumerator<AgentSuggestionMessage> stream)
+        IAsyncEnumerator<AgentSuggestionMessage> stream,
+        CancellationToken cancellationToken)
     {
         try
         {
             return (await stream.MoveNextAsync(), stream.Current);
         }
-        catch (Exception failure) when (failure is HttpRequestException or TaskCanceledException)
+        catch (Exception failure) when (failure is HttpRequestException or TaskCanceledException
+            && !cancellationToken.IsCancellationRequested)
         {
             return (false, null);
         }
