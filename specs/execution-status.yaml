@@ -85,7 +85,7 @@ epics:
         status: in-progress
         risk: P0
         record: specs/verifications/e04s02-after.md
-        deferred: "the Host adapter is the next step; the local stand-in follows it"
+        deferred: "the local stand-in process follows, with the page that drives it"
       - id: e04s03
         slug: streamed-run
         status: in-progress
@@ -95,7 +95,7 @@ epics:
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 585, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 591, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
@@ -138,6 +138,14 @@ notes: |
   answering four policies, the catalogue's rule preserved exactly and the AI section's two permissions
   closed by default. The security review carries an addendum, because this edited code it had already
   covered. The record is specs/verifications/e04s01-after.md.
+
+  The agent client is decided and built. Research into Microsoft's own hosted-agent client samples
+  settled it on evidence rather than shape: the sample's endpoint-taking AsAIAgent exists only in the
+  framework's unreleased source, the released Foundry packages are beta and preview, and the OpenAI
+  client's Responses surface is marked evaluation-only - which Microsoft's own sample suppresses, as
+  this project does in one named place. The client chosen is the documented OpenAI-compatible one, with
+  the application's own identity and a deliberately written guard. The record, including the three
+  findings and the two corrections, is specs/verifications/e04s02-agent-client-after.md.
 
   e04s03 is delivered as far as it can be: the streaming contract on both sides of the port, the four
   rules applied to the last message of a stream, and the application's own words for the agent's stage

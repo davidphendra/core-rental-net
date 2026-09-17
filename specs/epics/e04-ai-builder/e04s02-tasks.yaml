@@ -20,15 +20,15 @@ tasks:
       severity: critical
       categories: ["workspace", "application", "unit"]
   - id: 3
-    description: "Add the Host adapter calling the agent with the application's identity - deferred to e02s07, where an endpoint exists to call"
-    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    description: "Add the Host adapter calling the agent with the application's own identity, on the OpenAI-compatible client the Responses protocol documents"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~FoundryAgentAdapterTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["host", "wiring"]
   - id: 4
-    description: "Add the local stand-in process with its scenario switch - deferred to e04s03, where the browser tier drives it"
+    description: "Add the local stand-in process with its scenario switch - still deferred to e04s03, where the browser tier drives it"
     verify: 'dotnet build tests/CoreRentalNet.E2E.LocalAgent -v q --nologo'
     risk: P1
     status: failing

@@ -45,6 +45,16 @@
     <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.21.0" />
     <!-- The intent table's miss is logged. MIT. Same version as the other Microsoft.Extensions pins. -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+    <!-- The client the application uses to reach the hosted agent's Responses endpoint, and the
+         framework abstraction the sample wraps it in. Both stable. Referenced by the Host alone: the
+         modules reach the agent through ISuggestWorkspaceOptions.
+         Deliberately NOT Azure.AI.Projects, which is beta, nor Microsoft.Agents.AI.Foundry, which is
+         preview: the hosted-agent sample that uses them is the SHAPE to follow, not the packages. -->
+    <PackageVersion Include="OpenAI" Version="2.14.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.21.0" />
+    <!-- The application's own identity - a developer credential locally, a managed identity deployed -
+         which is what makes the bearer the client sends a token rather than a stored secret. MIT. -->
+    <PackageVersion Include="Azure.Identity" Version="1.21.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

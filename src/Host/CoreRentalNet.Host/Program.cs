@@ -24,6 +24,7 @@ builder.AddCatalogApi();
 builder.AddApiResponses();
 builder.AddCatalogOpenApi();
 builder.AddWorkspace();
+builder.AddFoundryAgent();
 builder.AddRentals();
 
 builder.Services.AddScoped<IWorkspaceSession, WorkspaceSession>();

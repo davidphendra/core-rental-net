@@ -40,6 +40,11 @@ internal static class WorkspaceRegistration
         builder.Services.AddScoped<IWorkspaceQuoteService, WorkspaceQuoteService>();
         builder.Services.AddScoped<IWorkspaceViewService, WorkspaceViewService>();
 
+        // The suggestion operation. Its agent is an interface: the adapter that reaches the hosted one
+        // is registered by FoundryAgentRegistration, and when none is configured the port reports the
+        // agent as unavailable rather than the operation being absent.
+        builder.Services.AddScoped<ISuggestWorkspaceOptions, SuggestWorkspaceOptions>();
+
         // By the operation each one performs, not by its own type. The session is their only consumer,
         // and it names the operation too; how a draft is started or a quantity changed is the
         // application's business.

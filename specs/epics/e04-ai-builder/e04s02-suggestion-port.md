@@ -50,9 +50,9 @@ mirroring `LocalProvider`, and keeping the browser suite's no-interception rule 
 
 1. Add the request and outcome records to the Workspace application's contracts. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 2. Add `ISuggestWorkspaceOptions` and its `sealed` implementation with the four rules. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~WorkspaceSuggestionTests"`
-3. Add the Host adapter calling the agent with the application's identity, registered only when the
-   endpoint is configured. **Deferred to `e02s07`**: there is no endpoint to call until the hosted agent
-   serves one, and a client written against nothing is unverifiable. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
+3. Add the Host adapter calling the agent with the application's own identity, on the
+   OpenAI-compatible client the Responses protocol documents, registered always so the operation's
+   dependencies are complete. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~FoundryAgentAdapterTests"`
 4. Add the local stand-in process with its scenario switch. **Deferred to `e04s03`**: the browser tier
    that drives it arrives with the page, and a scenario-selectable server built before its consumer means
    inventing the scenarios. → verify: `dotnet build tests/CoreRentalNet.E2E.LocalAgent -v q --nologo`
