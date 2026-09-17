@@ -17,4 +17,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <!-- The stand-in agent, started in this process: it is the other end of the wire the adapter
+         reads, so it belongs to the test rather than to a deployment. -->
+    <ProjectReference Include="../CoreRentalNet.E2E.LocalAgent/CoreRentalNet.E2E.LocalAgent.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -85,7 +85,7 @@ epics:
         status: in-progress
         risk: P0
         record: specs/verifications/e04s02-after.md
-        deferred: "the local stand-in process follows, with the page that drives it"
+        deferred: "the page that drives it - the section, its streaming and its browser tests"
       - id: e04s03
         slug: streamed-run
         status: in-progress
@@ -95,7 +95,7 @@ epics:
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 591, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 601, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
@@ -138,6 +138,13 @@ notes: |
   answering four policies, the catalogue's rule preserved exactly and the AI section's two permissions
   closed by default. The security review carries an addendum, because this edited code it had already
   covered. The record is specs/verifications/e04s01-after.md.
+
+  The stand-in agent is built and the risk it existed to retire is retired: the OpenAI package's
+  Responses deserializers are internal, so the wire format cannot be read off the SDK - but a server
+  written to the DOCUMENTED protocol and a client built through the application's own registration agree,
+  including on the long result that arrives piecewise. Seven tests hold that, three hold the fixture's
+  SKUs against the catalogue, and the browser suite now starts the stand-in before both hosts and points
+  them at it. The record is specs/verifications/e04s03-stand-in-after.md.
 
   The agent client is decided and built. Research into Microsoft's own hosted-agent client samples
   settled it on evidence rather than shape: the sample's endpoint-taking AsAIAgent exists only in the

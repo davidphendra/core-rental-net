@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.E2E.LocalAgent</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Started as a process by the browser suite, and started in-process by the tests that
+         exercise the client against it. Not a test project itself. -->
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The tests that drive the application's agent client start this stand-in in their own process,
+         on a port they chose, rather than as a process they would have to wait for and reap. -->
+    <InternalsVisibleTo Include="CoreRentalNet.Host.Tests" />
+    <InternalsVisibleTo Include="CoreRentalNet.IntegrationTests" />
+  </ItemGroup>
+
+</Project>

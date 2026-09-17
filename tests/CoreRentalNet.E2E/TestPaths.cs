@@ -20,6 +20,10 @@ internal static class TestPaths
     public static string LocalProviderAssembly()
         => Assembly("tests", "CoreRentalNet.E2E.LocalProvider", "CoreRentalNet.E2E.LocalProvider.dll");
 
+    /// <summary>The stand-in agent's assembly, which the suite starts and the page talks to.</summary>
+    public static string LocalAgentAssembly()
+        => Assembly("tests", "CoreRentalNet.E2E.LocalAgent", "CoreRentalNet.E2E.LocalAgent.dll");
+
     /// <summary>
     /// The application's own directory, so a development build finds its static assets exactly as
     /// <c>dotnet run</c> would.

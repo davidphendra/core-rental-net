@@ -11,6 +11,7 @@
     <!-- Built, not compiled against: the fixture starts it as the identity provider for the real
          OIDC handshake, and the guard test probes its refusal to run outside Development. -->
     <ProjectReference Include="../CoreRentalNet.E2E.LocalProvider/CoreRentalNet.E2E.LocalProvider.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../CoreRentalNet.E2E.LocalAgent/CoreRentalNet.E2E.LocalAgent.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
