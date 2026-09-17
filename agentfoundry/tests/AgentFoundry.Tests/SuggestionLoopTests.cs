@@ -22,7 +22,7 @@ namespace AgentFoundry.Tests;
 /// </remarks>
 public sealed class SuggestionLoopTests
 {
-    [Fact(Skip = "Blocked: the retry edge does not fire under Microsoft.Agents.AI.Workflows 1.21.0. See specs/verifications/e02s05-after.md.")] // AGT-15
+    [Fact] // AGT-15
     public async Task A_judged_failure_sends_the_work_back_to_be_rephrased()
     {
         var judgement = new AlwaysObjects();
@@ -37,7 +37,7 @@ public sealed class SuggestionLoopTests
         judgement.Asked.Should().Be(2, "the loop stopped rather than spending the third attempt");
     }
 
-    [Fact(Skip = "Blocked: the retry edge does not fire under Microsoft.Agents.AI.Workflows 1.21.0. See specs/verifications/e02s05-after.md.")] // AGT-16
+    [Fact] // AGT-16
     public async Task A_retry_that_changes_nothing_ends_the_run_rather_than_repeating_it()
     {
         // The rephraser is deliberate: the same request produces the same specification. So the second
@@ -48,7 +48,7 @@ public sealed class SuggestionLoopTests
         messages.OfType<StageEvent>().Count(stage => stage.Stage == Stages.Rephrasing).Should().Be(2);
     }
 
-    [Fact(Skip = "Blocked: the retry edge does not fire under Microsoft.Agents.AI.Workflows 1.21.0. See specs/verifications/e02s05-after.md.")] // AGT-17
+    [Fact] // AGT-17
     public async Task Exhaustion_is_a_result_carrying_the_candidates_and_what_was_objected_to()
     {
         var messages = await CollectAsync(new AlwaysObjects());
@@ -62,7 +62,7 @@ public sealed class SuggestionLoopTests
         messages[^1].Should().BeSameAs(result);
     }
 
-    [Fact(Skip = "Blocked: the retry edge does not fire under Microsoft.Agents.AI.Workflows 1.21.0. See specs/verifications/e02s05-after.md.")] // AGT-17
+    [Fact] // AGT-17
     public async Task A_stage_carries_the_attempt_it_belongs_to()
     {
         var attempts = (await CollectAsync(new AlwaysObjects()))

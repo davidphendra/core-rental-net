@@ -98,15 +98,16 @@ public sealed class ReviewerTests
             ["Desk"] = ["DSK-A"],
         };
 
-    private static Review Review(bool approved, SuggestionRequest request, int attempt, bool repeated = false)
+    private static Round Review(bool approved, SuggestionRequest request, int attempt, bool repeated = false)
         => new(
             request,
+            new IntentVerdict(IsWorkspaceRequest: true, ReasonCodes.Ok),
+            approved ? [] : [new Finding("criteria_not_met", "Monitor")],
+            attempt,
             ASpecification(),
             [AnOption("middle", "MON-B")],
-            approved ? [] : [new Finding("criteria_not_met", "Monitor")],
             approved,
-            repeated,
-            attempt);
+            repeated);
 
     private static SuggestionOption AnOption(string tier, string monitor)
         => new(

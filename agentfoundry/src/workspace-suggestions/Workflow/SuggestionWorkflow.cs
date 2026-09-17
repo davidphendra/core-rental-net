@@ -67,8 +67,7 @@ public sealed class SuggestionWorkflow
 
         await using var run = await InProcessExecution.RunStreamingAsync(Build(), request);
 
-        Verification? verification = null;
-        Review? decision = null;
+        Round? last = null;
         Exception? failure = null;
         var attempt = 1;
         var reviewed = false;
@@ -97,13 +96,9 @@ public sealed class SuggestionWorkflow
 
                 yield return Stage(request, stage, attempt);
             }
-            else if (raised is WorkflowOutputEvent { Data: Verification answer })
+            else if (raised is WorkflowOutputEvent { Data: Round answered })
             {
-                verification = answer;
-            }
-            else if (raised is WorkflowOutputEvent { Data: Review reviewed2 })
-            {
-                decision = reviewed2;
+                last = answered;
             }
         }
 
@@ -113,26 +108,26 @@ public sealed class SuggestionWorkflow
                 $"The workflow failed for request '{request.RequestId}'.", failure);
         }
 
-        if (verification is null)
+        if (last is null)
         {
             throw new InvalidOperationException(
                 $"The workflow ended without answering request '{request.RequestId}'.");
         }
 
-        if (!verification.Verdict.IsWorkspaceRequest)
+        if (!last.Verdict.IsWorkspaceRequest)
         {
             yield return new SuggestionResult
             {
                 RequestId = request.RequestId,
                 Status = ReasonCodes.Rejected,
                 Attempts = 1,
-                Code = verification.Verdict.Code,
+                Code = last.Verdict.Code,
             };
 
             yield break;
         }
 
-        if (decision is null)
+        if (last.Specification is null)
         {
             throw new InvalidOperationException(
                 $"The workflow composed a workspace for request '{request.RequestId}' and nothing judged it.");
@@ -143,10 +138,10 @@ public sealed class SuggestionWorkflow
         yield return new SuggestionResult
         {
             RequestId = request.RequestId,
-            Status = decision.Approved ? ReasonCodes.Ok : ReasonCodes.Exhausted,
-            Attempts = decision.Attempt,
-            Options = decision.Options,
-            Findings = decision.Findings,
+            Status = last.Approved ? ReasonCodes.Ok : ReasonCodes.Exhausted,
+            Attempts = last.Attempt,
+            Options = last.Options,
+            Findings = last.Findings,
         };
     }
 
@@ -158,16 +153,16 @@ public sealed class SuggestionWorkflow
         var reviewer = new ReviewerExecutor(_reviewer);
 
         return new WorkflowBuilder(verifier)
-            .AddEdge<Verification>(
+            .AddEdge<Round>(
                 verifier,
                 rephraser,
                 condition: raised => raised is { Verdict.IsWorkspaceRequest: true })
             .AddEdge(rephraser, suggestor)
             .AddEdge(suggestor, reviewer)
-            .AddEdge<Review>(
+            .AddEdge<Round>(
                 reviewer,
                 rephraser,
-                condition: raised => raised is { } review && !review.IsFinal(Attempts))
+                condition: raised => raised is Round round && !round.IsFinal(Attempts))
             .WithOutputFrom(verifier, reviewer)
             .Build();
     }

@@ -31,7 +31,7 @@ tasks:
     description: "Wire the loop: findings to the rephraser, three attempts maximum"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~SuggestionLoopTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "unit"]
@@ -47,7 +47,7 @@ tasks:
     description: "Implement the exhausted outcome with the outstanding findings"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~SuggestionLoopTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "unit", "contract"]

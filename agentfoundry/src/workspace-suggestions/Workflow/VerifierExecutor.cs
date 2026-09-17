@@ -15,9 +15,9 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// a mapping that can disagree with it.
 /// </remarks>
 internal sealed class VerifierExecutor(IIntentClassifier classifier)
-    : Executor<SuggestionRequest, Verification>(Stages.Verifying)
+    : Executor<SuggestionRequest, Round>(Stages.Verifying)
 {
-    public override async ValueTask<Verification> HandleAsync(
+    public override async ValueTask<Round> HandleAsync(
         SuggestionRequest message,
         IWorkflowContext context,
         CancellationToken cancellationToken = default)
@@ -26,7 +26,7 @@ internal sealed class VerifierExecutor(IIntentClassifier classifier)
 
         var verdict = await classifier.ClassifyAsync(message.Query, cancellationToken);
 
-        // The first attempt, and nothing has objected to anything yet.
-        return new Verification(message, verdict, [], Attempt: 1);
+        // The first attempt, nothing objected to yet, and nothing composed yet: no specification.
+        return new Round(message, verdict, [], Attempt: 1, null, [], Approved: false, Repeated: false);
     }
 }

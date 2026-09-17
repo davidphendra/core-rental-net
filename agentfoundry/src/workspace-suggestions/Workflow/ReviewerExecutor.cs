@@ -1,3 +1,4 @@
+using AgentFoundry.WorkspaceSuggestions.Intent;
 using AgentFoundry.WorkspaceSuggestions.Review;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using Microsoft.Agents.AI.Workflows;
@@ -13,11 +14,11 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// stop. The count it reports is the attempt it just reviewed; the retry it asks for is the next one.
 /// </remarks>
 internal sealed class ReviewerExecutor(IReviewCandidates reviewer)
-    : Executor<Candidates, Review>(Stages.Reviewing)
+    : Executor<Candidates, Round>(Stages.Reviewing)
 {
     private int _reviewed;
 
-    public override async ValueTask<Review> HandleAsync(
+    public override async ValueTask<Round> HandleAsync(
         Candidates message,
         IWorkflowContext context,
         CancellationToken cancellationToken = default)
@@ -31,13 +32,14 @@ internal sealed class ReviewerExecutor(IReviewCandidates reviewer)
             message.Ordered,
             cancellationToken);
 
-        return new Review(
+        return new Round(
             message.Specification.Request,
+            new IntentVerdict(IsWorkspaceRequest: true, ReasonCodes.Ok),
+            verdict.Findings,
+            attempt,
             message.Specification,
             message.Options,
-            verdict.Findings,
             verdict.Approved,
-            verdict.Repeated,
-            attempt);
+            verdict.Repeated);
     }
 }

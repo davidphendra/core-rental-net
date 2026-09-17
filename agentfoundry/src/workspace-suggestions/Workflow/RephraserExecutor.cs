@@ -14,10 +14,10 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// and carried on every later one.
 /// </remarks>
 internal sealed class RephraserExecutor(IRephraseRequests rephraser)
-    : Executor<Verification, Specification>(Stages.Rephrasing)
+    : Executor<Round, Specification>(Stages.Rephrasing)
 {
     public override async ValueTask<Specification> HandleAsync(
-        Verification message,
+        Round message,
         IWorkflowContext context,
         CancellationToken cancellationToken = default)
     {

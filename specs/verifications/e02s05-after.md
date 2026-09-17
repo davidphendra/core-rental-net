@@ -8,7 +8,7 @@
 | Check | Before | After |
 |---|---|---|
 | BUILD `agentfoundry/AgentFoundry.sln` | 0 warnings, 0 errors | **0 warnings, 0 errors** |
-| TESTS `agentfoundry/AgentFoundry.sln` | 25 passed | **30 passed, 0 failed, 4 skipped** |
+| TESTS `agentfoundry/AgentFoundry.sln` | 25 passed | **34 passed, 0 failed, 0 skipped** |
 | BUILD `CoreRentalNet.sln` | unmoved | **0 warnings, 0 errors — unmoved** |
 | NONBROWSER `CoreRentalNet.sln` | 570 passed | **570 passed, 0 failed — unmoved** |
 
@@ -38,40 +38,40 @@
 | The same specification twice | the guard reports it, and the loop stops rather than repeating |
 | An accepted request | all four stages stream, and the result is `ok` with candidates |
 
-## Blocked — the retry loop does not run
+## The retry loop — found and fixed
 
-**The retry edge from the reviewer back to the rephraser never fires.** The workflow ends after the
-reviewer on the first attempt, whatever the review says, so `exhausted` is produced at attempt 1 and
-attempt 2 is never reached. The four tests that assert the loop are **kept and skipped**, naming this
-record, rather than deleted or adjusted to match the broken behaviour.
+**Two typed edges leading into the same executor do not both arrive.** The framework binds an
+executor's input from the first edge it is given, so the verifier's edge to the rephraser took effect
+and the reviewer's retry edge — carrying a different type — was **silently dropped**. The workflow then
+ended after the reviewer on the first attempt, whatever the review said.
 
-What is known:
+What ruled the other explanations out, in order:
 
-- The graph, the conditional edge and the condition all compile, and the condition is written the way
-  the framework's own loop sample writes it.
-- The first edge — verifier to rephraser, also conditional and also typed — **does** fire, so the
-  problem is not conditions or typed edges in general.
-- Removing the reviewer from `WithOutputFrom` did not make the loop run; the run then ended without a
-  judgement at all.
-- Microsoft.Agents.AI.Workflows 1.21.0 is the current stable line; the samples that loop use a plain
-  `AddEdge(from, to)` with **no** condition, which the framework does not allow here because a retry
-  must be decided from the review.
+- The graph and the condition compile, and the condition is written the way the framework's own loop
+  sample writes it.
+- The verifier's edge to the rephraser is *also* conditional and *also* typed, and it fires — so
+  conditions and typed edges are not the problem in themselves.
+- Removing the reviewer from `WithOutputFrom` did not make the loop run.
+- **Replacing the condition with `attempt < 2` — as simple as a condition can be — still did not make
+  it fire.** That is what showed the edge was not being evaluated at all, rather than evaluating false.
 
-**Next step, and the one to try first:** give the retry its own untyped edge by making the reviewer's
-output and the rephraser's input the same concrete type, so the condition is not needed on the loop
-edge and the reviewer decides by sending or not sending. That is a message-shape change, not a
-redesign: the pieces it needs — the attempt count, the findings and the request — all travel already.
+The fix is one concrete message type, `Round`, flowing round the loop: the verifier sends one with no
+specification, the reviewer sends one with the composition and its verdict, and both edges carry the
+same type so both arrive. The four tests that assert the loop are no longer skipped.
 
 ## What the run corrected
 
-1. **The validator needed a receipt.** Checking the composition against itself proves nothing, so the
+1. **Two typed edges into one executor silently drop the second.** The most expensive finding in this
+   epic: the graph compiled, the tests passed, and the loop simply did not happen. It was found by
+   making the condition trivial and watching it still not fire.
+2. **The validator needed a receipt.** Checking the composition against itself proves nothing, so the
    ordered SKUs per slot travel from the suggestor with the options. That is what catches a picker
    returning the wrong position — the one failure that changes what a customer is offered while every
    other check still passes.
-2. **The specification had to carry the request.** A retry builds a specification from the same slot
+3. **The specification had to carry the request.** A retry builds a specification from the same slot
    rules as the first attempt, and threading the request separately produced a node holding a `Query`
    property and an empty slot list.
-3. **`Tier.All.IndexOf` does not exist on an `IReadOnlyList`.** Positions are read through a
+4. **`Tier.All.IndexOf` does not exist on an `IReadOnlyList`.** Positions are read through a
    `Tier.PositionOf` helper, which also refuses to guess: an unknown tier is -1, not "low".
 
 ## Not done, deliberately
