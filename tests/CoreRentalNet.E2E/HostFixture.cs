@@ -75,6 +75,11 @@ public sealed class HostFixture : IAsyncLifetime
                 // the whole reason the page can be exercised without a subscription.
                 ["Agent__Endpoint"] = AgentUrl,
                 ["Agent__Name"] = "stand-in",
+                // The cooldown is off for the suite, and deliberately: it is measured from when a run
+                // starts, so one test's run would refuse the next test's - and every AI test signs in as
+                // the same account. The guard's one-in-flight rule is the part the browser holds; the
+                // cooldown has its own unit tests with values it chooses.
+                ["Ai__RunCooldownSeconds"] = "0",
             });
 
         await ProcessPool.WaitUntilReadyAsync(BaseUrl, guest, requireAssets: true).ConfigureAwait(false);
@@ -103,6 +108,7 @@ public sealed class HostFixture : IAsyncLifetime
                 ["Auth0__Authority"] = ProviderAuthority,
                 ["Agent__Endpoint"] = AgentUrl,
                 ["Agent__Name"] = "stand-in",
+                ["Ai__RunCooldownSeconds"] = "0",
             });
 
         await ProcessPool.WaitUntilReadyAsync(AuthenticatedBaseUrl, authenticated, requireAssets: true).ConfigureAwait(false);

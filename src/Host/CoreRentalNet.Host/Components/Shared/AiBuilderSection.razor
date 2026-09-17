@@ -6,6 +6,7 @@
 @inject IApplyCompositionHandler ApplyComposition
 @inject IProductCatalog Catalog
 @inject IAuthorizationService Authorization
+@inject IAiRunGuard RunGuard
 @inherits WorkspaceObserver
 
 <AuthorizeView Policy="@AiBuilderReadPolicy.Name">
@@ -85,6 +86,11 @@
                         }
                     </ol>
                 }
+            }
+
+            @if (refused is not null)
+            {
+                <p class="alert" role="status" data-testid="ai-refused">@refused</p>
             }
 
             @* What an apply did, said where the customer is looking rather than in the dialog they
@@ -204,6 +210,8 @@
     private IReadOnlyList<string> pendingDropped = [];
     private IReadOnlyList<string> appliedDropped = [];
     private string? applyError;
+    private string? refused;
+    private string? principal;
 
     /// <summary>What a screen reader is told, which is the stage the run has just reached.</summary>
     private string announcement = string.Empty;
@@ -232,6 +240,7 @@
 
         var state = await AuthenticationState;
 
+        principal = state.User.Identity?.Name;
         threeCandidates = (await Authorization.AuthorizeAsync(state.User, AiBuilderPowerPolicy.Name)).Succeeded;
     }
 
@@ -245,6 +254,16 @@
     /// </remarks>
     private async Task SubmitAsync()
     {
+        // Asked before anything else, and answered here rather than by the agent: a second click must not
+        // cost a second run, and the cost is the thing being controlled.
+        if (!TryBegin())
+        {
+            refused = OutcomeCopy.AlreadyRunning;
+            return;
+        }
+
+        refused = null;
+
         run?.Dispose();
         run = new CancellationTokenSource();
 
@@ -282,9 +301,31 @@
         {
             running = false;
 
+            // Released here rather than after a successful run, because every way a run can end passes
+            // through this - including a cancel, and a failure. A guard that outlived its run would
+            // punish the customer for stopping one.
+            ReleaseRun();
+
             // Retained, and collapsed: the answer to "why did that take so long" outlives the run, and
             // the options take the visual focus.
             collapsed = stages.Count > 0;
+        }
+    }
+
+    /// <summary>Takes the run slot, or reports that there is not one to take.</summary>
+    /// <remarks>
+    /// A deployment that has somehow reached this without an identity is allowed to run: the guard is a
+    /// cost control on an authenticated feature, and refusing an anonymous caller here would be a
+    /// permission decision made in the wrong place.
+    /// </remarks>
+    private bool TryBegin()
+        => principal is null || RunGuard.TryBegin(principal);
+
+    private void ReleaseRun()
+    {
+        if (principal is not null)
+        {
+            RunGuard.Release(principal);
         }
     }
 
@@ -395,6 +436,11 @@
     public override void Dispose()
     {
         run?.Cancel();
+
+        // The circuit going away ends the run as surely as a cancel does, and an unreleased slot would
+        // lock the customer out of the feature until the cooldown they can no longer see has passed.
+        ReleaseRun();
+
         run?.Dispose();
 
         base.Dispose();

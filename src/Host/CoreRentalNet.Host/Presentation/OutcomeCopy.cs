@@ -37,6 +37,17 @@ internal static class OutcomeCopy
     /// <summary>The control that offers another go, which only this outcome gets.</summary>
     public const string Retry = "Try again";
 
+    /// <summary>
+    /// What a customer is told when they ask for a run while one is still going.
+    /// </summary>
+    /// <remarks>
+    /// It says what is happening rather than that something is wrong, because a double click is not a
+    /// mistake worth scolding - and it says the first request is still running, so the customer knows to
+    /// wait for that one rather than assuming it was lost.
+    /// </remarks>
+    public const string AlreadyRunning =
+        "Your last request is still being worked on. We will show it here as soon as it is ready.";
+
     private const string RefusedFallback =
         "That does not look like a workspace request. Tell us what you need to furnish and we will put "
         + "options together.";

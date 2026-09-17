@@ -104,11 +104,17 @@ epics:
         risk: P0
         record: specs/verifications/e04s05-module-after.md
         delivered: "the one-write replace, the stale refusal, the Host mapper, the confirmation dialog, and AIB-18 to AIB-21"
+      - id: e04s06
+        slug: one-run-at-a-time
+        status: done
+        risk: P1
+        record: specs/verifications/e04s06-after.md
+        delivered: "the per-principal run guard, released on every terminal path including cancel"
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 633, failed: 0, skipped: 0 }
-  browser: { passed: 116, failed: 0, skipped: 1 }
+  nonbrowser: { passed: 643, failed: 0, skipped: 0 }
+  browser: { passed: 118, failed: 0, skipped: 1 }
 
 gates:
   verify_work: passed_e04s03

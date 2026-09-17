@@ -3,6 +3,7 @@ using System.ClientModel.Primitives;
 using Azure.Core;
 using Azure.Identity;
 using CoreRentalNet.Host.Agents;
+using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Suggestion;
 using Microsoft.Agents.AI;
 using OpenAI;
@@ -43,6 +44,11 @@ internal static class FoundryAgentRegistration
         ArgumentNullException.ThrowIfNull(builder);
 
         var settings = FoundryAgentSettings.From(builder.Configuration);
+
+        // Registered whatever the agent's configuration: the guard is about how often the section may
+        // ask, which is a question even a deployment with no agent has an answer to.
+        builder.Services.AddSingleton(AiRunSettings.From(builder.Configuration));
+        builder.Services.AddSingleton<IAiRunGuard, AiRunGuard>();
 
         // Always registered, so the operation's dependencies are complete wherever the application
         // runs: a deployment with no agent gets one that says so rather than a start-up failure.
