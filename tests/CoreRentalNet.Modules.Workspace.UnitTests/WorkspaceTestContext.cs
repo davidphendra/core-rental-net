@@ -37,6 +37,14 @@ internal sealed class WorkspaceTestContext
         return workspace;
     }
 
+    /// <summary>Puts a product in a slot the way the page does, and keeps the version honest.</summary>
+    public Task AssignAsync(Domain.Workspace workspace, SlotId slot, string sku)
+    {
+        Workspaces.Assign(workspace, slot, sku);
+
+        return Task.CompletedTask;
+    }
+
     public static Domain.Workspace NewDraft() => new()
     {
         Id = WorkspaceId.New(),

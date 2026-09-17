@@ -29,7 +29,7 @@ internal static class ScenarioLibrary
         {"kind":"stage","stage":"rephrasing","attempt":1}
         {"kind":"stage","stage":"selecting","attempt":1}
         {"kind":"stage","stage":"reviewing","attempt":1}
-        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]}]}
+        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"Desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"Chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"Monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"Desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"Chair","sku":"CHA9COSVF201","quantity":1},{"slot":"Monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"Desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"Chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"Monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]}]}
 """;
 
     /// <summary>A word the catalogue cannot express, carried back as the customer wrote it.</summary>
@@ -38,7 +38,7 @@ internal static class ScenarioLibrary
         {"kind":"stage","stage":"rephrasing","attempt":1}
         {"kind":"stage","stage":"selecting","attempt":1}
         {"kind":"stage","stage":"reviewing","attempt":1}
-        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]}]}
+        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"Desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"Chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"Monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"Desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"Chair","sku":"CHA9COSVF201","quantity":1},{"slot":"Monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"Desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"Chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"Monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair"],"unevaluated":[{"phrase":"barefoot","reason":"not_in_catalogue"}],"pinnedSlots":[]}]}
 """;
 
     /// <summary>A run that spent its attempts and still had an objection.</summary>
@@ -49,7 +49,7 @@ internal static class ScenarioLibrary
         {"kind":"stage","stage":"reviewing","attempt":1}
         {"kind":"stage","stage":"selecting","attempt":2}
         {"kind":"stage","stage":"reviewing","attempt":2}
-        {"kind":"result","status":"exhausted","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"chair","sku":"CHA9COSVF201","quantity":1},{"slot":"monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]}],"findings":[{"kind":"criteria_not_met","slot":"Chair"}]}
+        {"kind":"result","status":"exhausted","options":[{"tier":"low","lines":[{"slot":"Desk","sku":"DSKWWZEB3USL","quantity":1},{"slot":"Chair","sku":"CHAE2V0VGJZ8","quantity":1},{"slot":"Monitor","sku":"MONAA5DU36L3","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"middle","lines":[{"slot":"Desk","sku":"DSK72C2U9DMR","quantity":1},{"slot":"Chair","sku":"CHA9COSVF201","quantity":1},{"slot":"Monitor","sku":"MONWBHJHV4BD","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]},{"tier":"high","lines":[{"slot":"Desk","sku":"DSKQXUN06SC1","quantity":1},{"slot":"Chair","sku":"CHA3ELOX8PP8","quantity":1},{"slot":"Monitor","sku":"MON3Q5UEGB63","quantity":1}],"criteria":["slot:desk", "slot:chair", "slot:monitor"],"unevaluated":[],"pinnedSlots":[]}],"findings":[{"kind":"criteria_not_met","slot":"Chair"}]}
 """;
 
     /// <summary>A request that is not about a workspace, declined rather than failed.</summary>
@@ -71,7 +71,7 @@ internal static class ScenarioLibrary
         {"kind":"stage","stage":"verifying","attempt":1}
         not json at all
         {"kind":"stage","stage":"a-stage-nobody-defined","attempt":1}
-        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"desk","sku":"DSKWWZEB3USL","quantity":1}],"criteria":["slot:desk"],"unevaluated":[],"pinnedSlots":[]}]}
+        {"kind":"result","status":"ok","options":[{"tier":"low","lines":[{"slot":"Desk","sku":"DSKWWZEB3USL","quantity":1}],"criteria":["slot:desk"],"unevaluated":[],"pinnedSlots":[]}]}
 """;
 
     public static string For(string name) => name switch

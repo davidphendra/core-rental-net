@@ -7,7 +7,7 @@ tasks:
     description: "Add the composition contract to the Workspace application"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["workspace", "contract"]
@@ -15,7 +15,7 @@ tasks:
     description: "Add ApplyWorkspaceComposition: clear the slots, assign the composition, bump Version once"
     verify: 'dotnet test tests/CoreRentalNet.Modules.Workspace.UnitTests --nologo --filter "FullyQualifiedName~ApplyComposition"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["workspace", "application", "unit"]
@@ -23,7 +23,7 @@ tasks:
     description: "Reject a stale version and report it"
     verify: 'dotnet test tests/CoreRentalNet.Modules.Workspace.UnitTests --nologo --filter "FullyQualifiedName~VersionConflict"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["workspace", "unit", "concurrency"]

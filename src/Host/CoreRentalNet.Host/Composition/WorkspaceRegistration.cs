@@ -2,6 +2,7 @@ using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.Modules.Workspace.Application.Commands.AssignProduct;
 using CoreRentalNet.Modules.Workspace.Application.Commands.ChangeQuantity;
 using CoreRentalNet.Modules.Workspace.Application.Commands.RemoveAssignment;
+using CoreRentalNet.Modules.Workspace.Application.Commands.ApplyComposition;
 using CoreRentalNet.Modules.Workspace.Application.Commands.SetDeliveryAddress;
 using CoreRentalNet.Modules.Workspace.Application.Commands.StartDraft;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
@@ -54,6 +55,7 @@ internal static class WorkspaceRegistration
         builder.Services.AddScoped<IRemoveAssignmentHandler, RemoveAssignmentHandler>();
         builder.Services.AddScoped<IChangeQuantityHandler, ChangeQuantityHandler>();
         builder.Services.AddScoped<ISetDeliveryAddressHandler, SetDeliveryAddressHandler>();
+        builder.Services.AddScoped<IApplyCompositionHandler, ApplyCompositionHandler>();
     }
 
     /// <summary>

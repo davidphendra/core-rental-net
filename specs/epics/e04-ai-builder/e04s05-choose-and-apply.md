@@ -4,7 +4,8 @@
 **risk:** P0
 **context:** application
 **bcps:** 5
-**status:** failing
+**status:** in-progress
+**delivered so far:** the composition contract, `ApplyWorkspaceComposition` with its one-write/one-version replace, the stale-version refusal and the seven unit tests. Next: the Host mapper, the confirmation dialog and AIB-18 … AIB-20.
 
 ## Context
 

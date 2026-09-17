@@ -18,6 +18,16 @@ public interface IWorkspaceService
     /// <summary>Empties a slot. Returns false when the slot was already empty.</summary>
     bool Remove(Domain.Workspace workspace, SlotId slot);
 
+    /// <summary>
+    /// Replaces every slot with a composition, in one change.
+    /// </summary>
+    /// <remarks>
+    /// One change means one version bump: composing the existing operations would bump once per line,
+    /// and a caller watching the draft would see it pass through states that no customer asked for. The
+    /// delivery address is not a parameter, which is what stops this operation touching it.
+    /// </remarks>
+    void Replace(Domain.Workspace workspace, IReadOnlyList<Commands.ApplyComposition.CompositionLine> lines);
+
     /// <summary>Sets how many of one product a slot holds. Zero removes that product.</summary>
     void ChangeQuantity(Domain.Workspace workspace, SlotId slot, string sku, int quantity);
 

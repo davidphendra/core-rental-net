@@ -158,6 +158,28 @@ public sealed class WorkspaceService(ISlotRuleProvider slotRules) : IWorkspaceSe
         Touch(workspace);
     }
 
+    /// <summary>Clears the slots and assigns the composition, bumping the version exactly once.</summary>
+    /// <remarks>
+    /// One bump is the point: composing the operations above would bump once per line, and a caller
+    /// watching the draft would see it pass through states no customer asked for. The delivery address is
+    /// not a parameter, which is what stops this touching it.
+    /// </remarks>
+    public void Replace(Domain.Workspace workspace, IReadOnlyList<Commands.ApplyComposition.CompositionLine> lines)
+    {
+        ArgumentNullException.ThrowIfNull(workspace);
+
+        EnsureNotConverted(workspace);
+
+        // Built completely before anything is cleared: a rejected line has to leave the workspace as it
+        // was rather than as part of the answer.
+        var replacements = new Commands.ApplyComposition.CompositionWriter(slotRules).Assignments(lines);
+
+        workspace.Assignments.Clear();
+        workspace.Assignments.AddRange(replacements);
+
+        Touch(workspace);
+    }
+
     /// <summary>Trims each line, drops blank ones and normalises line endings.</summary>
     private static void EnsureNotConverted(Domain.Workspace workspace)
     {

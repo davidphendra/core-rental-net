@@ -69,6 +69,7 @@ public sealed class LocalAgentFixtureTests
         var tiers = new[] { "low", "middle", "high" };
         var findings = new[] { "criteria_not_met", "tier_composition" };
         var criteria = new System.Text.RegularExpressions.Regex("^(slot|quantity|tag|attribute):[a-z0-9:.-]+$");
+        var slots = Enum.GetNames<CoreRentalNet.Modules.Workspace.Domain.SlotId>();
 
         foreach (var (name, body) in ScenarioLibrary.All)
         {
@@ -93,6 +94,14 @@ public sealed class LocalAgentFixtureTests
                 foreach (var option in root.GetProperty("options").EnumerateArray())
                 {
                     Assert.Contains(option.GetProperty("tier").GetString()!, tiers);
+
+                    // The line's slot is a closed list too, and it is the one the apply depends on: a
+                    // composition naming "desk" rather than "Desk" would be refused by the workspace at
+                    // the last moment, having been accepted by everything before it.
+                    foreach (var item in option.GetProperty("lines").EnumerateArray())
+                    {
+                        Assert.Contains(item.GetProperty("slot").GetString()!, slots);
+                    }
 
                     foreach (var token in option.GetProperty("criteria").EnumerateArray())
                     {

@@ -98,10 +98,17 @@ epics:
         risk: P0
         record: specs/verifications/e04s04-after.md
         delivered: "four outcomes, the code-to-copy map, and the one-candidate rule"
+      - id: e04s05
+        slug: choose-and-apply
+        status: in-progress
+        risk: P0
+        record: specs/verifications/e04s05-module-after.md
+        delivered: "the composition contract, the one-write/one-version replace, and the stale refusal"
+        deferred: "the Host mapper, the confirmation dialog, and AIB-18 to AIB-20"
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 626, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 633, failed: 0, skipped: 0 }
   browser: { passed: 113, failed: 0, skipped: 1 }
 
 gates:
