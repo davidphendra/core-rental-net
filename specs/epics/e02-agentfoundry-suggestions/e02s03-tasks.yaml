@@ -1,13 +1,13 @@
 story_id: e02s03
 title: The request becomes a specification
-status: failing
+status: passing
 bcps: 5
 tasks:
   - id: 1
     description: "Add the intent table as data with its loader and validation"
     verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "config"]
@@ -15,7 +15,7 @@ tasks:
     description: "Implement the rephraser: normalise to canonical phrases, look up the table, build the specification"
     verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "workflow"]
@@ -23,7 +23,7 @@ tasks:
     description: "Add the miss path: classify into the closed SlotId enum, mark the set inferred, log the miss"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~IntentMissTests"'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["agent", "unit"]
@@ -31,7 +31,7 @@ tasks:
     description: "Apply quantities, clamping to the capacity the request carries"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~QuantityTests"'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["agent", "unit"]
@@ -39,7 +39,7 @@ tasks:
     description: "Accept the findings input so a retry is authored by the same component that authored attempt one"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~FindingsIntakeTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "unit"]
@@ -47,7 +47,7 @@ tasks:
     description: "Unit tests AGT-04 to AGT-07"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~RephraserTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "unit"]

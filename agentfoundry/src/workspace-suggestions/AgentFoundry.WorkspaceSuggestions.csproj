@@ -10,6 +10,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Agents.AI" />
     <PackageReference Include="Microsoft.Agents.AI.Workflows" />
+    <!-- The intent table's miss is logged, and that line is the only thing that shows the table has
+         stopped being useful. Referenced directly because this project names the type. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
 
 </Project>

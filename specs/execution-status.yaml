@@ -51,6 +51,11 @@ epics:
         status: passing
         risk: P0
         record: specs/verifications/e02s02-after.md
+      - id: e02s03
+        slug: rephraser
+        status: passing
+        risk: P0
+        record: specs/verifications/e02s03-after.md
   - id: e04
     slug: ai-builder
     status: not-started
@@ -77,7 +82,13 @@ notes: |
   agentfoundry/, with its own solution, and the application's baselines did not move - which is the
   property specs/adr/0001 exists to protect. The record is specs/verifications/e02s02-after.md.
 
-  Next: e02s03, the rephraser, which attaches the second node to the graph. e02s01 - the Auth0 spike,
+  e02s03 is complete: the declared intent table (data, with a loader that refuses a row naming an
+  unknown slot), the model fallback for a miss, the quantity rule clamped to the capacity the request
+  carries, and the rephraser attached as the graph's second node. 17 agent tests pass. The record is
+  specs/verifications/e02s03-after.md.
+
+  Next: e02s04, the suggestor - the only node that reads the catalogue, and the one that gives the run
+  a result worth sending. e02s01 - the Auth0 spike,
   the one hard gate - still needs a subscription and a login, and gates e02s03 onward only in the
   sense that the catalogue path it decides is wired at e02s07.
 

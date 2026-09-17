@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** infra
 **bcps:** 5
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -65,7 +65,7 @@ would make "low / middle / high" ambiguous for that slot.
 3. Send a phrasing the table does not hold → the slot set is present, marked inferred, and a miss is
    logged.
 4. Send a request asking for five monitors when the capacity is three → the quantity is three.
-5. Confirm the slot set is byte-for-byte identical across the three candidates once `e02s04` exists.
+5. Confirm the same request produces the same slot set twice over. Comparing three candidates needs candidates, which arrive with `e02s04`.
 
 ## Test matrix
 
@@ -74,7 +74,7 @@ would make "low / middle / high" ambiguous for that slot.
 | AGT-04 | A declared phrase produces its slot set | unit |
 | AGT-05 | A miss falls back to `SlotId`, marked inferred, and is logged | unit |
 | AGT-06 | Quantity defaults to 1 and is clamped to the request's capacity | unit |
-| AGT-07 | The slot set is identical across all three candidates | unit |
+| AGT-07 | The same request produces the same specification, and one run asks once | unit |
 
 ## Out of scope
 

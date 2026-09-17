@@ -33,7 +33,7 @@ stories:
     type: feat
     bcps: 5
     risk: P0
-    status: failing
+    status: passing
   - id: e02s04
     slug: suggestor
     title: The catalogue becomes three candidates

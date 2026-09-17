@@ -1,8 +1,10 @@
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
+using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using AgentFoundry.WorkspaceSuggestions.Workflows;
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace AgentFoundry.Tests;
@@ -56,18 +58,58 @@ public sealed class SuggestionWorkflowTests
     }
 
     [Fact] // AGT-03
-    public async Task An_accepted_request_streams_its_stage_and_sends_no_result_yet()
+    public async Task An_accepted_request_streams_both_stages_and_sends_no_result_yet()
     {
         // Not a passing state to ship, but the honest one: the nodes that read the catalogue and compose
         // candidates attach to this graph as they are written, and an approved composition with no
         // products in it would be a result the caller could not tell from a real one.
         var messages = await CollectAsync(AWorkflow(workspaceRequest: true), ARequest());
 
-        messages.Should().ContainSingle().Which.Should().BeOfType<StageEvent>();
+        messages.Should().AllBeOfType<StageEvent>();
+        messages.Cast<StageEvent>().Select(stage => stage.Stage)
+            .Should().Equal(Stages.Verifying, Stages.Rephrasing);
+    }
+
+    [Fact] // AGT-03
+    public async Task A_refused_request_never_reaches_the_second_stage()
+    {
+        var messages = await CollectAsync(AWorkflow(workspaceRequest: false), ARequest());
+
+        messages.OfType<StageEvent>().Select(stage => stage.Stage).Should().Equal(Stages.Verifying);
+        messages.OfType<SuggestionResult>().Should().ContainSingle();
     }
 
     private static SuggestionWorkflow AWorkflow(bool workspaceRequest)
-        => new(new ScriptedIntentClassifier(workspaceRequest));
+        => new(
+            new ScriptedIntentClassifier(workspaceRequest),
+            new Rephraser(
+                IntentTable.Load(Path.Combine(
+                    Repository(), "agentfoundry", "shared", "intent", "workspace-intents.json")),
+                new ScriptedSlotClassifier(),
+                NullLogger<Rephraser>.Instance));
+
+    /// <summary>Whatever the table misses on, an empty set is enough for a graph test.</summary>
+    private sealed class ScriptedSlotClassifier : ISlotClassifier
+    {
+        public Task<IReadOnlyList<string>> ClassifyAsync(
+            string query,
+            IReadOnlyList<SlotRule> slots,
+            IReadOnlyList<Finding> findings,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<string>>(["Desk"]);
+    }
+
+    private static string Repository()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "agentfoundry")))
+        {
+            directory = directory.Parent;
+        }
+
+        return directory?.FullName ?? throw new InvalidOperationException("the test binary runs inside the repository");
+    }
 
     private static SuggestionRequest ARequest()
         => new(

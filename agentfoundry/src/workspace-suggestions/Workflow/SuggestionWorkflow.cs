@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
+using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using Microsoft.Agents.AI.Workflows;
 
@@ -13,7 +14,9 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// <para>
 /// The graph is built with Microsoft Agent Framework, and the run is streamed: the caller sees each
 /// stage as the node behind it finishes rather than waiting for the end, which is the whole reason the
-/// contract has stage messages at all.
+/// contract has stage messages at all. Each node's executor id <em>is</em> its stage id, so the event
+/// the framework raises is already the message the contract sends - one name, not a name and a mapping
+/// that can disagree with it.
 /// </para>
 /// <para>
 /// A refusal is a result, not an exception. The verifier succeeding at its job is what produces it, so
@@ -22,21 +25,27 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// </remarks>
 public sealed class SuggestionWorkflow
 {
-    private readonly IIntentClassifier _classifier;
+    /// <summary>Which attempt every stage belongs to. Retries arrive with the reviewer.</summary>
+    private const int FirstAttempt = 1;
 
-    public SuggestionWorkflow(IIntentClassifier classifier)
+    private readonly IIntentClassifier _classifier;
+    private readonly IRephraseRequests _rephraser;
+
+    public SuggestionWorkflow(IIntentClassifier classifier, IRephraseRequests rephraser)
     {
         ArgumentNullException.ThrowIfNull(classifier);
+        ArgumentNullException.ThrowIfNull(rephraser);
 
         _classifier = classifier;
+        _rephraser = rephraser;
     }
 
     /// <summary>Runs one request, streaming the stages it passes and the result it ends with.</summary>
     /// <remarks>
-    /// A request the verifier accepts currently ends after verification: the nodes that read the
+    /// A request the verifier accepts currently ends after the specification: the nodes that read the
     /// catalogue and compose candidates attach to this graph as they are written, and until they exist
     /// there is no honest result to send - an approved composition with no products in it would be a
-    /// lie the caller could not detect.
+    /// result the caller could not tell from a real one.
     /// </remarks>
     public async IAsyncEnumerable<SuggestionMessage> RunAsync(
         SuggestionRequest request,
@@ -44,9 +53,32 @@ public sealed class SuggestionWorkflow
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        yield return Stage(request, Stages.Verifying, attempt: 1);
+        var verifier = new VerifierExecutor(_classifier);
+        var rephraser = new RephraserExecutor(_rephraser);
 
-        var verification = await VerifyAsync(request, cancellationToken);
+        var workflow = new WorkflowBuilder(verifier)
+            .AddEdge<Verification>(
+                verifier,
+                rephraser,
+                condition: raised => raised is { Verdict.IsWorkspaceRequest: true })
+            .WithOutputFrom(verifier)
+            .Build();
+
+        await using var run = await InProcessExecution.RunStreamingAsync(workflow, request);
+
+        Verification? verification = null;
+
+        await foreach (var raised in run.WatchStreamAsync(cancellationToken))
+        {
+            if (raised is ExecutorCompletedEvent { ExecutorId: var stage } && Stages.InOrder.Contains(stage))
+            {
+                yield return Stage(request, stage);
+            }
+            else if (raised is WorkflowOutputEvent { Data: Verification answer })
+            {
+                verification = answer;
+            }
+        }
 
         if (verification is null)
         {
@@ -60,37 +92,17 @@ public sealed class SuggestionWorkflow
             {
                 RequestId = request.RequestId,
                 Status = ReasonCodes.Rejected,
-                Attempts = 1,
+                Attempts = FirstAttempt,
                 Code = verification.Verdict.Code,
             };
         }
     }
 
-    private async Task<Verification?> VerifyAsync(SuggestionRequest request, CancellationToken cancellationToken)
-    {
-        var verifier = new VerifierExecutor(_classifier);
-        var workflow = new WorkflowBuilder(verifier).WithOutputFrom(verifier).Build();
-
-        await using var run = await InProcessExecution.RunStreamingAsync(workflow, request);
-
-        Verification? verification = null;
-
-        await foreach (var raised in run.WatchStreamAsync(cancellationToken))
-        {
-            if (raised is WorkflowOutputEvent { Data: Verification answer })
-            {
-                verification = answer;
-            }
-        }
-
-        return verification;
-    }
-
-    private static StageEvent Stage(SuggestionRequest request, string stage, int attempt)
+    private static StageEvent Stage(SuggestionRequest request, string stage)
         => new()
         {
             RequestId = request.RequestId,
             Stage = stage,
-            Attempt = attempt,
+            Attempt = FirstAttempt,
         };
 }

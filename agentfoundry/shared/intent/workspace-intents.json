@@ -1,0 +1,32 @@
+// The declared phrasings that mean a slot set. A phrase the table does not hold sends the run to the
+// model fallback and is logged as a miss, which is why this is data with a reviewable diff rather than
+// a literal in code, and why the table being incomplete is visible rather than silent.
+//
+// Matching is whole-word and ignores case; a trailing plural is ignored on both sides. The longest
+// declared phrase that appears in a request wins, so the file does not have to be ordered.
+[
+  {
+    "phrases": ["office setup", "full office", "complete office", "whole office"],
+    "slots": ["Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation"]
+  },
+  {
+    "phrases": ["minimal desk", "just the essentials", "essential setup", "desk only"],
+    "slots": ["Desk", "Chair"]
+  },
+  {
+    "phrases": ["focus corner", "quiet corner", "work corner", "quiet place"],
+    "slots": ["Desk", "Chair", "Monitor", "Lamp", "Plant"]
+  },
+  {
+    "phrases": ["relax area", "break corner", "chill corner"],
+    "slots": ["RelaxZone", "Plant"]
+  },
+  {
+    "phrases": ["coffee station", "coffee corner", "coffee setup"],
+    "slots": ["CoffeeStation", "Desk", "Chair"]
+  },
+  {
+    "phrases": ["two monitor setup", "dual monitor setup", "twin screen setup"],
+    "slots": ["Desk", "Chair", "Monitor", "Lamp"]
+  }
+]

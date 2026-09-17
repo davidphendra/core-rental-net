@@ -13,7 +13,7 @@ environment (the same opt-in pattern as `RealTenantTests`).
 | AGT-04 | e02s03 | A phrase declared in the intent table produces its slot set | unit | P0 |
 | AGT-05 | e02s03 | A table miss falls back to the closed `SlotId` enum and marks the set inferred; the miss is logged | unit | P1 |
 | AGT-06 | e02s03 | Quantity defaults to 1 and is clamped to the capacity the request carries | unit | P1 |
-| AGT-07 | e02s03 | The slot set is identical across all three candidates | unit | P0 |
+| AGT-07 | e02s03 | The same request produces the same specification, and one run asks for it once | unit | P0 |
 | AGT-08 | e02s04 | Price position: cheapest, median index, most expensive per slot, ties by SKU | unit | P0 |
 | AGT-09 | e02s04 | A slot with fewer than three candidates is pinned in every candidate and disclosed | unit | P0 |
 | AGT-10 | e02s04 | When every slot is pinned the result carries one candidate, not three identical ones | unit | P1 |
