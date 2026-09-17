@@ -123,6 +123,14 @@ gates:
   blind_spots: not_run
   completeness_critic: not_run
 
+corrections:
+  - what: "e02s03 task 3 was closed passing with no model behind it"
+    found: "2026-09-16"
+    record: specs/verifications/e02s03-model-path-after.md
+    lesson: >-
+      A verification record that counts a test fake's calls as model calls makes a missing model
+      invisible in the document meant to make gaps visible. Counts should name what they counted.
+
 notes: |
   e03 is complete: all three stories pass, and the catalogue endpoint now carries typed metadata on
   every product, a compact projection for a machine caller, and an envelope that says whether an

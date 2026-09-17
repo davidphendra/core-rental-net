@@ -43,6 +43,9 @@
          is where a real endpoint exists to verify them against. -->
     <PackageVersion Include="Microsoft.Agents.AI" Version="1.21.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.21.0" />
+    <!-- The seam a model sits behind. Named directly because this tree's classifiers name the type,
+         rather than relying on it arriving through Microsoft.Agents.AI. MIT. -->
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.10.0" />
     <!-- The intent table's miss is logged. MIT. Same version as the other Microsoft.Extensions pins. -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
     <!-- The client the application uses to reach the hosted agent's Responses endpoint, and the

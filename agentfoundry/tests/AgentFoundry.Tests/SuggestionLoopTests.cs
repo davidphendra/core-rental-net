@@ -74,6 +74,71 @@ public sealed class SuggestionLoopTests
             (Stages.Rephrasing, 2), (Stages.Selecting, 2), (Stages.Reviewing, 2));
     }
 
+    /// <summary>
+    /// The loop, with the real classifiers and a model that says two things.
+    /// </summary>
+    /// <remarks>
+    /// Every other test here hands the workflow fakes for the two ports a model sits behind, which proves
+    /// the loop works and says nothing about whether the ports can actually be satisfied. This one wires
+    /// the real classifiers in and counts the model calls, so a classifier that did not fit - a prompt
+    /// that would not render, an answer the workflow could not use - shows up as a failed run rather than
+    /// as a gap nobody looks at.
+    /// </remarks>
+    [Fact]
+    public async Task The_real_classifiers_drive_the_loop()
+    {
+        var model = new ScriptedChatClient(
+            """{"isWorkspaceRequest": true, "code": "ok"}""",
+            // The catalogue this loop is given holds a desk and nothing else, which is all the request
+            // needs: what is being proved here is that a real classification reaches the composition.
+            """["Desk"]""");
+
+        var prompts = AgentFoundry.WorkspaceSuggestions.Prompts.PromptLibrary.Beside(AppContext.BaseDirectory);
+
+        var workflow = new SuggestionWorkflow(
+            new AgentFoundry.WorkspaceSuggestions.Intent.IntentClassifier(model, prompts),
+            new Rephraser(
+                IntentTable.Load(Path.Combine(Repository(), "agentfoundry", "shared", "intent", "workspace-intents.json")),
+                new AgentFoundry.WorkspaceSuggestions.Intent.SlotClassifier(model, prompts),
+                NullLogger<Rephraser>.Instance),
+            new Suggestor(new Catalogue()),
+            new Reviewer(new NoObjection()),
+            NullLogger<SuggestionWorkflow>.Instance);
+
+        var messages = new List<SuggestionMessage>();
+
+        await foreach (var message in workflow.RunAsync(ADeskOnly()))
+        {
+            messages.Add(message);
+        }
+
+        var result = messages.OfType<SuggestionResult>().Single();
+
+        result.Status.Should().Be(ReasonCodes.Ok);
+
+        // One, not three: the catalogue here holds a single desk, and a run that composed three tiers out
+        // of one product would be padding. The tier only means something when there is a choice.
+        result.Options.Should().ContainSingle();
+        result.Options[0].Lines.Should().ContainSingle().Which.Sku.Should().Be("DSK-A");
+
+        model.Calls.Should().Be(2, "one verdict, and one classification because the table missed the phrasing");
+    }
+
+    /// <summary>
+    /// A request the catalogue in this file can satisfy.
+    /// </summary>
+    /// <remarks>
+    /// It holds one desk and no chair, and the other tests here never needed more: they hand the rephraser
+    /// a classifier that answers "Desk". Asking for a chair as well makes the run exhausted, correctly -
+    /// the reviewer objects that a mandatory slot is missing from a specification that cannot fill it -
+    /// which is the pipeline working rather than the wiring being tested here.
+    /// </remarks>
+    private static SuggestionRequest ADeskOnly()
+        => new(
+            "0f3c4e2a-0000-4000-8000-000000000002",
+            "somewhere to think",
+            [new SlotRule("Desk", "Desk", 1, IsMandatory: true)]);
+
     private static async Task<List<SuggestionMessage>> CollectAsync(IReviewComposition judgement)
     {
         var request = ARequest();
@@ -147,6 +212,16 @@ public sealed class SuggestionLoopTests
                 1,
                 Truncated: false,
                 "IDR"));
+    }
+
+    /// <summary>Nothing to object to, which is a run that succeeds.</summary>
+    private sealed class NoObjection : IReviewComposition
+    {
+        public Task<IReadOnlyList<Finding>> ReviewAsync(
+            string query,
+            IReadOnlyList<SuggestionOption> options,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Finding>>([]);
     }
 
     /// <summary>Objects every time, which is what a run that cannot be approved looks like.</summary>
