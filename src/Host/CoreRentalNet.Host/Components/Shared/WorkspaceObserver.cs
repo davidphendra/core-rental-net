@@ -21,7 +21,7 @@ public abstract class WorkspaceObserver : ComponentBase, IDisposable
 
     private void OnWorkspaceChanged() => InvokeAsync(StateHasChanged);
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         Session.Changed -= OnWorkspaceChanged;
         GC.SuppressFinalize(this);

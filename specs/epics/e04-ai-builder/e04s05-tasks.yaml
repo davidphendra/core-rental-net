@@ -1,6 +1,6 @@
 story_id: e04s05
 title: Choosing a candidate replaces the workspace
-status: failing
+status: done
 bcps: 5
 tasks:
   - id: 1
@@ -31,7 +31,7 @@ tasks:
     description: "Add the confirmation dialog, shown only when the workspace is non-empty"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["ui", "builder"]
@@ -39,7 +39,7 @@ tasks:
     description: "Map the chosen candidate to a composition in the Host, dropping unknown SKUs and reporting the drops"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["host", "wiring"]
@@ -47,7 +47,7 @@ tasks:
     description: "Unit test AIB-21 and browser tests AIB-18 to AIB-20"
     verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderApplyTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["ui", "e2e"]
@@ -55,7 +55,7 @@ tasks:
     description: "Re-run the three baselines and record them under specs/verifications"
     verify: 'dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E" --nologo'
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["baselines"]

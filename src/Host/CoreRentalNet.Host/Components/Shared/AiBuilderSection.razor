@@ -3,11 +3,17 @@
    this is one thing it can additionally offer. A customer without the entitlement sees the builder
    unchanged, which is what a closed feature looks like from the outside. *@
 @inject ISuggestWorkspaceOptions Suggestions
+@inject IApplyCompositionHandler ApplyComposition
+@inject IProductCatalog Catalog
 @inject IAuthorizationService Authorization
-@implements IDisposable
+@inherits WorkspaceObserver
 
 <AuthorizeView Policy="@AiBuilderReadPolicy.Name">
     <Authorized>
+        <CompositionConfirmDialog @ref="confirmation"
+                                  Message="@ConfirmMessage"
+                                  Dropped="@pendingDropped"
+                                  OnConfirm="ApplyAsync" />
         <section class="ai mb-section-gap" data-testid="ai-section" aria-labelledby="ai-heading">
             <h2 id="ai-heading" class="text-headline-sm font-display-lg text-primary mb-2">
                 Not sure where to start?
@@ -81,6 +87,20 @@
                 }
             }
 
+            @* What an apply did, said where the customer is looking rather than in the dialog they
+               have already dismissed. *@
+            @if (applyError is not null)
+            {
+                <p class="alert" role="alert" data-testid="apply-refused">@applyError</p>
+            }
+
+            @if (appliedDropped.Count > 0)
+            {
+                <p class="alert" role="status" data-testid="apply-dropped">
+                    Not included, because they are no longer in our catalogue: @string.Join(", ", appliedDropped).
+                </p>
+            }
+
             @if (outcome is not null)
             {
                 <div class="ai__outcome" data-testid="ai-outcome" data-status="@outcome.Status">
@@ -145,6 +165,11 @@
                                         </p>
                                     }
 
+                                    <button type="button" class="ai__apply" data-testid="ai-apply"
+                                            data-tier="@option.Tier" @onclick="() => SelectAsync(option)">
+                                        Use this setup
+                                    </button>
+
                                     @if (option.Unevaluated.Count > 0)
                                     {
                                         @* The customer's own words, quoted, because they are the only
@@ -174,6 +199,11 @@
     private CancellationTokenSource? run;
     private bool running;
     private bool collapsed;
+    private SuggestedOption? pending;
+    private IReadOnlyList<CompositionLine> pendingLines = [];
+    private IReadOnlyList<string> pendingDropped = [];
+    private IReadOnlyList<string> appliedDropped = [];
+    private string? applyError;
 
     /// <summary>What a screen reader is told, which is the stage the run has just reached.</summary>
     private string announcement = string.Empty;
@@ -187,6 +217,9 @@
     /// control a customer can reach by looking rather than a choice we made.
     /// </remarks>
     private bool threeCandidates;
+
+    /// <summary>Which draft to replace. Supplied by the page, which is the thing that knows.</summary>
+    [Parameter] public string? Token { get; set; }
 
     [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
 
@@ -258,6 +291,78 @@
     /// <summary>Stops the run. The stream ends, and no candidate is left behind.</summary>
     private void Cancel() => run?.Cancel();
 
+    /// <summary>
+    /// The customer chose a candidate: work out what applying it means, then ask if there is anything to
+    /// lose.
+    /// </summary>
+    /// <remarks>
+    /// The composition is worked out before the dialog appears rather than after it is confirmed, because
+    /// a product that has left the catalogue since the run is part of what the customer is agreeing to -
+    /// and being told about it after the fact would make the confirmation a formality.
+    /// </remarks>
+    private async Task SelectAsync(SuggestedOption option)
+    {
+        ArgumentNullException.ThrowIfNull(option);
+
+        var (lines, dropped) = CompositionFromOption.From(option, Catalog);
+
+        pending = option;
+        pendingLines = lines;
+        pendingDropped = dropped;
+        applyError = null;
+        appliedDropped = [];
+
+        if (Session.IsEmpty || lines.Count == 0)
+        {
+            await ApplyAsync();
+            return;
+        }
+
+        confirmation ??= new CompositionConfirmDialog();
+
+        await confirmation.ShowAsync();
+    }
+
+    /// <summary>
+    /// Replaces the draft's slots with the chosen composition, if the draft has not moved on.
+    /// </summary>
+    /// <remarks>
+    /// The version the composition was chosen against is sent with it. If another tab changed the draft
+    /// while the run was happening, nothing is written and the customer is told the workspace changed -
+    /// which is the loud half of the rule that a draft is only edited deliberately.
+    /// </remarks>
+    private async Task ApplyAsync()
+    {
+        if (pending is null || Session.Current is null || string.IsNullOrWhiteSpace(Token))
+        {
+            return;
+        }
+
+        applyError = null;
+        appliedDropped = [];
+
+        var applied = await ApplyComposition.HandleAsync(
+            new ApplyCompositionCommand(Token, Session.Current.Version, pendingLines));
+
+        if (applied == CompositionApplyOutcome.Stale)
+        {
+            // Not applied, and said so: the customer's other work is still there, and what they need to
+            // do is look at it rather than press the button again.
+            applyError = ApplyStaleCopy;
+            return;
+        }
+
+        appliedDropped = pendingDropped;
+
+        await Session.RefreshAsync(Token);
+
+        // The candidates belonged to the workspace as it was, so they go with it.
+        outcome = null;
+        pending = null;
+        stages.Clear();
+        collapsed = false;
+    }
+
     private void Expand() => collapsed = false;
 
     /// <summary>The stage as a screen reader hears it, or nothing for an id we have no words for.</summary>
@@ -271,9 +376,27 @@
             ? SuggestionStageCopy.Attempt(attempt) is { } which ? $"{words}, {which}" : words
             : string.Empty;
 
-    public void Dispose()
+    /// <summary>What the dialog tells the customer will be replaced.</summary>
+    /// <remarks>
+    /// It names the count and the setup, because "replace your workspace" is a question a customer cannot
+    /// answer without knowing both halves of it.
+    /// </remarks>
+    private string ConfirmMessage
+        => $"Your workspace already has {Session.TotalUnits} item{(Session.TotalUnits == 1 ? "" : "s")} in it. "
+            + $"Replacing it with the {OutcomeCopy.Tier(pending?.Tier)} setup clears what is there and uses these instead. "
+            + "Your delivery address is kept either way.";
+
+    /// <summary>What the page says when the draft moved on between the run and the apply.</summary>
+    private const string ApplyStaleCopy =
+        "Your workspace changed while we were working, so nothing was replaced. Have a look at it and ask again.";
+
+    private CompositionConfirmDialog? confirmation;
+
+    public override void Dispose()
     {
         run?.Cancel();
         run?.Dispose();
+
+        base.Dispose();
     }
 }

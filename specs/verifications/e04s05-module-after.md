@@ -2,8 +2,7 @@
 
 **Date:** 2026-09-16
 **Branch:** `e03-catalogue-contract`
-**Status:** story **in-progress** — steps 1–3 and 6's unit half are done; the Host mapper, the
-confirmation dialog and AIB-18 … AIB-20 are next.
+**Status:** story **done** — the module, the Host mapper, the confirmation dialog and AIB-18 … AIB-21.
 
 ## What was run
 
@@ -11,7 +10,7 @@ confirmation dialog and AIB-18 … AIB-20 are next.
 |---|---|---|
 | BUILD `CoreRentalNet.sln` | 0 warnings, 0 errors | **0 warnings, 0 errors** |
 | NONBROWSER | 626 passed, 0 failed | **633 passed, 0 failed** |
-| BROWSER | 113 passed, 1 skipped | **113 passed, 0 failed, 1 skipped** |
+| BROWSER | 113 passed, 1 skipped | **116 passed, 0 failed, 1 skipped** |
 | `agentfoundry/AgentFoundry.sln` | 38 passed | **38 passed** |
 
 ## What was built
@@ -65,11 +64,44 @@ Two budget failures, both from adding to something already near the line:
 2. Earlier in the story, `ResponsesAgentTextStream.AskAsync` (43 lines) was split so the translation sits
    outside the loop that yields — a `yield return` cannot live in a try with a catch.
 
+## The apply, in the Host
+
+`CompositionFromOption` turns the chosen candidate into the composition the workspace is replaced with.
+What does **not** cross is everything the agent said about *why* — the criteria, the tier's name, the
+findings — because the Workspace module has no use for them.
+
+**The catalogue is checked again here**, not trusted from the run. The two are minutes apart and a product
+can leave the catalogue in between; a line the catalogue no longer holds is dropped and named. Checked
+*before* the dialog appears rather than after it is confirmed, because a dropped line is part of what the
+customer is agreeing to — telling them afterwards would make the confirmation a formality.
+
+| Test | What it holds |
+|---|---|
+| AIB-18 | a non-empty workspace asks; the dialog names the count and the tier; **cancelling leaves the workspace as it was** |
+| AIB-19 | confirming replaces the slots — three, not five — and the **delivery address survives**, proved by setting one, applying over it, and going to look |
+| AIB-20 | an empty workspace applies with **no dialog**, the composition is the workspace, and the candidates go with it |
+
+## Two collisions worth knowing about
+
+1. **`DraftToken` is already a domain type.** The component's parameter could not be called that, because
+   every page imports the module's domain. It is `Token`.
+2. **`outcome` was shadowed.** A local `var outcome` in the apply path hid the field the page renders, so
+   the line clearing it could never have worked. Renamed to `applied`.
+
+## The design-token test reads *every word in a quoted literal*
+
+My copy contained the word "left" — an ordinary English word, and also a Tailwind class in the design
+prototype. The checker is deliberately crude: it extracts words from quoted literals and asks whether the
+stylesheet generates them. Rewording the copy is cheaper than a cleverer test that would then miss real
+ones. It caught me twice, the second time inside the **comment explaining the first** — the explanation
+quoted the offending word.
+
 ## Not done, deliberately
 
-- **The Host mapper** (step 5): candidate → composition, dropping SKUs the catalogue no longer holds and
-  reporting the drops, re-checked at apply time because a product can leave the catalogue between the run
-  and the apply.
-- **The confirmation dialog** (step 4), shown only when the workspace is non-empty, naming what will be
-  replaced.
-- **AIB-18 … AIB-20** (browser).
+- **Merging** a candidate into an existing workspace. Refused by design: a tier means desk, chair and
+  monitor all chosen together, so a high-tier chair in a low-tier desk is not one of the three, and the
+  label on the option the customer accepted would be a lie.
+- **Undo.** The confirmation is the safeguard.
+- **A browser test for the version conflict.** AIB-21 covers the rule at unit level and the page renders
+  the message; driving two tabs through the browser suite is worth its own story rather than a paragraph
+  of this one.

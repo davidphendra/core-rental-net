@@ -1,0 +1,59 @@
+@* Replacing a workspace is the one destructive thing this page does, so it asks - and only when
+   there is something to lose. An empty workspace applies without a dialog, because a confirmation
+   that guards nothing is a step a customer learns to click through. *@
+<ModalDialog @ref="dialog" Title="Replace your workspace?" OnClosed="OnDismissed">
+    <ChildContent>
+        <p class="body-md" data-testid="apply-confirm-body">@Message</p>
+
+        @if (Dropped.Count > 0)
+        {
+            <p class="alert" role="status" data-testid="apply-confirm-dropped">
+                @DroppedNotice
+            </p>
+        }
+    </ChildContent>
+    <Actions>
+        <button type="button" class="button button--ghost" data-testid="apply-cancel" @onclick="CloseAsync">
+            Keep mine
+        </button>
+        <button type="button" class="button button--cta" data-testid="apply-confirm" @onclick="ConfirmAsync">
+            Replace it
+        </button>
+    </Actions>
+</ModalDialog>
+
+@code {
+    private ModalDialog? dialog;
+
+    /// <summary>What will be replaced, and with what, in the application's words.</summary>
+    [Parameter] public string Message { get; set; } = string.Empty;
+
+    /// <summary>Lines that were dropped before the customer was asked, so the choice is an informed one.</summary>
+    [Parameter] public IReadOnlyList<string> Dropped { get; set; } = [];
+
+    [Parameter] public EventCallback OnConfirm { get; set; }
+
+    [Parameter] public EventCallback OnDismissed { get; set; }
+
+    /// <summary>
+    /// Said before the choice, not after it.
+    /// </summary>
+    /// <remarks>
+    /// Worded to avoid the words this stylesheet uses as class names, because the design-token test reads
+    /// every word inside a quoted literal - including the quotation in this very sentence - and a stray
+    /// one reads as a class the stylesheet failed to generate. The test is deliberately crude, and
+    /// rewording the copy is cheaper than a cleverer test that would miss real ones.
+    /// </remarks>
+    private string DroppedNotice
+        => $"Not in our catalogue any more, so not included: {string.Join(", ", Dropped)}.";
+
+    public Task ShowAsync() => dialog?.ShowAsync() ?? Task.CompletedTask;
+
+    public Task CloseAsync() => dialog?.CloseAsync() ?? Task.CompletedTask;
+
+    private async Task ConfirmAsync()
+    {
+        await CloseAsync();
+        await OnConfirm.InvokeAsync();
+    }
+}
