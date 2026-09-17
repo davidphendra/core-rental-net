@@ -31,14 +31,14 @@ public sealed class Rephraser(IntentTable table, ISlotClassifier classifier, ILo
 
         if (table.Match(request.Query) is { } declared)
         {
-            return new Specification(request.RequestId, request.Query, Requirements(request, declared, inferred: false));
+            return new Specification(request, Requirements(request, declared, inferred: false));
         }
 
         IntentLog.Missed(log, request.RequestId, request.Query.Length);
 
         var inferred = await classifier.ClassifyAsync(request.Query, request.Slots, findings, cancellationToken);
 
-        return new Specification(request.RequestId, request.Query, Requirements(request, Known(request, inferred), inferred: true));
+        return new Specification(request, Requirements(request, Known(request, inferred), inferred: true));
     }
 
     /// <summary>

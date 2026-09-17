@@ -15,4 +15,18 @@ public static class Tier
 
     /// <summary>Every tier, in the order they are offered and in the order of their positions.</summary>
     public static readonly IReadOnlyList<string> All = [Low, Middle, High];
+
+    /// <summary>Where a tier sits among the positions, or -1 when the text names no tier.</summary>
+    public static int PositionOf(string? tier)
+    {
+        for (var index = 0; index < All.Count; index++)
+        {
+            if (string.Equals(All[index], tier, StringComparison.Ordinal))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
 }

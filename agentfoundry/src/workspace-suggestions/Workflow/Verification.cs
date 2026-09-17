@@ -1,4 +1,5 @@
 using AgentFoundry.WorkspaceSuggestions.Contracts;
+using AgentFoundry.WorkspaceSuggestions.Intent;
 
 namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 
@@ -8,4 +9,9 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// the request. Carrying the decision as a property rather than as a message type keeps one shape on
 /// every edge, which is what makes the edge condition readable.
 /// </remarks>
-public sealed record Verification(SuggestionRequest Request, Intent.IntentVerdict Verdict);
+public sealed record Verification(
+    SuggestionRequest Request,
+    IntentVerdict Verdict,
+    IReadOnlyList<Finding> Findings,
+    int Attempt)
+    : RephraseInput(Request, Findings, Attempt);

@@ -26,6 +26,7 @@ internal sealed class VerifierExecutor(IIntentClassifier classifier)
 
         var verdict = await classifier.ClassifyAsync(message.Query, cancellationToken);
 
-        return new Verification(message, verdict);
+        // The first attempt, and nothing has objected to anything yet.
+        return new Verification(message, verdict, [], Attempt: 1);
     }
 }

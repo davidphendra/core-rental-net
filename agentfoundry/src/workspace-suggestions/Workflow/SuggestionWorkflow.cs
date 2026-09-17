@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
+using AgentFoundry.WorkspaceSuggestions.Review;
 using AgentFoundry.WorkspaceSuggestions.Selection;
 using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
@@ -20,62 +21,57 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 /// that can disagree with it.
 /// </para>
 /// <para>
+/// The retry edge runs from the reviewer back to the rephraser, not to the verifier: the request was
+/// already judged to be about a workspace, and what changes between attempts is the specification, not
+/// the question. The loop is bounded, and a retry that produces the specification it replaced stops it
+/// early - a budget bounds the cost of trying, it does not oblige the run to try pointlessly.
+/// </para>
+/// <para>
 /// A refusal is a result, not an exception. The verifier succeeding at its job is what produces it, so
 /// the caller receives a typed answer carrying a code, and the transport stays a success either way.
 /// </para>
 /// </remarks>
 public sealed class SuggestionWorkflow
 {
-    /// <summary>Which attempt every stage belongs to. Retries arrive with the reviewer.</summary>
-    private const int FirstAttempt = 1;
+    /// <summary>How many times the composition may be sent back to be rephrased.</summary>
+    public const int Attempts = 3;
 
     private readonly IIntentClassifier _classifier;
     private readonly IRephraseRequests _rephraser;
     private readonly ISelectCandidates _suggestor;
+    private readonly IReviewCandidates _reviewer;
 
     public SuggestionWorkflow(
         IIntentClassifier classifier,
         IRephraseRequests rephraser,
-        ISelectCandidates suggestor)
+        ISelectCandidates suggestor,
+        IReviewCandidates reviewer)
     {
         ArgumentNullException.ThrowIfNull(classifier);
         ArgumentNullException.ThrowIfNull(rephraser);
         ArgumentNullException.ThrowIfNull(suggestor);
+        ArgumentNullException.ThrowIfNull(reviewer);
 
         _classifier = classifier;
         _rephraser = rephraser;
         _suggestor = suggestor;
+        _reviewer = reviewer;
     }
 
     /// <summary>Runs one request, streaming the stages it passes and the result it ends with.</summary>
-    /// <remarks>
-    /// A request the verifier accepts currently ends after the candidates: the reviewer that approves
-    /// them attaches to this graph as it is written, and until it exists there is no honest result to
-    /// send - <c>ok</c> means a reviewer approved the composition, and nothing has.
-    /// </remarks>
     public async IAsyncEnumerable<SuggestionMessage> RunAsync(
         SuggestionRequest request,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var verifier = new VerifierExecutor(_classifier);
-        var rephraser = new RephraserExecutor(_rephraser);
-        var suggestor = new SuggestorExecutor(_suggestor);
-
-        var workflow = new WorkflowBuilder(verifier)
-            .AddEdge<Verification>(
-                verifier,
-                rephraser,
-                condition: raised => raised is { Verdict.IsWorkspaceRequest: true })
-            .AddEdge(rephraser, suggestor)
-            .WithOutputFrom(verifier)
-            .Build();
-
-        await using var run = await InProcessExecution.RunStreamingAsync(workflow, request);
+        await using var run = await InProcessExecution.RunStreamingAsync(Build(), request);
 
         Verification? verification = null;
+        Review? decision = null;
         Exception? failure = null;
+        var attempt = 1;
+        var reviewed = false;
 
         await foreach (var raised in run.WatchStreamAsync(cancellationToken))
         {
@@ -85,14 +81,29 @@ public sealed class SuggestionWorkflow
             {
                 failure = error;
             }
-
-            if (raised is ExecutorCompletedEvent { ExecutorId: var stage } && Stages.InOrder.Contains(stage))
+            else if (raised is ExecutorCompletedEvent { ExecutorId: var stage } && Stages.InOrder.Contains(stage))
             {
-                yield return Stage(request, stage);
+                // The rephraser is the first node of every attempt after the first, so it is the
+                // boundary between them.
+                if (stage == Stages.Rephrasing && reviewed)
+                {
+                    attempt++;
+                }
+
+                if (stage == Stages.Reviewing)
+                {
+                    reviewed = true;
+                }
+
+                yield return Stage(request, stage, attempt);
             }
             else if (raised is WorkflowOutputEvent { Data: Verification answer })
             {
                 verification = answer;
+            }
+            else if (raised is WorkflowOutputEvent { Data: Review reviewed2 })
+            {
+                decision = reviewed2;
             }
         }
 
@@ -114,17 +125,58 @@ public sealed class SuggestionWorkflow
             {
                 RequestId = request.RequestId,
                 Status = ReasonCodes.Rejected,
-                Attempts = FirstAttempt,
+                Attempts = 1,
                 Code = verification.Verdict.Code,
             };
+
+            yield break;
         }
+
+        if (decision is null)
+        {
+            throw new InvalidOperationException(
+                $"The workflow composed a workspace for request '{request.RequestId}' and nothing judged it.");
+        }
+
+        // Exhausted is a result, not a failure: the candidates travel with the findings against them,
+        // so the application can show what it has and say what could not be confirmed.
+        yield return new SuggestionResult
+        {
+            RequestId = request.RequestId,
+            Status = decision.Approved ? ReasonCodes.Ok : ReasonCodes.Exhausted,
+            Attempts = decision.Attempt,
+            Options = decision.Options,
+            Findings = decision.Findings,
+        };
     }
 
-    private static StageEvent Stage(SuggestionRequest request, string stage)
+    private Workflow Build()
+    {
+        var verifier = new VerifierExecutor(_classifier);
+        var rephraser = new RephraserExecutor(_rephraser);
+        var suggestor = new SuggestorExecutor(_suggestor);
+        var reviewer = new ReviewerExecutor(_reviewer);
+
+        return new WorkflowBuilder(verifier)
+            .AddEdge<Verification>(
+                verifier,
+                rephraser,
+                condition: raised => raised is { Verdict.IsWorkspaceRequest: true })
+            .AddEdge(rephraser, suggestor)
+            .AddEdge(suggestor, reviewer)
+            .AddEdge<Review>(
+                reviewer,
+                rephraser,
+                condition: raised => raised is { } review && !review.IsFinal(Attempts))
+            .WithOutputFrom(verifier, reviewer)
+            .Build();
+    }
+
+    private static StageEvent Stage(SuggestionRequest request, string stage, int attempt)
         => new()
         {
             RequestId = request.RequestId,
             Stage = stage,
-            Attempt = FirstAttempt,
+            Attempt = attempt,
         };
 }

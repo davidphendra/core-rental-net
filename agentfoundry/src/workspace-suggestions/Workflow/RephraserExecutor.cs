@@ -16,9 +16,6 @@ namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 internal sealed class RephraserExecutor(IRephraseRequests rephraser)
     : Executor<Verification, Specification>(Stages.Rephrasing)
 {
-    /// <summary>Nothing objects on the first attempt, which is what the run starts with.</summary>
-    private static readonly IReadOnlyList<Contracts.Finding> NoFindings = [];
-
     public override async ValueTask<Specification> HandleAsync(
         Verification message,
         IWorkflowContext context,
@@ -26,6 +23,6 @@ internal sealed class RephraserExecutor(IRephraseRequests rephraser)
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        return await rephraser.RephraseAsync(message.Request, NoFindings, cancellationToken);
+        return await rephraser.RephraseAsync(message.Request, message.Findings, cancellationToken);
     }
 }

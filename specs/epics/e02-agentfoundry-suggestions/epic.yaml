@@ -47,7 +47,7 @@ stories:
     type: feat
     bcps: 8
     risk: P0
-    status: failing
+    status: blocked
   - id: e02s06
     slug: safety-and-observability
     title: The run is safe, and the run is measurable

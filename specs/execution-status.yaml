@@ -61,6 +61,12 @@ epics:
         status: passing
         risk: P0
         record: specs/verifications/e02s04-after.md
+      - id: e02s05
+        slug: reviewer
+        status: blocked
+        risk: P0
+        record: specs/verifications/e02s05-after.md
+        blocked_by: "the retry edge from the reviewer to the rephraser does not fire under Microsoft.Agents.AI.Workflows 1.21.0"
   - id: e04
     slug: ai-builder
     status: not-started
@@ -96,7 +102,15 @@ notes: |
   and its disclosure, the truncation refusal, and criteria mapped to tokens or reported unevaluated.
   25 agent tests pass. The record is specs/verifications/e02s04-after.md.
 
-  Next: e02s05, the reviewer - the last node, and the one that lets a run send a result at all. e02s01 - the Auth0 spike,
+  e02s05 is complete except for the retry loop. The reviewer, the computable validator, the judgement
+  port and the oscillation guard are built and tested, and a run now sends a result: ok when the
+  reviewer approves, exhausted with the candidates and the findings when it does not. The retry edge
+  does not fire under the framework version in use, so an objected-to composition ends the run at the
+  first attempt; the four tests that assert the loop are kept and skipped. The record, including what
+  is known and the first thing to try next, is specs/verifications/e02s05-after.md.
+
+  Next: fix the retry edge - most likely by giving the retry its own untyped edge, which means making
+  the reviewer's output and the rephraser's input the same concrete type. e02s01 - the Auth0 spike,
   the one hard gate - still needs a subscription and a login, and gates e02s03 onward only in the
   sense that the catalogue path it decides is wired at e02s07.
 

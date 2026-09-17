@@ -23,7 +23,7 @@ namespace AgentFoundry.WorkspaceSuggestions.Selection;
 /// </remarks>
 public sealed class Suggestor(ICatalogueReader catalogue) : ISelectCandidates
 {
-    public async Task<IReadOnlyList<SuggestionOption>> SelectAsync(
+    public async Task<Selection> SelectAsync(
         Specification specification,
         CancellationToken cancellationToken = default)
     {
@@ -45,14 +45,24 @@ public sealed class Suggestor(ICatalogueReader catalogue) : ISelectCandidates
         // rather than three identical ones. The middle is the one offered, being neither extreme.
         if (pinned.Length == specification.Slots.Count)
         {
-            return [Option(specification, candidates, pinned, position: 1)];
+            return Selection([Option(specification, candidates, pinned, position: 1)], candidates);
         }
 
-        return
-        [
-            .. Tier.All.Select((_, position) => Option(specification, candidates, pinned, position)),
-        ];
+        return Selection(
+            [.. Tier.All.Select((_, position) => Option(specification, candidates, pinned, position))],
+            candidates);
     }
+
+    /// <summary>The options, and the ordered SKUs they came from, as the reviewer's receipt.</summary>
+    private static Selection Selection(
+        IReadOnlyList<SuggestionOption> options,
+        Dictionary<string, IReadOnlyList<CatalogueItem>> candidates)
+        => new(
+            options,
+            candidates.ToDictionary(
+                slot => slot.Key,
+                slot => (IReadOnlyList<string>)[.. slot.Value.Select(item => item.Sku)],
+                StringComparer.OrdinalIgnoreCase));
 
     /// <summary>A slot's candidates in tier order, or a failure naming the slot the catalogue cannot fill.</summary>
     private static Dictionary<string, IReadOnlyList<CatalogueItem>> Candidates(

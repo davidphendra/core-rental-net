@@ -23,8 +23,8 @@ internal sealed class SuggestorExecutor(ISelectCandidates suggestor)
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        var options = await suggestor.SelectAsync(message, cancellationToken);
+        var selection = await suggestor.SelectAsync(message, cancellationToken);
 
-        return new Candidates(message, options);
+        return new Candidates(message, selection.Options, selection.Ordered);
     }
 }

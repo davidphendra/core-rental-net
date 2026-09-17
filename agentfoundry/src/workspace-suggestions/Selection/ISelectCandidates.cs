@@ -17,7 +17,7 @@ public interface ISelectCandidates
     /// What the request means, including the words it was made of - so the criteria a candidate is
     /// checked against come from the same place the slots did.
     /// </param>
-    Task<IReadOnlyList<SuggestionOption>> SelectAsync(
+    Task<Selection> SelectAsync(
         Specification specification,
         CancellationToken cancellationToken = default);
 }

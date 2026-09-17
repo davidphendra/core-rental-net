@@ -1,6 +1,7 @@
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
 using AgentFoundry.WorkspaceSuggestions.Catalogue;
+using AgentFoundry.WorkspaceSuggestions.Review;
 using AgentFoundry.WorkspaceSuggestions.Selection;
 using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
@@ -59,16 +60,20 @@ public sealed class SuggestionWorkflowTests
         messages.OfType<SuggestionResult>().Should().ContainSingle();
     }
 
-    [Fact] // AGT-03
-    public async Task An_accepted_request_streams_both_stages_and_sends_no_result_yet()
+    [Fact] // AGT-03, AGT-17
+    public async Task An_accepted_request_passes_every_stage_and_ends_with_a_result()
     {
-        // Still no result, and now for the last reason: ok means a reviewer approved the composition,
-        // and the reviewer is the node that does not exist yet.
         var messages = await CollectAsync(AWorkflow(workspaceRequest: true), ARequest());
 
-        messages.Should().AllBeOfType<StageEvent>();
-        messages.Cast<StageEvent>().Select(stage => stage.Stage)
-            .Should().Equal(Stages.Verifying, Stages.Rephrasing, Stages.Selecting);
+        messages.OfType<StageEvent>().Select(stage => stage.Stage)
+            .Should().Equal(Stages.Verifying, Stages.Rephrasing, Stages.Selecting, Stages.Reviewing);
+
+        var result = messages.OfType<SuggestionResult>().Should().ContainSingle().Subject;
+        result.Status.Should().Be(ReasonCodes.Ok);
+        result.Attempts.Should().Be(1);
+        result.Options.Should().NotBeEmpty();
+        result.Findings.Should().BeEmpty();
+        messages[^1].Should().BeSameAs(result, "the result is the terminal message");
     }
 
     [Fact] // AGT-03
@@ -88,12 +93,23 @@ public sealed class SuggestionWorkflowTests
                     Repository(), "agentfoundry", "shared", "intent", "workspace-intents.json")),
                 new ScriptedSlotClassifier(),
                 NullLogger<Rephraser>.Instance),
-            new Suggestor(new EverySlotCatalogue()));
+            new Suggestor(new EverySlotCatalogue()),
+            new Reviewer(new NoObjection()));
 
     /// <summary>
     /// One product per slot, because the query this test uses is a declared phrasing and the table
     /// therefore sends six slots to the catalogue rather than the one the classifier would have.
     /// </summary>
+    /// <summary>A judgement that finds nothing wrong, so the graph can reach its end.</summary>
+    private sealed class NoObjection : IReviewComposition
+    {
+        public Task<IReadOnlyList<Finding>> ReviewAsync(
+            string query,
+            IReadOnlyList<SuggestionOption> options,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Finding>>([]);
+    }
+
     private sealed class EverySlotCatalogue : ICatalogueReader
     {
         private static readonly IReadOnlyList<CatalogueItem> Items =

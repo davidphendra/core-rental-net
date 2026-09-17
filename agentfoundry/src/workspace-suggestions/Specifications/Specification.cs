@@ -1,3 +1,5 @@
+using AgentFoundry.WorkspaceSuggestions.Contracts;
+
 namespace AgentFoundry.WorkspaceSuggestions.Specifications;
 
 /// <summary>
@@ -15,13 +17,19 @@ namespace AgentFoundry.WorkspaceSuggestions.Specifications;
 /// reviewer's checks are written against.
 /// </para>
 /// <para>
-/// The customer's own words travel with it, because the criteria a candidate is checked against are
-/// matched from those words and nothing downstream carries the request. They are carried, never
-/// rewritten: what the model wrote is not what a customer reads.
+/// The request it was built from travels with it. A retry has to produce a specification from the same
+/// rules - the capacities are the application's - and a specification that could not say what it was
+/// derived from would have to be handed the request again by every node between here and the reviewer.
 /// </para>
 /// </remarks>
-public sealed record Specification(string RequestId, string Query, IReadOnlyList<SlotRequirement> Slots)
+public sealed record Specification(SuggestionRequest Request, IReadOnlyList<SlotRequirement> Slots)
 {
+    /// <summary>Ties this specification to the run that produced it.</summary>
+    public string RequestId => Request.RequestId;
+
+    /// <summary>The customer's own words, which the criteria are matched from. Never rewritten.</summary>
+    public string Query => Request.Query;
+
     /// <summary>True when any slot came from the model rather than the table.</summary>
     public bool HasInferredSlots => Slots.Any(slot => slot.Inferred);
 }

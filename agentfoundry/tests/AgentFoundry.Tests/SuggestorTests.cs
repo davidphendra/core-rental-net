@@ -2,6 +2,7 @@ using AgentFoundry.WorkspaceSuggestions.Catalogue;
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Selection;
 using AgentFoundry.WorkspaceSuggestions.Specifications;
+using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using AwesomeAssertions;
 using Xunit;
 
@@ -33,8 +34,8 @@ public sealed class SuggestorTests
         // Reproducibility: two products the same price must not swap places between runs, or the same
         // request answers differently and nothing downstream can tell.
         var page = APage(samePrice: true);
-        var options = await new Suggestor(new FakeCatalogue(page))
-            .SelectAsync(Specification(Slot("Monitor", 1)));
+        var options = (await new Suggestor(new FakeCatalogue(page))
+            .SelectAsync(Specification(Slot("Monitor", 1)))).Options;
 
         Monitors(options).Should().Equal("MON-A", "MON-B", "MON-C");
     }
@@ -114,8 +115,10 @@ public sealed class SuggestorTests
         await action.Should().ThrowAsync<IncompleteCatalogueException>().WithMessage("*RelaxZone*");
     }
 
-    private static Task<IReadOnlyList<SuggestionOption>> SelectAsync(Specification specification)
-        => new Suggestor(new FakeCatalogue(APage())).SelectAsync(specification);
+    /// <summary>The options alone: what these tests are about. The receipt is the reviewer's, and is
+    /// asserted where the reviewer uses it.</summary>
+    private static async Task<IReadOnlyList<SuggestionOption>> SelectAsync(Specification specification)
+        => (await new Suggestor(new FakeCatalogue(APage())).SelectAsync(specification)).Options;
 
     private static IEnumerable<string> Monitors(IReadOnlyList<SuggestionOption> options)
         => options.Select(option => option.Lines.Single(line => line.Slot == "Monitor").Sku);
@@ -129,7 +132,12 @@ public sealed class SuggestorTests
         => Specification("a standing desk with two monitors", slots);
 
     private static Specification Specification(string query, params SlotRequirement[] slots)
-        => new("0f3c4e2a-0000-4000-8000-000000000001", query, slots);
+        => new(
+            new SuggestionRequest(
+                "0f3c4e2a-0000-4000-8000-000000000001",
+                query,
+                [.. Slots.All.Select(slot => new SlotRule(slot, slot, 3, IsMandatory: false))]),
+            slots);
 
     /// <summary>A catalogue with known prices, so the tier a product lands in is an exact expectation.</summary>
     private static CataloguePage APage(bool truncated = false, bool samePrice = false)

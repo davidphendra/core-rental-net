@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** infra
 **bcps:** 8
-**status:** failing
+**status:** blocked
 
 ## Context
 
@@ -84,6 +84,15 @@ a pathological request becomes an assertable outcome rather than a hang (L2).
 - Catalogue retrieval and tiering (`e02s04`).
 - The golden-query evaluation dataset (deferred; first rows captured by hand).
 
+## Blocked
+
+The reviewer, its validator and its judgement port are built and tested; the **retry loop is not
+running**. The edge from the reviewer back to the rephraser does not fire under
+Microsoft.Agents.AI.Workflows 1.21.0, so an objected-to composition ends the run at the first attempt
+instead of being sent back. The four tests that assert the loop are kept and **skipped**, naming the
+reason, rather than adjusted to match. `specs/verifications/e02s05-after.md` records what is known and
+the first thing to try.
+
 ## Risks
 
 - **Asking a language model to check arithmetic it cannot see.** The whole reason the validator
@@ -95,7 +104,8 @@ a pathological request becomes an assertable outcome rather than a hang (L2).
 
 ## Acceptance criteria
 
-- AGT-14 … AGT-17 pass with a scripted model.
+- AGT-14 and AGT-16 pass with a scripted judgement. AGT-15 and AGT-17 are **skipped**, blocked on the
+  retry edge.
 - A deterministic failure never increments the attempt counter.
 - The model cannot return a specification.
 - The application's three baselines are untouched.
