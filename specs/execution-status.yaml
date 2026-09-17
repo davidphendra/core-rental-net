@@ -80,14 +80,20 @@ epics:
         status: passing
         risk: P0
         record: specs/verifications/e04s01-after.md
+      - id: e04s02
+        slug: suggestion-port
+        status: in-progress
+        risk: P0
+        record: specs/verifications/e04s02-after.md
+        deferred: "the Host adapter waits on e02s07's transport; the local stand-in waits on e04s03's page"
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 572, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 577, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
-  verify_work: passed_e04s01
+  verify_work: passed_e04s02
   security_review: { verdict: passed, file: specs/security/REVIEW.md }
   nfr: not-run
   blind_spots: not_run
@@ -126,6 +132,11 @@ notes: |
   answering four policies, the catalogue's rule preserved exactly and the AI section's two permissions
   closed by default. The security review carries an addendum, because this edited code it had already
   covered. The record is specs/verifications/e04s01-after.md.
+
+  e04s02 is delivered except for its two pieces that need something that does not exist yet: the Host
+  adapter waits on e02s07's transport, and the local stand-in waits on e04s03's page. The rules
+  themselves are in and asserted - catalogue prices, unknown SKUs dropped and reported, no padding,
+  unavailability distinct from refusal. 5 new tests; the record is specs/verifications/e04s02-after.md.
 
   What remains in e02 is s01, the Auth0 spike, and s07, the deployment - both of which need a
   subscription and a login. Everything that can be built without one is built, and the two ports the

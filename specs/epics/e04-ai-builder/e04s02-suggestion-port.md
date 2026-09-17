@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** application
 **bcps:** 5
-**status:** failing
+**status:** in-progress
 
 ## Context
 
@@ -51,9 +51,12 @@ mirroring `LocalProvider`, and keeping the browser suite's no-interception rule 
 1. Add the request and outcome records to the Workspace application's contracts. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 2. Add `ISuggestWorkspaceOptions` and its `sealed` implementation with the four rules. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~WorkspaceSuggestionTests"`
 3. Add the Host adapter calling the agent with the application's identity, registered only when the
-   endpoint is configured. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
-4. Add the local stand-in process with its scenario switch. → verify: `dotnet build tests/CoreRentalNet.E2E.LocalAgent -v q --nologo`
-5. Unit tests AIB-06 … AIB-10 with a hand-written fake, no mocking library. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo`
+   endpoint is configured. **Deferred to `e02s07`**: there is no endpoint to call until the hosted agent
+   serves one, and a client written against nothing is unverifiable. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
+4. Add the local stand-in process with its scenario switch. **Deferred to `e04s03`**: the browser tier
+   that drives it arrives with the page, and a scenario-selectable server built before its consumer means
+   inventing the scenarios. → verify: `dotnet build tests/CoreRentalNet.E2E.LocalAgent -v q --nologo`
+5. Unit tests AIB-06 … AIB-10 with a hand-written fake, no mocking library. → verify: `dotnet test tests/CoreRentalNet.Modules.Workspace.UnitTests --nologo --filter "FullyQualifiedName~SuggestionTests"`
 6. Record the stand-in's contract in `specs/verifications/e04s02-after.md`. → verify: `test -f specs/verifications/e04s02-after.md`
 
 ## Verification Script (Step-by-Step)
