@@ -1,5 +1,7 @@
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
+using AgentFoundry.WorkspaceSuggestions.Catalogue;
+using AgentFoundry.WorkspaceSuggestions.Selection;
 using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using AgentFoundry.WorkspaceSuggestions.Workflows;
@@ -60,14 +62,13 @@ public sealed class SuggestionWorkflowTests
     [Fact] // AGT-03
     public async Task An_accepted_request_streams_both_stages_and_sends_no_result_yet()
     {
-        // Not a passing state to ship, but the honest one: the nodes that read the catalogue and compose
-        // candidates attach to this graph as they are written, and an approved composition with no
-        // products in it would be a result the caller could not tell from a real one.
+        // Still no result, and now for the last reason: ok means a reviewer approved the composition,
+        // and the reviewer is the node that does not exist yet.
         var messages = await CollectAsync(AWorkflow(workspaceRequest: true), ARequest());
 
         messages.Should().AllBeOfType<StageEvent>();
         messages.Cast<StageEvent>().Select(stage => stage.Stage)
-            .Should().Equal(Stages.Verifying, Stages.Rephrasing);
+            .Should().Equal(Stages.Verifying, Stages.Rephrasing, Stages.Selecting);
     }
 
     [Fact] // AGT-03
@@ -86,7 +87,28 @@ public sealed class SuggestionWorkflowTests
                 IntentTable.Load(Path.Combine(
                     Repository(), "agentfoundry", "shared", "intent", "workspace-intents.json")),
                 new ScriptedSlotClassifier(),
-                NullLogger<Rephraser>.Instance));
+                NullLogger<Rephraser>.Instance),
+            new Suggestor(new EverySlotCatalogue()));
+
+    /// <summary>
+    /// One product per slot, because the query this test uses is a declared phrasing and the table
+    /// therefore sends six slots to the catalogue rather than the one the classifier would have.
+    /// </summary>
+    private sealed class EverySlotCatalogue : ICatalogueReader
+    {
+        private static readonly IReadOnlyList<CatalogueItem> Items =
+        [
+            new("DSK-A", "A desk", "desk", null, 600, "A desk.", new CatalogueMetadata(["desk"], new Dictionary<string, string>())),
+            new("CHA-A", "A chair", "chair", null, 400, "A chair.", new CatalogueMetadata(["chair"], new Dictionary<string, string>())),
+            new("MON-A", "A monitor", "accessory", "monitor", 300, "A monitor.", new CatalogueMetadata(["monitor"], new Dictionary<string, string>())),
+            new("LMP-A", "A lamp", "accessory", "lamp", 100, "A lamp.", new CatalogueMetadata(["lamp"], new Dictionary<string, string>())),
+            new("PLT-A", "A plant", "accessory", "plant", 120, "A plant.", new CatalogueMetadata(["plant"], new Dictionary<string, string>())),
+            new("CFE-A", "A coffee station", "accessory", "coffee", 400, "A coffee station.", new CatalogueMetadata(["coffee"], new Dictionary<string, string>())),
+        ];
+
+        public Task<CataloguePage> ReadAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new CataloguePage(Items, Items.Count, Items.Count, Truncated: false, "IDR"));
+    }
 
     /// <summary>Whatever the table misses on, an empty set is enough for a graph test.</summary>
     private sealed class ScriptedSlotClassifier : ISlotClassifier

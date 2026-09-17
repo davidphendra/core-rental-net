@@ -18,7 +18,7 @@ environment (the same opt-in pattern as `RealTenantTests`).
 | AGT-09 | e02s04 | A slot with fewer than three candidates is pinned in every candidate and disclosed | unit | P0 |
 | AGT-10 | e02s04 | When every slot is pinned the result carries one candidate, not three identical ones | unit | P1 |
 | AGT-11 | e02s04 | A criterion resolves to `tag:` or `attribute:`, or appears in `unevaluated[]` | unit | P0 |
-| AGT-12 | e02s04 | One catalogue read per request, reused across attempts | unit | P0 |
+| AGT-12 | e02s04 | The catalogue is read once for the whole run | unit | P0 |
 | AGT-13 | e02s04 | A slot whose candidate set is truncated is refused rather than tiered | unit | P0 |
 | AGT-14 | e02s05 | The validator rejects a wrong tier pick and repairs it in code, with no further model call | unit | P0 |
 | AGT-15 | e02s05 | A semantic failure produces findings, re-enters the rephraser, and stops after three attempts | unit | P0 |

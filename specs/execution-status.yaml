@@ -56,6 +56,11 @@ epics:
         status: passing
         risk: P0
         record: specs/verifications/e02s03-after.md
+      - id: e02s04
+        slug: suggestor
+        status: passing
+        risk: P0
+        record: specs/verifications/e02s04-after.md
   - id: e04
     slug: ai-builder
     status: not-started
@@ -87,8 +92,11 @@ notes: |
   carries, and the rephraser attached as the graph's second node. 17 agent tests pass. The record is
   specs/verifications/e02s03-after.md.
 
-  Next: e02s04, the suggestor - the only node that reads the catalogue, and the one that gives the run
-  a result worth sending. e02s01 - the Auth0 spike,
+  e02s04 is complete: the catalogue reader port, the slot map, the price-position tier rule, pinning
+  and its disclosure, the truncation refusal, and criteria mapped to tokens or reported unevaluated.
+  25 agent tests pass. The record is specs/verifications/e02s04-after.md.
+
+  Next: e02s05, the reviewer - the last node, and the one that lets a run send a result at all. e02s01 - the Auth0 spike,
   the one hard gate - still needs a subscription and a login, and gates e02s03 onward only in the
   sense that the catalogue path it decides is wired at e02s07.
 

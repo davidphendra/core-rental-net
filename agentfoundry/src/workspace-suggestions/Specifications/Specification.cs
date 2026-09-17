@@ -14,8 +14,13 @@ namespace AgentFoundry.WorkspaceSuggestions.Specifications;
 /// fills each slot, not in which slots exist, which is what makes them comparable and what the
 /// reviewer's checks are written against.
 /// </para>
+/// <para>
+/// The customer's own words travel with it, because the criteria a candidate is checked against are
+/// matched from those words and nothing downstream carries the request. They are carried, never
+/// rewritten: what the model wrote is not what a customer reads.
+/// </para>
 /// </remarks>
-public sealed record Specification(string RequestId, IReadOnlyList<SlotRequirement> Slots)
+public sealed record Specification(string RequestId, string Query, IReadOnlyList<SlotRequirement> Slots)
 {
     /// <summary>True when any slot came from the model rather than the table.</summary>
     public bool HasInferredSlots => Slots.Any(slot => slot.Inferred);

@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** infra
 **bcps:** 8
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -49,14 +49,15 @@ criterion is either met or visibly unmet and never silently dropped (SAFE-1/C3).
 
 ## Steps
 
-1. Add the catalogue client: one authenticated read per request, `view=compact`, cached for the
-   request's lifetime. → verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
+1. Add the catalogue reader port and the shapes it answers with. The HTTP client behind it, and the
+   credential it carries, arrive with the deployment (`e02s07`) - the path is decided by `e02s01`.
+   → verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
 2. Group products by slot and implement P1 (ties by SKU) as one function. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~TierTests"`
 3. Add pinning and the disclosure, and the single-candidate case. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~PinningTests"`
 4. Refuse to tier a truncated slot, reading `total` and `truncated` from the envelope. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~TruncationTests"`
 5. Implement criteria resolution against the metadata vocabulary, with `unevaluated[]` for the rest.
    → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~CriteriaTests"`
-6. Assert one catalogue read per request across three attempts. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~CatalogueCallCountTests"`
+6. Assert one catalogue read for the whole run. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~CatalogueCallCountTests"`
 7. Unit tests AGT-08 … AGT-13. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo`
 
 ## Verification Script (Step-by-Step)
@@ -79,7 +80,7 @@ criterion is either met or visibly unmet and never silently dropped (SAFE-1/C3).
 | AGT-09 | A slot with fewer than three candidates is pinned and disclosed | unit |
 | AGT-10 | All slots pinned yields one candidate | unit |
 | AGT-11 | A criterion resolves to `tag:`/`attribute:` or appears in `unevaluated[]` | unit |
-| AGT-12 | One catalogue read per request, reused across attempts | unit |
+| AGT-12 | The catalogue is read once for the whole run | unit |
 | AGT-13 | A truncated slot is refused rather than tiered | unit |
 
 ## Out of scope
@@ -95,7 +96,10 @@ criterion is either met or visibly unmet and never silently dropped (SAFE-1/C3).
 - **A criterion silently dropped.** Only `criteria` and `unevaluated` exist, so there is nowhere for
   one to disappear — but the mapping must be exhaustive, and AGT-11 asserts it.
 - **The catalogue read repeated per attempt.** Costs an authenticated round trip each time; AGT-12
-  asserts it is not.
+  asserts one read for the run, and the across-attempts half of that arrives with the retry loop.
+- **A failing node looking like a short run.** Microsoft Agent Framework ends the stream when a node
+  throws, so an unread `WorkflowErrorEvent` makes a failure indistinguishable from a request that
+  simply produced no result. The run reads it and rethrows.
 
 ## Acceptance criteria
 

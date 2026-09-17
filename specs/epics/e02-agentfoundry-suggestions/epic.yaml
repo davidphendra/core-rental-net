@@ -40,7 +40,7 @@ stories:
     type: feat
     bcps: 8
     risk: P0
-    status: failing
+    status: passing
   - id: e02s05
     slug: reviewer
     title: Nothing is returned that was not checked

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
+using AgentFoundry.WorkspaceSuggestions.Selection;
 using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using Microsoft.Agents.AI.Workflows;
@@ -30,22 +31,27 @@ public sealed class SuggestionWorkflow
 
     private readonly IIntentClassifier _classifier;
     private readonly IRephraseRequests _rephraser;
+    private readonly ISelectCandidates _suggestor;
 
-    public SuggestionWorkflow(IIntentClassifier classifier, IRephraseRequests rephraser)
+    public SuggestionWorkflow(
+        IIntentClassifier classifier,
+        IRephraseRequests rephraser,
+        ISelectCandidates suggestor)
     {
         ArgumentNullException.ThrowIfNull(classifier);
         ArgumentNullException.ThrowIfNull(rephraser);
+        ArgumentNullException.ThrowIfNull(suggestor);
 
         _classifier = classifier;
         _rephraser = rephraser;
+        _suggestor = suggestor;
     }
 
     /// <summary>Runs one request, streaming the stages it passes and the result it ends with.</summary>
     /// <remarks>
-    /// A request the verifier accepts currently ends after the specification: the nodes that read the
-    /// catalogue and compose candidates attach to this graph as they are written, and until they exist
-    /// there is no honest result to send - an approved composition with no products in it would be a
-    /// result the caller could not tell from a real one.
+    /// A request the verifier accepts currently ends after the candidates: the reviewer that approves
+    /// them attaches to this graph as it is written, and until it exists there is no honest result to
+    /// send - <c>ok</c> means a reviewer approved the composition, and nothing has.
     /// </remarks>
     public async IAsyncEnumerable<SuggestionMessage> RunAsync(
         SuggestionRequest request,
@@ -55,21 +61,31 @@ public sealed class SuggestionWorkflow
 
         var verifier = new VerifierExecutor(_classifier);
         var rephraser = new RephraserExecutor(_rephraser);
+        var suggestor = new SuggestorExecutor(_suggestor);
 
         var workflow = new WorkflowBuilder(verifier)
             .AddEdge<Verification>(
                 verifier,
                 rephraser,
                 condition: raised => raised is { Verdict.IsWorkspaceRequest: true })
+            .AddEdge(rephraser, suggestor)
             .WithOutputFrom(verifier)
             .Build();
 
         await using var run = await InProcessExecution.RunStreamingAsync(workflow, request);
 
         Verification? verification = null;
+        Exception? failure = null;
 
         await foreach (var raised in run.WatchStreamAsync(cancellationToken))
         {
+            // A node that throws ends the run the same way a short one does. Left unread, a failure
+            // inside the graph would look like a request that simply produced no result.
+            if (raised is WorkflowErrorEvent { Exception: { } error })
+            {
+                failure = error;
+            }
+
             if (raised is ExecutorCompletedEvent { ExecutorId: var stage } && Stages.InOrder.Contains(stage))
             {
                 yield return Stage(request, stage);
@@ -78,6 +94,12 @@ public sealed class SuggestionWorkflow
             {
                 verification = answer;
             }
+        }
+
+        if (failure is not null)
+        {
+            throw new InvalidOperationException(
+                $"The workflow failed for request '{request.RequestId}'.", failure);
         }
 
         if (verification is null)
