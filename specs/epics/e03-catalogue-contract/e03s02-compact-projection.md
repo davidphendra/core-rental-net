@@ -4,7 +4,7 @@
 **risk:** P0
 **context:** api
 **bcps:** 5
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -54,8 +54,11 @@ discovered later as a wrong total.
    allowed list in problem details. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 3. Add the compact projection as one mapper from `ProductView` to the compact shape, and serialize
    the compact envelope with a single `currency`. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
-4. Declare both responses in the OpenAPI document so the document describes what the endpoint
-   actually returns. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogOpenApiTests"`
+4. Make the projection discoverable in the document. A status code has **one schema per content
+type**, so declaring a second `200` replaces the first and the document would describe the compact
+answer while claiming it is the default. The vocabulary therefore travels on the `view` parameter,
+added by an operation transformer, and the document keeps describing `full` as the default. →
+   verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogOpenApiTests"`
 5. Add the load-time single-currency guard to `ProductLoader`, naming the offending SKU. → verify: `dotnet test tests/CoreRentalNet.IntegrationTests --nologo --filter "FullyQualifiedName~Currency"`
 6. HTTP tests: the compact body and its omissions (API-32), the single currency (API-33), the
    refusal (API-34), and the non-vacuity guard (API-35). → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogApiCompactViewTests"`
@@ -92,10 +95,14 @@ discovered later as a wrong total.
 
 - **A projection that drifts from the record.** Compact must be derived from `ProductView`, not
   hand-listed, or the two will disagree as fields are added. One mapper, asserted by API-32.
-- **The document lying.** If compact is not declared, a generated client sees only the full shape and
-  the projection is invisible to the caller it exists for.
-- **A second currency creeping in.** The single-currency guard is what makes the envelope's one
-  `currency` honest; without it, a mixed catalogue silently produces a wrong total.
+- **The document cannot show two `200` shapes.** Measured on the first run: a second
+  `[ProducesResponseType]` for the same status and content type replaced the first, and the document
+  then described the compact envelope as the default. The vocabulary travels on the parameter
+  instead, which is a real limitation for a generated client - it will not model the compact body -
+  and it is recorded rather than papered over.
+- **A second currency creeping in.** The envelope states one currency, which the loader makes
+  truthful by refusing any row priced in anything else; without that rule the one figure would be a
+  guess about the rows.
 
 ## Acceptance criteria
 

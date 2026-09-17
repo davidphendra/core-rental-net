@@ -34,8 +34,9 @@ epics:
         record: specs/verifications/e03s01-after.md
       - id: e03s02
         slug: compact-projection
-        status: not-started
+        status: passing
         risk: P0
+        record: specs/verifications/e03s02-after.md
       - id: e03s03
         slug: envelope-completeness
         status: not-started
@@ -49,17 +50,23 @@ epics:
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 558, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 564, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
-  verify_work: passed_e03s01
+  verify_work: passed_e03s02
   security_review: not-run-this-epic
   nfr: not-run
   blind_spots: not_run
   completeness_critic: not_run
 
 notes: |
+  e03s02 is complete: view=compact leaves out the image path and the display flags, states the price
+  as a number and the currency once on the envelope, and keeps the description and the metadata. The
+  record, including the document limitation the run exposed, is specs/verifications/e03s02-after.md.
+
+  Next action: e03s03, total and truncated on the envelope.
+
   e03s01 is complete: the catalogue holds 140 products with a typed metadata record, published on
   ProductView, and all three baselines are green. The full record, including the five things the run
   corrected, is specs/verifications/e03s01-after.md.

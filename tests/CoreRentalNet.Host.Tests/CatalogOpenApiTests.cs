@@ -34,7 +34,14 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
             .Select(parameter => parameter.GetProperty("name").GetString())
             .ToArray();
 
-        parameters.Should().BeEquivalentTo(["category", "subCategory", "search"]);
+        parameters.Should().BeEquivalentTo(["category", "subCategory", "search", "view"]);
+
+        // The compact projection cannot be a second schema on the same status and content type, so the
+        // parameter carries the vocabulary instead. This is what makes the projection discoverable.
+        var view = operation.GetProperty("parameters").EnumerateArray()
+            .Single(parameter => parameter.GetProperty("name").GetString() == "view");
+
+        view.GetProperty("description").GetString().Should().Contain("compact").And.Contain("full");
 
         var responses = operation.GetProperty("responses");
         responses.TryGetProperty("200", out _).Should().BeTrue();

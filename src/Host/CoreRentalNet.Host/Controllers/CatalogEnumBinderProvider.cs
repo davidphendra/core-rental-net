@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace CoreRentalNet.Host.Controllers;
 
 /// <summary>
-/// Supplies the catalogue's own binder for the catalogue's own filter types, and for nothing else.
+/// Supplies the catalogue's own binder for the catalogue's own wire vocabularies, and for nothing
+/// else.
 /// </summary>
 /// <remarks>
-/// The two types are named rather than matched by shape ("every enum in the application"). An enum
-/// added elsewhere has not been published as a filter, and binding it here would answer a caller with
-/// a refusal message about a vocabulary that type does not have.
+/// The types are named rather than matched by shape ("every enum in the application"). An enum added
+/// elsewhere has not been published as a filter or a projection, and binding it here would answer a
+/// caller with a refusal message about a vocabulary that type does not have.
 /// </remarks>
 internal sealed class CatalogEnumBinderProvider : IModelBinderProvider
 {
@@ -19,7 +20,7 @@ internal sealed class CatalogEnumBinderProvider : IModelBinderProvider
 
         var type = Nullable.GetUnderlyingType(context.Metadata.ModelType) ?? context.Metadata.ModelType;
 
-        if (type != typeof(CatalogCategory) && type != typeof(CatalogSubCategory))
+        if (type != typeof(CatalogCategory) && type != typeof(CatalogSubCategory) && type != typeof(CatalogProjection))
         {
             return null;
         }

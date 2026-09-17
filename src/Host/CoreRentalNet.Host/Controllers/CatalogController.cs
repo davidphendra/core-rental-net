@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
@@ -22,6 +23,7 @@ namespace CoreRentalNet.Host.Controllers;
 [Route(CatalogRoutes.Catalogue)]
 public sealed class CatalogController(
     ISearchCatalogHandler catalog,
+    IProductCatalog everyProduct,
     ILoggerFactory loggers) : ControllerBase
 {
     /// <summary>The content types the API actually answers with, named rather than left to the formatters.</summary>
@@ -41,10 +43,18 @@ public sealed class CatalogController(
     /// product's name only. An unknown category or subcategory is refused with the values that would
     /// have worked rather than answered with an empty list, and no match is an empty list rather than a
     /// 404: "there are none of those" and "there is no such endpoint" are different answers.
+    ///
+    /// <c>view</c> chooses how much of each product comes back. <c>full</c> is every field the module
+    /// publishes and is what a caller that says nothing gets; <c>compact</c> leaves out the image path
+    /// and the display flags, states the price as a number and the currency once on the envelope, and
+    /// keeps the description and the metadata - the fields a request is matched against.
     /// </remarks>
     [HttpGet]
     [Authorize(Policy = CatalogApiPolicy.Name)]
     [ProducesResponseType<ApiCollection<ProductView>>(StatusCodes.Status200OK, Json)]
+    // The compact projection is described in the remarks above rather than declared here as a second
+    // 200: a status code has one schema per content type, so a second declaration replaces the first
+    // and the document would describe the projection while claiming it is the default.
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, ProblemJson)]
@@ -54,10 +64,11 @@ public sealed class CatalogController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status405MethodNotAllowed, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
-    public ActionResult<ApiCollection<ProductView>> Search(
+    public ActionResult Search(
         [FromQuery] CatalogCategory? category,
         [FromQuery] CatalogSubCategory? subCategory,
-        [FromQuery] string? search)
+        [FromQuery] string? search,
+        [FromQuery] CatalogProjection? view)
     {
         var products = catalog.Handle(new SearchCatalogQuery(category, subCategory, Blank(search)));
 
@@ -74,7 +85,24 @@ public sealed class CatalogController(
 
         // A collection answer, not a bare array: the count travels with the items, and a page of them
         // can be added later without breaking the callers who read this shape today.
-        return Ok(new ApiCollection<ProductView>(products, products.Count));
+        return (view ?? CatalogProjection.Full) == CatalogProjection.Compact
+            ? Ok(CompactCatalogProjection.Of(products, CatalogueCurrency()))
+            : Ok(new ApiCollection<ProductView>(products, products.Count));
+    }
+
+    /// <summary>The currency the catalogue is priced in, which the compact envelope states once.</summary>
+    /// <remarks>
+    /// Read from the catalogue rather than written here, and from the whole of it rather than from the
+    /// rows that matched: an empty result still has a currency, and a filtered result must not decide
+    /// what it is. The loader refuses an empty file and refuses a row priced in anything but the
+    /// settlement currency, so the fallback is unreachable - it is there so that a broken invariant is
+    /// answered rather than thrown at a caller.
+    /// </remarks>
+    private string CatalogueCurrency()
+    {
+        var catalogue = everyProduct.All;
+
+        return catalogue.Count == 0 ? Currencies.Idr : catalogue[0].MonthlyPrice.Currency;
     }
 
     /// <summary>A search of nothing but spaces narrows nothing, so it is not a filter.</summary>

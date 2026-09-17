@@ -29,7 +29,7 @@ stories:
     type: feat
     bcps: 5
     risk: P0
-    status: failing
+    status: passing
   - id: e03s03
     slug: envelope-completeness
     title: The envelope says when an answer is incomplete

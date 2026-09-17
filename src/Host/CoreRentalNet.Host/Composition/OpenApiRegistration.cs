@@ -14,6 +14,9 @@ internal static class OpenApiRegistration
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddOpenApi(options =>
-            options.AddDocumentTransformer<Auth0SecuritySchemeTransformer>());
+        {
+            options.AddDocumentTransformer<Auth0SecuritySchemeTransformer>();
+            options.AddOperationTransformer<CatalogProjectionDescriptionTransformer>();
+        });
     }
 }
