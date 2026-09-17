@@ -4,7 +4,7 @@
 **risk:** P1
 **context:** api
 **bcps:** 3
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -46,7 +46,10 @@ turn into a partial answer.
 1. Add `total` and `truncated` to `ApiCollection` and to the responses that build it. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 2. Add the documented default maximum as one constant, and bind `limit`. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
 3. Apply the cap after filtering, computing `total` from the filtered set **before** the cap. → verify: `dotnet build CoreRentalNet.sln -v q --nologo`
-4. Declare the new fields and the parameter in the OpenAPI document. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogOpenApiTests"`
+4. Make the two numbers and the cap discoverable: the fields appear in the document with the
+   response schema, and the parameter descriptions are added by
+   `CatalogQueryParameterTransformer`, because descriptions do not otherwise reach the document. →
+   verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogOpenApiTests"`
 5. HTTP tests API-36 … API-38, including the non-vacuity guard. → verify: `dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogApiEnvelopeTests"`
 6. Re-run the three baselines. → verify: `dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E" --nologo`
 

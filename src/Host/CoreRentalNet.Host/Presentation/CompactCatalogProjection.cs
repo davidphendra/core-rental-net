@@ -10,11 +10,14 @@ namespace CoreRentalNet.Host.Presentation;
 /// </remarks>
 internal static class CompactCatalogProjection
 {
-    public static CompactCatalogCollection Of(IReadOnlyList<ProductView> products, string currency)
+    /// <param name="page">The rows this answer carries.</param>
+    /// <param name="total">How many rows matched, which is more than the page when it was capped.</param>
+    /// <param name="currency">The currency every price on the page is stated in.</param>
+    public static CompactCatalogCollection Of(IReadOnlyList<ProductView> page, int total, string currency)
     {
-        ArgumentNullException.ThrowIfNull(products);
+        ArgumentNullException.ThrowIfNull(page);
 
-        return new CompactCatalogCollection([.. products.Select(Item)], products.Count, currency);
+        return new CompactCatalogCollection([.. page.Select(Item)], page.Count, total, currency);
     }
 
     private static CompactCatalogItem Item(ProductView product)

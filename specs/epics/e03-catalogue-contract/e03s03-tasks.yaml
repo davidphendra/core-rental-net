@@ -1,13 +1,13 @@
 story_id: e03s03
 title: The envelope says when an answer is incomplete
-status: failing
+status: passing
 bcps: 3
 tasks:
   - id: 1
     description: "Add total and truncated to ApiCollection and to every response that builds it"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["API", "contract"]
@@ -15,7 +15,7 @@ tasks:
     description: "Add the documented default maximum as one constant and bind limit"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["API"]
@@ -23,7 +23,7 @@ tasks:
     description: "Apply the cap after filtering, computing total from the filtered set before the cap"
     verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["API", "contract"]
@@ -31,7 +31,7 @@ tasks:
     description: "Declare limit, total and truncated in the OpenAPI document"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogOpenApiTests"'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["API", "docs"]
@@ -39,7 +39,7 @@ tasks:
     description: "HTTP tests API-36 to API-38 including the non-vacuity guard"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogApiEnvelopeTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["API", "integration", "contract"]
@@ -47,7 +47,7 @@ tasks:
     description: "Re-run the three baselines and record them under specs/verifications"
     verify: 'dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E" --nologo'
     risk: P2
-    status: failing
+    status: passing
     allure:
       severity: normal
       categories: ["baselines"]

@@ -25,7 +25,7 @@ epics:
         record: specs/verifications/catalog-api-e01s03-after.md
   - id: e03
     slug: catalogue-contract
-    status: in-progress
+    status: done
     stories:
       - id: e03s01
         slug: catalogue-metadata
@@ -39,8 +39,9 @@ epics:
         record: specs/verifications/e03s02-after.md
       - id: e03s03
         slug: envelope-completeness
-        status: not-started
+        status: passing
         risk: P1
+        record: specs/verifications/e03s03-after.md
   - id: e02
     slug: agentfoundry-suggestions
     status: not-started
@@ -50,17 +51,24 @@ epics:
 
 baselines:
   build: { result: "0 warnings, 0 errors" }
-  nonbrowser: { passed: 564, failed: 0, skipped: 0 }
+  nonbrowser: { passed: 570, failed: 0, skipped: 0 }
   browser: { passed: 104, failed: 0, skipped: 1 }
 
 gates:
-  verify_work: passed_e03s02
+  verify_work: passed_e03s03
   security_review: not-run-this-epic
   nfr: not-run
   blind_spots: not_run
   completeness_critic: not_run
 
 notes: |
+  e03 is complete: all three stories pass, and the catalogue endpoint now carries typed metadata on
+  every product, a compact projection for a machine caller, and an envelope that says whether an
+  answer is complete. e03 unblocks e02 and e04.
+
+  Next action: e02s01 - the Auth0 spike, the one hard gate - or e02s02/e02s03/e02s04 which need no
+  cloud access and can be built while that gate is open.
+
   e03s02 is complete: view=compact leaves out the image path and the display flags, states the price
   as a number and the currency once on the envelope, and keeps the description and the metadata. The
   record, including the document limitation the run exposed, is specs/verifications/e03s02-after.md.

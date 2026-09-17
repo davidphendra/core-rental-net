@@ -1,7 +1,7 @@
 id: e03
 slug: catalogue-contract
 title: The catalogue's published shape for machine callers
-status: planned
+status: done
 bcps: 16
 
 deltas:
@@ -36,7 +36,7 @@ stories:
     type: feat
     bcps: 3
     risk: P1
-    status: failing
+    status: passing
 
 notes: |
   Why this epic comes first: the agent that reads this catalogue cannot match a request against it

@@ -16,7 +16,7 @@ internal static class OpenApiRegistration
         builder.Services.AddOpenApi(options =>
         {
             options.AddDocumentTransformer<Auth0SecuritySchemeTransformer>();
-            options.AddOperationTransformer<CatalogProjectionDescriptionTransformer>();
+            options.AddOperationTransformer<CatalogQueryParameterTransformer>();
         });
     }
 }

@@ -26,9 +26,10 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var body = document.RootElement;
 
-        // Exactly these two, so a field added to the answer is a deliberate change to the contract
-        // rather than something that appeared in it.
-        body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(["value", "count"]);
+        // Exactly these, so a field added to the answer is a deliberate change to the contract rather
+        // than something that appeared in it.
+        body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
+            ["value", "count", "total", "truncated"]);
         body.GetProperty("value").GetArrayLength().Should().Be(140);
         body.GetProperty("count").GetInt32().Should().Be(140);
     }

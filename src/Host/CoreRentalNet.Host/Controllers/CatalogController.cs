@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Infrastructure;
@@ -48,6 +49,9 @@ public sealed class CatalogController(
     /// publishes and is what a caller that says nothing gets; <c>compact</c> leaves out the image path
     /// and the display flags, states the price as a number and the currency once on the envelope, and
     /// keeps the description and the metadata - the fields a request is matched against.
+    ///
+    /// <c>limit</c> caps how many rows come back. It is not paging: a caller that receives fewer rows
+    /// than the answer says matched is told so, rather than left to assume it has all of them.
     /// </remarks>
     [HttpGet]
     [Authorize(Policy = CatalogApiPolicy.Name)]
@@ -68,9 +72,11 @@ public sealed class CatalogController(
         [FromQuery] CatalogCategory? category,
         [FromQuery] CatalogSubCategory? subCategory,
         [FromQuery] string? search,
-        [FromQuery] CatalogProjection? view)
+        [FromQuery] CatalogProjection? view,
+        [FromQuery, Range(1, int.MaxValue)] int? limit)
     {
-        var products = catalog.Handle(new SearchCatalogQuery(category, subCategory, Blank(search)));
+        var matched = catalog.Handle(new SearchCatalogQuery(category, subCategory, Blank(search)));
+        var page = Cap(matched, limit ?? CatalogApiLimits.Default);
 
         // Written after authorisation and after the answer: a refused call never reaches this line, and
         // the count is what actually came back rather than what was asked for. The filters are logged
@@ -81,14 +87,22 @@ public sealed class CatalogController(
             AsAsked("category"),
             AsAsked("subCategory"),
             AsAsked("search"),
-            products.Count);
+            page.Count);
 
         // A collection answer, not a bare array: the count travels with the items, and a page of them
         // can be added later without breaking the callers who read this shape today.
         return (view ?? CatalogProjection.Full) == CatalogProjection.Compact
-            ? Ok(CompactCatalogProjection.Of(products, CatalogueCurrency()))
-            : Ok(new ApiCollection<ProductView>(products, products.Count));
+            ? Ok(CompactCatalogProjection.Of(page, matched.Count, CatalogueCurrency()))
+            : Ok(new ApiCollection<ProductView>(page, page.Count, matched.Count));
     }
+
+    /// <summary>The rows this answer carries: everything that matched, or the first <paramref name="limit"/> of them.</summary>
+    /// <remarks>
+    /// Counted here rather than by the handler, because "how many matched" and "how many travel" are
+    /// the two numbers the envelope has to keep apart - and only this layer knows the cap.
+    /// </remarks>
+    private static IReadOnlyList<ProductView> Cap(IReadOnlyList<ProductView> matched, int limit)
+        => matched.Count <= limit ? matched : [.. matched.Take(limit)];
 
     /// <summary>The currency the catalogue is priced in, which the compact envelope states once.</summary>
     /// <remarks>

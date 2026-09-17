@@ -55,7 +55,7 @@ public sealed class CatalogApiCompactViewTests(CatalogApiFactory factory) : ICla
         var body = document.RootElement;
 
         body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
-            ["value", "count", "currency"]);
+            ["value", "count", "total", "truncated", "currency"]);
 
         // The catalogue is priced in one currency and the loader refuses a row that is not, so
         // stating it here is truthful - and it is what makes the price a number.

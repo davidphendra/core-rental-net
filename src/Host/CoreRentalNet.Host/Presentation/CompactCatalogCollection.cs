@@ -1,7 +1,7 @@
 namespace CoreRentalNet.Host.Presentation;
 
 /// <summary>
-/// A compact collection answer: the items, how many there are, and the currency their prices are in.
+/// A compact collection answer: the items, how many there are, how many matched, and the currency.
 /// </summary>
 /// <remarks>
 /// A separate envelope from <see cref="ApiCollection{T}"/> rather than an optional extra field on it,
@@ -11,8 +11,14 @@ namespace CoreRentalNet.Host.Presentation;
 /// </remarks>
 /// <param name="Value">The items, in the order the module published them.</param>
 /// <param name="Count">How many items this answer carries.</param>
+/// <param name="Total">How many items matched the filters.</param>
 /// <param name="Currency">The ISO 4217 code every price in this answer is stated in.</param>
 public sealed record CompactCatalogCollection(
     IReadOnlyList<CompactCatalogItem> Value,
     int Count,
-    string Currency);
+    int Total,
+    string Currency)
+{
+    /// <summary>True when this answer carries fewer items than matched.</summary>
+    public bool Truncated => Count < Total;
+}
