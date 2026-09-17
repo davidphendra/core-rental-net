@@ -94,7 +94,8 @@ public sealed class SuggestionWorkflowTests
                 new ScriptedSlotClassifier(),
                 NullLogger<Rephraser>.Instance),
             new Suggestor(new EverySlotCatalogue()),
-            new Reviewer(new NoObjection()));
+            new Reviewer(new NoObjection()),
+            NullLogger<SuggestionWorkflow>.Instance);
 
     /// <summary>
     /// One product per slot, because the query this test uses is a declared phrasing and the table

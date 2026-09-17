@@ -1,11 +1,13 @@
 using System.Runtime.CompilerServices;
 using AgentFoundry.WorkspaceSuggestions.Contracts;
 using AgentFoundry.WorkspaceSuggestions.Intent;
+using AgentFoundry.WorkspaceSuggestions.Observability;
 using AgentFoundry.WorkspaceSuggestions.Review;
 using AgentFoundry.WorkspaceSuggestions.Selection;
 using AgentFoundry.WorkspaceSuggestions.Specifications;
 using AgentFoundry.WorkspaceSuggestions.Vocabularies;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 
 namespace AgentFoundry.WorkspaceSuggestions.Workflows;
 
@@ -40,22 +42,26 @@ public sealed class SuggestionWorkflow
     private readonly IRephraseRequests _rephraser;
     private readonly ISelectCandidates _suggestor;
     private readonly IReviewCandidates _reviewer;
+    private readonly ILogger<SuggestionWorkflow> _log;
 
     public SuggestionWorkflow(
         IIntentClassifier classifier,
         IRephraseRequests rephraser,
         ISelectCandidates suggestor,
-        IReviewCandidates reviewer)
+        IReviewCandidates reviewer,
+        ILogger<SuggestionWorkflow> log)
     {
         ArgumentNullException.ThrowIfNull(classifier);
         ArgumentNullException.ThrowIfNull(rephraser);
         ArgumentNullException.ThrowIfNull(suggestor);
         ArgumentNullException.ThrowIfNull(reviewer);
+        ArgumentNullException.ThrowIfNull(log);
 
         _classifier = classifier;
         _rephraser = rephraser;
         _suggestor = suggestor;
         _reviewer = reviewer;
+        _log = log;
     }
 
     /// <summary>Runs one request, streaming the stages it passes and the result it ends with.</summary>
@@ -64,6 +70,11 @@ public sealed class SuggestionWorkflow
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        // One span per run, with a child per stage as they arrive: that is what makes a run which spent
+        // three attempts visible at a glance rather than by reading timestamps.
+        using var span = RunLog.Source.StartActivity("workspace-suggestions.run");
+        span?.SetTag("request.id", request.RequestId);
 
         await using var run = await InProcessExecution.RunStreamingAsync(Build(), request);
 
@@ -94,6 +105,8 @@ public sealed class SuggestionWorkflow
                     reviewed = true;
                 }
 
+                span?.AddEvent(new System.Diagnostics.ActivityEvent($"{stage}.{attempt}"));
+
                 yield return Stage(request, stage, attempt);
             }
             else if (raised is WorkflowOutputEvent { Data: Round answered })
@@ -116,6 +129,8 @@ public sealed class SuggestionWorkflow
 
         if (!last.Verdict.IsWorkspaceRequest)
         {
+            Record(request, upTo: 1, last, ReasonCodes.Rejected);
+
             yield return new SuggestionResult
             {
                 RequestId = request.RequestId,
@@ -135,6 +150,8 @@ public sealed class SuggestionWorkflow
 
         // Exhausted is a result, not a failure: the candidates travel with the findings against them,
         // so the application can show what it has and say what could not be confirmed.
+        Record(request, upTo: attempt, last, last.Approved ? ReasonCodes.Ok : ReasonCodes.Exhausted);
+
         yield return new SuggestionResult
         {
             RequestId = request.RequestId,
@@ -166,6 +183,19 @@ public sealed class SuggestionWorkflow
             .WithOutputFrom(verifier, reviewer)
             .Build();
     }
+
+    /// <summary>One line per run, written wherever the run ends, including where it was refused.</summary>
+    private void Record(SuggestionRequest request, int upTo, Round last, string outcome)
+        => RunLog.Completed(
+            _log,
+            new RunRecord(
+                request.RequestId,
+                outcome,
+                last.Attempt,
+                request.Query.Length,
+                last.Specification?.HasInferredSlots ?? false,
+                last.Findings.Count,
+                _suggestor.CatalogueReads));
 
     private static StageEvent Stage(SuggestionRequest request, string stage, int attempt)
         => new()

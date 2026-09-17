@@ -85,7 +85,8 @@ public sealed class SuggestionLoopTests
                 new SaysDesk(),
                 NullLogger<Rephraser>.Instance),
             new Suggestor(new Catalogue()),
-            new Reviewer(judgement));
+            new Reviewer(judgement),
+            NullLogger<SuggestionWorkflow>.Instance);
 
         var messages = new List<SuggestionMessage>();
 

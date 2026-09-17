@@ -54,7 +54,7 @@ stories:
     type: feat
     bcps: 3
     risk: P1
-    status: failing
+    status: passing
   - id: e02s07
     slug: deployment
     title: The agent is deployed, and the application can call it

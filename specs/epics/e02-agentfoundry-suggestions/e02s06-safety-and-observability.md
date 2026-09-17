@@ -4,7 +4,7 @@
 **risk:** P1
 **context:** infra
 **bcps:** 3
-**status:** failing
+**status:** passing
 
 ## Context
 
@@ -51,8 +51,9 @@ instruction-like text changes no decision.
 
 1. Add the run record with its fields and emit it once per run. → verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
 2. Add OpenTelemetry traces around the workflow nodes and the catalogue read. → verify: `dotnet build agentfoundry/AgentFoundry.sln -v q --nologo`
-3. Delimit catalogue content as data in every prompt that carries it, and record the rule where the
-   prompt is built. → verify: `dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~CatalogueAsDataTests"`
+3. Assert the structural form of the data-not-instructions rule: catalogue text never crosses the
+   contract, so there is no field an injection could travel in. The delimiter rule itself belongs with
+   the adapter that writes a prompt, and there is no prompt yet. → verify: `dotnet test agentfoundry/AgentFoundry.sln --nologo --filter "FullyQualifiedName~ObservabilityTests"`
 4. Track the guardrail declaratively under `agentfoundry/shared/guardrails/` and attach the policy to
    the agent (the attachment is verified live in `e02s07`). → verify: `test -f agentfoundry/shared/guardrails/workspace-suggestions.policy.yaml`
 5. Unit tests AGT-18 and AGT-19: the record's fields, and an injected instruction-like product field

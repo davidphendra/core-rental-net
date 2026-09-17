@@ -23,12 +23,16 @@ namespace AgentFoundry.WorkspaceSuggestions.Selection;
 /// </remarks>
 public sealed class Suggestor(ICatalogueReader catalogue) : ISelectCandidates
 {
+    /// <inheritdoc />
+    public int CatalogueReads { get; private set; }
+
     public async Task<Selection> SelectAsync(
         Specification specification,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(specification);
 
+        CatalogueReads++;
         var page = await catalogue.ReadAsync(cancellationToken);
 
         if (page.Truncated)

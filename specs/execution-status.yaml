@@ -66,6 +66,11 @@ epics:
         status: passing
         risk: P0
         record: specs/verifications/e02s05-after.md
+      - id: e02s06
+        slug: safety-and-observability
+        status: passing
+        risk: P1
+        record: specs/verifications/e02s06-after.md
   - id: e04
     slug: ai-builder
     status: not-started
@@ -106,7 +111,14 @@ notes: |
   the second without a word - so one concrete message type, Round, now flows round the loop. 34 agent
   tests pass with none skipped. The record is specs/verifications/e02s05-after.md.
 
-  Next: e02s06, observability, or e04s01, the AI section's permissions. e02s01 - the Auth0 spike,
+  e02s06 is complete: one record per run carrying the numbers the earlier decisions rest on, a span per
+  run with an event per stage, and the structural form of the data-not-instructions rule asserted -
+  catalogue text never crosses the contract at all. 38 agent tests pass. The record is
+  specs/verifications/e02s06-after.md.
+
+  What remains in e02 is s01, the Auth0 spike, and s07, the deployment - both of which need a
+  subscription and a login. Everything that can be built without one is built, and the two ports the
+  deployment fills are IIntentClassifier, ISlotClassifier and ICatalogueReader. e02s01 - the Auth0 spike,
   the one hard gate - still needs a subscription and a login, and gates e02s03 onward only in the
   sense that the catalogue path it decides is wired at e02s07.
 

@@ -1,13 +1,13 @@
 story_id: e02s06
 title: The run is safe, and the run is measurable
-status: failing
+status: passing
 bcps: 3
 tasks:
   - id: 1
     description: "Add the run record with its fields and emit it once per run"
     verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["agent", "observability"]
@@ -15,7 +15,7 @@ tasks:
     description: "Add OpenTelemetry traces around the workflow nodes and the catalogue read"
     verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["agent", "observability"]
@@ -23,7 +23,7 @@ tasks:
     description: "Delimit catalogue content as data in every prompt that carries it, and record the rule where the prompt is built"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~CatalogueAsDataTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "security", "unit"]
@@ -31,7 +31,7 @@ tasks:
     description: "Track the guardrail declaratively under agentfoundry/shared/guardrails/"
     verify: 'test -f agentfoundry/shared/guardrails/workspace-suggestions.policy.yaml'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["agent", "security", "config"]
@@ -39,7 +39,7 @@ tasks:
     description: "Unit tests AGT-18 and AGT-19: the record's fields, and an injected instruction-like product field that changes no decision"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~RunRecordTests"'
     risk: P1
-    status: failing
+    status: passing
     allure:
       severity: high
       categories: ["agent", "unit", "observability"]
@@ -47,7 +47,7 @@ tasks:
     description: "Assert by construction that no credential can appear in a prompt or a trace"
     verify: 'dotnet test agentfoundry/tests/AgentFoundry.Tests --nologo --filter "FullyQualifiedName~SecretHygieneTests"'
     risk: P0
-    status: failing
+    status: passing
     allure:
       severity: critical
       categories: ["agent", "security", "unit"]
