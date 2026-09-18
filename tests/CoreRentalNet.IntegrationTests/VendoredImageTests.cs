@@ -72,13 +72,18 @@ public sealed class VendoredImageTests
     }
 
     [Fact] // CAT-12, UI-05
-    public void Products_without_an_image_file_are_flagged_so_the_ui_can_draw_a_placeholder()
+    public void A_product_whose_image_file_is_absent_is_flagged_with_a_placeholder_path()
     {
-        var catalog = new ProductCatalog(ProductsJson, WebRoot);
+        // Every shipped product now carries a vendored photograph, so the absent-file case is
+        // exercised with a row written for it rather than with whatever the catalog happens to hold.
+        using var file = new TemporaryFile(
+            """
+            [{ "skuNo": "AAA0001", "name": "No picture", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/absent.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
+            """);
 
-        var missing = catalog.All.Where(product => !product.ImageAvailable).ToArray();
+        var product = new ProductCatalog(file.Path, WebRoot).Find("AAA0001")!;
 
-        missing.Should().NotBeEmpty("most catalog images are placeholders that were never shipped");
-        missing.Should().OnlyContain(product => product.ImagePath.StartsWith("/placeholders/", StringComparison.Ordinal));
+        product.ImageAvailable.Should().BeFalse("the file is not on disk");
+        product.ImagePath.Should().StartWith("/placeholders/", "a missing image falls back to a drawn placeholder");
     }
 }

@@ -33,8 +33,8 @@ namespace CoreRentalNet.IntegrationTests;
 public sealed class EndToEndCheckoutTests
 {
     private const string RawDraftToken = "integration-draft-token";
-    private const string Chair = "CHAE2V0VGJZ8";
-    private const string Monitor = "MONAA5DU36L3";
+    private const string Chair = "CHAB09R9WB61";
+    private const string Monitor = "MONB000PB2KW";
 
     private static IProductCatalog RealCatalog()
         => new ProductCatalog(
@@ -104,8 +104,8 @@ public sealed class EndToEndCheckoutTests
         result.InvoiceNumber.Should().Be("INV-2026-0001");
         result.RawAccessToken.Should().NotBeNullOrEmpty();
 
-        // The order: a 400,000 chair, two 300,000 monitors, and the 750,000 delivery charge.
-        result.FirstInvoiceTotal.Amount.Should().Be(1_750_000m);
+        // The order: a 147,000 chair, two 393,000 monitors, and the 750,000 delivery charge.
+        result.FirstInvoiceTotal.Amount.Should().Be(1_683_000m);
         result.DeliveryScheduledFor.Should().Be(new DateOnly(2026, 1, 12));
 
         harness.Workspace.ChangeTracker.Clear();
@@ -117,7 +117,7 @@ public sealed class EndToEndCheckoutTests
         var rental = await new RentalRepository(harness.Rentals).FindByWorkspaceIdAsync(storedDraft.Id.Value);
         rental.Should().NotBeNull();
         rental!.Status.Should().Be(RentalStatus.Paid);
-        RentalsGraph.Lifecycle.MonthlyTotal(rental).Amount.Should().Be(1_000_000m);
+        RentalsGraph.Lifecycle.MonthlyTotal(rental).Amount.Should().Be(933_000m);
         rental.AccessTokenHash.Should().Be(new OpaqueTokenService().HashOf(result.RawAccessToken));
 
         var invoices = await new InvoiceRepository(harness.Rentals).ListForRentalAsync(rental.Id);
@@ -136,7 +136,7 @@ public sealed class EndToEndCheckoutTests
         view!.Number.Should().Be(result.RentalNumber);
         view.DeliveryAddress.Should().Be("Villa Lotus, Canggu");
         view.Lines.Should().HaveCount(2);
-        view.MonthlyTotal.Amount.Should().Be(1_000_000m);
+        view.MonthlyTotal.Amount.Should().Be(933_000m);
     }
 
     [Fact] // CO-04

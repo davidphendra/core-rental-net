@@ -108,18 +108,21 @@ public sealed class AccessibilityTests(HostFixture host, ITestOutputHelper outpu
     }
 
     [Fact] // UI-05
-    public async Task A_product_without_an_image_shows_a_drawn_placeholder_rather_than_a_broken_image()
+    public async Task No_product_image_on_the_page_fails_to_load()
     {
         await GotoAsync("/extras");
 
-        // Deliberately not tied to a class the component happens to use: what matters is that a
-        // product with no image file is drawn rather than left as a broken image.
-        var placeholders = Page.Locator("svg[role='img']");
+        // Every shipped product carries a vendored photograph now, so the listing with the most
+        // images on it is the accessory category. A product with no image file at all is covered by
+        // the catalog tests; what matters on a page is that no image is left broken.
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories", Exact = true }).ClickAsync();
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(150);
 
-        (await placeholders.CountAsync()).Should().BeGreaterThan(0, "most catalog images were never shipped");
-
+        // A broken image is one that finished loading and produced nothing. An image still in flight
+        // has not failed - and these images are lazy, so counting "not complete" as broken would fail
+        // on a healthy page.
         var broken = await Page.EvaluateAsync<int>(
-            "() => Array.from(document.images).filter(image => !image.complete || image.naturalWidth === 0).length");
+            "() => Array.from(document.images).filter(image => image.complete && image.naturalWidth === 0).length");
 
         broken.Should().Be(0, "no image on the page may fail to load");
     }

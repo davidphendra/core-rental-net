@@ -55,7 +55,7 @@ public sealed class SecurityHeadersTests(HostFixture host, ITestOutputHelper out
 
         // The three things that fetch: the page, the circuit's socket, and the catalogue's answers.
         await GotoAsync("/extras", waitFor: ".grid-store");
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs", Exact = true }).ClickAsync();
         await GotoAsync("/builder", waitFor: ".workspace-stage");
 
         violations.Should().BeEmpty();

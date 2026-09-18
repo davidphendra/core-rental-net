@@ -49,13 +49,10 @@ public sealed class HermeticityTests(HostFixture host, ITestOutputHelper output)
     {
         await GotoAsync("/extras");
 
-        // The store opens on desks now, and desks are drawn rather than photographed: the catalog's
-        // remote images - two chairs, a plant, a beanbag and a coffee machine - are the ones that
-        // were vendored, and none of them is a desk. This chooses the listing the test was written
-        // against, so that there is an image on the page to have an opinion about. Accessories is
-        // one entry now rather than two, so it is the whole accessory category: 100 products.
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(100);
+        // The store opens on desks now. Every shipped product carries a vendored photograph, so this
+        // chooses the listing with the most images on it: the whole accessory category, 150 products.
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories", Exact = true }).ClickAsync();
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(150);
 
         var sources = await Page.Locator("img").EvaluateAllAsync<string[]>(
             "images => images.map(image => image.getAttribute('src') || '')");

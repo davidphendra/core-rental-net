@@ -38,7 +38,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
 
-        await Expect(PanelCards).ToHaveCountAsync(100);
+        await Expect(PanelCards).ToHaveCountAsync(150);
         await Expect(Panel.Locator("h3")).ToHaveTextAsync(
             ["Monitors", "Lamps", "Plants", "Coffee Machines", "Bean bags"]);
     }
@@ -48,7 +48,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
 
-        await Expect(PanelCards).ToHaveCountAsync(20);
+        await Expect(PanelCards).ToHaveCountAsync(25);
         await Expect(Panel.Locator("h3")).ToHaveCountAsync(0);
     }
 
@@ -57,14 +57,13 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
-        await Expect(PanelCards).ToHaveCountAsync(100);
+        await Expect(PanelCards).ToHaveCountAsync(150);
 
-        // The search matches the product's name only, so "lamp" finds the five accessories whose
-        // names carry that word - Desk Lamp, Floor Lamp, Reading Lamp, Arc Lamp and Table Lamp -
-        // and not the other fifteen lamps, whose names say Clip Light, Architect and so on.
+        // The search matches the product's name only, so "lamp" finds the thirty accessories whose
+        // names carry that word, and none of the other products in the category.
         await Page.Locator("#panel-search").FillAsync("lamp");
 
-        await Expect(PanelCards).ToHaveCountAsync(5);
+        await Expect(PanelCards).ToHaveCountAsync(30);
         await Expect(Panel.Locator("h3")).ToHaveTextAsync("Lamps");
 
         await Page.Locator("#panel-search").FillAsync("nothing like this");
@@ -82,7 +81,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await ChooseCategoryAsync("Chairs");
 
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PanelCards).ToHaveCountAsync(20);
+        await Expect(PanelCards).ToHaveCountAsync(30);
     }
 
     [Fact] // CAT-45
@@ -90,11 +89,11 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
 
-        // One query for the slot's own subcategory: the lamp box offers the six lamps, not the whole
-        // accessory category, and asks the catalog nothing about desks or chairs.
+        // One query for the slot's own subcategory: the lamp box offers the thirty lamps, not the
+        // whole accessory category, and asks the catalog nothing about desks or chairs.
         await OpenSlotPickerAsync(".slot--lamp");
 
-        await Expect(PickerCards).ToHaveCountAsync(20);
+        await Expect(PickerCards).ToHaveCountAsync(30);
         await Expect(Page.Locator("dialog[open] h3")).ToHaveCountAsync(0);
     }
 
@@ -104,32 +103,32 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
         await Page.Locator("#panel-search").FillAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(5);
+        await Expect(PanelCards).ToHaveCountAsync(30);
 
         await OpenSlotPickerAsync(".slot--chair");
 
         // The picker opens with a search of its own, empty, showing everything the chair box holds.
         await Expect(Page.Locator("#picker-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PickerCards).ToHaveCountAsync(20);
+        await Expect(PickerCards).ToHaveCountAsync(30);
 
-        await Page.Locator("#picker-search").FillAsync("seminyak");
+        await Page.Locator("#picker-search").FillAsync("zsarts");
 
-        // One chair is called Seminyak Armless. Waiting on the count rather than reading it once:
-        // the list is re-rendered by the same keystroke that narrows it.
+        // One chair is the ZSARTS armless desk chair. Waiting on the count rather than reading it
+        // once: the list is re-rendered by the same keystroke that narrows it.
         await Expect(PickerCards).ToHaveCountAsync(1);
 
         // And the panel is exactly where it was left.
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(5);
+        await Expect(PanelCards).ToHaveCountAsync(30);
     }
 
     [Fact] // CAT-47
     public async Task The_store_shows_the_merged_category_the_same_way()
     {
         await GotoAsync("/extras");
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Accessories", Exact = true }).ClickAsync();
 
-        await Expect(Page.Locator(".grid-store button.product-card")).ToHaveCountAsync(100);
+        await Expect(Page.Locator(".grid-store button.product-card")).ToHaveCountAsync(150);
         await Expect(Page.Locator("section:has(.grid-store) h2")).ToHaveTextAsync(
             ["Monitors", "Lamps", "Plants", "Coffee Machines", "Bean bags"]);
     }
@@ -156,7 +155,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
         await ChooseCategoryAsync("Accessories");
-        await Expect(PanelCards).ToHaveCountAsync(100);
+        await Expect(PanelCards).ToHaveCountAsync(150);
 
         var clear = Panel.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Clear the search" });
 
@@ -165,7 +164,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await Expect(clear).ToHaveCountAsync(0);
 
         await Page.Locator("#panel-search").FillAsync("lamp");
-        await Expect(PanelCards).ToHaveCountAsync(5);
+        await Expect(PanelCards).ToHaveCountAsync(30);
         await Expect(clear).ToHaveCountAsync(1);
 
         // The text keeps clear of the control on that side.
@@ -175,7 +174,7 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await clear.ClickAsync();
 
         await Expect(Page.Locator("#panel-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PanelCards).ToHaveCountAsync(100);
+        await Expect(PanelCards).ToHaveCountAsync(150);
     }
 
     [Fact] // CAT-50
@@ -183,20 +182,20 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
     {
         await GotoAsync("/builder");
         await OpenSlotPickerAsync(".slot--chair");
-        await Expect(PickerCards).ToHaveCountAsync(20);
+        await Expect(PickerCards).ToHaveCountAsync(30);
 
         var clear = Page.Locator("dialog[open]")
             .GetByRole(AriaRole.Button, new LocatorGetByRoleOptions { Name = "Clear the search" });
 
         await Expect(clear).ToHaveCountAsync(0);
 
-        await Page.Locator("#picker-search").FillAsync("seminyak");
+        await Page.Locator("#picker-search").FillAsync("zsarts");
         await Expect(PickerCards).ToHaveCountAsync(1);
 
         await clear.ClickAsync();
 
         await Expect(Page.Locator("#picker-search")).ToHaveValueAsync(string.Empty);
-        await Expect(PickerCards).ToHaveCountAsync(20);
+        await Expect(PickerCards).ToHaveCountAsync(30);
     }
 
     [Fact] // CAT-51
@@ -205,14 +204,14 @@ public sealed class CatalogBrowsingTests(HostFixture host, ITestOutputHelper out
         await GotoAsync("/builder");
 
         // Assign from the panel, so its own card is the one shown as selected.
-        var card = PanelCards.Filter(new LocatorFilterOptions { HasTextString = "Canggu Bamboo" });
+        var card = PanelCards.Filter(new LocatorFilterOptions { HasTextString = "Hooker Furniture Bow Front Knee-Hole Desk" });
         await card.ClickAsync();
         await Expect(card).ToHaveAttributeAsync("aria-pressed", "true");
 
         // Then take it off the canvas, which the panel did not do. The panel has to hear about it:
         // overriding OnInitialized without calling the base left it subscribed to nothing, so the
         // card stayed selected after the workspace no longer held the product.
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Remove one Canggu Bamboo" })
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Remove one Hooker Furniture Bow Front Knee-Hole Desk" })
             .ClickAsync();
 
         await Expect(card).ToHaveAttributeAsync("aria-pressed", "false");

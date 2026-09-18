@@ -60,7 +60,7 @@ public sealed class CatalogApiAuthorizationTests(CatalogApiAuthorizedFactory fac
 
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
-        document.RootElement.GetProperty("count").GetInt32().Should().Be(140);
+        document.RootElement.GetProperty("count").GetInt32().Should().Be(205);
         document.RootElement.GetProperty("value")[0].GetProperty("category").GetString().Should().NotBeNullOrWhiteSpace();
     }
 

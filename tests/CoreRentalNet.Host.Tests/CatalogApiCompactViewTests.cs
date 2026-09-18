@@ -60,8 +60,8 @@ public sealed class CatalogApiCompactViewTests(CatalogApiFactory factory) : ICla
         // The catalogue is priced in one currency and the loader refuses a row that is not, so
         // stating it here is truthful - and it is what makes the price a number.
         body.GetProperty("currency").GetString().Should().Be("IDR");
-        body.GetProperty("value").GetArrayLength().Should().Be(140);
-        body.GetProperty("count").GetInt32().Should().Be(140);
+        body.GetProperty("value").GetArrayLength().Should().Be(205);
+        body.GetProperty("count").GetInt32().Should().Be(205);
     }
 
     [Fact] // API-33

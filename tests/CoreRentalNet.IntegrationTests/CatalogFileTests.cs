@@ -20,17 +20,17 @@ public sealed class CatalogFileTests
     {
         var catalog = new ProductCatalog(ProductsJson, null);
 
-        catalog.All.Should().HaveCount(140);
+        catalog.All.Should().HaveCount(205);
 
-        catalog.ByCategory(CatalogCategory.Chair).Should().HaveCount(20);
-        catalog.ByCategory(CatalogCategory.Desk).Should().HaveCount(20);
-        catalog.ByCategory(CatalogCategory.Accessory).Should().HaveCount(100);
+        catalog.ByCategory(CatalogCategory.Chair).Should().HaveCount(30);
+        catalog.ByCategory(CatalogCategory.Desk).Should().HaveCount(25);
+        catalog.ByCategory(CatalogCategory.Accessory).Should().HaveCount(150);
 
-        catalog.BySubCategory(CatalogSubCategory.Beanbag).Should().HaveCount(20);
-        catalog.BySubCategory(CatalogSubCategory.Coffee).Should().HaveCount(20);
-        catalog.BySubCategory(CatalogSubCategory.Lamp).Should().HaveCount(20);
-        catalog.BySubCategory(CatalogSubCategory.Monitor).Should().HaveCount(20);
-        catalog.BySubCategory(CatalogSubCategory.Plant).Should().HaveCount(20);
+        catalog.BySubCategory(CatalogSubCategory.Beanbag).Should().HaveCount(30);
+        catalog.BySubCategory(CatalogSubCategory.Coffee).Should().HaveCount(30);
+        catalog.BySubCategory(CatalogSubCategory.Lamp).Should().HaveCount(30);
+        catalog.BySubCategory(CatalogSubCategory.Monitor).Should().HaveCount(30);
+        catalog.BySubCategory(CatalogSubCategory.Plant).Should().HaveCount(30);
     }
 
     [Fact] // CAT-01, API-26
@@ -75,7 +75,9 @@ public sealed class CatalogFileTests
         var featured = new ProductCatalog(ProductsJson, null).Featured();
 
         featured.Should().HaveCount(2);
-        featured.Select(product => product.Name).Should().Contain("Seminyak Sit-Stand").And.Contain("Tabanan Monstera Plant");
+        featured.Select(product => product.Name).Should()
+            .Contain("TOPSKY Dual Motor Electric Adjustable Standing Computer Desk for Home and Office (Grey)")
+            .And.Contain("WERFACTORY Tiffany Table Lamp Green Stained Glass Dragonfly Bedside Lamp 16X16X24 Inches Desk Reading Light Metal Base Decor Bedroom Living Room Home Office S622 Series");
     }
 
     [Fact] // CAT-01, API-31

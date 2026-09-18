@@ -13,7 +13,7 @@ namespace CoreRentalNet.E2E.Flows;
 /// </summary>
 public sealed class ReviewPageTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
-    private const string AMonitor = "Ultrawide";
+    private const string AMonitor = "Lenovo ThinkVision T34w-20";
 
     [Fact] // REV-01
     public async Task The_review_page_never_shows_the_name_of_a_parameter()

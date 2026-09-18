@@ -23,13 +23,13 @@ public sealed class CatalogApiEnvelopeTests(CatalogApiFactory factory) : IClassF
     {
         var body = await EnvelopeAsync("/api/catalog");
 
-        body.GetProperty("count").GetInt32().Should().Be(140);
-        body.GetProperty("total").GetInt32().Should().Be(140);
+        body.GetProperty("count").GetInt32().Should().Be(205);
+        body.GetProperty("total").GetInt32().Should().Be(205);
         body.GetProperty("truncated").GetBoolean().Should().BeFalse();
 
         // The default has to be above the catalogue's present size, or an unqualified request would
         // silently start truncating as the catalogue grew.
-        CatalogApiLimits.Default.Should().BeGreaterThan(140);
+        CatalogApiLimits.Default.Should().BeGreaterThan(205);
     }
 
     [Fact] // API-37
@@ -39,7 +39,7 @@ public sealed class CatalogApiEnvelopeTests(CatalogApiFactory factory) : IClassF
 
         body.GetProperty("value").GetArrayLength().Should().Be(5);
         body.GetProperty("count").GetInt32().Should().Be(5);
-        body.GetProperty("total").GetInt32().Should().Be(140);
+        body.GetProperty("total").GetInt32().Should().Be(205);
         body.GetProperty("truncated").GetBoolean().Should().BeTrue();
     }
 
@@ -49,7 +49,7 @@ public sealed class CatalogApiEnvelopeTests(CatalogApiFactory factory) : IClassF
         var body = await EnvelopeAsync("/api/catalog?subCategory=monitor&limit=5");
 
         body.GetProperty("count").GetInt32().Should().Be(5);
-        body.GetProperty("total").GetInt32().Should().Be(20);
+        body.GetProperty("total").GetInt32().Should().Be(30);
         body.GetProperty("truncated").GetBoolean().Should().BeTrue();
     }
 
@@ -58,15 +58,15 @@ public sealed class CatalogApiEnvelopeTests(CatalogApiFactory factory) : IClassF
     {
         // Non-vacuity for API-37: an answer that reported `truncated: true` whenever a limit was sent,
         // rather than comparing the two numbers, would satisfy the test above and fail this one. The
-        // catalogue holds 140, so one either side of that is the boundary.
-        var exact = await EnvelopeAsync("/api/catalog?limit=140");
-        exact.GetProperty("count").GetInt32().Should().Be(140);
-        exact.GetProperty("total").GetInt32().Should().Be(140);
+        // catalogue holds 205, so one either side of that is the boundary.
+        var exact = await EnvelopeAsync("/api/catalog?limit=205");
+        exact.GetProperty("count").GetInt32().Should().Be(205);
+        exact.GetProperty("total").GetInt32().Should().Be(205);
         exact.GetProperty("truncated").GetBoolean().Should().BeFalse();
 
-        var capped = await EnvelopeAsync("/api/catalog?limit=139");
-        capped.GetProperty("count").GetInt32().Should().Be(139);
-        capped.GetProperty("total").GetInt32().Should().Be(140);
+        var capped = await EnvelopeAsync("/api/catalog?limit=204");
+        capped.GetProperty("count").GetInt32().Should().Be(204);
+        capped.GetProperty("total").GetInt32().Should().Be(205);
         capped.GetProperty("truncated").GetBoolean().Should().BeTrue();
     }
 
@@ -76,7 +76,7 @@ public sealed class CatalogApiEnvelopeTests(CatalogApiFactory factory) : IClassF
         var body = await EnvelopeAsync("/api/catalog?view=compact&limit=3");
 
         body.GetProperty("count").GetInt32().Should().Be(3);
-        body.GetProperty("total").GetInt32().Should().Be(140);
+        body.GetProperty("total").GetInt32().Should().Be(205);
         body.GetProperty("truncated").GetBoolean().Should().BeTrue();
     }
 

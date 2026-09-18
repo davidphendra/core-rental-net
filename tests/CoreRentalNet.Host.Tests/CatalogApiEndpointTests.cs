@@ -30,8 +30,8 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         // than something that appeared in it.
         body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
             ["value", "count", "total", "truncated"]);
-        body.GetProperty("value").GetArrayLength().Should().Be(140);
-        body.GetProperty("count").GetInt32().Should().Be(140);
+        body.GetProperty("value").GetArrayLength().Should().Be(205);
+        body.GetProperty("count").GetInt32().Should().Be(205);
     }
 
     [Fact] // API-30
@@ -39,7 +39,7 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
     {
         var products = await GetArrayAsync("/api/catalog?subCategory=monitor");
 
-        products.GetArrayLength().Should().Be(20);
+        products.GetArrayLength().Should().Be(30);
 
         // What the agent matches a request against: a caller that cannot read this can only match a
         // product by its name, which is the problem the property exists to solve.
@@ -57,8 +57,8 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
     {
         var products = await GetArrayAsync("/api/catalog");
 
-        products.GetArrayLength().Should().Be(140);
-        products[0].GetProperty("name").GetString().Should().Be("Seminyak Sit-Stand");
+        products.GetArrayLength().Should().Be(205);
+        products[0].GetProperty("name").GetString().Should().Be("HON Mod Desk Shell, 60 x 30 x 29, Mahogany");
     }
 
     [Fact] // API-04
@@ -66,7 +66,7 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
     {
         var products = await GetArrayAsync("/api/catalog?category=desk");
 
-        products.GetArrayLength().Should().Be(20);
+        products.GetArrayLength().Should().Be(25);
         products.EnumerateArray().Should().OnlyContain(
             product => product.GetProperty("category").GetString() == "desk");
     }
@@ -76,7 +76,7 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
     {
         var products = await GetArrayAsync("/api/catalog?subCategory=monitor");
 
-        products.GetArrayLength().Should().Be(20);
+        products.GetArrayLength().Should().Be(30);
         products.EnumerateArray().Should().OnlyContain(
             product => product.GetProperty("subCategory").GetString() == "monitor");
     }
@@ -86,7 +86,7 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
     {
         var products = await GetArrayAsync("/api/catalog?category=DESK");
 
-        products.GetArrayLength().Should().Be(20);
+        products.GetArrayLength().Should().Be(25);
     }
 
     [Fact] // API-05

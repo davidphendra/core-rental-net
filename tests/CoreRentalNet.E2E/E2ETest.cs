@@ -112,7 +112,7 @@ public abstract class E2ETest(HostFixture host, ITestOutputHelper output) : IAsy
     /// name, which is what a screen reader announces and is the only thing left to go on.
     /// </summary>
     protected Task ChooseCategoryAsync(string name)
-        => Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name }).ClickAsync();
+        => Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = name, Exact = true }).ClickAsync();
 
     /// <summary>
     /// Assigns the first item of a category. Tests that care which kind of item they got say so:

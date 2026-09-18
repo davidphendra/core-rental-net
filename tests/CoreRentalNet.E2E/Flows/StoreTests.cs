@@ -14,17 +14,17 @@ namespace CoreRentalNet.E2E.Flows;
 /// </summary>
 public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2ETest(host, output)
 {
-    /// <summary>The catalog holds twenty desks, and the beanbags are a different category entirely.</summary>
-    private const string ADesk = "Canggu Bamboo";
-    private const string ABeanbag = "Seminyak Floor Cushion Set";
-    private const string AChair = "Seminyak Armless";
+    /// <summary>The catalog holds twenty-five desks, and the beanbags are a different category entirely.</summary>
+    private const string ADesk = "Hooker Furniture Bow Front Knee-Hole Desk";
+    private const string ABeanbag = "Cocoon";
+    private const string AChair = "ZSARTS";
 
     [Fact] // STORE-01
     public async Task The_store_opens_on_desks_and_loads_only_them()
     {
         await GotoAsync("/extras");
 
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(25);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ADesk })).ToHaveCountAsync(1);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ABeanbag })).ToHaveCountAsync(0);
     }
@@ -43,13 +43,13 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
     {
         await GotoAsync("/extras");
 
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs", Exact = true }).ClickAsync();
 
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ADesk })).ToHaveCountAsync(0);
 
-        // Twenty, not forty: the desks are gone, they were not added to.
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
+        // Thirty, not fifty-five: the desks are gone, they were not added to.
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(30);
     }
 
     [Fact] // STORE-06
@@ -60,16 +60,16 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
         await Page.Locator("button.product-card").First.ClickAsync();
         await Expect(Page.Locator(".alert--info")).ToContainTextAsync("added to your workspace");
 
-        var before = await Page.Locator(".grid-store").EvaluateAsync<double>("grid => grid.getBoundingClientRect().top");
+        var before = await Page.Locator(".grid-store").EvaluateAsync<double>("grid => grid.getBoundingClientRect().top + window.scrollY");
 
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs", Exact = true }).ClickAsync();
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
 
         // The confirmation is about what was added, not about the category. Dropping it moved
         // everything below it 48px up, and the grid was standing exactly where the customer left it.
         await Expect(Page.Locator(".alert--info")).ToContainTextAsync("added to your workspace");
 
-        var after = await Page.Locator(".grid-store").EvaluateAsync<double>("grid => grid.getBoundingClientRect().top");
+        var after = await Page.Locator(".grid-store").EvaluateAsync<double>("grid => grid.getBoundingClientRect().top + window.scrollY");
 
         after.Should().Be(before, "switching category must not move the products the customer is looking at");
     }
@@ -85,7 +85,7 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
 
         await GotoAsync("/extras");
 
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(25);
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = ADesk })).ToHaveCountAsync(1);
     }
 
@@ -93,9 +93,9 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
     public async Task The_category_is_remembered_for_the_session()
     {
         await GotoAsync("/extras");
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs" }).ClickAsync();
+        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs", Exact = true }).ClickAsync();
 
-        var chairs = Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs" });
+        var chairs = Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Chairs", Exact = true });
         await Expect(chairs).ToHaveAttributeAsync("aria-pressed", "true");
 
         await Page.ReloadAsync();
@@ -105,7 +105,7 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
         // could read - and it is a session cookie, so it is the browser that forgets it.
         await Expect(chairs).ToHaveAttributeAsync("aria-pressed", "true");
         await Expect(Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = AChair })).ToHaveCountAsync(1);
-        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(20);
+        await Expect(Page.Locator("button.product-card")).ToHaveCountAsync(30);
     }
 
     [Fact] // STORE-07
@@ -115,7 +115,7 @@ public sealed class StoreTests(HostFixture host, ITestOutputHelper output) : E2E
 
         // The worst case in the catalogue: the longest desk name, at a near-top price, in the
         // narrowest grid the design draws (four columns).
-        var card = Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = "Tampaksiring Workbench" });
+        var card = Page.Locator("button.product-card").Filter(new LocatorFilterOptions { HasTextString = "Stand Steady Height Adjustable Round Table & Multifunctional Mobile Workstation | Portable Standing Desk with Pneumatic Air Lift | Collaborative Workspace for School & Office | Easy Assembly (Black)" });
         await Expect(card).ToHaveCountAsync(1);
 
         var name = await card.Locator("h3").BoundingBoxAsync();
