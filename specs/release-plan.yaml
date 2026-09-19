@@ -68,8 +68,9 @@ risks:
       reader sees it before reading the history as though it had been agreed.
 
 notes: |
-  e01 and e03 are done: their epic.yaml and specs/execution-status.yaml both say passing, and this
-  plan previously lagged them by calling e03 planned. It no longer does.
+  e01 and e03 are done. Their capsules were removed with the e05 restructure, so this plan is now the
+  only place that status is recorded - and it previously disagreed with it, calling e03 planned. It no
+  longer does.
 
   e05 replaces the two epics it supersedes - e02 (agentfoundry-suggestions) and e04 (ai-builder) -
   and they are removed from this index rather than left beside it. Both described a four-agent
@@ -96,10 +97,12 @@ notes: |
   configuration, applied to the range only - the middle is merely sorted between them. Where the
   catalogue cannot produce options that far apart, fewer candidates are shown rather than padded.
 
-  Record-keeping, not a status change: e03's capsule describes a catalogue of 140 products. Commit
-  a62b2ec stocked 205 (25 desk, 30 chair, 150 accessory) with vendored images, so that figure and the
-  140-vs-205 references elsewhere are stale. specs/product/SCOPE_LATEST.yaml is likewise stale and
-  must be rewritten against e05 before this initiative is planned in earnest.
+  Record-keeping, not a status change: a catalogue of 140 products was described in e03's capsule and
+  echoed here. Commit a62b2ec stocked 205 (25 desk, 30 chair, 150 accessory) with vendored images, so
+  that figure was stale, and it has been corrected wherever it still appeared. As for the scope
+  document: specs/product/SCOPE_LATEST.yaml does not exist. It is a product statement to be authored by
+  the product owner rather than reconstructed by engineering, and this initiative should not be planned
+  in earnest until it is written.
 
   The e05 summary is 30 of 47 tasks passing (63.8%), 16 not started (34.0%) and 1 assumed but unproven
   (2.1%). The single assumption is e05s01 task 5, and it is now much narrower than it read: the client

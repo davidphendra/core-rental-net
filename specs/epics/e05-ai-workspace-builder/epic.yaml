@@ -411,8 +411,8 @@ notes: |
   stand-in lives in the APPLICATION's test tree as a test-only project pinned to shared/contracts - NOT
   in agentfoundry/, which stays a deployable rather than a test host.
 
-  REGISTRY: specs/execution-status.yaml, specs/product/SCOPE_LATEST.yaml and specs/verifications/ are
-  deleted in the working tree and are deliberately NOT recreated. This capsule's test matrix carries the
+  REGISTRY: specs/execution-status.yaml, specs/product/SCOPE_LATEST.yaml and specs/verifications/ were
+  removed with this restructure and are deliberately NOT recreated. This capsule's test matrix carries the
   baseline section, so nothing here is blocked by their absence; the scope document is a product
   statement to be authored by the product owner, not reconstructed.
 

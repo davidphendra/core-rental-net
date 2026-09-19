@@ -5,15 +5,12 @@ carries the authority chain; this file is the convention list those rules refer 
 
 ## Authority chain
 
-1. `specs/tech-architecture/architecture-style.md` — persistence-record Domain + Application services.
-2. `specs/REFACTOR_DDD_TO_CLEAN_LATEST.md` — the staged migration plan.
-3. `specs/architecture.md` — module map, trust model, measured SQLite facts.
-4. `specs/test-matrix.md` — the scenario matrix.
-5. `specs/state.yaml` — the live phase and next action.
+The chain lives in `CLAUDE.md`, which is the entry point and names the documents in the order they
+are read.
 
-> **Note (2026-09-16).** Items 1, 3, 4 and 5 are currently absent from `specs/`. `CLAUDE.md` still
-> names them. The gap is recorded in `specs/LAYER_AUDIT_LATEST.md` (CLN-10) and must be closed before
-> the authority chain can be followed again.
+It is deliberately **not repeated here**. It was, and the two copies drifted: this file and `CLAUDE.md`
+both went on naming five files after `specs/` had stopped holding them, and the note that recorded the
+gap pointed at a sixth file that was gone as well. One list, in one place.
 
 ## Platform
 

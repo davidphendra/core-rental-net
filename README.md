@@ -198,24 +198,25 @@ already-running host instead of starting one on `http://localhost:5199`.
 
 ```
 src/BuildingBlocks/     Money, opaque tokens, the business calendar, SQLite plumbing
-src/Modules/Catalog/    140 products, read-only in memory, no database at all
+src/Modules/Catalog/    205 products, read-only in memory, no database at all
 src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quote
 src/Modules/Rentals/    Orders, invoices, periods, the schedule
 src/Host/               The Blazor application, its components and its design tokens
 src/shared/data/        products.json, the single source of truth for every price
-specs/                  architecture, the test matrix, epic capsules, verifications
+specs/                  the release plan, epic capsules, decisions and commit plan
 ```
 
 `specs/` is the record of why, not just what:
 
-- `specs/tech-architecture/architecture-style.md` — the Domain-as-records / Application-services
-  style, the coding standards, and the invariant relocation map
-- `specs/REFACTOR_DDD_TO_CLEAN_LATEST.md` — the DDD → records/services complexity matrix and staged
-  plan
-- `specs/architecture.md` — the module map, the trust model, the measured SQLite constraints
-- `specs/test-matrix.md` — 101 scenarios and the layer that covers each one
-- `specs/verifications/` — what was actually run and observed, including what each run corrected
-- `specs/epics/` — the active epic capsules
+- `specs/release-plan.yaml` — the epics, what state each is in, their order, and the risk register
+- `specs/epics/` — the epic capsules: stories, tasks, test matrices and the reasoning inside them
+- `specs/adr/` — the decisions, with the alternatives that were rejected and why
+- `specs/COMMIT_PLAN_LATEST.md` — how a change of this size is committed, and where baseline numbers go
+
+The pre-`e05` documents — `architecture-style.md`, `architecture.md`, `test-matrix.md`, `state.yaml`,
+the DDD migration plan and the whole of `specs/verifications/` — were removed with the restructure that
+`specs/adr/0003` describes. What they carried lives in the list above, in `CONVENTIONS.md` and in this
+file.
 
 ## Decisions worth knowing before you read the code
 
@@ -244,6 +245,12 @@ specs/                  architecture, the test matrix, epic capsules, verificati
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` builds, runs the 410 non-browser tests, installs Chromium and runs the
-94 browser tests. It has **never executed**: this repository has no remote yet. The file is
-committed so that the first push is the first run.
+`.github/workflows/ci.yml` builds, runs the non-browser tests, installs Chromium and runs the browser
+tests. It has **never executed**: this repository has no remote yet. The file is committed so that the
+first push is the first run.
+
+It builds and tests `CoreRentalNet.sln` only, so the agent tree's suite does not run in it — a
+path-filtered job for `agentfoundry/AgentFoundry.sln` is `e05s09`'s, and without it the two-tree
+separation is nominal. As measured on 2026-09-19: **636** non-browser tests, **104** browser (one
+real-tenant test skipped) and **63** agent tests. The figure this paragraph carried before — 410 and 94
+— had been stale for long enough that nobody could say when it stopped being true.

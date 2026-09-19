@@ -5,19 +5,29 @@ assumption in a prompt.
 
 ## Authority chain (read before structural work)
 
-1. `specs/tech-architecture/architecture-style.md` — **persistence-record Domain + Application
-   services**. Type placement, coding standards, and the invariant relocation map.
-2. `specs/REFACTOR_DDD_TO_CLEAN_LATEST.md` — the migration complexity matrix and the staged plan.
-   Execute its stages in order; stage 0 (behaviour lock) is mandatory.
-3. `specs/architecture.md` — module map, trust model, measured SQLite facts.
-4. `specs/test-matrix.md` — 101 scenarios; the requirement itself.
-5. `specs/state.yaml` — the live phase and next action.
+1. `CONVENTIONS.md` — the conventions: **persistence-record Domain + Application services**, the
+   coding budgets, and the test rules. Each rule names the architecture test that enforces it.
+2. `specs/release-plan.yaml` — the live plan: which epics exist, what state each is in, and the risk
+   register. This is where "what is next" is answered.
+3. `specs/epics/<epic>/epic.yaml` — the active capsule: its stories, the decisions taken inside it and
+   the reasoning behind them. `e05-ai-workspace-builder` is the only one in flight.
+4. `specs/epics/<epic>/<epic>-test-matrix.md` — that epic's scenarios, and the definitions of the
+   baselines. The requirement for the work in flight.
+5. `specs/adr/` — the decisions, with the alternatives that were rejected and why.
+6. `README.md` — the module map, the trust model and the measured SQLite constraints.
+
+The pre-`e05` documents this chain used to name — `architecture-style.md`, `architecture.md`,
+`test-matrix.md`, `state.yaml` and the DDD migration plan — were removed with the restructure
+`specs/adr/0003` describes, and `specs/verifications/` went with them. Their content is carried by the
+six items above. The chain is stated here and nowhere else, because it was once stated twice and the
+copies drifted: three documents went on naming five files after `specs/` had stopped holding them.
 
 ## Hard rules
 
-- **The requirement does not change.** A structural step is done only when all three baselines are
-  green: `BUILD`, `NONBROWSER`, `BROWSER` (see `architecture-style.md` §7). Record the numbers in
-  `specs/verifications/` at the start and end of every stage.
+- **The requirement does not change.** A structural step is done only when the baselines are green.
+  `e05-test-matrix.md` defines them — `BUILD`, `NONBROWSER`, `BROWSER`, `AGENT`, `COST` — and where
+  each is measured. Record the numbers where the work is described: the active capsule's test matrix
+  has a Baselines section for exactly that. `specs/verifications/` no longer exists.
 - **Domain is records. Application is services.** A persisted type is a plain record with no
   business methods. Business rules live in an `I…Service` implementation in `Application`.
 - **Callers depend on the interface, never the class.** DI injects the `sealed` implementation
