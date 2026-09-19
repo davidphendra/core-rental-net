@@ -29,6 +29,11 @@
         <p class="alert" role="alert">@SelectionError</p>
     }
 
+    @* The AI section sits above the canvas because it is the region the suggestion rewrites: it belongs
+       beside the thing it changes, not in the product panel, which on a phone becomes a row of chips.
+       Absent entirely without the entitlement, so the page looks exactly as it does today. *@
+    <AiBuilderSection />
+
     @if (Session.Current is not null)
     {
         @* The stage and the zones are siblings in the design, and they stay siblings here. Wrapping

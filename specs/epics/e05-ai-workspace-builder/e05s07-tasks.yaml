@@ -25,7 +25,7 @@ tasks:
     description: "Retain and collapse the stage list after a run; browser tests AIWB-25 to AIWB-30 against the local stand-in"
     verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderStreamTests"'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["ui", "browser"] }
   - id: 5
     description: "Place the section above the canvas: one line when idle, expanded while running or showing candidates, full-width on a phone, absent when off or unentitled"
@@ -121,6 +121,33 @@ tasks:
 # STILL OPEN, AND NOT THIS TASK'S TO CLOSE: the builder endpoint appears in the OpenAPI document with no
 # security declared, because Auth0SecuritySchemeTransformer only describes the catalogue's path. e05s09 owns
 # the README and CI statements, and the document's treatment of the second endpoint belongs with them.
+
+# TASK 4 IS BUILT: the section, its run, and AIWB-25 to AIWB-30 in a browser.
+#
+# The section reads the endpoint's frames through a small JS module (`wwwroot/js/ai-run.js`), because the
+# endpoint answers with SSE and EventSource cannot POST - a fetch whose body is read a chunk at a time is the
+# only way to show a customer a 45-second run as it happens. Frames are handed to the component one at a
+# time rather than collected and returned, because reading each one as it completes is the requirement.
+#
+# THREE THINGS THIS TASK DELIBERATELY DOES NOT DO, SO NOBODY READS THE GAP AS AN OVERSIGHT:
+#   - No rank, no price and no product name on a candidate. The application resolves those from its own
+#     catalogue and validates the whole result before a customer acts on it, which is e05s08's work. A
+#     candidate here is the agent's own rationale and lines, and nothing that would make it an offer.
+#   - The section is added above the canvas but NOT yet collapsed when idle, full-width on a phone, or
+#     absent-when-off beyond the permission gate. That is task 5, and it is placement rather than behaviour.
+#   - The stage lines and the outcome are not yet announced in a live region. That is task 6.
+#
+# THE ARCHITECTURE SUITE CAUGHT A REAL DEFECT IN THIS TASK, WHICH IS WHY IT EXISTS. `DesignTokenTests` - "a
+# design class missing from the stylesheet draws nothing at all" - failed on `px-3`: it is a class the design
+# prototypes use and the generated stylesheet does not have, so the input would have been laid out by default
+# browser styling and nothing would have said so. Fixed by using a generated class. The guard's own remarks
+# record that this exact failure happened once before, during the port.
+#
+# AIWB-26 IS ASSERTED AS FAR AS IT CAN BE, AND THE REST IS NAMED. The test proves a price and a link are
+# removed from the middle of a sentence (the stand-in is told to leak both, and a test in Host.Tests holds the
+# fixture to that, so the assertion is not about a fixture that happens to be clean). NO PRODUCT NAME CAN BE
+# ASSERTED THIS WAY: nothing strips an arbitrary name, so none appears only because the PROMPTS forbid one -
+# which is e05s02's obligation, checked there. Recorded rather than quietly claimed.
 
 # TASK 4 WAS STOPPED AT ITS PREREQUISITE, WHICH IS NOW BUILT AND PROVEN.
 #

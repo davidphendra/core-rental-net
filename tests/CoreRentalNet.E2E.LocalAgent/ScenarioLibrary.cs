@@ -46,16 +46,50 @@ internal static class ScenarioLibrary
         {"status":"notWorkspace","reason":"not about furnishing a workspace","options":[]}
         """;
 
+    /// <summary>
+    /// The happy path with a price and a link left in the rationale.
+    /// </summary>
+    /// <remarks>
+    /// The prompts forbid both, so this is not a scenario the agent should ever produce - and that is exactly
+    /// why it is here. AIWB-26 asserts that streamed text carries no price; a fixture whose prose was clean
+    /// would make that assertion true of the fixture rather than of the application, and the strip that makes
+    /// it true would be tested nowhere at the level a customer is affected.
+    /// </remarks>
+    private const string Leaky = """
+        {"status":"spec","reason":null,"ceilingMonthly":null,"slots":[{"slot":"Desk","quantity":1,"purpose":"a wide, stable surface"}],"constraints":[]}
+        {"status":"suggested","reason":null,"options":[{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","quantity":1,"why":"a wide, stable surface"}],"rationale":"An uncluttered setup for Rp1.206.000, see https://example.invalid/pricing for how it is billed."}]}
+        """;
+
+    /// <summary>
+    /// An answer that stops mid-sentence: the lines are readable, the result never closes.
+    /// </summary>
+    /// <remarks>
+    /// The only way to reach the state AIWB-29 is about. A run that failed before saying anything would leave
+    /// no streamed text to keep, so the scenario that proves text is KEPT has to say something first - and the
+    /// closed <c>why</c> values are what the reader emits before the answer runs out.
+    /// </remarks>
+    private const string Truncated = """
+        {"status":"spec","reason":null,"ceilingMonthly":null,"slots":[{"slot":"Desk","quantity":1,"purpose":"a wide, stable surface"}],"constraints":[]}
+        {"status":"suggested","reason":null,"options":[{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","quantity":1,"why":"a wide, stable surface"}],"rationale":"An uncluttered setup for one person
+        """;
+
     public static string For(string name) => name switch
     {
         "refused" => Refused,
-        "slow" => Slow,
+        "leaky" => Leaky,
+        "truncated" => Truncated,
+        "slow" => Suggested,
         "broken" => Suggested,
         _ => Suggested,
     };
 
     /// <summary>How long the stand-in waits between events, in milliseconds.</summary>
-    public static int DelayMilliseconds(string name) => name == "slow" ? 600 : 0;
+    /// <remarks>
+    /// Long enough that a watching test has time to observe each state: a run that moved faster than the
+    /// browser could be read would turn the assertions that matter - a stage list with stages in it, a
+    /// cancellation with something to interrupt - into races rather than checks.
+    /// </remarks>
+    public static int DelayMilliseconds(string name) => name == "slow" ? 250 : 0;
 
     /// <summary>True when the scenario is one where nothing answers at all.</summary>
     /// <remarks>
@@ -64,8 +98,11 @@ internal static class ScenarioLibrary
     /// </remarks>
     public static bool IsBroken(string name) => name == "broken";
 
+    /// <summary>True when the scenario stops mid-answer, so no completed response is ever sent.</summary>
+    public static bool IsTruncated(string name) => name == "truncated";
+
     /// <summary>Every scenario's name, for the endpoint that lists them and the tests that drive them.</summary>
-    public static IReadOnlyList<string> Names => ["suggested", "refused", "slow", "broken"];
+    public static IReadOnlyList<string> Names => ["suggested", "refused", "leaky", "truncated", "slow", "broken"];
 
     /// <summary>Every SKU any scenario names, so a test can hold them against the catalogue.</summary>
     public static IReadOnlyList<string> Skus

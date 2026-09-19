@@ -140,6 +140,24 @@ public sealed class StandInTransportTests
         SuggestionAgentSettings.From(new ConfigurationBuilder().Build()).IsLocal().Should().BeFalse();
     }
 
+    [Fact] // the premise the browser test's strip assertion rests on
+    public void The_scenarios_that_exist_to_be_dirty_are_dirty()
+    {
+        // AIWB-26 asserts that streamed text carries no price and no link. That assertion is only worth
+        // anything if the text arrived WITH one, so the fixture's own dirt is checked here - beside the
+        // SKU check, for the same reason: a fixture that is quietly clean makes a test of the application
+        // into a test of the fixture.
+        ScenarioLibrary.For("leaky").Should().Contain("Rp1.206.000");
+        ScenarioLibrary.For("leaky").Should().Contain("https://example.invalid/pricing");
+
+        // And the truncated scenario has to stop before the result closes, or there would be no run that
+        // says something and then fails - which is the state AIWB-29 is about.
+        var truncated = ScenarioLibrary.For("truncated");
+
+        truncated.Should().Contain("\"why\":\"a wide, stable surface\"", "the lines are readable");
+        truncated.TrimEnd().Should().NotEndWith("}", "and the answer never closes");
+    }
+
     [Fact] // a fixture may only name SKUs the catalogue actually holds
     public void Every_scenario_names_a_SKU_the_catalogue_has()
     {
