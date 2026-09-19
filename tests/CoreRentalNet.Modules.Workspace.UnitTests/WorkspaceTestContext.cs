@@ -22,6 +22,8 @@ internal sealed class WorkspaceTestContext
 
     public IWorkspaceService Workspaces { get; } = new WorkspaceService(new SlotRuleProvider());
 
+    public IWorkspaceCompositionService Compositions { get; } = new WorkspaceCompositionService(new SlotRuleProvider());
+
     public IWorkspaceQueryService Queries { get; } = new WorkspaceQueryService(new SlotRuleProvider());
 
     public string Token => RawToken;

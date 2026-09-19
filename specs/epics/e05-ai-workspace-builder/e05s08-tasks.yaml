@@ -25,7 +25,7 @@ tasks:
     description: "Add ReplaceComposition as one atomic, versioned write that touches the composition only"
     verify: 'dotnet test tests/CoreRentalNet.Modules.Workspace.UnitTests --nologo'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["persistence", "transaction"] }
   - id: 5
     description: "Add confirm-then-replace in the builder and run AIWB-31 to AIWB-38"
@@ -62,6 +62,26 @@ tasks:
 # THE CODING STANDARD CAUGHT THE FIRST DRAFT. `CodingStandardTests` failed on a 44-line method - the per-line
 # check and the per-option check were one method - which is a rule this repository enforces by test rather than
 # by review. Split into `TryRead` and `TryPrice`.
+
+# TASK 4 IS BUILT: `ReplaceComposition`, one atomic versioned write that touches the composition only.
+#
+# Four things make it what the story asks for, and each is asserted rather than implied:
+#   - ONE WRITE. The repository is asked once, so a caller can never observe a workspace that is half the old
+#     setup and half the new one. Doing this as a remove followed by a series of adds would be several writes.
+#   - THE VERSION IS CHECKED BEFORE ANYTHING IS WRITTEN. The caller read a version, decided what to put in its
+#     place and came back; if the draft moved in between, the replacement is refused rather than merged.
+#     Merging would silently discard whatever the customer did while the suggestion was being drawn - the one
+#     thing they would never think to check. `Version` is also a real concurrency token (DraftEntityTypeConfiguration),
+#     so a write that RACES this one is refused by the database rather than by a check that could be stale.
+#   - THE ADDRESS IS NOT MENTIONED. A composition is not an address: a customer who asked for a different setup
+#     did not ask to be re-addressed. The mechanism is that nothing here refers to it; the contract is a test.
+#   - NOTHING IS WRITTEN UNTIL EVERY LINE IS CHECKED, so a composition that does not fit leaves the draft
+#     holding what it held, and a line below one is refused - the bound nothing upstream enforces.
+#
+# IT IS A SERVICE OF ITS OWN, AND THE CODING STANDARD DECIDED THAT. Adding it to `IWorkspaceService` put
+# `WorkspaceService.cs` at 184 lines against a budget of 150, which `CodingStandardTests` failed on. The rule
+# the split follows is the repository's own: one public operation per service. Everything on `IWorkspaceService`
+# changes one thing about a workspace; this replaces the whole of what it holds.
 
 # AIWB-16 ("a valid agent result maps to candidates with prices recomputed from the catalogue") arrived here
 # from e05s05, which stops at the agent's typed result. Recomputing a price from the catalogue is the same
