@@ -7,6 +7,7 @@
    than a gate. *@
 @using System.Text.Json
 @using CoreRentalNet.Host.Agents
+@using CoreRentalNet.Host.AiBuilder
 @inject IJSRuntime JavaScript
 @inject SuggestionAgentSettings Agent
 @implements IAsyncDisposable
@@ -143,7 +144,7 @@
                 @if (outcome is not null)
                 {
                     <div class="ai__outcome mt-stack-sm" data-testid="ai-outcome" data-status="@outcome.Status">
-                        @if (outcome.Status is AgentSuggestionStatus.NotWorkspace)
+                        @if (outcome.Status is SuggestionResultFrame.NotWorkspace)
                         {
                             @* A result rather than an error, and guided rather than repeatable: the same words
                                sent again produce the same refusal, so what helps is being told what would work. *@
@@ -153,20 +154,30 @@
                         }
                         else
                         {
-                            @* Rank, price and name are NOT here yet, and that is deliberate rather than
-                               unfinished: the application resolves those from its own catalogue and validates
-                               the whole result before a customer acts on any of it - e05s08's work. *@
+                            @* Everything shown here was checked against the catalogue before it was rendered:
+                               the names and the amounts are the catalogue's, the label is the application's by
+                               rank, and a candidate that could not be honoured failed the run instead. *@
                             <div class="ai__candidates" data-testid="ai-candidates">
-                                @foreach (var option in outcome.Options)
+                                @foreach (var candidate in outcome.Candidates)
                                 {
                                     <article class="ai__option mb-stack-sm rounded border border-outline-variant p-3"
-                                             data-testid="ai-option">
-                                        <p class="text-body-md font-body-md">@option.Rationale</p>
+                                             data-testid="ai-option"
+                                             data-rank="@candidate.Label">
+                                        <header class="flex items-baseline justify-between gap-2">
+                                            <h3 class="text-title-md font-title-md text-primary" data-testid="ai-rank">@candidate.Label</h3>
+                                            <span class="ai__total text-label-md font-label-md" data-testid="ai-total">
+                                                @candidate.MonthlyTotal.ToString("C")<span class="text-on-surface-variant">/mo</span>
+                                            </span>
+                                        </header>
+
+                                        <p class="text-body-md font-body-md">@candidate.Rationale</p>
+
                                         <ul class="ai__lines text-body-sm font-body-sm text-outline">
-                                            @foreach (var line in option.Lines)
+                                            @foreach (var line in candidate.Lines)
                                             {
                                                 <li class="ai__line" data-sku="@line.Sku">
-                                                    &times; @line.Quantity — @line.Why
+                                                    @line.Quantity &times; @line.Name
+                                                    <span class="ai__line-total">@line.LineTotal.ToString("C")</span>
                                                 </li>
                                             }
                                         </ul>
@@ -187,7 +198,7 @@
 
     private string query = string.Empty;
     private string announcement = string.Empty;
-    private AgentSuggestionResult? outcome;
+    private SuggestionResultFrame? outcome;
     private string? failed;
     private bool stopped;
     private bool running;
@@ -251,7 +262,7 @@
 
                 // The candidates ARE the terminal outcome, so this says they have arrived rather than reading
                 // them out one line at a time.
-                announcement = outcome?.Status is AgentSuggestionStatus.NotWorkspace
+                announcement = outcome?.Status is SuggestionResultFrame.NotWorkspace
                     ? "That doesn't look like a workspace request."
                     : "Your workspace suggestions are ready.";
 
@@ -339,12 +350,12 @@
 
     private void ExpandStages() => collapsed = false;
 
-    /// <summary>Reads the answer, and treats one it cannot read as a failure rather than as a broken circuit.</summary>
-    private static AgentSuggestionResult? Read(string json)
+    /// <summary>Reads the frame, and treats one it cannot read as a failure rather than as a broken circuit.</summary>
+    private static SuggestionResultFrame? Read(string json)
     {
         try
         {
-            return JsonSerializer.Deserialize<AgentSuggestionResult>(json, SuggestionJson.Options);
+            return JsonSerializer.Deserialize<SuggestionResultFrame>(json, SuggestionJson.Options);
         }
         catch (JsonException)
         {

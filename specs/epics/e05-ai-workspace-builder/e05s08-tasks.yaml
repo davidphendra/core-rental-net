@@ -7,19 +7,19 @@ tasks:
     description: "Add the spread rule: the dearest valid option at least 1.5x the cheapest, the factor read from configuration, applied to the range only; fewer shown when it cannot be met"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionSpreadTests"'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["application", "validation"] }
   - id: 2
     description: "Validate a whole result all-or-nothing against the catalogue and slot capacities, INCLUDING quantity >= 1 - nothing upstream rejects a zero, as e05s01 established; scenarios AIWB-16 and AIWB-32 to AIWB-35"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionValidationTests"'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["application", "validation"] }
   - id: 3
     description: "Sort by monthly total and label by rank; prove three, two and one are each labelled correctly and that fewer is never padded"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["application", "validation"] }
   - id: 4
     description: "Add ReplaceComposition as one atomic, versioned write that touches the composition only"
@@ -33,6 +33,36 @@ tasks:
     risk: P0
     status: planned
     allure: { severity: critical, categories: ["ui", "browser"] }
+# TASKS 1 TO 3 ARE BUILT: the trust boundary. `SuggestionValidator` is where an agent's answer becomes an
+# application fact or becomes nothing at all, and the section now reads the validated frame - names, amounts,
+# totals and labels resolved here - rather than the agent's own result, which e05s07 recorded it would replace.
+#
+# TWO THINGS THE STORY DOES NOT SETTLE, DECIDED HERE AND FLAGGED RATHER THAN QUIETLY CHOSEN.
+#
+#   1. WHAT "FEWER ARE SHOWN" MEANS WHEN THE RANGE FAILS. Implemented as ONE candidate, and that is provable
+#      rather than a preference: no subset of two or more can satisfy a range the whole set fails, because
+#      dropping the cheapest raises the minimum and dropping the dearest lowers the maximum, so either makes
+#      the range narrower. WHICH single candidate is shown is the part the record does not say. This shows the
+#      CHEAPEST, on the grounds that it is the affordable end and the honest one when no range could be
+#      offered. The alternative reading - the middle, as the neutral one - is equally defensible.
+#
+#   2. WHAT "LABELLED BY RANK" MEANS FOR FEWER THAN THREE. Implemented literally: the Nth cheapest takes the
+#      Nth label, so two candidates are Budget and Balanced, and one is Budget. The alternative reading labels
+#      by position in the set - two candidates would be Budget and Premium, and one would be Balanced - which
+#      is what makes a single candidate read sensibly and is what a reader of the page might expect. Both were
+#      considered; the literal one was taken because the story says "by rank". FLAGGED FOR THE PRODUCT OWNER,
+#      because AIWB-34 says "three, two and one are each labelled correctly" and "correctly" is the one word in
+#      that row the record does not define.
+#
+# A THIRD THING IS UNGUARDED AND RECORDED. The result contract bounds a result at three options; nothing on
+# this path enforces it, and the labelling is written as a function rather than a list so a fourth cannot be an
+# out-of-range exception. Enforcing the bound would be a validation rule the story does not list, so it was not
+# added - it is named here instead.
+#
+# THE CODING STANDARD CAUGHT THE FIRST DRAFT. `CodingStandardTests` failed on a 44-line method - the per-line
+# check and the per-option check were one method - which is a rule this repository enforces by test rather than
+# by review. Split into `TryRead` and `TryPrice`.
+
 # AIWB-16 ("a valid agent result maps to candidates with prices recomputed from the catalogue") arrived here
 # from e05s05, which stops at the agent's typed result. Recomputing a price from the catalogue is the same
 # act as rejecting a candidate whose SKU is not in it, so it belongs with the all-or-nothing validation in

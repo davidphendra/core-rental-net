@@ -32,6 +32,11 @@ internal static class SuggestionAgentRegistration
         // already read. A singleton because both of its dependencies are, and because it holds nothing.
         builder.Services.AddSingleton<SuggestionRequestBuilder>();
 
+        // The trust boundary. A singleton for the same reason: the catalogue, the capacities and the spread
+        // factor are all read once, and it holds nothing between runs.
+        builder.Services.AddSingleton(SuggestionSpread.From(builder.Configuration));
+        builder.Services.AddSingleton<SuggestionValidator>();
+
         return builder;
     }
 }

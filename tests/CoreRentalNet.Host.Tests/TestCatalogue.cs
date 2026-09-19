@@ -15,13 +15,17 @@ internal sealed class TestCatalogue : IProductCatalog
 
     public IReadOnlyList<ProductView> All => _products;
 
-    public TestCatalogue Add(string sku, decimal monthlyPrice, CatalogCategory category = CatalogCategory.Desk)
+    public TestCatalogue Add(
+        string sku,
+        decimal monthlyPrice,
+        CatalogCategory category = CatalogCategory.Desk,
+        CatalogSubCategory? subCategory = null)
     {
         _products.Add(new ProductView(
             sku,
             $"Product {sku}",
             category,
-            null,
+            subCategory,
             new Money(monthlyPrice, Currencies.Idr),
             "A description.",
             new CatalogMetadata([], new Dictionary<string, string>(), [], []),

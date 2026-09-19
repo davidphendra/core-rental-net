@@ -27,6 +27,7 @@ namespace CoreRentalNet.Host.AiBuilder;
 internal sealed class SuggestionRun(
     ISuggestionAgent agent,
     SuggestionRequestBuilder requests,
+    SuggestionValidator validator,
     SuggestionEventStream stream)
 {
     private readonly NarrativeFieldReader _reader = new();
@@ -62,9 +63,18 @@ internal sealed class SuggestionRun(
 
             case AgentSuggestionEvent.Completed completed:
                 await stream.StageAsync(SuggestionStageCopy.Checking, cancellationToken);
+
+                if (!Frames(completed.Result, out var frame))
+                {
+                    await stream.FailedAsync(SuggestionEventStream.Invalid, cancellationToken);
+
+                    return true;
+                }
+
                 await stream.ResultAsync(
-                    JsonSerializer.Serialize(completed.Result, SuggestionJson.Options),
+                    JsonSerializer.Serialize(frame, SuggestionJson.Options),
                     cancellationToken);
+
                 return true;
 
             case AgentSuggestionEvent.Unavailable:
@@ -79,6 +89,37 @@ internal sealed class SuggestionRun(
                     raised,
                     "No run outcome is written for this event.");
         }
+    }
+
+    /// <summary>
+    /// The frame the browser is given, or nothing when the answer cannot be honoured.
+    /// </summary>
+    /// <remarks>
+    /// <b>Nothing is rendered from an unchecked answer.</b> A refusal is a result and travels as one; a
+    /// suggestion is only a suggestion once every line of it has been checked and priced from the catalogue.
+    /// The whole answer is checked before any of it is shown, so a candidate is never half-valid.
+    /// </remarks>
+    private bool Frames(AgentSuggestionResult result, out SuggestionResultFrame frame)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        if (result.Status is AgentSuggestionStatus.NotWorkspace)
+        {
+            frame = SuggestionResultFrame.Refused();
+
+            return true;
+        }
+
+        if (!validator.TryValidate(result, out var candidates))
+        {
+            frame = null!;
+
+            return false;
+        }
+
+        frame = SuggestionResultFrame.Of(candidates);
+
+        return true;
     }
 
     /// <summary>Writes the narrative fields that have closed since the previous fragment, hygiened first.</summary>

@@ -151,9 +151,13 @@ public sealed class SuggestionRunTests
         context.Response.Body = new GoneStream();
 
         var stream = await SuggestionEventStream.BeginAsync(context.Response, CancellationToken.None);
+        var catalogue = new TestCatalogue().Add("DSKB08XN4JDR", 266_000m);
+        var slots = new WorkspaceSlotSettings();
+
         var run = new SuggestionRun(
             new ScriptedSuggestionAgent([new AgentSuggestionEvent.NarrativeDelta(Answer)]),
-            new SuggestionRequestBuilder(new TestCatalogue().Add("DSKB08XN4JDR", 266_000m), new WorkspaceSlotSettings()),
+            new SuggestionRequestBuilder(catalogue, slots),
+            new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
             stream);
 
         var act = async () => await run.RunAsync(new RunRequest("a quiet corner", null), CancellationToken.None);
@@ -232,9 +236,13 @@ public sealed class SuggestionRunTests
         try
         {
             var stream = await SuggestionEventStream.BeginAsync(context.Response, CancellationToken.None);
+            var catalogue = new TestCatalogue().Add("DSKB08XN4JDR", 266_000m);
+            var slots = new WorkspaceSlotSettings();
+
             var run = new SuggestionRun(
                 new ScriptedSuggestionAgent(scripted, then),
-                new SuggestionRequestBuilder(new TestCatalogue().Add("DSKB08XN4JDR", 266_000m), new WorkspaceSlotSettings()),
+                new SuggestionRequestBuilder(catalogue, slots),
+                new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
                 stream);
 
             await run.RunAsync(new RunRequest("a quiet corner", null), CancellationToken.None);

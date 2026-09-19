@@ -39,7 +39,8 @@ internal static class SuggestionEndpoint
         RunRequest ask,
         RunGuard guard,
         ISuggestionAgent agent,
-        SuggestionRequestBuilder requests)
+        SuggestionRequestBuilder requests,
+        SuggestionValidator validator)
     {
         if (string.IsNullOrWhiteSpace(ask.Query))
         {
@@ -57,7 +58,7 @@ internal static class SuggestionEndpoint
 
         using (lease)
         {
-            await WriteAsync(context, ask, agent, requests);
+            await WriteAsync(context, ask, agent, requests, validator);
         }
     }
 
@@ -74,13 +75,14 @@ internal static class SuggestionEndpoint
         HttpContext context,
         RunRequest ask,
         ISuggestionAgent agent,
-        SuggestionRequestBuilder requests)
+        SuggestionRequestBuilder requests,
+        SuggestionValidator validator)
     {
         try
         {
             var stream = await SuggestionEventStream.BeginAsync(context.Response, context.RequestAborted);
 
-            await new SuggestionRun(agent, requests, stream).RunAsync(ask, context.RequestAborted);
+            await new SuggestionRun(agent, requests, validator, stream).RunAsync(ask, context.RequestAborted);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {

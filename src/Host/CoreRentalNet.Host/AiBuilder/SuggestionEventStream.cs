@@ -73,6 +73,13 @@ internal sealed class SuggestionEventStream(HttpResponse response)
     public Task FailedAsync(string code, CancellationToken cancellationToken)
         => WriteAsync("failed", code, cancellationToken);
 
+    /// <summary>The answer was not one this application can honour, so there is nothing to show.</summary>
+    /// <remarks>
+    /// A failure rather than a refusal: the agent answered, and what it said does not survive being checked
+    /// against the catalogue. The customer retries.
+    /// </remarks>
+    public const string Invalid = "invalid";
+
     /// <summary>Writes one frame and flushes it, so it is on the way rather than in a buffer.</summary>
     private async Task WriteAsync(string name, string data, CancellationToken cancellationToken)
     {
