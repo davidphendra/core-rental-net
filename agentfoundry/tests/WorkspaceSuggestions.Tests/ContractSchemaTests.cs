@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using System.Text.Json;
 using WorkspaceSuggestions.Contracts;
 using Xunit;
 
@@ -125,6 +126,93 @@ public sealed class ContractSchemaTests
             File.ReadAllText(file).Should().Contain(
                 vocabulary,
                 $"{Path.GetFileName(file)} must carry the slot vocabulary; the three files are kept in step by this test");
+        }
+    }
+
+    [Fact] // the check above asked whether a slot was PRESENT, and an extra one went unnoticed for exactly that reason
+    public void No_contract_permits_a_slot_or_a_status_the_application_cannot_represent()
+    {
+        // Found by reading the schemas rather than by this suite: `suggestion.result.schema.json` carried
+        // `"enum"` as the first member of its status enum and of its line's slot enum - the JSON key itself,
+        // pasted in as a value. The substring assertion above passed throughout, because the vocabulary it
+        // looks for was still there. What the stray value DID do is widen the contract: it permitted a status
+        // that means nothing and a slot that WorkspaceSlot cannot parse, so a payload could satisfy the
+        // contract and fail on the way in. A schema is only a contract where it is as narrow as the code.
+        var slots = new[] { "Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone" };
+        var statuses = new[] { "suggested", "notWorkspace" };
+
+        foreach (var file in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "contracts"), "*.json"))
+        {
+            var name = Path.GetFileName(file);
+
+            if (name.Equals("run-usage.schema.json", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            // Every property called `slot` anywhere in the document, and the status of the result. The
+            // request schema names its vocabulary `slotName`, so both names are checked.
+            foreach (var (path, members) in Enums(File.ReadAllText(file)))
+            {
+                if (path.EndsWith("/slot", StringComparison.Ordinal)
+                    || path.EndsWith("/slotName", StringComparison.Ordinal))
+                {
+                    members.Should().BeEquivalentTo(
+                        slots,
+                        $"{name}{path} must be exactly the slot vocabulary, with nothing extra");
+                }
+            }
+
+            if (name.Equals("suggestion.result.schema.json", StringComparison.Ordinal))
+            {
+                Enums(File.ReadAllText(file))
+                    .Single(entry => entry.Path == "/properties/status").Members
+                    .Should().BeEquivalentTo(
+                        statuses,
+                        "a result is either a suggestion or a refusal, and there is no third thing");
+            }
+        }
+    }
+
+    /// <summary>Every enum in a schema document, with the path it sits at.</summary>
+    private static IEnumerable<(string Path, IReadOnlyList<string> Members)> Enums(string json)
+    {
+        var found = new List<(string, IReadOnlyList<string>)>();
+
+        Collect(JsonDocument.Parse(json).RootElement, string.Empty, found);
+
+        return found;
+    }
+
+    private static void Collect(
+        JsonElement element,
+        string path,
+        List<(string Path, IReadOnlyList<string> Members)> found)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                if (element.TryGetProperty("enum", out var values) && values.ValueKind is JsonValueKind.Array)
+                {
+                    found.Add((path, [.. values.EnumerateArray().Select(value => value.GetString() ?? "(null)")]));
+                }
+
+                foreach (var property in element.EnumerateObject())
+                {
+                    Collect(property.Value, $"{path}/{property.Name}", found);
+                }
+
+                break;
+
+            case JsonValueKind.Array:
+                var index = 0;
+
+                foreach (var item in element.EnumerateArray())
+                {
+                    Collect(item, $"{path}[{index++}]", found);
+                }
+
+                break;
         }
     }
 }

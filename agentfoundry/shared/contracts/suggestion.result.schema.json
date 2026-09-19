@@ -11,7 +11,7 @@
   ],
   "properties": {
     "status": {
-      "enum": ["enum", "suggested", "notWorkspace"],
+      "enum": ["suggested", "notWorkspace"],
       "description": "notWorkspace is a result, not an error: the application words it and does not report a failure."
     },
     "reason": {
@@ -64,7 +64,7 @@
       ],
       "properties": {
         "slot": {
-          "enum": ["enum", "Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone"],
+          "enum": ["Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone"],
           "description": "The slot this line fills. Kept in step with the request schema by a test, so every file stays self-contained and any consumer can validate one without a registry."
         },
         "sku": {
