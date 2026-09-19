@@ -15,13 +15,23 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="JsonSchema.Net" />
+    <PackageReference Include="coverlet.collector" />
   </ItemGroup>
 
 
   <ItemGroup>
     <!-- The stand-in agent, started in this process: it is the other end of the wire the adapter
          reads, so it belongs to the test rather than to a deployment. -->
-    <ProjectReference Include="../CoreRentalNet.E2E.LocalAgent/CoreRentalNet.E2E.LocalAgent.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The contract is the ONE artefact shared with the agent tree, and there is no project reference
+         either way. The tests read the same files the agent's tests read, so a drift in either direction
+         fails here rather than in production. -->
+    <Content Include="../../agentfoundry/shared/contracts/*.json"
+             Link="contracts/%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

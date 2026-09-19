@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.AiBuilder;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
@@ -75,6 +76,11 @@ internal static class ApplicationPipeline
         // Controllers are discovered, so a route added to a controller is reachable without a second
         // place to remember, and a gate left off an action is a failing test rather than a live hole.
         app.MapControllers();
+        // The one endpoint that is not on a controller, and the one that has to be: a run is answered by
+        // holding the response open and writing to it, which is not a shape an MVC action has. It is
+        // mapped here beside the controllers so the routes the application answers are in one place, and
+        // its permission and guard are declared on the endpoint itself.
+        app.MapSuggestionEndpoint();
         MapDevelopmentDocumentation(app);
 
         if (identity.IsConfigured)

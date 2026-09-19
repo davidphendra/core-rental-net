@@ -47,15 +47,6 @@ public sealed class HostFixture : IAsyncLifetime
         workingDirectory = Path.Combine(Path.GetTempPath(), $"core-rental-e2e-{Guid.NewGuid():N}");
         Directory.CreateDirectory(workingDirectory);
 
-        // The stand-in agent first, so both hosts are configured with its address rather than
-        // discovering it: an application told where the agent is at start-up is the deployment this
-        // suite is meant to be running.
-        var agentPort = TestPaths.FreePort();
-        AgentUrl = $"http://127.0.0.1:{agentPort}";
-        var agent = StartLocalAgent(AgentUrl);
-
-        await ProcessPool.WaitUntilAgentReadyAsync(AgentUrl, agent).ConfigureAwait(false);
-
         var port = TestPaths.FreePort();
         BaseUrl = $"http://127.0.0.1:{port}";
 
@@ -71,15 +62,6 @@ public sealed class HostFixture : IAsyncLifetime
                 // line existed. The suite has to run the application the way it ships, not the way
                 // one laptop is configured.
                 ["Auth0__Enabled"] = "false",
-                // The stand-in, reached over http with no credential: the agent's local path, which is
-                // the whole reason the page can be exercised without a subscription.
-                ["Agent__Endpoint"] = AgentUrl,
-                ["Agent__Name"] = "stand-in",
-                // The cooldown is off for the suite, and deliberately: it is measured from when a run
-                // starts, so one test's run would refuse the next test's - and every AI test signs in as
-                // the same account. The guard's one-in-flight rule is the part the browser holds; the
-                // cooldown has its own unit tests with values it chooses.
-                ["Ai__RunCooldownSeconds"] = "0",
             });
 
         await ProcessPool.WaitUntilReadyAsync(BaseUrl, guest, requireAssets: true).ConfigureAwait(false);
@@ -106,9 +88,6 @@ public sealed class HostFixture : IAsyncLifetime
                 ["Auth0__ClientId"] = "core-rental-e2e",
                 ["Auth0__ClientSecret"] = "local-provider-secret",
                 ["Auth0__Authority"] = ProviderAuthority,
-                ["Agent__Endpoint"] = AgentUrl,
-                ["Agent__Name"] = "stand-in",
-                ["Ai__RunCooldownSeconds"] = "0",
             });
 
         await ProcessPool.WaitUntilReadyAsync(AuthenticatedBaseUrl, authenticated, requireAssets: true).ConfigureAwait(false);
@@ -171,28 +150,6 @@ public sealed class HostFixture : IAsyncLifetime
                 // contaminate the developer's own data and cannot be contaminated by it.
                 ["Sqlite__DatabasePath"] = Path.Combine(workingDirectory!, databaseName),
                 ["Rentals__SchedulerIntervalMinutes"] = "1",
-                ["Logging__LogLevel__Default"] = "Warning",
-            });
-
-    /// <summary>Where the stand-in agent is, for the tests that choose which scenario it acts.</summary>
-    public string AgentUrl { get; private set; } = null!;
-
-    /// <summary>
-    /// The stand-in agent, started as a process so the page reaches it over a socket exactly as it would
-    /// reach a deployed one.
-    /// </summary>
-    /// <remarks>
-    /// In process for the tests that exercise the client, and as a process here, because the page's tests
-    /// must go through a real request: an agent that answered in the same process could hide a client
-    /// that never left it.
-    /// </remarks>
-    private AppProcess StartLocalAgent(string baseUrl)
-        => processes.Start(
-            TestPaths.LocalAgentAssembly(),
-            TestPaths.RepositoryRoot(),
-            new Dictionary<string, string>
-            {
-                ["ASPNETCORE_URLS"] = baseUrl,
                 ["Logging__LogLevel__Default"] = "Warning",
             });
 

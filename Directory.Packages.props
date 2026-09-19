@@ -36,27 +36,13 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
   </ItemGroup>
 
-  <ItemGroup Label="Agents">
-    <!-- The agent framework the suggestion workflow is built on, and the graph it runs on. Microsoft
-         Agent Framework, MIT. 1.x is the stable line; the Foundry provider and the hosting package
-         are preview and are deliberately not referenced yet - they arrive with the deployment, which
-         is where a real endpoint exists to verify them against. -->
-    <PackageVersion Include="Microsoft.Agents.AI" Version="1.21.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.21.0" />
-    <!-- The seam a model sits behind. Named directly because this tree's classifiers name the type,
-         rather than relying on it arriving through Microsoft.Agents.AI. MIT. -->
-    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.10.0" />
-    <!-- The intent table's miss is logged. MIT. Same version as the other Microsoft.Extensions pins. -->
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
-    <!-- The client the application uses to reach the hosted agent's Responses endpoint, and the
-         framework abstraction the sample wraps it in. Both stable. Referenced by the Host alone: the
-         modules reach the agent through ISuggestWorkspaceOptions.
-         Deliberately NOT Azure.AI.Projects, which is beta, nor Microsoft.Agents.AI.Foundry, which is
-         preview: the hosted-agent sample that uses them is the SHAPE to follow, not the packages. -->
-    <PackageVersion Include="OpenAI" Version="2.14.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.21.0" />
-    <!-- The application's own identity - a developer credential locally, a managed identity deployed -
-         which is what makes the bearer the client sends a token rather than a stored secret. MIT. -->
+  <ItemGroup Label="The workspace-suggestion agent">
+    <!-- All three are preview or beta: there is no fully stable Foundry client. Pinned to the set
+         Microsoft ships together in its own .NET hosted-agent sample, whose release dates agree. They
+         must move together with agentfoundry/src/WorkspaceSuggestions/WorkspaceSuggestions.csproj, so a
+         reader comparing the two trees finds one story rather than two. -->
+    <PackageVersion Include="Microsoft.Agents.AI.Foundry" Version="1.20.0-preview.260831.1" />
+    <PackageVersion Include="Azure.AI.Projects" Version="3.0.0-beta.2" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
   </ItemGroup>
 
@@ -75,6 +61,12 @@
     <!-- The in-process test host: the catalogue endpoint's HTTP tests run the real application
          through its own routing, authorization and serializer rather than a stand-in. MIT. -->
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
+    <!-- The suggestion contract is JSON Schema, and .NET ships no validator: the application's DTOs are
+         checked against the same committed schemas the agent's tests read. Test-only. -->
+    <PackageVersion Include="JsonSchema.Net" Version="9.4.0" />
+    <!-- Line coverage, so a coverage figure is a measurement rather than a claim. Test-only: a data
+         collector that ships nothing. The agent tree pins the same version for the same reason. -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>
 
 </Project>

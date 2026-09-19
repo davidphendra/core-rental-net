@@ -60,9 +60,22 @@ public sealed class PackagePolicyTests
         offenders.Should().BeEmpty("package versions live in Directory.Packages.props only");
     }
 
+    /// <summary>
+    /// The application's projects, and its one central file.
+    /// </summary>
+    /// <remarks>
+    /// <c>agentfoundry/</c> is excluded on purpose. It is a second, independent solution (ADR 0003) with its
+    /// own pins and no central file: the hosted agent is built and released by Microsoft's tooling on Microsoft's
+    /// cadence, and it deploys separately from this application, so this application's policy is not its policy.
+    /// </remarks>
     private static IEnumerable<string> ProjectFiles()
         => Directory.GetFiles(RepoRoot.Path, "*.csproj", SearchOption.AllDirectories)
             .Where(file => !file.Contains("/obj/", StringComparison.Ordinal)
-                           && !file.Contains("/bin/", StringComparison.Ordinal))
+                           && !file.Contains("/bin/", StringComparison.Ordinal)
+                           && !IsInAgentTree(file))
             .Concat([Path.Combine(RepoRoot.Path, "Directory.Packages.props")]);
+
+    private static bool IsInAgentTree(string file)
+        => Path.GetRelativePath(RepoRoot.Path, file)
+            .StartsWith("agentfoundry" + Path.DirectorySeparatorChar, StringComparison.Ordinal);
 }

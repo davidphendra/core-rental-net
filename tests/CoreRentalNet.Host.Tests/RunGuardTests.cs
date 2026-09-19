@@ -1,113 +1,119 @@
+using System.Security.Claims;
 using AwesomeAssertions;
-using CoreRentalNet.Host.Presentation;
-using Microsoft.Extensions.Configuration;
+using CoreRentalNet.Host.AiBuilder;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
 
-/// <summary>
-/// One run at a time per customer, and a short gap between them.
-/// </summary>
-/// <remarks>
-/// A cost control, not a rate limiter: the realistic way ten model calls become twenty is a double click
-/// and a slow page, so what is asserted is that a second submit finds nothing to take, that every
-/// terminal path gives it back, and that one customer's run never blocks another's.
-/// </remarks>
+/// <summary>AIWB-22 and AIWB-23: one run in flight per customer, released on every exit path.</summary>
 public sealed class RunGuardTests
 {
-    private static AiRunGuard Guard(TimeSpan cooldown)
-        => new(new AiRunSettings(cooldown));
+    private static readonly ClaimsPrincipal Dewi = Customer("auth0|dewi");
+    private static readonly ClaimsPrincipal Adi = Customer("auth0|adi");
 
-    /// <summary>AIB-22 — a second submit while a run is in flight is refused.</summary>
+    [Fact] // AIWB-22
+    public void A_customer_who_already_has_a_run_in_flight_is_refused_a_second_one()
+    {
+        var guard = new RunGuard();
+
+        using var first = guard.TryBegin(Dewi);
+
+        first.Should().NotBeNull();
+        guard.TryBegin(Dewi).Should().BeNull("a run is paid, so one at a time");
+    }
+
+    [Fact] // AIWB-22
+    public void One_customer_s_run_does_not_block_another()
+    {
+        var guard = new RunGuard();
+
+        using var dewi = guard.TryBegin(Dewi);
+        using var adi = guard.TryBegin(Adi);
+
+        dewi.Should().NotBeNull();
+        adi.Should().NotBeNull();
+    }
+
+    [Fact] // AIWB-23
+    public void The_guard_is_released_when_the_run_ends_normally()
+    {
+        var guard = new RunGuard();
+
+        using (guard.TryBegin(Dewi))
+        {
+        }
+
+        guard.TryBegin(Dewi).Should().NotBeNull();
+    }
+
+    [Fact] // AIWB-23, the path that wedges a customer out if it is missed
+    public async Task The_guard_is_released_when_the_run_throws()
+    {
+        var guard = new RunGuard();
+
+        var thrown = async () =>
+        {
+            using var lease = guard.TryBegin(Dewi);
+
+            await Task.Yield();
+
+            throw new InvalidOperationException("the stream failed");
+        };
+
+        await thrown.Should().ThrowAsync<InvalidOperationException>();
+
+        guard.TryBegin(Dewi).Should().NotBeNull("a faulted run must not hold its customer's slot");
+    }
+
+    [Fact] // AIWB-23, cancellation
+    public async Task The_guard_is_released_when_the_run_is_cancelled()
+    {
+        var guard = new RunGuard();
+        using var stopping = new CancellationTokenSource();
+
+        var cancelled = async () =>
+        {
+            using var lease = guard.TryBegin(Dewi);
+
+            await stopping.CancelAsync();
+            await Task.Delay(Timeout.Infinite, stopping.Token);
+        };
+
+        await cancelled.Should().ThrowAsync<OperationCanceledException>();
+
+        guard.TryBegin(Dewi).Should().NotBeNull("stopping a run is how a customer gets to start another");
+    }
+
+    [Fact] // AIWB-23
+    public void Releasing_the_same_lease_twice_does_not_release_a_later_run()
+    {
+        var guard = new RunGuard();
+
+        var first = guard.TryBegin(Dewi);
+        first!.Dispose();
+
+        using var second = guard.TryBegin(Dewi);
+        second.Should().NotBeNull();
+
+        // A failure path that also releases must not free a slot a second run is holding.
+        first.Dispose();
+
+        guard.TryBegin(Dewi).Should().BeNull();
+    }
+
     [Fact]
-    public void A_second_submit_while_a_run_is_in_flight_is_refused()
+    public void An_account_with_nothing_stable_to_key_on_cannot_run()
     {
-        var guard = Guard(TimeSpan.Zero);
+        // Refused rather than keyed on a shared empty string, which would let one account's run block
+        // every other such account - or, worse, let all of them run at once under one key.
+        var guard = new RunGuard();
+        var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
-        guard.TryBegin("auth0|one").Should().BeTrue();
-
-        // The double click, and the impatient second Enter.
-        guard.TryBegin("auth0|one").Should().BeFalse();
-        guard.TryBegin("auth0|one").Should().BeFalse();
+        guard.TryBegin(anonymous).Should().BeNull();
     }
 
-    /// <summary>The guard is the customer's, so it never blocks somebody else's run.</summary>
-    [Fact]
-    public void One_customers_run_does_not_block_anothers()
-    {
-        var guard = Guard(TimeSpan.Zero);
-
-        guard.TryBegin("auth0|one").Should().BeTrue();
-        guard.TryBegin("auth0|two").Should().BeTrue();
-
-        guard.Release("auth0|one");
-
-        guard.TryBegin("auth0|one").Should().BeTrue();
-        guard.TryBegin("auth0|two").Should().BeFalse();
-    }
-
-    /// <summary>
-    /// Releasing is measured from when the run started, so the cooldown survives it.
-    /// </summary>
-    /// <remarks>
-    /// A guard that forgot the run on release would let a customer start again the instant the first one
-    /// ended, which is exactly the pattern the cooldown is for.
-    /// </remarks>
-    [Fact]
-    public void The_cooldown_outlives_the_run()
-    {
-        var guard = Guard(TimeSpan.FromMinutes(5));
-
-        guard.TryBegin("auth0|one").Should().BeTrue();
-        guard.Release("auth0|one");
-
-        guard.TryBegin("auth0|one").Should().BeFalse("the cooldown is measured from when the run started");
-    }
-
-    /// <summary>A cancelled run gives the slot back, because cancelling must not punish anybody.</summary>
-    [Fact]
-    public void A_run_that_was_released_can_be_started_again_once_the_cooldown_has_passed()
-    {
-        var guard = Guard(TimeSpan.Zero);
-
-        guard.TryBegin("auth0|one").Should().BeTrue();
-        guard.Release("auth0|one");
-
-        guard.TryBegin("auth0|one").Should().BeTrue();
-    }
-
-    /// <summary>Releasing twice is not a way to escape the cooldown.</summary>
-    [Fact]
-    public void Releasing_a_run_that_never_began_changes_nothing()
-    {
-        var guard = Guard(TimeSpan.Zero);
-
-        guard.Release("auth0|stranger");
-
-        guard.TryBegin("auth0|stranger").Should().BeTrue();
-    }
-
-    [Fact]
-    public void An_identity_is_required()
-    {
-        var guard = Guard(TimeSpan.Zero);
-
-        Assert.Throws<ArgumentException>(() => guard.TryBegin(string.Empty));
-        Assert.Throws<ArgumentException>(() => guard.Release("  "));
-    }
-
-    /// <summary>The cooldown is configured rather than hard-coded, and a nonsense value is ignored.</summary>
-    [Theory]
-    [InlineData("0", 0)]
-    [InlineData("30", 30)]
-    [InlineData("-5", 3)]
-    [InlineData("not a number", 3)]
-    public void The_cooldown_comes_from_configuration(string configured, double expected)
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["Ai:RunCooldownSeconds"] = configured })
-            .Build();
-
-        AiRunSettings.From(configuration).Cooldown.Should().Be(TimeSpan.FromSeconds(expected));
-    }
+    private static ClaimsPrincipal Customer(string identifier)
+        => new(new ClaimsIdentity(
+            [new Claim(ClaimTypes.NameIdentifier, identifier)],
+            authenticationType: "test"));
 }

@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
@@ -92,7 +91,7 @@ public sealed class CatalogController(
         // A collection answer, not a bare array: the count travels with the items, and a page of them
         // can be added later without breaking the callers who read this shape today.
         return (view ?? CatalogProjection.Full) == CatalogProjection.Compact
-            ? Ok(CompactCatalogProjection.Of(page, matched.Count, CatalogueCurrency()))
+            ? Ok(CompactCatalogProjection.Of(page, matched.Count, CompactCatalogProjection.CurrencyOf(everyProduct.All)))
             : Ok(new ApiCollection<ProductView>(page, page.Count, matched.Count));
     }
 
@@ -103,21 +102,6 @@ public sealed class CatalogController(
     /// </remarks>
     private static IReadOnlyList<ProductView> Cap(IReadOnlyList<ProductView> matched, int limit)
         => matched.Count <= limit ? matched : [.. matched.Take(limit)];
-
-    /// <summary>The currency the catalogue is priced in, which the compact envelope states once.</summary>
-    /// <remarks>
-    /// Read from the catalogue rather than written here, and from the whole of it rather than from the
-    /// rows that matched: an empty result still has a currency, and a filtered result must not decide
-    /// what it is. The loader refuses an empty file and refuses a row priced in anything but the
-    /// settlement currency, so the fallback is unreachable - it is there so that a broken invariant is
-    /// answered rather than thrown at a caller.
-    /// </remarks>
-    private string CatalogueCurrency()
-    {
-        var catalogue = everyProduct.All;
-
-        return catalogue.Count == 0 ? Currencies.Idr : catalogue[0].MonthlyPrice.Currency;
-    }
 
     /// <summary>A search of nothing but spaces narrows nothing, so it is not a filter.</summary>
     private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;

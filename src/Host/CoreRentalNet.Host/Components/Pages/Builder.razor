@@ -42,10 +42,6 @@
     @* The docked panel is not on screen on a phone, so the categories become a row of chips that
        open the picker already filtered, which is the same thing the panel does on a desktop. *@
     <CategoryChips Selected="mobileTab" OnSelect="OpenCategoryAsync" />
-
-    @* Gated by its own permission inside the component, so the page does not have to know whether
-       this deployment offers suggestions at all. *@
-    <AiBuilderSection Token="@DraftToken" />
 </section>
 
 @if (Session.Current is not null)

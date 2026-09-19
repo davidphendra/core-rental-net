@@ -16,11 +16,8 @@ public sealed record ClaimSettings
     /// <summary>The configuration section for reading the catalogue.</summary>
     public const string CatalogRead = "CatalogRead";
 
-    /// <summary>The configuration section for reaching the builder's AI section.</summary>
-    public const string AiBuilderRead = "AiBuilderRead";
-
-    /// <summary>The configuration section for seeing every candidate rather than one.</summary>
-    public const string AiBuilderPower = "AiBuilderPower";
+    /// <summary>The configuration section for the AI workspace builder, which is closed when it is unset.</summary>
+    public const string AiUse = "AIUse";
 
     private ClaimSettings(string? claimType, string? claimValue)
     {

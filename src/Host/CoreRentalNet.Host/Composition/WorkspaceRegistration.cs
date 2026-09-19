@@ -2,7 +2,6 @@ using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.Modules.Workspace.Application.Commands.AssignProduct;
 using CoreRentalNet.Modules.Workspace.Application.Commands.ChangeQuantity;
 using CoreRentalNet.Modules.Workspace.Application.Commands.RemoveAssignment;
-using CoreRentalNet.Modules.Workspace.Application.Commands.ApplyComposition;
 using CoreRentalNet.Modules.Workspace.Application.Commands.SetDeliveryAddress;
 using CoreRentalNet.Modules.Workspace.Application.Commands.StartDraft;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
@@ -41,11 +40,6 @@ internal static class WorkspaceRegistration
         builder.Services.AddScoped<IWorkspaceQuoteService, WorkspaceQuoteService>();
         builder.Services.AddScoped<IWorkspaceViewService, WorkspaceViewService>();
 
-        // The suggestion operation. Its agent is an interface: the adapter that reaches the hosted one
-        // is registered by FoundryAgentRegistration, and when none is configured the port reports the
-        // agent as unavailable rather than the operation being absent.
-        builder.Services.AddScoped<ISuggestWorkspaceOptions, SuggestWorkspaceOptions>();
-
         // By the operation each one performs, not by its own type. The session is their only consumer,
         // and it names the operation too; how a draft is started or a quantity changed is the
         // application's business.
@@ -55,7 +49,6 @@ internal static class WorkspaceRegistration
         builder.Services.AddScoped<IRemoveAssignmentHandler, RemoveAssignmentHandler>();
         builder.Services.AddScoped<IChangeQuantityHandler, ChangeQuantityHandler>();
         builder.Services.AddScoped<ISetDeliveryAddressHandler, SetDeliveryAddressHandler>();
-        builder.Services.AddScoped<IApplyCompositionHandler, ApplyCompositionHandler>();
     }
 
     /// <summary>

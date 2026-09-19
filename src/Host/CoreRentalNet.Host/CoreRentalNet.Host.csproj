@@ -8,10 +8,6 @@
 
   <PropertyGroup>
     <RootNamespace>CoreRentalNet.Host</RootNamespace>
-    <!-- OPENAI001: the OpenAI client's Responses surface is marked for evaluation only. It is the
-         documented client for a hosted agent's Responses endpoint, and Microsoft's own hosted-agent
-         sample suppresses the same diagnostic. Named here rather than suppressed globally. -->
-    <NoWarn>$(NoWarn);OPENAI001</NoWarn>
     <UserSecretsId>f8dee84b-dfca-4aa3-befc-6914cd1a1d8f</UserSecretsId>
   </PropertyGroup>
 
@@ -25,13 +21,11 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
     <!-- An access token is read for its permissions, so its token type is a direct dependency. -->
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
-    <!-- The client that reaches the hosted agent's Responses endpoint, and the framework abstraction
-         the sample wraps it in. Stable releases both. Referenced by the Host alone: the modules reach
-         the agent through ISuggestWorkspaceOptions, so no module knows an agent exists. -->
-    <PackageReference Include="OpenAI" />
-    <PackageReference Include="Microsoft.Agents.AI.OpenAI" />
-    <!-- The application's own identity: a developer credential locally, a managed identity deployed.
-         No stored secret either way. -->
+    <!-- The workspace-suggestion agent is reached through the Foundry client. This project is the only
+         one that references it, and the adapter under Agents/ is the only class that touches an Azure
+         type, so nothing else in the application can grow a dependency on Foundry by accident. -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" />
+    <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 

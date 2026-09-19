@@ -9,11 +9,10 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// <remarks>
 /// <para>
 /// An application whose identity is optional has to say what it does when there is none, and the answer
-/// is the requirement's to state rather than this handler's to assume: a requirement that says
-/// <see cref="ClaimBehavior.Open"/> is satisfied, and one that says <see cref="ClaimBehavior.Closed"/>
-/// is not. The alternative readings are both worse - refusing everything makes a demonstration that
-/// boots without configuration unusable, and inventing a development identity would be a fake, which
-/// the browser suite forbids.
+/// differs by permission: reading the catalogue is served from memory and costs nothing to allow, so it
+/// opens, while a feature that spends money closes. The answer is carried by the requirement rather than
+/// decided here — a permission cannot be written without one — and this handler is the single place it is
+/// applied, so entitlements cannot drift apart.
 /// </para>
 /// <para>
 /// When a provider <em>is</em> configured the answer is closed unless both halves hold: the account is
@@ -36,7 +35,9 @@ internal sealed class ClaimAuthorizationHandler(IdentitySettings identity)
 
         if (!identity.IsConfigured)
         {
-            if (requirement.WhenUnconfigured == ClaimBehavior.Open)
+            // Nobody can be authenticated, so the only question left is what this permission answers when
+            // it cannot check anyone.
+            if (requirement.WhenUnconfigured is UnconfiguredBehaviour.Open)
             {
                 context.Succeed(requirement);
             }

@@ -3,6 +3,7 @@ using CoreRentalNet.Host.Components.Pages;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
@@ -16,6 +17,11 @@ namespace CoreRentalNet.Host.Composition;
 /// The registration is a list of named concerns - the provider, the access token, the cookie, the
 /// handler - rather than one long block, so the concern a reader is looking for is a name they can
 /// find instead of a paragraph they have to read.
+///
+/// "Nothing is registered" means no way in, not no answer at all: a permission that is closed still has
+/// to be refused, and refusing is a challenge the framework has to be able to make. What stands in for
+/// the missing schemes is <see cref="NoIdentityHandler"/>, and it is the only scheme such a deployment
+/// has.
 /// </remarks>
 internal static class IdentityRegistration
 {
@@ -30,6 +36,16 @@ internal static class IdentityRegistration
 
         if (!settings.IsConfigured)
         {
+            // Not nothing: a permission that is closed when nobody can be checked still has to answer,
+            // and the framework answers by challenging. That needs a scheme to challenge with, and this
+            // is the only one such a deployment has. Without it the refusal is an exception - a closed
+            // feature that reads to a customer as a broken one.
+            builder.Services
+                .AddAuthentication(NoIdentityHandler.SchemeName)
+                .AddScheme<AuthenticationSchemeOptions, NoIdentityHandler>(
+                    NoIdentityHandler.SchemeName,
+                    _ => { });
+
             return settings;
         }
 

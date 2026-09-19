@@ -198,7 +198,7 @@ already-running host instead of starting one on `http://localhost:5199`.
 
 ```
 src/BuildingBlocks/     Money, opaque tokens, the business calendar, SQLite plumbing
-src/Modules/Catalog/    62 products, read-only in memory, no database at all
+src/Modules/Catalog/    140 products, read-only in memory, no database at all
 src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quote
 src/Modules/Rentals/    Orders, invoices, periods, the schedule
 src/Host/               The Blazor application, its components and its design tokens

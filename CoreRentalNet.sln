@@ -62,8 +62,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.BehaviourLock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.Modules.Rentals.Infrastructure", "src\Modules\Rentals\CoreRentalNet.Modules.Rentals.Infrastructure\CoreRentalNet.Modules.Rentals.Infrastructure.csproj", "{612EC9DC-9BEA-431E-B5AD-C9E9786FE230}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.E2E.LocalAgent", "tests\CoreRentalNet.E2E.LocalAgent\CoreRentalNet.E2E.LocalAgent.csproj", "{77A3D43B-7204-431A-9D1C-4D0C0154F12A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -350,18 +348,6 @@ Global
 		{612EC9DC-9BEA-431E-B5AD-C9E9786FE230}.Release|x64.Build.0 = Release|Any CPU
 		{612EC9DC-9BEA-431E-B5AD-C9E9786FE230}.Release|x86.ActiveCfg = Release|Any CPU
 		{612EC9DC-9BEA-431E-B5AD-C9E9786FE230}.Release|x86.Build.0 = Release|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Debug|x64.Build.0 = Debug|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Debug|x86.Build.0 = Debug|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Release|x64.ActiveCfg = Release|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Release|x64.Build.0 = Release|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Release|x86.ActiveCfg = Release|Any CPU
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -396,6 +382,5 @@ Global
 		{D7FF0D5D-067C-4A65-9363-02F617CCA910} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{94324871-830F-49E2-8E2A-A8FDBB62C9A0} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{612EC9DC-9BEA-431E-B5AD-C9E9786FE230} = {C5241A24-856D-B6AE-A4C6-237D5DE9D9E8}
-		{77A3D43B-7204-431A-9D1C-4D0C0154F12A} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

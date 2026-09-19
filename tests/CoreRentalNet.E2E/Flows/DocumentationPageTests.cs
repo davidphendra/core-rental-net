@@ -38,7 +38,17 @@ public sealed class DocumentationPageTests(HostFixture host, ITestOutputHelper o
         await Expect(Page.Locator(".opblock").First)
             .ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 30_000 });
 
-        await Expect(Page.Locator(".opblock-summary-path").First).ToContainTextAsync("/api/catalog");
+        // Found by its path rather than taken as the first operation on the page. The document lists
+        // every endpoint the application serves, and "the first one is the catalogue" was a fact about
+        // the document having one endpoint rather than anything this test is checking - it broke the
+        // day a second endpoint was added, which is exactly how a test that is really asserting an
+        // ordering fails.
+        var catalogue = Page.Locator(".opblock-summary-path[data-path='/api/catalog']");
+
+        await Expect(catalogue)
+            .ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 30_000 });
+
+        await Expect(catalogue).ToContainTextAsync("/api/catalog");
 
         refusals.Should().BeEmpty("the page is served under a policy that must admit the page itself");
     }

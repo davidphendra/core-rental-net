@@ -26,4 +26,9 @@
     <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Infrastructure/CoreRentalNet.Modules.Rentals.Infrastructure.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
 </Project>

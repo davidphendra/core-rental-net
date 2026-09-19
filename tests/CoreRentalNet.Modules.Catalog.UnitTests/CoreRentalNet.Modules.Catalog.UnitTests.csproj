@@ -16,4 +16,9 @@
     <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
 </Project>

@@ -156,51 +156,6 @@ internal sealed class ProcessPool : IAsyncDisposable
             $"{Environment.NewLine}{process.Output()}");
     }
 
-    /// <summary>Waits for the stand-in agent to be able to answer, which is what its health route says.</summary>
-    /// <remarks>
-    /// Its own probe rather than the application's, because a stand-in is ready the moment it listens and
-    /// has no page, no assets and no database to have loaded first.
-    /// </remarks>
-    public static async Task WaitUntilAgentReadyAsync(string baseUrl, AppProcess process)
-    {
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(90);
-
-        while (DateTimeOffset.UtcNow < deadline)
-        {
-            if (process.HasExited)
-            {
-                throw new InvalidOperationException(
-                    $"The stand-in agent at {baseUrl} exited with code {process.ExitCode} before becoming ready." +
-                    $"{Environment.NewLine}{process.Output()}");
-            }
-
-            try
-            {
-                var response = await client.GetAsync(new Uri($"{baseUrl}/health")).ConfigureAwait(false);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return;
-                }
-            }
-            catch (HttpRequestException)
-            {
-                // Not listening yet.
-            }
-            catch (TaskCanceledException)
-            {
-                // Still starting.
-            }
-
-            await Task.Delay(250).ConfigureAwait(false);
-        }
-
-        throw new TimeoutException(
-            $"The stand-in agent at {baseUrl} did not become ready within 90 seconds." +
-            $"{Environment.NewLine}{process.Output()}");
-    }
-
     public async ValueTask DisposeAsync()
     {
         foreach (var process in processes)

@@ -23,7 +23,11 @@
 
   <ItemGroup>
     <!-- The stand-in agent's fixture, held against the catalogue it names SKUs from. -->
-    <ProjectReference Include="../CoreRentalNet.E2E.LocalAgent/CoreRentalNet.E2E.LocalAgent.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
   </ItemGroup>
 
 </Project>

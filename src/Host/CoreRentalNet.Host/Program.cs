@@ -16,6 +16,9 @@ var identity = builder.AddOptionalIdentity();
 builder.AddCatalogAuthorization();
 builder.AddCatalogApiAuthentication(identity);
 builder.AddCatalogApiAuthorization(identity);
+// The AI section is gated on a permission the deployment configures, and is closed when it has not:
+// no section, rather than an open one. The catalogue's own rule is untouched, and stays open.
+builder.AddAiAuthorization();
 builder.AddPresentation();
 
 builder.AddSqliteDatabase();
@@ -24,8 +27,11 @@ builder.AddCatalogApi();
 builder.AddApiResponses();
 builder.AddCatalogOpenApi();
 builder.AddWorkspace();
-builder.AddFoundryAgent();
 builder.AddRentals();
+
+// The suggestion agent is reached through the Foundry client, and is unavailable rather than open when
+// it has not been configured. Nothing else in the application knows that Foundry exists.
+builder.AddSuggestionAgent();
 
 builder.Services.AddScoped<IWorkspaceSession, WorkspaceSession>();
 

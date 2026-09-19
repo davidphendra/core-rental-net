@@ -9,18 +9,16 @@ namespace CoreRentalNet.Host.Composition;
 /// Every permission the application checks, and the one handler that answers them.
 /// </summary>
 /// <remarks>
-/// <para>
-/// One handler for four policies, because the rule is the same rule: an account is entitled when it
-/// carries the configured claim, and what a deployment with no provider does is the requirement's to
-/// say. A handler per permission would be four copies of an exact, case-sensitive comparison, and four
-/// copies of a rule is four chances for three of them to be right.
-/// </para>
-/// <para>
-/// The catalogue's two policies answer <c>Open</c> and the AI section's answer <c>Closed</c>. That
-/// difference is the whole reason the requirement carries anything: reading the catalogue is served
-/// from memory and costs nothing to allow, and generating a suggestion spends model calls and an
-/// external round trip.
-/// </para>
+/// One handler for every policy, because the rule is the same rule: an account is entitled when it
+/// carries the configured claim. A handler per permission would be two copies of an exact,
+/// case-sensitive comparison, and two copies of a rule are two chances for one of them to be right.
+///
+/// Each permission's own registration adds the handler, so it is there whichever of them a composition
+/// root calls. That is deliberately <b>not</b> <c>TryAddSingleton</c>: that would be keyed on
+/// <see cref="IAuthorizationHandler"/>, which the identity packages also register implementations of, so
+/// this application's handler would silently not be added and every permission would deny. Tried, and the
+/// catalogue's own tests caught it. A second instance is harmless — both apply the same rule — while a
+/// missing one denies everyone.
 /// </remarks>
 internal static class AuthorizationRegistration
 {
@@ -28,17 +26,31 @@ internal static class AuthorizationRegistration
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy(CatalogPolicy.Name, policy => policy.AddRequirements(
-                Catalogue(builder.Configuration)));
+        builder.Services.AddAuthorization(options => options.AddPolicy(
+            CatalogPolicy.Name,
+            policy => policy.AddRequirements(Catalogue(builder.Configuration))));
 
-            options.AddPolicy(AiBuilderReadPolicy.Name, policy => policy.AddRequirements(
-                Permission(builder.Configuration, ClaimSettings.AiBuilderRead)));
+        builder.Services.AddSingleton<IAuthorizationHandler, ClaimAuthorizationHandler>();
+    }
 
-            options.AddPolicy(AiBuilderPowerPolicy.Name, policy => policy.AddRequirements(
-                Permission(builder.Configuration, ClaimSettings.AiBuilderPower)));
-        });
+    /// <summary>
+    /// The permission that guards the AI workspace builder.
+    /// </summary>
+    /// <remarks>
+    /// <b>Closed</b>, unlike the catalogue. The claim comes from <c>Authorization:AIUse</c> and the code
+    /// never names a value: which claim the provider issues, and what it is worth, is the provider's to
+    /// define and a deployment's to configure. A deployment that has not configured it, or that has no
+    /// identity provider at all, shows no AI section rather than an open one.
+    /// </remarks>
+    public static void AddAiAuthorization(this WebApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddAuthorization(options => options.AddPolicy(
+            AiPolicy.Name,
+            policy => policy.AddRequirements(new ClaimRequirement(
+                ClaimSettings.From(builder.Configuration, ClaimSettings.AiUse),
+                UnconfiguredBehaviour.Closed))));
 
         builder.Services.AddSingleton<IAuthorizationHandler, ClaimAuthorizationHandler>();
     }
@@ -71,9 +83,7 @@ internal static class AuthorizationRegistration
 
     /// <summary>Reading the catalogue: whatever it guards, a demonstration with no provider opens it.</summary>
     private static ClaimRequirement Catalogue(IConfiguration configuration)
-        => new(ClaimSettings.From(configuration, ClaimSettings.CatalogRead), ClaimBehavior.Open);
-
-    /// <summary>The AI section's permissions, which spend money and are therefore closed by default.</summary>
-    private static ClaimRequirement Permission(IConfiguration configuration, string section)
-        => new(ClaimSettings.From(configuration, section), ClaimBehavior.Closed);
+        => new(
+            ClaimSettings.From(configuration, ClaimSettings.CatalogRead),
+            UnconfiguredBehaviour.Open);
 }

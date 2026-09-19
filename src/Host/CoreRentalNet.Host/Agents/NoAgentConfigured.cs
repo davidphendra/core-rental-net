@@ -1,29 +1,21 @@
-using CoreRentalNet.Modules.Workspace.Application.Contracts.Suggestion;
+using System.Runtime.CompilerServices;
 
 namespace CoreRentalNet.Host.Agents;
 
-/// <summary>
-/// The agent a deployment that has not configured one has: none, said out loud.
-/// </summary>
+/// <summary>What is registered when the feature is off or the endpoint is missing.</summary>
 /// <remarks>
-/// A null object rather than a missing registration, because the operation still exists: a customer can
-/// ask for a suggestion and must be told the service is unavailable, which is a different answer from a
-/// page that cannot be reached or a request that is wrong. It also means the composition validates -
-/// every port has an implementation - and that a deployment without an agent fails at the one thing it
-/// is missing rather than at start-up with a message about a service descriptor.
+/// It yields <b>unavailable</b>, never a suggestion and never a refusal — the deployment has not been told
+/// where the agent is, which is not the customer's problem. The AI section is hidden in this state; this
+/// implementation exists so that nothing downstream has to check whether the feature is on.
 /// </remarks>
-internal sealed class NoAgentConfigured : IAgentSuggestions
+internal sealed class NoAgentConfigured : ISuggestionAgent
 {
-    /// <inheritdoc />
-    public bool IsConfigured => false;
-
-    /// <summary>Nothing, because nothing will ask: the port reports itself unconfigured first.</summary>
-    public async IAsyncEnumerable<AgentSuggestionMessage> AskAsync(
-        string query,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(
+        SuggestionRequest request,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
 
-        yield break;
+        yield return new AgentSuggestionEvent.Unavailable("No suggestion agent is configured.");
     }
 }

@@ -76,7 +76,7 @@ public sealed class CatalogApiAuthorizedFactory : WebApplicationFactory<Program>
                 {
                     policy.AddRequirements(new ClaimRequirement(
                         ClaimSettings.From(identity, ClaimSettings.CatalogRead),
-                        ClaimBehavior.Open));
+                        UnconfiguredBehaviour.Open));
                     policy.AddAuthenticationSchemes(CatalogApiTestHandler.SchemeName);
                 }));
         });

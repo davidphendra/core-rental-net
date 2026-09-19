@@ -1,37 +1,67 @@
-using CoreRentalNet.Host.Presentation;
 using AwesomeAssertions;
+using CoreRentalNet.Host.AiBuilder;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
 
 /// <summary>
-/// The words the page shows while a run is happening, and what it shows for an id it does not know.
+/// The words the application puts around a run: what a customer reads while waiting, and where those words
+/// come from.
 /// </summary>
 /// <remarks>
-/// The list is written out here rather than read from the agent, because the agent is a separate
-/// solution and reading its vocabulary would be the coupling this split exists to avoid. That makes this
-/// the place drift is caught: a stage added there and not here fails a test rather than quietly
-/// disappearing from a customer's screen.
+/// <para>
+/// There is no mapping to test, and that is the point of this file. The story expected the agent's stage
+/// identities to be translated into these lines, and at `e05s04` it was recorded as <b>not known</b> whether
+/// they could reach the application. They cannot: the `workflow_action` items those identities arrive in are
+/// produced by <c>Azure.AI.AgentServer.Responses</c>, which is the server side, and no client package the
+/// application references has a type for them — <c>Microsoft.Agents.AI.Foundry</c> matches one output-item
+/// kind, <c>"message"</c>, over a closed content union.
+/// </para>
+/// <para>
+/// So the stages are the application's own, and these assertions are what stops the agent's vocabulary
+/// reaching a customer by some later route: not by checking a mapping, but by checking that the copy
+/// contains nothing the agent could have named.
+/// </para>
 /// </remarks>
 public sealed class SuggestionStageCopyTests
 {
-    [Theory] // AIB-11
-    [InlineData("verifying")]
-    [InlineData("rephrasing")]
-    [InlineData("selecting")]
-    [InlineData("reviewing")]
-    public void Every_stage_the_agent_publishes_has_words_of_its_own(string stage)
+    [Fact] // e05s07: the sequence is the application's, in the order the phases happen
+    public void The_run_says_three_app_owned_lines_in_order()
     {
-        var words = SuggestionStageCopy.For(stage);
-
-        words.Should().NotBeNullOrWhiteSpace();
-        words.Should().NotContain(stage, "the page shows the application's words, never the agent's id");
+        SuggestionStageCopy.Sequence.Should().Equal(
+            "Reading your request",
+            "Matching the catalogue",
+            "Checking the suggestion");
     }
 
-    [Theory] // AIB-11
-    [InlineData("stage-from-a-later-release")]
-    [InlineData("")]
-    [InlineData(null)]
-    public void A_stage_this_application_does_not_know_renders_nothing(string? stage)
-        => SuggestionStageCopy.For(stage).Should().BeNull("an unknown id is not something to show a customer");
+    [Fact]
+    public void Every_line_is_a_sentence_a_customer_could_read()
+    {
+        foreach (var line in SuggestionStageCopy.Sequence)
+        {
+            line.Should().NotBeNullOrWhiteSpace();
+            line.Should().MatchRegex("^[A-Z][a-z]+ [a-z]", "each line is prose, not an identifier");
+            line.Should().NotContain("_").And.NotContain("{").And.NotContain("<");
+        }
+
+        // Guards against the rule passing because the sequence is empty.
+        SuggestionStageCopy.Sequence.Should().OnlyHaveUniqueItems().And.HaveCount(3);
+    }
+
+    [Fact] // the agent's vocabulary never reaches the customer
+    public void No_line_carries_a_word_only_the_agent_could_have_supplied()
+    {
+        // The executor identities, the workflow verbs they arrive under, and the two agent names. None of
+        // these may appear in what a customer reads: they are either internal protocol or the name of a
+        // thing the customer was never told exists.
+        string[] theAgents = ["rephraser", "suggestor", "executor", "workflow", "InvokeExecutor", "action_id"];
+
+        foreach (var line in SuggestionStageCopy.Sequence)
+        {
+            foreach (var word in theAgents)
+            {
+                line.Should().NotContain(word, $"'{line}' is the application's wording, not the agent's");
+            }
+        }
+    }
 }
