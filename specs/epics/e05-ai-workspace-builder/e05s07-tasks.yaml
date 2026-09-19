@@ -122,17 +122,26 @@ tasks:
 # security declared, because Auth0SecuritySchemeTransformer only describes the catalogue's path. e05s09 owns
 # the README and CI statements, and the document's treatment of the second endpoint belongs with them.
 
-# TASK 4 WAS STOPPED AT ITS PREREQUISITE, WHICH IS NOW PROVEN AND GUARDED.
+# TASK 4 WAS STOPPED AT ITS PREREQUISITE, WHICH IS NOW BUILT AND PROVEN.
 #
 # Task 4 is a browser task - its verify is AiBuilderStreamTests against the local stand-in - and the
 # application could not reach a stand-in at all: e05s05's replacement of the agent client dropped the
 # credential-free path the browser tier is built on. That is recorded in full on e05s05, where the code lives.
 #
-# What is done: the local path is restored (`SuggestionAgentSettings.IsLocal()`, and the branch in
-# `FoundryAgentFactory`), and `StandInTransportTests` proves the REAL adapter reads a plain-http stand-in with
-# no credential and reads the LAST top-level object as the result. What is NOT done: the shared stand-in as a
-# project, its scenario library rewritten for this contract, and the E2E host wiring. Tasks 4, 5 and 6 are
-# unbuildable until those exist, so none of them has been started rather than half-built.
+# ALL THREE PARTS NOW EXIST, AND THE BROWSER TIER IS REACHABLE AGAIN:
+#   - the local path in `FoundryAgentFactory`, decided by scheme and guarded by `StandInTransportTests`;
+#   - `tests/CoreRentalNet.E2E.LocalAgent`, the stand-in as its own project, its scenarios written against
+#     THIS contract and its SKUs held against the catalogue;
+#   - the browser wiring, and `AiBuilderEndpointTests`, which drives a run with fetch from the page and asserts
+#     the frames: app-owned stages in order, the model's words and never its JSON, and the answer whole.
+# The permission is a real claim on a real token - the local provider writes `use:ai` into the access token and
+# the host reads it - so the endpoint's gate is observable from the browser on both sides.
 #
-# THE PREREQUISITE WAS NOT IN THE RECORD AND STILL IS NOT A TASK. It changes e05s05's design, so it belongs
-# there and is recorded there; the epic's index should carry it before task 4 is attempted again.
+# Tasks 4, 5 and 6 are therefore UNBLOCKED rather than built. None has been started: the section that reads
+# these frames is their work, and this step stops at proving the frames arrive.
+#
+# ONE THING FOUND ON THE WAY, FIXED AND NOT PART OF TASK 4. `suggestion.result.schema.json` carried `"enum"`
+# - the JSON key itself - as the first member of its status enum and of its line's slot enum, so the shared
+# contract permitted a status that means nothing and a slot the application cannot parse. The test that was
+# meant to keep the slot vocabulary in step asked whether it was PRESENT in each file, which it was. It now
+# compares the members, so an extra value fails as loudly as a missing one. Both are in the e05s07 commit log.
