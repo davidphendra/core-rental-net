@@ -70,7 +70,7 @@ stories:
     type: feat
     bcps: 5
     risk: P0
-    status: in-progress
+    status: passing
   - id: e05s08
     slug: validate-and-apply
     title: Nothing is shown or applied that was not checked

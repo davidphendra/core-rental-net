@@ -31,13 +31,13 @@ tasks:
     description: "Place the section above the canvas: one line when idle, expanded while running or showing candidates, full-width on a phone, absent when off or unentitled"
     verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderSectionTests"'
     risk: P1
-    status: planned
+    status: passing
     allure: { severity: major, categories: ["ui", "browser"] }
   - id: 6
     description: "Announce progress and the outcome, not the prose: stage lines in a polite role=status region, streamed prose outside any live region, candidates announced when they arrive"
     verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderSectionTests"'
     risk: P1
-    status: planned
+    status: passing
     allure: { severity: major, categories: ["ui", "accessibility"] }
 # TASK 3 FOUND THAT A STOP WAS BEING DRESSED UP AS A FAILURE, IN e05s05's CODE.
 #
@@ -121,6 +121,37 @@ tasks:
 # STILL OPEN, AND NOT THIS TASK'S TO CLOSE: the builder endpoint appears in the OpenAPI document with no
 # security declared, because Auth0SecuritySchemeTransformer only describes the catalogue's path. e05s09 owns
 # the README and CI statements, and the document's treatment of the second endpoint belongs with them.
+
+# TASKS 5 AND 6 ARE BUILT, AND ONE OF THEIR ROWS IS HALF COVERED FOR THE SAME REASON AS BEFORE.
+#
+# The section is now gated twice, and the two gates answer different questions: `SuggestionAgentSettings`
+# says whether this deployment has an agent at all, so a deployment without one looks exactly as it did
+# before the feature existed, and the permission says whether this customer may spend. Neither is
+# authorisation on its own; the endpoint checks the permission for itself.
+#
+# It is one line when idle - a field and a control, with the prose appearing only once there is something to
+# say - and it expands when there is a run or a result to show. Every class in the markup is a class the
+# generated stylesheet has, which the architecture suite checks and which caught `px-3` during task 4.
+#
+# AIWB-45 IS HALF COVERED, AND THE HALF THAT IS MISSING IS THE SAME HALF AIWB-27, 28 AND 49 ARE MISSING.
+# "The section expands WHILE A RUN IS IN FLIGHT" needs a run in flight; against a stand-in that answers
+# immediately the section is in that state for a few milliseconds of real network time, and a test that looked
+# for it would be timing-dependent - which is the thing the removed fixture pacing was buying. What IS
+# asserted is the half the record can reach: expanded once candidates are shown, and the prose back with them.
+# This is the fourth row in the same position, so the pending decision about 27, 28 and 49 is really a decision
+# about all four.
+#
+# AIWB-41'S SUBJECT IS IMPLEMENTED AND ITS BROWSER TEST IS NOT, AND THAT IS NOT AN OVERSIGHT. "Absent when the
+# feature is off" is code: the section renders nothing when no agent is configured. But no host in the browser
+# fixture runs with identity ON and the agent OFF, so there is nothing to point a test at, and AIWB-41 is
+# e05s09's row. The unentitled half IS asserted here - an account holding the catalogue's permission and not
+# the AI one sees no section, on a page that really is the builder.
+#
+# ONE ANNOUNCER, SO NOTHING IS SAID TWICE. The live region carries the stage lines and the terminal outcome -
+# "Your workspace suggestions are ready." - and never the model's prose: the prose is not a live region and has
+# no role at all, which the test asserts along with the absence of any live region inside it. The visible
+# stopped, refused and failed messages keep their own roles and are deliberately NOT repeated into the region,
+# or a customer would hear a failure twice.
 
 # TASK 4 IS BUILT. IT COVERS FOUR OF THE SIX ROWS IT NAMES, AND THAT IS THE FIRST THING THIS NOTE SAYS.
 #

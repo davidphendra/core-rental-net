@@ -1,171 +1,192 @@
 @* The AI section: ask for a suggestion, read the run as it happens, and stop it if it takes too long.
 
-   Gated by its own permission rather than the page's, because the page is a workspace builder and this is one
-   thing it can additionally offer. A customer without the entitlement sees the builder unchanged - which is
-   what a closed feature looks like from the outside, and is presentation rather than authorisation: the
-   endpoint checks the same permission for itself. *@
+   Gated twice, and the two gates answer different questions. `SuggestionAgentSettings` says whether this
+   deployment has an agent at all, so a deployment without one looks exactly as it did before the feature
+   existed. The permission says whether this customer may spend. Neither is authorisation on its own: the
+   endpoint checks the permission for itself, because a section that is not rendered is presentation rather
+   than a gate. *@
 @using System.Text.Json
 @using CoreRentalNet.Host.Agents
 @inject IJSRuntime JavaScript
+@inject SuggestionAgentSettings Agent
 @implements IAsyncDisposable
 
-<AuthorizeView Policy="@AiPolicy.Name">
-    <Authorized>
-        <section class="ai mb-section-gap rounded-lg border border-outline-variant p-stack-md"
-                 data-testid="ai-section"
-                 aria-labelledby="ai-heading">
-            <h2 id="ai-heading" class="text-title-lg font-title-lg text-primary">Not sure where to start?</h2>
-            <p class="text-body-md font-body-md text-outline mb-stack-sm">
-                Describe the workspace you need, and we will put options together.
-            </p>
-
-            <form class="ai__request flex flex-wrap items-end gap-2" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
-                <label class="sr-only" for="ai-query">Describe your workspace</label>
-                <input id="ai-query"
-                       class="ai__query flex-1 min-w-0 rounded border border-outline-variant px-4 py-2"
-                       data-testid="ai-query"
-                       placeholder="A desk, a chair and a monitor"
-                       disabled="@running"
-                       @bind="query"
-                       @bind:event="oninput" />
-
-                <button type="submit"
-                        class="ai__submit rounded bg-primary px-4 py-2 text-on-primary"
-                        data-testid="ai-submit"
-                        disabled="@(running || string.IsNullOrWhiteSpace(query))">
-                    Suggest
-                </button>
-
-                @if (running)
+@if (Agent.IsConfigured)
+{
+    <AuthorizeView Policy="@AiPolicy.Name">
+        <Authorized>
+            <section class="ai mb-section-gap rounded-lg border border-outline-variant p-stack-md"
+                     data-testid="ai-section"
+                     data-expanded="@(Expanded ? "true" : "false")"
+                     aria-labelledby="ai-heading">
+                @* One line when idle: a field and a control. The prose around it appears only once there is
+                   something to say, because an offer of help that fills the page before it is used is a
+                   section a customer scrolls past. *@
+                @if (Expanded)
                 {
-                    <button type="button"
-                            class="ai__cancel rounded border border-outline-variant px-4 py-2"
-                            data-testid="ai-cancel"
-                            @onclick="StopAsync">
-                        Stop
+                    <h2 id="ai-heading" class="text-title-lg font-title-lg text-primary">Not sure where to start?</h2>
+                    <p class="text-body-md font-body-md text-outline mb-stack-sm">
+                        Describe the workspace you need, and we will put options together.
+                    </p>
+                }
+
+                @* Present from the first render and empty, because a live region added to the page at the same
+                   moment as its first content is not reliably announced: the browser has to be observing the
+                   element before it changes, and an element that arrives already full never changes at all.
+                   It carries the application's own stage lines and the outcome that ends the run - and never
+                   the model's prose, which would announce a field at a time over the whole run. *@
+                <p class="sr-only" role="status" data-testid="ai-announcement">@announcement</p>
+
+                <form class="ai__request flex flex-wrap items-end gap-2" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+                    <label class="sr-only" for="ai-query">Describe your workspace</label>
+                    <input id="ai-query"
+                           class="ai__query flex-1 min-w-0 rounded border border-outline-variant px-4 py-2"
+                           data-testid="ai-query"
+                           placeholder="A desk, a chair and a monitor"
+                           disabled="@running"
+                           @bind="query"
+                           @bind:event="oninput" />
+
+                    <button type="submit"
+                            class="ai__submit rounded bg-primary px-4 py-2 text-on-primary"
+                            data-testid="ai-submit"
+                            disabled="@(running || string.IsNullOrWhiteSpace(query))">
+                        Suggest
                     </button>
-                }
-            </form>
 
-            @* The application's own words, written as each phase happens. They are not the agent's: its stage
-               identities never reach this application at all, so there is no vocabulary here to translate. *@
-            @if (stages.Count > 0)
-            {
-                @if (StagesCollapsed)
-                {
-                    @* Retained and collapsed rather than removed, so a customer or a support engineer can see
-                       where a slow or partly failed run went. *@
-                    <button type="button"
-                            class="ai__toggle mt-stack-sm underline"
-                            data-testid="ai-stages-toggle"
-                            aria-expanded="false"
-                            @onclick="ExpandStages">
-                        What took so long?
-                    </button>
-                }
-                else
-                {
-                    <ol class="ai__stages mt-stack-sm text-body-sm font-body-sm text-outline"
-                        data-testid="ai-stages">
-                        @foreach (var stage in stages)
-                        {
-                            <li class="ai__stage" data-stage="@stage">@stage</li>
-                        }
-                    </ol>
-                }
-            }
-
-            @* The model's own words, each one written the moment its JSON string closed. Never its JSON, and
-               never a partial value: the reader emits a field only when it is complete, which is what lets
-               the strip run on a finished value. *@
-            @if (narrative.Count > 0)
-            {
-                <div class="ai__stream mt-stack-sm text-body-md font-body-md text-on-surface"
-                     data-testid="ai-stream">
-                    @foreach (var line in narrative)
+                    @if (running)
                     {
-                        <p class="ai__line">@line</p>
+                        <button type="button"
+                                class="ai__cancel rounded border border-outline-variant px-4 py-2"
+                                data-testid="ai-cancel"
+                                @onclick="StopAsync">
+                            Stop
+                        </button>
                     }
-                </div>
-            }
+                </form>
 
-            @* Kept and marked not applied rather than retracted mid-read. The text carries no price and no
-               product name, so leaving it on screen cannot mislead - and a customer who watched a run end
-               needs to know whether their workspace moved. It did not. *@
-            @if (NotApplied)
-            {
-                <p class="ai__not-applied mt-2 text-body-sm font-body-sm text-outline" data-testid="ai-not-applied">
-                    Not applied to your workspace.
-                </p>
-            }
-
-            @if (failed is not null)
-            {
-                <p class="alert mt-stack-sm" role="alert" data-testid="ai-failed">
-                    This suggestion couldn't be completed. Nothing was applied.
-                </p>
-                <button type="button" class="ai__retry mt-2 underline" data-testid="ai-retry" @onclick="SubmitAsync">
-                    Try again
-                </button>
-            }
-
-            @if (stopped)
-            {
-                @* Neutral, because the customer chose to stop. Reported as an error it would be a scolding for
-                   using the control that is there to be used. *@
-                <p class="mt-stack-sm" role="status" data-testid="ai-stopped">
-                    Stopped. Nothing was applied.
-                </p>
-                <button type="button" class="ai__again mt-2 underline" data-testid="ai-start-again" @onclick="SubmitAsync">
-                    Start again
-                </button>
-            }
-
-            @if (outcome is not null)
-            {
-                <div class="ai__outcome mt-stack-sm" data-testid="ai-outcome" data-status="@outcome.Status">
-                    @if (outcome.Status is AgentSuggestionStatus.NotWorkspace)
+                @* The application's own words, written as each phase happens. They are not the agent's: its stage
+                   identities never reach this application at all, so there is no vocabulary here to translate. *@
+                @if (stages.Count > 0)
+                {
+                    @if (StagesCollapsed)
                     {
-                        @* A result rather than an error, and guided rather than repeatable: the same words sent
-                           again produce the same refusal, so what helps is being told what would work. *@
-                        <p class="alert" role="status" data-testid="ai-refused">
-                            That doesn't look like a workspace request — try describing the room, the work, or a budget.
-                        </p>
+                        @* Retained and collapsed rather than removed, so a customer or a support engineer can
+                           see where a slow or partly failed run went. *@
+                        <button type="button"
+                                class="ai__toggle mt-stack-sm underline"
+                                data-testid="ai-stages-toggle"
+                                aria-expanded="false"
+                                @onclick="ExpandStages">
+                            What took so long?
+                        </button>
                     }
                     else
                     {
-                        @* Rank, price and name are NOT here yet, and that is deliberate rather than unfinished:
-                           the application resolves those from its own catalogue and validates the whole result
-                           before a customer acts on any of it, which is e05s08's work. *@
-                        <div class="ai__candidates" data-testid="ai-candidates">
-                            @foreach (var option in outcome.Options)
+                        <ol class="ai__stages mt-stack-sm text-body-sm font-body-sm text-outline"
+                            data-testid="ai-stages">
+                            @foreach (var stage in stages)
                             {
-                                <article class="ai__option mb-stack-sm rounded border border-outline-variant p-3"
-                                         data-testid="ai-option">
-                                    <p class="text-body-md font-body-md">@option.Rationale</p>
-                                    <ul class="ai__lines text-body-sm font-body-sm text-outline">
-                                        @foreach (var line in option.Lines)
-                                        {
-                                            <li class="ai__line" data-sku="@line.Sku">
-                                                &times; @line.Quantity — @line.Why
-                                            </li>
-                                        }
-                                    </ul>
-                                </article>
+                                <li class="ai__stage" data-stage="@stage">@stage</li>
                             }
-                        </div>
+                        </ol>
                     }
-                </div>
-            }
-        </section>
-    </Authorized>
-</AuthorizeView>
+                }
+
+                @* The model's own words, each one written the moment its JSON string closed. Never its JSON, and
+                   never a partial value: the reader emits a field only when it is complete, which is what lets
+                   the strip run on a finished value. Not a live region, and deliberately no role at all - this
+                   is commentary, and announcing it field by field would talk over the run. *@
+                @if (narrative.Count > 0)
+                {
+                    <div class="ai__stream mt-stack-sm text-body-md font-body-md text-on-surface"
+                         data-testid="ai-stream">
+                        @foreach (var line in narrative)
+                        {
+                            <p class="ai__line">@line</p>
+                        }
+                    </div>
+                }
+
+                @* Kept and marked not applied rather than retracted mid-read. The text carries no price and no
+                   product name, so leaving it on screen cannot mislead - and a customer who watched a run end
+                   needs to know whether their workspace moved. It did not. *@
+                @if (NotApplied)
+                {
+                    <p class="ai__not-applied mt-2 text-body-sm font-body-sm text-outline" data-testid="ai-not-applied">
+                        Not applied to your workspace.
+                    </p>
+                }
+
+                @if (failed is not null)
+                {
+                    <p class="alert mt-stack-sm" role="alert" data-testid="ai-failed">
+                        This suggestion couldn't be completed. Nothing was applied.
+                    </p>
+                    <button type="button" class="ai__retry mt-2 underline" data-testid="ai-retry" @onclick="SubmitAsync">
+                        Try again
+                    </button>
+                }
+
+                @if (stopped)
+                {
+                    @* Neutral, because the customer chose to stop. Reported as an error it would be a scolding
+                       for using the control that is there to be used. *@
+                    <p class="mt-stack-sm" role="status" data-testid="ai-stopped">
+                        Stopped. Nothing was applied.
+                    </p>
+                    <button type="button" class="ai__again mt-2 underline" data-testid="ai-start-again" @onclick="SubmitAsync">
+                        Start again
+                    </button>
+                }
+
+                @if (outcome is not null)
+                {
+                    <div class="ai__outcome mt-stack-sm" data-testid="ai-outcome" data-status="@outcome.Status">
+                        @if (outcome.Status is AgentSuggestionStatus.NotWorkspace)
+                        {
+                            @* A result rather than an error, and guided rather than repeatable: the same words
+                               sent again produce the same refusal, so what helps is being told what would work. *@
+                            <p class="alert" role="status" data-testid="ai-refused">
+                                That doesn't look like a workspace request — try describing the room, the work, or a budget.
+                            </p>
+                        }
+                        else
+                        {
+                            @* Rank, price and name are NOT here yet, and that is deliberate rather than
+                               unfinished: the application resolves those from its own catalogue and validates
+                               the whole result before a customer acts on any of it - e05s08's work. *@
+                            <div class="ai__candidates" data-testid="ai-candidates">
+                                @foreach (var option in outcome.Options)
+                                {
+                                    <article class="ai__option mb-stack-sm rounded border border-outline-variant p-3"
+                                             data-testid="ai-option">
+                                        <p class="text-body-md font-body-md">@option.Rationale</p>
+                                        <ul class="ai__lines text-body-sm font-body-sm text-outline">
+                                            @foreach (var line in option.Lines)
+                                            {
+                                                <li class="ai__line" data-sku="@line.Sku">
+                                                    &times; @line.Quantity — @line.Why
+                                                </li>
+                                            }
+                                        </ul>
+                                    </article>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </Authorized>
+    </AuthorizeView>
+}
 
 @code {
     private readonly List<string> stages = [];
     private readonly List<string> narrative = [];
 
     private string query = string.Empty;
+    private string announcement = string.Empty;
     private AgentSuggestionResult? outcome;
     private string? failed;
     private bool stopped;
@@ -173,6 +194,10 @@
     private bool collapsed;
     private IJSObjectReference? module;
     private DotNetObjectReference<AiBuilderSection>? self;
+
+    /// <summary>Whether there is anything to show beyond the field: a run in flight, or a result of one.</summary>
+    private bool Expanded
+        => running || outcome is not null || failed is not null || stopped;
 
     /// <summary>Shown collapsed once a run has ended, and open while one is going.</summary>
     private bool StagesCollapsed => collapsed && !running;
@@ -211,6 +236,10 @@
         {
             case "stage":
                 stages.Add(data);
+
+                // The stage lines are what a screen reader hears while a run is going, because they are short
+                // and the application wrote them. The prose never goes through here.
+                announcement = data;
                 break;
 
             case "text":
@@ -219,6 +248,13 @@
 
             case "result":
                 outcome = Read(data);
+
+                // The candidates ARE the terminal outcome, so this says they have arrived rather than reading
+                // them out one line at a time.
+                announcement = outcome?.Status is AgentSuggestionStatus.NotWorkspace
+                    ? "That doesn't look like a workspace request."
+                    : "Your workspace suggestions are ready.";
+
                 Finish();
                 break;
 
@@ -288,6 +324,7 @@
         failed = null;
         stopped = false;
         collapsed = false;
+        announcement = string.Empty;
         running = true;
     }
 

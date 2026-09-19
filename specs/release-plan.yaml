@@ -19,7 +19,7 @@ epics:
   - id: e05
     slug: ai-workspace-builder
     title: The AI workspace builder
-    status: planned
+    status: in-progress
     bcps: 49
     wsjf: 4.0
     order: 3
@@ -104,7 +104,7 @@ notes: |
   the product owner rather than reconstructed by engineering, and this initiative should not be planned
   in earnest until it is written.
 
-  The e05 summary is 30 of 47 tasks passing (63.8%), 16 not started (34.0%) and 1 assumed but unproven
+  The e05 summary is 33 of 47 tasks passing (70.2%), 13 not started (27.7%) and 1 assumed but unproven
   (2.1%). The single assumption is e05s01 task 5, and it is now much narrower than it read: the client
   half is proven offline - the schema travels as the Responses protocol's own text.format json_schema,
   with no synthetic tool - so what a deployment still settles is only whether gpt-4.1-mini honours it.
