@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corerental/schemas/suggestion.result.schema.json",
+  "title": "Suggestion result",
+  "description": "What the agent answers with: candidates, or the typed not-a-workspace verdict. NO PRICE, NO PRODUCT NAME AND NO IMAGE CROSSES - the application resolves those and recomputes every amount - and no band label is carried, because the application sorts the candidates by total and labels them by rank. It carries NO USAGE either: a model cannot observe a call count or a token count, so the run's cost follows the answer as a separate object - see run-usage.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "options"
+  ],
+  "properties": {
+    "status": {
+      "enum": ["enum", "suggested", "notWorkspace"],
+      "description": "notWorkspace is a result, not an error: the application words it and does not report a failure."
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A one-line reason, present when status is notWorkspace."
+    },
+    "options": {
+      "type": "array",
+      "maxItems": 3,
+      "description": "Up to three genuinely different setups. Fewer is fewer - never padded with a near-duplicate to reach three. Empty when the verdict is notWorkspace.",
+      "items": {
+        "$ref": "#/$defs/option"
+      }
+    }
+  },
+  "$defs": {
+    "option": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lines",
+        "rationale"
+      ],
+      "properties": {
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Which SKU goes in which slot, and how many. A slot the request said nothing about is left out.",
+          "items": {
+            "$ref": "#/$defs/line"
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "description": "The model's own words, purpose only. The application caps it and strips URLs, markup and currency amounts before a customer sees it."
+        }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "sku",
+        "quantity",
+        "why"
+      ],
+      "properties": {
+        "slot": {
+          "enum": ["enum", "Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone"],
+          "description": "The slot this line fills. Kept in step with the request schema by a test, so every file stays self-contained and any consumer can validate one without a registry."
+        },
+        "sku": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Must exist in the catalogue the request carried; the application rejects the whole run otherwise."
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Must not exceed the slot's capacity; the application rejects the whole run otherwise."
+        },
+        "why": {
+          "type": "string",
+          "description": "The model's own words for this line, purpose only. Capped and stripped like the rationale."
+        }
+      }
+    }
+  }
+}
