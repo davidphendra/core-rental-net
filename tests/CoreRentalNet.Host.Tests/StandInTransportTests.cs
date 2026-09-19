@@ -1,24 +1,21 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.E2E.LocalAgent;
 using CoreRentalNet.Host.Agents;
-using CoreRentalNet.Host.Presentation;
-using CoreRentalNet.Modules.Catalog.Application.Contracts;
-using CoreRentalNet.Modules.Workspace.Domain;
 using Microsoft.Agents.AI;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
 
 /// <summary>
-/// The one path the browser tier rests on: the <b>real</b> adapter, through the real client and the real
-/// streaming code, reading a stand-in on this machine with no credential.
+/// The path the browser tier rests on: the <b>real</b> adapter, through the real client and the real
+/// streaming code, reading the stand-in on this machine with no credential.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -31,34 +28,19 @@ namespace CoreRentalNet.Host.Tests;
 /// <para>
 /// The two paths are not a convenience. Measured rather than assumed: asked to reach a plain-http endpoint, the
 /// project client refuses with <c>Bearer token authentication is not permitted for non TLS protected (https)
-/// endpoints</c>. There is no credential that can be presented to a stand-in, so a stand-in cannot be reached
-/// the other way even in principle.
+/// endpoints</c>. There is no credential that can be presented to a stand-in.
 /// </para>
 /// <para>
-/// The stand-in below is deliberately small - it serves the wire and nothing else. The shared one the browser
-/// suite drives, with the scenario switch tests choose an answer with, is the next step; what is guarded here
-/// is the transport and the reading, which is what silently broke.
+/// The stand-in is the same one the browser suite starts as a process - one agent, two ways to run it - so
+/// what is proved here is proved about the thing the browser tier will drive rather than about a copy of it.
 /// </para>
 /// </remarks>
 public sealed class StandInTransportTests
 {
-    /// <summary>
-    /// The answer a sequential workflow gives: the rephraser's specification first, the suggestor's result last.
-    /// </summary>
-    /// <remarks>
-    /// The order is the whole point of the assertion below. Reading the first object yields a specification,
-    /// which has no options at all - so a stand-in that answered with the result alone would leave the adapter's
-    /// most expensive lesson untested.
-    /// </remarks>
-    private const string Answer =
-        """{ "status": "spec", "reason": null, "ceilingMonthly": 1500000, "slots": [ { "slot": "Desk", "quantity": 1, "purpose": "a wide, stable surface" } ], "constraints": [] }""" +
-        "\n" +
-        """{ "status": "suggested", "reason": null, "options": [ { "lines": [ { "slot": "Desk", "sku": "DSKB08XN4JDR", "quantity": 1, "why": "a stable surface" } ], "rationale": "A calm, focused setup." } ] }""";
-
     [Fact] // the browser tier's foundation: no credential, no TLS, the real adapter
     public async Task The_real_adapter_reads_a_stand_in_on_this_machine_with_no_credential()
     {
-        var (standIn, url) = await StartStandInAsync(Answer);
+        var (standIn, url) = await StartStandInAsync("suggested");
 
         try
         {
@@ -67,15 +49,15 @@ public sealed class StandInTransportTests
             settings.IsLocal().Should().BeTrue("a plain-http endpoint is a stand-in, and the scheme is what says so");
 
             var events = await Collect(settings);
-
             var completed = events.OfType<AgentSuggestionEvent.Completed>().Should().ContainSingle().Subject;
 
             completed.Result.Status.Should().Be(
                 AgentSuggestionStatus.Suggested,
                 "the result was read, not the specification that arrived before it");
 
-            completed.Result.Options.Should().ContainSingle();
-            completed.Result.Options[0].Rationale.Should().Be("A calm, focused setup.");
+            completed.Result.Options.Should().HaveCount(3);
+            completed.Result.Options[0].Rationale.Should().Be(
+                "An uncluttered setup for one person, kept inside a small room.");
             completed.PayloadHash.Should().NotBeNullOrWhiteSpace();
 
             events.OfType<AgentSuggestionEvent.Unavailable>().Should().BeEmpty("nothing failed");
@@ -91,7 +73,7 @@ public sealed class StandInTransportTests
     public async Task A_json_schema_response_format_travels_natively_on_the_responses_path()
     {
         string? sent = null;
-        var (standIn, url) = await StartStandInAsync(Answer, captured: body => sent = body);
+        var (standIn, url) = await StartStandInAsync("suggested", captured: body => sent = body);
 
         try
         {
@@ -119,8 +101,7 @@ public sealed class StandInTransportTests
             var format = request.RootElement.GetProperty("text").GetProperty("format");
 
             // The protocol's own structured-output field, carrying the contract the agent declared. This is the
-            // half of the assumption that never needed a deployment: the client does put the schema on the wire,
-            // and it does it natively rather than by the synthetic-tool route a fallback would have used.
+            // half of the assumption that never needed a deployment.
             format.GetProperty("type").GetString().Should().Be("json_schema");
             format.GetProperty("name").GetString().Should().Be(nameof(AgentSuggestionResult));
 
@@ -134,10 +115,10 @@ public sealed class StandInTransportTests
                 tools.GetArrayLength().Should().Be(0, "the schema is a format, not a synthetic tool call");
             }
 
-            // NOT asserted: `strict`. Measured, it is absent from the format, so conformance is not enforced by
-            // the API and a non-conforming answer is a real possibility - which is what the contract validation
-            // in e05s08 and the reader's tolerance exist to absorb. Pinned here as knowledge rather than as an
-            // assertion, because a future client that set it would be an improvement, not a regression.
+            // NOT asserted: `strict`. Measured, it is absent, so the API does not enforce conformance and a
+            // non-conforming answer is a real possibility - which is what contract validation in e05s08 and the
+            // reader's tolerance exist to absorb. Recorded as knowledge rather than pinned as an assertion,
+            // because a client that set it would be an improvement, not a regression.
         }
         finally
         {
@@ -157,6 +138,47 @@ public sealed class StandInTransportTests
         // And nothing configured is not local either, so an unconfigured deployment cannot fall into the
         // credential-free path by accident.
         SuggestionAgentSettings.From(new ConfigurationBuilder().Build()).IsLocal().Should().BeFalse();
+    }
+
+    [Fact] // a fixture may only name SKUs the catalogue actually holds
+    public void Every_scenario_names_a_SKU_the_catalogue_has()
+    {
+        // A stand-in holding a SKU the catalogue does not would exercise the drop path in EVERY scenario, and
+        // the happy path would be tested nowhere. That is the kind of failure a fixture makes possible, and
+        // this is the test that makes it impossible - it is why the stand-in's SKUs are real ones.
+        var catalogue = CatalogueSkus();
+
+        catalogue.Should().NotBeEmpty("the catalogue is the file the application loads, and it has to be readable here");
+        ScenarioLibrary.Skus.Should().NotBeEmpty("guards against the rule passing because the stand-in names nothing");
+
+        var missing = ScenarioLibrary.Skus.Where(sku => !catalogue.Contains(sku, StringComparer.Ordinal)).ToArray();
+
+        missing.Should().BeEmpty($"the stand-in names SKUs the catalogue does not have: {string.Join(", ", missing)}");
+    }
+
+    private static IReadOnlyList<string> CatalogueSkus()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "CoreRentalNet.sln")))
+        {
+            root = root.Parent;
+        }
+
+        var path = Path.Combine(
+            root?.FullName ?? throw new InvalidOperationException("Could not locate the repository root."),
+            "src",
+            "shared",
+            "data",
+            "products.json");
+
+        using var document = JsonDocument.Parse(File.ReadAllText(path));
+
+        var rows = document.RootElement.ValueKind is JsonValueKind.Array
+            ? document.RootElement
+            : document.RootElement.GetProperty("products");
+
+        return [.. rows.EnumerateArray().Select(row => row.GetProperty("skuNo").GetString()!)];
     }
 
     private static SuggestionAgentSettings Local(string endpoint)
@@ -181,48 +203,14 @@ public sealed class StandInTransportTests
         return events;
     }
 
-    /// <summary>
-    /// A stand-in that serves the Responses protocol and nothing else: one created event, the text in pieces,
-    /// then the completed response. Written from the protocol rather than from the client, because it is the
-    /// other end of the wire.
-    /// </summary>
+    /// <summary>The shared stand-in, in this process, on a port the test chose.</summary>
     private static async Task<(WebApplication App, string Url)> StartStandInAsync(
-        string answer,
+        string scenario,
         Action<string>? captured = null)
     {
-        var builder = WebApplication.CreateBuilder();
-        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        var app = LocalAgentApp.Create([], captured).Build();
 
-        var app = builder.Build();
-
-        app.MapPost("/responses", async (HttpContext context) =>
-        {
-            if (captured is not null)
-            {
-                using var reader = new StreamReader(context.Request.Body);
-                captured(await reader.ReadToEndAsync());
-            }
-
-            context.Response.ContentType = "text/event-stream";
-            context.Response.Headers.CacheControl = "no-cache";
-
-            await context.Response.WriteAsync(
-                "event: response.created\ndata: {\"type\":\"response.created\",\"sequence_number\":0,\"response\":{\"id\":\"resp_1\",\"object\":\"response\",\"created_at\":0,\"status\":\"in_progress\",\"model\":\"stand-in\",\"output\":[]}}\n\n");
-
-            var sequence = 1;
-
-            // Line by line, because a real agent streams and one piece would leave the accumulation across
-            // chunks untested - the case that fails on the runs with the most output.
-            foreach (var line in answer.Split('\n', StringSplitOptions.RemoveEmptyEntries))
-            {
-                await Delta(context, line + "\n", sequence++);
-            }
-
-            await context.Response.WriteAsync(
-                $"event: response.completed\ndata: {{\"type\":\"response.completed\",\"sequence_number\":{sequence},\"response\":{{\"id\":\"resp_1\",\"object\":\"response\",\"created_at\":0,\"status\":\"completed\",\"model\":\"stand-in\",\"output\":[{{\"id\":\"msg_1\",\"type\":\"message\",\"status\":\"completed\",\"role\":\"assistant\",\"content\":[{{\"type\":\"output_text\",\"text\":{JsonSerializer.Serialize(answer + "\n")},\"annotations\":[]}}]}}]}}}}\n\n");
-
-            await context.Response.Body.FlushAsync();
-        });
+        LocalAgentEndpoints.Map(app);
 
         var port = FreePort();
         var url = $"http://127.0.0.1:{port}";
@@ -230,22 +218,13 @@ public sealed class StandInTransportTests
 
         await app.StartAsync();
 
+        using var http = new HttpClient();
+
+        var chosen = await http.PostAsJsonAsync($"{url}/scenario", new { name = scenario });
+
+        chosen.IsSuccessStatusCode.Should().BeTrue($"the stand-in has a scenario named '{scenario}'");
+
         return (app, url);
-    }
-
-    private static async Task Delta(HttpContext context, string piece, int sequence)
-    {
-        var delta = JsonSerializer.Serialize(new
-        {
-            type = "response.output_text.delta",
-            sequence_number = sequence,
-            item_id = "msg_1",
-            output_index = 0,
-            content_index = 0,
-            delta = piece,
-        });
-
-        await context.Response.WriteAsync($"event: response.output_text.delta\ndata: {delta}\n\n");
     }
 
     private static SuggestionRequest Request()
@@ -254,16 +233,20 @@ public sealed class StandInTransportTests
             "a quiet corner for two monitors",
             "IDR",
             null,
-            [new SuggestionSlotRule(SlotId.Desk, 1), new SuggestionSlotRule(SlotId.Monitor, 3)],
+            [new SuggestionSlotRule(Modules.Workspace.Domain.SlotId.Desk, 1)],
             [
-                new CompactCatalogItem(
+                new Presentation.CompactCatalogItem(
                     "DSKB08XN4JDR",
                     "HON Mod Desk Shell, 60 x 30 x 29, Mahogany",
-                    CatalogCategory.Desk,
+                    Modules.Catalog.Application.Contracts.CatalogCategory.Desk,
                     null,
                     266_000m,
                     "This 60 inch desk shell is part of the HON Mod Desk Collection.",
-                    new CatalogMetadata(["desk"], new Dictionary<string, string>(), ["focused work"], [])),
+                    new Modules.Catalog.Application.Contracts.CatalogMetadata(
+                        ["desk"],
+                        new Dictionary<string, string>(),
+                        ["focused work"],
+                        [])),
             ]);
 
     private static int FreePort()
