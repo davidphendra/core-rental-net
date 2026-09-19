@@ -61,7 +61,6 @@ internal static class LocalAgentEndpoints
                 context.Response,
                 Model(body),
                 ScenarioLibrary.For(selection.Current),
-                ScenarioLibrary.DelayMilliseconds(selection.Current),
                 complete: !ScenarioLibrary.IsTruncated(selection.Current),
                 context.RequestAborted)
             .ConfigureAwait(false);

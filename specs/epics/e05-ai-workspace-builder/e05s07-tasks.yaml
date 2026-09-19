@@ -122,12 +122,34 @@ tasks:
 # security declared, because Auth0SecuritySchemeTransformer only describes the catalogue's path. e05s09 owns
 # the README and CI statements, and the document's treatment of the second endpoint belongs with them.
 
-# TASK 4 IS BUILT: the section, its run, and AIWB-25 to AIWB-30 in a browser.
+# TASK 4 IS BUILT. IT COVERS FOUR OF THE SIX ROWS IT NAMES, AND THAT IS THE FIRST THING THIS NOTE SAYS.
 #
 # The section reads the endpoint's frames through a small JS module (`wwwroot/js/ai-run.js`), because the
 # endpoint answers with SSE and EventSource cannot POST - a fetch whose body is read a chunk at a time is the
-# only way to show a customer a 45-second run as it happens. Frames are handed to the component one at a
-# time rather than collected and returned, because reading each one as it completes is the requirement.
+# only way to show a customer a run as it happens. Frames are handed to the component one at a time rather
+# than collected and returned, because reading each one as it completes is the requirement.
+#
+# THE FIXTURE NO LONGER PACES A RUN, ON INSTRUCTION, AND THE CONSEQUENCE IS RECORDED RATHER THAN ABSORBED.
+# The stand-in used to wait between events (a `slow` scenario), which made a run's length a property of the
+# test rather than of the code - and made an assertion about what happens MID-RUN into an assertion about the
+# wait. The wait is gone: no delay, no `slow` scenario. A run's duration is now the application's and the
+# transport's, and the browser tier's six tests drop from 9 s to 1 s because of it.
+#
+# WHAT THAT COSTS, NAMED: AIWB-27 and AIWB-28 (cancelling is reported as stopped, and leaves the streamed text
+# in place) and AIWB-49 (reloading mid-run cancels it) each need a run that is STILL GOING when the browser
+# acts. Against an immediate run the section cannot be driven into that state at all: Stop is rendered only
+# while a run is in flight, and the run is over before a click can land. So those three rows have NO browser
+# test, and this file does not pretend they do. Rows 25, 26, 29 and 30 are covered.
+#
+# THE MATRIX STILL SAYS `browser` FOR ALL THREE, AND IT HAS NOT BEEN REWRITTEN HERE. The matrix is the
+# requirement, so changing what it asks for is the product owner's decision rather than an engineering
+# tidy-up: the options are to reword the three so they are about something an immediate run can reach, to move
+# them to a tier where a cancellation can be raised rather than raced, or to accept the gap knowingly. Flagged.
+#
+# THE BEHAVIOUR THEY REST ON IS COVERED WHERE IT CAN BE RAISED DETERMINISTICALLY: `AiBuilderEndpointTests`
+# asserts the frames the section reads - app-owned stages in order, the model's words and never its JSON, the
+# answer whole - and the cancellation itself is asserted in the application's own tests, where a token is
+# cancelled rather than raced against a browser.
 #
 # THREE THINGS THIS TASK DELIBERATELY DOES NOT DO, SO NOBODY READS THE GAP AS AN OVERSIGHT:
 #   - No rank, no price and no product name on a candidate. The application resolves those from its own
@@ -138,10 +160,9 @@ tasks:
 #   - The stage lines and the outcome are not yet announced in a live region. That is task 6.
 #
 # THE ARCHITECTURE SUITE CAUGHT A REAL DEFECT IN THIS TASK, WHICH IS WHY IT EXISTS. `DesignTokenTests` - "a
-# design class missing from the stylesheet draws nothing at all" - failed on `px-3`: it is a class the design
+# design class missing from the stylesheet draws nothing at all" - failed on `px-3`: a class the design
 # prototypes use and the generated stylesheet does not have, so the input would have been laid out by default
-# browser styling and nothing would have said so. Fixed by using a generated class. The guard's own remarks
-# record that this exact failure happened once before, during the port.
+# browser styling and nothing would have said so. Fixed by using a generated class.
 #
 # AIWB-26 IS ASSERTED AS FAR AS IT CAN BE, AND THE REST IS NAMED. The test proves a price and a link are
 # removed from the middle of a sentence (the stand-in is told to leak both, and a test in Host.Tests holds the

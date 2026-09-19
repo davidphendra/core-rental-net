@@ -28,7 +28,6 @@ internal static class SseWriter
         HttpResponse response,
         string model,
         string body,
-        int delayMilliseconds,
         bool complete,
         CancellationToken cancellationToken)
     {
@@ -39,25 +38,19 @@ internal static class SseWriter
         var sequence = 1;
         var items = new List<string>();
 
-        // One item per top-level object, and each object cut into pieces. A fixture's object is a whole line
-        // by construction, which is also how the real workflow's two answers arrive: separate messages, not
-        // one document. The pieces are what make a run watchable - a single delta per object would arrive in
-        // one frame, and "the customer reads it as it happens" would be true of a burst rather than a stream.
+        // One item per top-level object, which is how the workflow's two answers arrive: separate messages
+        // rather than one document. The answer is written as it is - no waiting, and no piece cut smaller than
+        // a message - so a run's duration is the application's and the transport's, and nothing here paces it.
         foreach (var line in body.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             var itemId = $"msg_{items.Count + 1}";
             items.Add(itemId);
 
-            foreach (var piece in Pieces(line))
-            {
-                await Pause(delayMilliseconds, cancellationToken).ConfigureAwait(false);
-
-                await response.WriteAsync(
-                        $"event: response.output_text.delta\ndata: {Delta(piece, sequence++, itemId, items.Count - 1)}\n\n",
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                await response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
-            }
+            await response.WriteAsync(
+                    $"event: response.output_text.delta\ndata: {Delta(line + "\n", sequence++, itemId, items.Count - 1)}\n\n",
+                    cancellationToken)
+                .ConfigureAwait(false);
+            await response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
 
         if (complete)
@@ -69,36 +62,6 @@ internal static class SseWriter
             await response.Body.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
     }
-
-    /// <summary>
-    /// One object's text in pieces.
-    /// </summary>
-    /// <remarks>
-    /// The trailing newline is kept, because it is what separates one top-level object from the next in the
-    /// text the application accumulates - a real workflow's two answers are newline-delimited on the wire, and
-    /// a fixture that dropped it would be read as one malformed value instead of two values.
-    /// </remarks>
-    private static IEnumerable<string> Pieces(string line)
-    {
-        const int size = 120;
-
-        for (var start = 0; start < line.Length; start += size)
-        {
-            var piece = line.Substring(start, Math.Min(size, line.Length - start));
-
-            yield return start + size >= line.Length ? piece + "\n" : piece;
-        }
-    }
-
-    /// <summary>Waits, so a run has time to be watched - and to be cancelled.</summary>
-    /// <remarks>
-    /// The wait is cancellable, and that matters: a client that hangs up mid-stream has to stop the stand-in,
-    /// or the fixture would carry on writing to a socket nobody is reading.
-    /// </remarks>
-    private static Task Pause(int delayMilliseconds, CancellationToken cancellationToken)
-        => delayMilliseconds > 0
-            ? Task.Delay(delayMilliseconds, cancellationToken)
-            : Task.CompletedTask;
 
     private static string Created(string model)
         => Json(new { type = "response.created", sequence_number = 0, response = Envelope(model, "in_progress") });

@@ -32,14 +32,6 @@ internal static class ScenarioLibrary
         {"status":"suggested","reason":null,"options":[{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","quantity":1,"why":"a wide, stable surface"},{"slot":"Chair","sku":"CHAB091PDL8V","quantity":1,"why":"support for long sessions"},{"slot":"Monitor","sku":"MONB001AO2QL","quantity":1,"why":"a display at eye level"}],"rationale":"An uncluttered setup for one person, kept inside a small room."},{"lines":[{"slot":"Desk","sku":"DSKB0B6MCK87","quantity":1,"why":"a wide, stable surface"},{"slot":"Chair","sku":"CHAB09R9WB61","quantity":1,"why":"support for long sessions"},{"slot":"Monitor","sku":"MONB000PB2KW","quantity":1,"why":"a display at eye level"}],"rationale":"The same arrangement with a sturdier chair and a larger screen, for someone who sits for hours."},{"lines":[{"slot":"Desk","sku":"DSKB07PFFFQ2","quantity":1,"why":"a wide, stable surface"},{"slot":"Chair","sku":"CHAB0BYXJBVW","quantity":1,"why":"support for long sessions"},{"slot":"Monitor","sku":"MONB00112PRM","quantity":1,"why":"a display at eye level"}],"rationale":"A heavier desk and a taller chair, for a corner that will not be rearranged."}]}
         """;
 
-    /// <summary>The same answer, delivered a piece at a time.</summary>
-    /// <remarks>
-    /// A run that moved faster than the browser could be read would turn the assertions that matter into
-    /// races rather than checks: a stage list with stages in it, streamed text with text in it, and a
-    /// cancellation with something left to interrupt.
-    /// </remarks>
-    private const string Slow = Suggested;
-
     /// <summary>A request that is not about furnishing a workspace, declined rather than failed.</summary>
     private const string Refused = """
         {"status":"notWorkspace","reason":"not about furnishing a workspace"}
@@ -78,18 +70,9 @@ internal static class ScenarioLibrary
         "refused" => Refused,
         "leaky" => Leaky,
         "truncated" => Truncated,
-        "slow" => Suggested,
         "broken" => Suggested,
         _ => Suggested,
     };
-
-    /// <summary>How long the stand-in waits between events, in milliseconds.</summary>
-    /// <remarks>
-    /// Long enough that a watching test has time to observe each state: a run that moved faster than the
-    /// browser could be read would turn the assertions that matter - a stage list with stages in it, a
-    /// cancellation with something to interrupt - into races rather than checks.
-    /// </remarks>
-    public static int DelayMilliseconds(string name) => name == "slow" ? 250 : 0;
 
     /// <summary>True when the scenario is one where nothing answers at all.</summary>
     /// <remarks>
@@ -102,7 +85,7 @@ internal static class ScenarioLibrary
     public static bool IsTruncated(string name) => name == "truncated";
 
     /// <summary>Every scenario's name, for the endpoint that lists them and the tests that drive them.</summary>
-    public static IReadOnlyList<string> Names => ["suggested", "refused", "leaky", "truncated", "slow", "broken"];
+    public static IReadOnlyList<string> Names => ["suggested", "refused", "leaky", "truncated", "broken"];
 
     /// <summary>Every SKU any scenario names, so a test can hold them against the catalogue.</summary>
     public static IReadOnlyList<string> Skus
