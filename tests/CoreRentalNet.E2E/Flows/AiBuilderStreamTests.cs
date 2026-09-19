@@ -71,6 +71,12 @@ public sealed class AiBuilderStreamTests : AuthenticatedE2ETest
         words!.Y.Should().BeLessThan(candidates!.Y, "the model's words come first, then the candidates");
 
         await Expect(Page.Locator("[data-testid='ai-option']")).ToHaveCountAsync(3);
+
+        // And a candidate says what it is: a label the application assigned by rank and an amount it recomputed
+        // from the catalogue. Both arrive in the frame, so a shape that failed to deserialize would leave the
+        // block empty - but a field rendered wrong would leave it blank, which this catches.
+        await Expect(Page.Locator("[data-testid='ai-option']").First).ToContainTextAsync("Budget");
+        await Expect(Page.Locator("[data-testid='ai-option']").First).ToContainTextAsync("/mo");
     }
 
     [Fact] // AIWB-26
