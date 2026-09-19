@@ -7,13 +7,13 @@ tasks:
     description: "Write the run record: query, payload hash, model and prompt versions, tokens, model calls, latency, the model's raw structured output, verdict, opaque id, applied candidate; 90 days; no PII"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~AiRunRecordTests"'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["observability"] }
   - id: 2
     description: "Assert only the query and the catalogue cross to Foundry - no identity, address or draft state"
     verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionBoundaryTests"'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["observability", "privacy"] }
   - id: 3
     description: "Add the configuration gate including the standard-deployment constraint, so an unconfigured or provisioned deployment hides the panel"
@@ -51,3 +51,48 @@ tasks:
     risk: P2
     status: planned
     allure: { severity: minor, categories: ["documentation"] }
+# TASKS 1 AND 2 ARE BUILT. THE REST OF THIS STORY IS NOT, AND TWO OF ITS TASKS CANNOT BE, SO THE RECORD SAYS
+# WHICH AND WHY RATHER THAN LEAVING THE STORY LOOKING MERELY UNFINISHED.
+#
+# TASK 1 - THE RUN RECORD - IS BUILT, WITH ONE DECISION THE EPIC DOES NOT MAKE, FLAGGED RATHER THAN HIDDEN.
+# The story asks for "one structured record per run" with "bounded retention of 90 days". The CONTENT is
+# specified in detail and is all here: the query, a hash of the projection actually sent, model and prompt
+# versions, tokens, the model call count, latency, the model's raw output, the verdict, and an opaque customer
+# id. WHAT IS NOT SPECIFIED IS WHERE IT LIVES. The application has no store for it, and the two persistence
+# contexts it has belong to modules whose data this is not - a run record is an operational fact about the AI
+# feature, not part of a draft or an order. So it is written as a STRUCTURED LINE on a logger under a category
+# of its own, which is this application's idiom for an operational fact (CatalogApiLog), and the 90-day
+# retention becomes the deployment's log policy. A stored row would need a home, a table, a migration and a
+# cleanup job, and NO TASK IN THIS EPIC PROVIDES ANY OF THEM - which is evidence a log line was intended, and
+# is not proof. FLAGGED FOR THE PRODUCT OWNER.
+#
+# AND ONE FIELD IS SPLIT RATHER THAN INVENTED. The story lists "which candidate was applied" as part of the
+# record, but it is not known when a run ends: a run ends whether or not anybody acts on it, and most are never
+# applied. So it is written as `AiRunApplication` when a customer chooses one, carrying the same run id, and a
+# reader joins the two. One row containing both would be the stored-row design above.
+#
+# The record is written in a `finally`, so a stopped or failed run is recorded too - a run with no record is
+# exactly the run nobody can explain. The verdict distinguishes stopped from unavailable, because one is a
+# customer who changed their mind and the other is something to fix.
+#
+# TASK 2 - THE BOUNDARY - IS BUILT AS A SHAPE RATHER THAN AS A STRING SEARCH. `SuggestionRequest` has exactly
+# six properties, so a seventh is a decision about crossing the boundary rather than a convenient place to put
+# an account; the builder's only input is the customer's sentence and its only dependencies are the catalogue
+# and the slot table; and the serialized payload is checked for what must not be on it. A string search alone
+# would catch only the leak somebody had already thought of.
+#
+# WHAT REMAINS, AND WHAT CANNOT HAPPEN HERE:
+#   - task 3 (the configuration gate and the standard-deployment constraint, AIWB-41) and task 4 (the golden set
+#     and its deterministic tier) are offline work and are next.
+#   - task 5 (the azd project, the standard model deployment, infra templates, identities and RBAC) is verified
+#     by `azd provision --preview`, and task 6's rubric tier runs against the LIVE model. Both need Azure, and
+#     deploying is not consented - so neither is started rather than half-built. Their rows are AIWB-43 and
+#     AIWB-48, both `eval`, and both unverifiable without a deployment by their own definition.
+#   - task 6 ALSO contains the local stand-in, WHICH IS ALREADY BUILT - it was a prerequisite of e05s07 and is
+#     `tests/CoreRentalNet.E2E.LocalAgent`, driven by the browser tier. That half is done; the half that is not
+#     is the one needing the live model.
+#   - tasks 7 (the path-filtered CI job) and 8 (the README correction) are offline work and are next.
+#
+# THE CODING STANDARD CAUGHT THE DRAFT OF TASK 1, as it did twice before in this epic: SuggestionRun's event
+# handler reached 52 lines once the record's bookkeeping was in it, and is now split so the answer's own path
+# is a method.

@@ -1,5 +1,8 @@
+using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using CoreRentalNet.Host.Agents;
+using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Host.AiBuilder;
 
@@ -28,12 +31,68 @@ internal sealed class SuggestionRun(
     ISuggestionAgent agent,
     SuggestionRequestBuilder requests,
     SuggestionValidator validator,
-    SuggestionEventStream stream)
+    SuggestionEventStream stream,
+    ILoggerFactory loggers)
 {
     private readonly NarrativeFieldReader _reader = new();
 
+    /// <summary>Everything the model wrote, kept for the record: the raw answer is what a bad run is debugged on.</summary>
+    private readonly StringBuilder _raw = new();
+
+    private string _payloadHash = string.Empty;
+    private string _query = string.Empty;
+    private AgentRunUsage? _usage;
+    private AiRunVerdict _verdict = AiRunVerdict.Unavailable;
+
     /// <summary>Writes the whole run, and returns when the stream has ended.</summary>
-    public async Task RunAsync(RunRequest ask, CancellationToken cancellationToken)
+    /// <param name="customer">
+    /// The account this run is for, already made opaque. The record names a run by a hash rather than by an
+    /// account, and the caller is the one holding the token service that does it.
+    /// </param>
+    public async Task RunAsync(RunRequest ask, string customer, CancellationToken cancellationToken)
+    {
+        var started = Stopwatch.GetTimestamp();
+
+        _query = ask.Query?.Trim() ?? string.Empty;
+
+        try
+        {
+            await WriteAsync(ask, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Stopped, and worth distinguishing from a failure in the record: one is a customer who changed
+            // their mind and the other is something to fix.
+            _verdict = AiRunVerdict.Stopped;
+
+            throw;
+        }
+        finally
+        {
+            // Written however the run ended, including when it was stopped: a run with no record is exactly the
+            // run nobody can explain.
+            AiRunLog.Ran(loggers.CreateLogger(AiRunLog.Category), Record(customer, started));
+        }
+    }
+
+    /// <summary>What this run was, assembled once it is over and there is nothing left to wait for.</summary>
+    private AiRunRecord Record(string customer, long started)
+        => new(
+            RunId: Guid.NewGuid().ToString("n"),
+            Query: _query,
+            PayloadHash: _payloadHash,
+            Model: _usage?.Model ?? string.Empty,
+            PromptVersion: _usage?.PromptVersion ?? string.Empty,
+            ModelCalls: _usage?.ModelCalls ?? 0,
+            InputTokens: _usage?.InputTokens ?? 0,
+            OutputTokens: _usage?.OutputTokens ?? 0,
+            LatencyMilliseconds: (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,
+            RawOutput: _raw.ToString(),
+            Verdict: _verdict,
+            CustomerId: customer);
+
+    /// <summary>Writes the whole run, and returns when the stream has ended.</summary>
+    private async Task WriteAsync(RunRequest ask, CancellationToken cancellationToken)
     {
         await stream.StageAsync(SuggestionStageCopy.Reading, cancellationToken);
 
@@ -58,26 +117,17 @@ internal sealed class SuggestionRun(
         switch (raised)
         {
             case AgentSuggestionEvent.NarrativeDelta delta:
+                _raw.Append(delta.Text);
+
                 await WriteFieldsAsync(delta.Text, cancellationToken);
                 return false;
 
             case AgentSuggestionEvent.Completed completed:
-                await stream.StageAsync(SuggestionStageCopy.Checking, cancellationToken);
-
-                if (!Frames(completed.Result, out var frame))
-                {
-                    await stream.FailedAsync(SuggestionEventStream.Invalid, cancellationToken);
-
-                    return true;
-                }
-
-                await stream.ResultAsync(
-                    JsonSerializer.Serialize(frame, SuggestionJson.Options),
-                    cancellationToken);
-
-                return true;
+                return await CompleteAsync(completed, cancellationToken);
 
             case AgentSuggestionEvent.Unavailable:
+                _verdict = AiRunVerdict.Unavailable;
+
                 // The reason is diagnostic, not customer-facing: the browser words this outcome, and the
                 // reason itself belongs on the run record rather than on the page.
                 await stream.FailedAsync(SuggestionEventStream.Unavailable, cancellationToken);
@@ -89,6 +139,38 @@ internal sealed class SuggestionRun(
                     raised,
                     "No run outcome is written for this event.");
         }
+    }
+
+    /// <summary>The answer: checked before any of it is shown, and the verdict the record keeps.</summary>
+    private async Task<bool> CompleteAsync(
+        AgentSuggestionEvent.Completed completed,
+        CancellationToken cancellationToken)
+    {
+        await stream.StageAsync(SuggestionStageCopy.Checking, cancellationToken);
+
+        // The run's cost arrives beside the answer rather than inside it: a model cannot observe how many calls
+        // it took, and asking it produced a plausible invention that validation accepted.
+        _usage = completed.Result.RunUsage;
+        _payloadHash = completed.PayloadHash;
+
+        if (!Frames(completed.Result, out var frame))
+        {
+            _verdict = AiRunVerdict.Invalid;
+
+            await stream.FailedAsync(SuggestionEventStream.Invalid, cancellationToken);
+
+            return true;
+        }
+
+        _verdict = frame.Status is SuggestionResultFrame.NotWorkspace
+            ? AiRunVerdict.Refused
+            : AiRunVerdict.Suggested;
+
+        await stream.ResultAsync(
+            JsonSerializer.Serialize(frame, SuggestionJson.Options),
+            cancellationToken);
+
+        return true;
     }
 
     /// <summary>

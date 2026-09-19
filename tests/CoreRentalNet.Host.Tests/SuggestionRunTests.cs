@@ -4,6 +4,7 @@ using CoreRentalNet.Host.Agents;
 using CoreRentalNet.Host.AiBuilder;
 using CoreRentalNet.Modules.Workspace.Application.Rules;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
@@ -158,9 +159,10 @@ public sealed class SuggestionRunTests
             new ScriptedSuggestionAgent([new AgentSuggestionEvent.NarrativeDelta(Answer)]),
             new SuggestionRequestBuilder(catalogue, slots),
             new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
-            stream);
+            stream,
+            NullLoggerFactory.Instance);
 
-        var act = async () => await run.RunAsync(new RunRequest("a quiet corner", null), CancellationToken.None);
+        var act = async () => await run.RunAsync(new RunRequest("a quiet corner", null), "a-customer", CancellationToken.None);
 
         // The socket being gone surfaces as the same cancellation a reload produces, which is why the endpoint
         // needs no second rule for it - and why the guard is released by the same `using`.
@@ -243,9 +245,10 @@ public sealed class SuggestionRunTests
                 new ScriptedSuggestionAgent(scripted, then),
                 new SuggestionRequestBuilder(catalogue, slots),
                 new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
-                stream);
+                stream,
+                NullLoggerFactory.Instance);
 
-            await run.RunAsync(new RunRequest("a quiet corner", null), CancellationToken.None);
+            await run.RunAsync(new RunRequest("a quiet corner", null), "a-customer", CancellationToken.None);
         }
         catch (Exception exception)
         {

@@ -31,7 +31,7 @@ internal sealed class RunGuard
     {
         ArgumentNullException.ThrowIfNull(customer);
 
-        var key = Key(customer);
+        var key = CustomerKey.Of(customer);
 
         // An account with nothing stable to key on cannot be held to one run, so it is refused rather
         // than allowed to run unlimited times under a shared key.
@@ -41,18 +41,5 @@ internal sealed class RunGuard
         }
 
         return new RunLease(() => _running.TryRemove(key, out _));
-    }
-
-    /// <summary>The customer's stable identity, or null when the account carries none.</summary>
-    private static string? Key(ClaimsPrincipal customer)
-    {
-        var key = customer.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-        if (string.IsNullOrWhiteSpace(key))
-        {
-            key = customer.Identity?.Name;
-        }
-
-        return string.IsNullOrWhiteSpace(key) ? null : key;
     }
 }

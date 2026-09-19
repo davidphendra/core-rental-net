@@ -1,6 +1,9 @@
+using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Host.Agents;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace CoreRentalNet.Host.AiBuilder;
 
@@ -40,7 +43,9 @@ internal static class SuggestionEndpoint
         RunGuard guard,
         ISuggestionAgent agent,
         SuggestionRequestBuilder requests,
-        SuggestionValidator validator)
+        SuggestionValidator validator,
+        IOpaqueTokenService tokens,
+        ILoggerFactory loggers)
     {
         if (string.IsNullOrWhiteSpace(ask.Query))
         {
@@ -58,7 +63,7 @@ internal static class SuggestionEndpoint
 
         using (lease)
         {
-            await WriteAsync(context, ask, agent, requests, validator);
+            await WriteAsync(context, ask, agent, requests, validator, tokens, loggers);
         }
     }
 
@@ -76,13 +81,20 @@ internal static class SuggestionEndpoint
         RunRequest ask,
         ISuggestionAgent agent,
         SuggestionRequestBuilder requests,
-        SuggestionValidator validator)
+        SuggestionValidator validator,
+        IOpaqueTokenService tokens,
+        ILoggerFactory loggers)
     {
         try
         {
             var stream = await SuggestionEventStream.BeginAsync(context.Response, context.RequestAborted);
 
-            await new SuggestionRun(agent, requests, validator, stream).RunAsync(ask, context.RequestAborted);
+            // The record names the customer by a hash of what this application already identifies them by, so a
+            // reader can see that two runs belong to the same account without the record holding an account.
+            var customer = tokens.HashOf(CustomerKey.Of(context.User) ?? "anonymous");
+
+            await new SuggestionRun(agent, requests, validator, stream, loggers)
+                .RunAsync(ask, customer, context.RequestAborted);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {
