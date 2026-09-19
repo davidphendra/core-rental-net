@@ -1,0 +1,43 @@
+story_id: e05s03
+title: The specification becomes candidates
+# passing: all four tasks are built and verified offline against a fake model client.
+status: passing
+bcps: 8
+tasks:
+  - id: 1
+    description: "Write prompts/suggestor.v1.md and the suggestor profile with the result schema"
+    verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent", "prompt"] }
+  - id: 2
+    description: "Build the sequential workflow with default chaining and publish it as one agent"
+    verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent", "workflow"] }
+  - id: 3
+    description: "Register both executor identities once, and prove they survive a rebuild"
+    verify: 'dotnet test agentfoundry/AgentFoundry.sln --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["workflow"] }
+  - id: 4
+    description: "Propose three where the catalogue supports three distinct answers and fewer where it does not; agent tests AIWB-09 to AIWB-12"
+    verify: 'dotnet test agentfoundry/AgentFoundry.sln --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent", "workflow"] }
+  - id: 5
+    description: "Attach the counted run cost to the published answer, because the model's JSON is streamed verbatim and the figure cannot be injected into it afterwards"
+    verify: 'dotnet test agentfoundry/AgentFoundry.sln --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent", "workflow"] }
+# The tracer is retired by this story: prompts/suggestion-agent.v1.md is deleted and the host serves the
+# workflow instead of a single agent. The empty-slot case (AIWB-11) is a contract property, asserted on the
+# schema and the specification rather than by a model, because it is the schema that permits it.
+#
+# TASK 5 ADDED BY THE e05s01 DECISION, NOT BY NEW AMBITION: the run's cost is counted by code, so the answer
+# the workflow publishes has to carry it. Only this story can attach it - the one place the sequential
+# workflow is turned into the single agent Foundry serves - and it is NOT built yet.

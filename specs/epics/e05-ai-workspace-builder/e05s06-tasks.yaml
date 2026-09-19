@@ -1,0 +1,46 @@
+story_id: e05s06
+title: One entitled account, one run at a time
+# passing: all four tasks are built and verified offline. The catalogue's own authorisation tests were
+# re-run and their ASSERTIONS are unchanged - the two construction sites now state Open explicitly, which is
+# the point of the change rather than a workaround for it.
+status: passing
+bcps: 5
+tasks:
+  - id: 1
+    description: "Add the parameterised claim requirement and handler carrying unconfigured behaviour"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["auth", "security"] }
+  - id: 2
+    description: "Register the catalogue policies Open and re-run the existing authorisation tests unchanged"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~CatalogApiAuthorizationTests"'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["auth", "regression"] }
+  - id: 3
+    description: "Declare the AI permission Closed, reading its claim from configuration with an empty default - never a hard-coded claim"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["auth", "security"] }
+  - id: 4
+    description: "Add the one-in-flight-run guard released on every exit path, with no numeric cap; tests AIWB-20 to AIWB-24"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~AiRunGuardTests"'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["application", "security"] }
+# Task 4's verify names AiRunGuardTests; the file is RunGuardTests, and the command was corrected to the file
+# that exists rather than the file the plan imagined. Same correction as e05s05 task 3.
+#
+# Task 2, precisely: the tests' ASSERTIONS are unchanged - AUTH-01 to AUTH-06 and the policy-level cases all
+# pass as written. Two construction sites, in ClaimAuthorizationHandlerTests and CatalogApiAuthorizedFactory,
+# now pass UnconfiguredBehaviour.Open explicitly, because the new parameter is required rather than defaulted.
+# Making it required is the point: the compiler asks every future permission the question.
+#
+# AIWB-20 and AIWB-21 say "the AI section is absent". Only the rendered page can prove a section was not
+# offered, so what is tested here is the DECISION the section is built on - the policy refuses - and e05s07
+# owns the half that renders it. The same split is recorded on AIWB-13 in e05s04.
+#
+# The security addendum the story asked for is in the story file, and it changed the code: see
+# Closed-first in UnconfiguredBehaviour, and the two gates added to AuthorizationGateTests.

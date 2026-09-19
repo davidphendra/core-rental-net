@@ -1,0 +1,53 @@
+story_id: e05s09
+title: It can be measured, gated, and turned on deliberately
+status: planned
+bcps: 5
+tasks:
+  - id: 1
+    description: "Write the run record: query, payload hash, model and prompt versions, tokens, model calls, latency, the model's raw structured output, verdict, opaque id, applied candidate; 90 days; no PII"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~AiRunRecordTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["observability"] }
+  - id: 2
+    description: "Assert only the query and the catalogue cross to Foundry - no identity, address or draft state"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionBoundaryTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["observability", "privacy"] }
+  - id: 3
+    description: "Add the configuration gate including the standard-deployment constraint, so an unconfigured or provisioned deployment hides the panel"
+    verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderGuardTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["ui", "configuration"] }
+  - id: 4
+    description: "Write the golden set and the deterministic tier, and record tokens and model calls for it"
+    verify: 'dotnet test agentfoundry/AgentFoundry.sln --nologo --filter "FullyQualifiedName~GoldenSetTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["agent", "eval"] }
+  - id: 5
+    description: "Add the azd project, the standard gpt-4.1-mini deployment, infra templates, identities and RBAC"
+    verify: 'azd provision --preview'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["infra", "deployment"] }
+  - id: 6
+    description: "Add the local stand-in that speaks the same protocol; run the rubric tier against the live model and record the measured cost per run"
+    verify: 'dotnet test agentfoundry/AgentFoundry.sln --nologo --filter "FullyQualifiedName~RubricTierTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["eval", "browser"] }
+  - id: 7
+    description: "Add a PATH-FILTERED CI job that builds and tests agentfoundry/AgentFoundry.sln with no Azure credential; leave the application's job untouched"
+    verify: 'dotnet build agentfoundry/AgentFoundry.sln --configuration Release -v q --nologo && dotnet test agentfoundry/AgentFoundry.sln --configuration Release --no-build --nologo'
+    risk: P1
+    status: planned
+    allure: { severity: major, categories: ["build", "integration"] }
+  - id: 8
+    description: "Correct the README's 'nothing deploys' statement to say the agent deploys and the application does not"
+    verify: 'rg -n "the agent deploys" README.md'
+    risk: P2
+    status: planned
+    allure: { severity: minor, categories: ["documentation"] }

@@ -1,0 +1,39 @@
+story_id: e05s08
+title: Nothing is shown or applied that was not checked
+status: planned
+bcps: 8
+tasks:
+  - id: 1
+    description: "Add the spread rule: the dearest valid option at least 1.5x the cheapest, the factor read from configuration, applied to the range only; fewer shown when it cannot be met"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionSpreadTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["application", "validation"] }
+  - id: 2
+    description: "Validate a whole result all-or-nothing against the catalogue and slot capacities, INCLUDING quantity >= 1 - nothing upstream rejects a zero, as e05s01 established; scenarios AIWB-16 and AIWB-32 to AIWB-35"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionValidationTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["application", "validation"] }
+  - id: 3
+    description: "Sort by monthly total and label by rank; prove three, two and one are each labelled correctly and that fewer is never padded"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["application", "validation"] }
+  - id: 4
+    description: "Add ReplaceComposition as one atomic, versioned write that touches the composition only"
+    verify: 'dotnet test tests/CoreRentalNet.Modules.Workspace.UnitTests --nologo'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["persistence", "transaction"] }
+  - id: 5
+    description: "Add confirm-then-replace in the builder and run AIWB-31 to AIWB-38"
+    verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderApplyTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["ui", "browser"] }
+# AIWB-16 ("a valid agent result maps to candidates with prices recomputed from the catalogue") arrived here
+# from e05s05, which stops at the agent's typed result. Recomputing a price from the catalogue is the same
+# act as rejecting a candidate whose SKU is not in it, so it belongs with the all-or-nothing validation in
+# task 2 rather than beside the adapter.

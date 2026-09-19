@@ -1,0 +1,138 @@
+story_id: e05s07
+title: The customer sees the run happen, and can stop it
+status: in-progress
+bcps: 5
+tasks:
+  - id: 1
+    description: "Add POST /api/builder/suggest as BuilderRoutes.Suggest, a minimal-API SSE endpoint wrapped in the run guard AND gated by AiPolicy.Name - hiding the section is not authorisation, and this is where the money is spent"
+    verify: 'dotnet build CoreRentalNet.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["ui", "streaming"] }
+  - id: 2
+    description: "Forward the model's narrative fields as they complete, with application-owned stage copy and an atomic result"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~SuggestionStageCopyTests"'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["ui", "unit"] }
+  - id: 3
+    description: "Wire cancellation through, report it as a neutral stopped state, keep streamed text marked not applied on both failure and cancel, and release the guard on every exit path - including a dropped connection from a reload or navigation, which cancels exactly like Stop"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["ui", "streaming"] }
+  - id: 4
+    description: "Retain and collapse the stage list after a run; browser tests AIWB-25 to AIWB-30 against the local stand-in"
+    verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderStreamTests"'
+    risk: P0
+    status: planned
+    allure: { severity: critical, categories: ["ui", "browser"] }
+  - id: 5
+    description: "Place the section above the canvas: one line when idle, expanded while running or showing candidates, full-width on a phone, absent when off or unentitled"
+    verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderSectionTests"'
+    risk: P1
+    status: planned
+    allure: { severity: major, categories: ["ui", "browser"] }
+  - id: 6
+    description: "Announce progress and the outcome, not the prose: stage lines in a polite role=status region, streamed prose outside any live region, candidates announced when they arrive"
+    verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderSectionTests"'
+    risk: P1
+    status: planned
+    allure: { severity: major, categories: ["ui", "accessibility"] }
+# TASK 3 FOUND THAT A STOP WAS BEING DRESSED UP AS A FAILURE, IN e05s05's CODE.
+#
+# The adapter's relay caught `Exception` around every `MoveNextAsync`, so the `OperationCanceledException` a
+# cancelled transport raises was swallowed into `Unavailable` - "the agent's answer was not the expected
+# contract" - and the endpoint then wrote a failure frame for a customer who had simply pressed Stop. The
+# difference the page reports on (`Stopped. Nothing was applied.` against `This suggestion couldn't be
+# completed.`) was decided by which exception type happened to surface.
+#
+# The fix is that TWO TOKENS ARE NOT THE SAME QUESTION, and the adapter now asks both. The caller's token says
+# the customer left; the run's budget token says the run ran out of time, and only one of those is a failure.
+# `Relay` takes the caller's token as well and rethrows a cancellation as itself when THAT one is cancelled,
+# so a 45 s timeout still arrives as `Unavailable` (AIWB-51) while a stop travels as a cancellation.
+#
+# THE STOPPED STATE IS THE BROWSER'S, AND THE RECORD SAYS SO BEFORE SOMEBODY ADDS A FRAME FOR IT.
+# The only way this application learns a customer stopped is that their connection went away - Stop aborts the
+# stream from the browser, and reloading or navigating away drops it. Both are the request's cancellation
+# token, so both are one rule rather than two concurrency semantics, and the action is the same: write nothing,
+# report nothing as an error, release the guard. There is nobody left to write a `stopped` frame TO; the party
+# that knows is the browser, and the browser words it. The endpoint's empty catch is that rule, and its remark
+# says so.
+#
+# WHAT A STOP LEAVES BEHIND IS WHAT IT ALREADY SAID. Nothing retracts the streamed text, which is why the
+# frames written before the cancellation stand - asserted, not assumed, because "kept and marked not applied"
+# is an assertion about frames that were never retracted.
+#
+# STILL OPEN, AND DELIBERATELY. The endpoint's own catch has no unit test: reaching it needs an authenticated
+# request, and with no identity provider the AI permission is closed (that is e05s06 working). AIWB-27, AIWB-28
+# and AIWB-49 exercise it at browser level in task 4, through the local stand-in. The adapter's half and the
+# run's half are covered here.
+
+# TASK 1 CARRIED TWO FINDINGS OUT OF THE BUILD, AND BOTH ARE RECORDED RATHER THAN FOLDED IN SILENTLY.
+#
+# One is a defect in the application, and it was latent from e05s06. The AI permission is CLOSED when the
+# deployment has not named its claim, so authorisation fails - and the framework then asks to CHALLENGE the
+# caller it does not consider authenticated. A deployment with no identity provider has no scheme to
+# challenge with, and ASP.NET raises InvalidOperationException when asked for a default challenge scheme
+# that does not exist: the answer was 500. Nothing had hit it before because the AI permission was the only
+# closed one and it had no endpoint; e05s06 said so in its own addendum. `NoIdentityHandler` is the fix - a
+# scheme a deployment without a provider has, which never authenticates anybody and whose challenge forbids
+# (403) instead of asking for a credential that could not exist. It is registered by `AddOptionalIdentity`
+# in the branch that has no provider, so every closed permission is now refused rather than failing.
+#
+# The other is an E2E test that broke honestly. `DocumentationPageTests` asserted that the FIRST operation
+# block on the Swagger page was /api/catalog, which was a fact about the document having one endpoint rather
+# than anything the test checks. It now finds the catalogue's block by its path.
+#
+# TASK 2 RESOLVED THE RISK THE STORY SAID MUST NOT BE GUESSED AT, AND REWORDED THE STORY AS IT DEMANDED.
+# Whether MAF surfaces the agent's stage identities was the open question. It does not. The literals
+# `workflow_action`, `InvokeExecutor` and `action_id` exist in exactly one assembly on this machine -
+# `Azure.AI.AgentServer.Responses`, the server side - and in none of the four client packages the application
+# references. `Microsoft.Agents.AI.Foundry` matches ONE output-item kind, `"message"`, over a closed content
+# union (WireTextContent, WireImageContent, WireToolCallContent, WireToolResultContent), so an
+# AgentResponseUpdate has nothing on it that could name an executor. The earlier mapping design is dropped
+# rather than maintained, the two-message-item fallback is unnecessary, and the stages are the application's
+# own lines written as its own phases happen. What survives of the original requirement is its point: the
+# agent's vocabulary never reaches a customer, now by construction instead of by a mapping. The evidence and
+# the rewording are in the story's resolved risk note.
+#
+# AN e05s05 STEP THAT WAS RECORDED AS DONE WAS NOT IN THE PRODUCT. Step 4 said "Build the projection and the
+# request, and hash what was sent", and its verify is SuggestionAgentTests - so the request was built in the
+# TESTS and never in the application. Nothing could run without it, so `SuggestionRequestBuilder` is added
+# here: it builds the agent payload from the catalogue the application already loaded and the capacities it
+# already read. The payload half (`SuggestionPayload`, the hash) was real; only the request-building was not.
+#
+# AND ONE RULE WAS IN TWO PLACES. The compact projection and the currency it is stated in were both needed
+# by the new builder, and `CatalogController` already had a private copy of the currency read. That is now
+# `CompactCatalogProjection.CurrencyOf`, called by both - the catalogue's own tests are untouched and green.
+#
+# THE FRAME VOCABULARY, fixed here and read by the page: `stage` (an app-owned line), `text` (a completed
+# narrative field, hygiened before it is written), `result` (the whole answer, one frame, JSON because the
+# page parses it into candidates) and `failed` (a stable code the page words - the agent's own reason is
+# diagnostic and does not travel). `result` is the ONE frame that is JSON on purpose; the frames a customer
+# reads verbatim are asserted to carry none.
+#
+# STILL OPEN. The `result` frame carries the agent's own result shape unvalidated; e05s08 validates it and
+# recomputes every price from the catalogue, and replaces this frame with the priced candidate shape. The
+# endpoint takes a JSON body and so cannot be reached by a simple cross-site form post, and there is no
+# browser client yet to carry an antiforgery token - that decision belongs with the section (tasks 5 and 6).
+#
+# STILL OPEN, AND NOT THIS TASK'S TO CLOSE: the builder endpoint appears in the OpenAPI document with no
+# security declared, because Auth0SecuritySchemeTransformer only describes the catalogue's path. e05s09 owns
+# the README and CI statements, and the document's treatment of the second endpoint belongs with them.
+
+# TASK 4 WAS STOPPED AT ITS PREREQUISITE, WHICH IS NOW PROVEN AND GUARDED.
+#
+# Task 4 is a browser task - its verify is AiBuilderStreamTests against the local stand-in - and the
+# application could not reach a stand-in at all: e05s05's replacement of the agent client dropped the
+# credential-free path the browser tier is built on. That is recorded in full on e05s05, where the code lives.
+#
+# What is done: the local path is restored (`SuggestionAgentSettings.IsLocal()`, and the branch in
+# `FoundryAgentFactory`), and `StandInTransportTests` proves the REAL adapter reads a plain-http stand-in with
+# no credential and reads the LAST top-level object as the result. What is NOT done: the shared stand-in as a
+# project, its scenario library rewritten for this contract, and the E2E host wiring. Tasks 4, 5 and 6 are
+# unbuildable until those exist, so none of them has been started rather than half-built.
+#
+# THE PREREQUISITE WAS NOT IN THE RECORD AND STILL IS NOT A TASK. It changes e05s05's design, so it belongs
+# there and is recorded there; the epic's index should carry it before task 4 is attempted again.

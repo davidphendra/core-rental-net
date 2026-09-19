@@ -1,0 +1,33 @@
+story_id: e05s04
+title: The customer reads the model's words, never its JSON
+# passing: all three tasks are built and verified offline. The reader is fed the REAL captured wire text,
+# one character at a time, so a chunk boundary falls inside every escape and every URL it will meet.
+status: passing
+bcps: 5
+tasks:
+  - id: 1
+    description: "Add AiBuilder/NarrativeFieldReader: emit a narrative field when its JSON string closes, never raw JSON, never a partial value"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~NarrativeFieldReaderTests"'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["ui", "streaming"] }
+  - id: 2
+    description: "Apply hygiene to each completed field before display: length cap, strip URLs, markup and currency amounts"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo --filter "FullyQualifiedName~OutputHygieneTests"'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["ui", "guardrail"] }
+  - id: 3
+    description: "Keep the refusal a typed result in the contract; run AIWB-13 to AIWB-15 including the URL-split-across-chunks case"
+    verify: 'dotnet test tests/CoreRentalNet.Host.Tests --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["ui", "unit"] }
+# AIWB-13 ("No raw JSON is ever rendered, at any point of a streamed run") is a BROWSER scenario and stays
+# e05s07's: only the browser can prove that nothing reached a customer. What this story builds and tests is
+# its unit half - the reader emits no brace, quote, colon or key at any point, asserted over the captured
+# wire stream one character at a time. The scenario is not claimed as done here.
+#
+# THE WIRE WAS CAPTURED, NOT ASSUMED. A throwaway probe started the real host over the real workflow (with
+# the scripted model client) and dumped the SSE, then was deleted. What it established is recorded below and
+# in epic.yaml, because two later stories depend on it.

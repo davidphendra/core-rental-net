@@ -1,0 +1,28 @@
+story_id: e05s02
+title: The sentence becomes a specification
+# passing: all three tasks are built and verified offline against a fake model client.
+status: passing
+bcps: 5
+tasks:
+  - id: 1
+    description: "Write prompts/rephraser.v1.md and the loader that versions and embeds it"
+    verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent", "prompt"] }
+  - id: 2
+    description: "Add the rephraser profile with WorkspaceSpec structured output: typed envelope, natural-language purpose, ceiling when given, no SKU/price/name/label"
+    verify: 'dotnet build agentfoundry/AgentFoundry.sln -v q --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent"] }
+  - id: 3
+    description: "Return the typed not-a-workspace verdict as a result, and test AIWB-05 to AIWB-08"
+    verify: 'dotnet test agentfoundry/AgentFoundry.sln --nologo'
+    risk: P0
+    status: passing
+    allure: { severity: critical, categories: ["agent", "contract"] }
+# Two things this story deliberately leaves standing for e05s03, so neither is a surprise:
+#   - The Tracer prompt (suggestion-agent.v1.md) and AgentRegistration.BuildTracer still exist, and the
+#     tracer is what the host serves. e05s03 replaces both with the workflow of the two real agents.
+#   - The rephraser is registered by key but nothing calls it yet; its caller is the workflow.
