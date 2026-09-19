@@ -8,14 +8,24 @@
 @using System.Text.Json
 @using CoreRentalNet.Host.Agents
 @using CoreRentalNet.Host.AiBuilder
+@using CoreRentalNet.Modules.Workspace.Application.Commands.ReplaceComposition
 @inject IJSRuntime JavaScript
 @inject SuggestionAgentSettings Agent
+@inject IWorkspaceSession Session
+@inject IReplaceCompositionHandler Compositions
 @implements IAsyncDisposable
 
 @if (Agent.IsConfigured)
 {
     <AuthorizeView Policy="@AiPolicy.Name">
         <Authorized>
+            @* Replacing a workspace is the one destructive thing this page does, so it asks - and only when
+               there is something to lose. An empty workspace applies without a dialog, because a
+               confirmation that guards nothing is a step a customer learns to click through. *@
+            <CompositionConfirmDialog @ref="confirmation"
+                                      Message="@ReplaceMessage"
+                                      OnConfirm="ApplyChosenAsync" />
+
             <section class="ai mb-section-gap rounded-lg border border-outline-variant p-stack-md"
                      data-testid="ai-section"
                      data-expanded="@(Expanded ? "true" : "false")"
@@ -181,11 +191,31 @@
                                                 </li>
                                             }
                                         </ul>
+
+                                        <button type="button"
+                                                class="ai__apply mt-stack-sm underline"
+                                                data-testid="ai-apply"
+                                                data-rank="@candidate.Label"
+                                                @onclick="() => ChooseAsync(candidate)">
+                                            Use this setup
+                                        </button>
                                     </article>
                                 }
                             </div>
                         }
                     </div>
+                }
+
+                @if (applied is not null)
+                {
+                    <p class="mt-stack-sm" role="status" data-testid="ai-applied">@applied</p>
+                }
+
+                @if (applyFailed is not null)
+                {
+                    @* A workspace that moved underneath the suggestion: nothing was applied, and the customer is
+                       told rather than left looking at a setup that is not theirs. *@
+                    <p class="alert mt-stack-sm" role="alert" data-testid="ai-apply-refused">@applyFailed</p>
                 }
             </section>
         </Authorized>
@@ -203,8 +233,15 @@
     private bool stopped;
     private bool running;
     private bool collapsed;
+    private CompositionConfirmDialog? confirmation;
+    private SuggestionCandidate? pending;
+    private string? applied;
+    private string? applyFailed;
     private IJSObjectReference? module;
     private DotNetObjectReference<AiBuilderSection>? self;
+
+    /// <summary>The draft this section will replace. Cascaded from the page, as every other component's is.</summary>
+    [CascadingParameter(Name = "DraftToken")] private string? DraftToken { get; set; }
 
     /// <summary>Whether there is anything to show beyond the field: a run in flight, or a result of one.</summary>
     private bool Expanded
@@ -336,6 +373,9 @@
         stopped = false;
         collapsed = false;
         announcement = string.Empty;
+        applied = null;
+        applyFailed = null;
+        pending = null;
         running = true;
     }
 
@@ -349,6 +389,89 @@
     }
 
     private void ExpandStages() => collapsed = false;
+
+    /// <summary>What the confirmation says, in the application's words, naming what will be lost.</summary>
+    /// <remarks>
+    /// It names the count rather than saying "your workspace", and it says what is NOT changed, because the
+    /// fear a customer has at this moment is that replacing the setup will also lose their address.
+    /// </remarks>
+    private string ReplaceMessage
+    {
+        get
+        {
+            var units = Session.Current?.TotalUnits ?? 0;
+
+            return units == 1
+                ? "This replaces the item you have already picked. Your delivery address is not changed."
+                : $"This replaces the {units} items you have already picked. Your delivery address is not changed.";
+        }
+    }
+
+    /// <summary>Choosing a candidate: ask first when there is something to lose, and apply when there is not.</summary>
+    /// <remarks>
+    /// The choice is held in <c>pending</c> and is DELIBERATELY not cleared when the dialog closes - because the
+    /// dialog closes itself before it reports a confirmation. Clearing on close looked exactly like a button
+    /// that did nothing at all, which is what it was.
+    /// </remarks>
+    private async Task ChooseAsync(SuggestionCandidate candidate)
+    {
+        ArgumentNullException.ThrowIfNull(candidate);
+
+        pending = candidate;
+        applied = null;
+        applyFailed = null;
+
+        if (Session.IsEmpty)
+        {
+            await ApplyChosenAsync();
+            return;
+        }
+
+        if (confirmation is not null)
+        {
+            await confirmation.ShowAsync();
+        }
+    }
+
+    /// <summary>
+    /// Writes the chosen composition over the draft, and re-reads it.
+    /// </summary>
+    /// <remarks>
+    /// The version the page is rendering is what travels with the write, so a workspace that moved since - in
+    /// another tab, or while the suggestion was being drawn - is refused by the module rather than merged. A
+    /// refusal is shown rather than swallowed: the customer is looking at a suggestion that is no longer based
+    /// on what they have, and that is worth knowing.
+    /// </remarks>
+    private async Task ApplyChosenAsync()
+    {
+        if (pending is null || string.IsNullOrEmpty(DraftToken) || Session.Current is null)
+        {
+            return;
+        }
+
+        var lines = pending.Lines
+            .Select(line => new ReplaceCompositionLine(line.Slot, line.Sku, line.Quantity))
+            .ToArray();
+
+        try
+        {
+            await Compositions.HandleAsync(new ReplaceCompositionCommand(
+                DraftToken,
+                Session.Current.Version,
+                lines));
+
+            await Session.RefreshAsync(DraftToken);
+
+            applied = $"Applied {pending.Label.ToLowerInvariant()}. Your workspace has been replaced.";
+            pending = null;
+        }
+        catch (DomainRuleViolationException refusal)
+        {
+            applyFailed = refusal.Message;
+        }
+
+        StateHasChanged();
+    }
 
     /// <summary>Reads the frame, and treats one it cannot read as a failure rather than as a broken circuit.</summary>
     private static SuggestionResultFrame? Read(string json)

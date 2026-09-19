@@ -4,6 +4,8 @@ using CoreRentalNet.Modules.Workspace.Application.Rules;
 
 namespace CoreRentalNet.Host.AiBuilder;
 
+using CoreRentalNet.Modules.Workspace.Domain;
+
 /// <summary>The trust boundary: where an agent's answer is checked before a customer sees any of it.</summary>
 /// <remarks>
 /// <para>
@@ -108,6 +110,7 @@ internal sealed class SuggestionValidator(
         }
 
         priced = new SuggestionCandidateLine(
+            line.Slot,
             product.Sku,
             product.Name,
             line.Quantity,

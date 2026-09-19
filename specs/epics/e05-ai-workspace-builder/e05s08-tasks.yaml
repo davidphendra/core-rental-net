@@ -31,7 +31,7 @@ tasks:
     description: "Add confirm-then-replace in the builder and run AIWB-31 to AIWB-38"
     verify: 'dotnet test tests/CoreRentalNet.E2E --nologo --filter "FullyQualifiedName~AiBuilderApplyTests"'
     risk: P0
-    status: planned
+    status: passing
     allure: { severity: critical, categories: ["ui", "browser"] }
 # TASKS 1 TO 3 ARE BUILT: the trust boundary. `SuggestionValidator` is where an agent's answer becomes an
 # application fact or becomes nothing at all, and the section now reads the validated frame - names, amounts,
@@ -62,6 +62,29 @@ tasks:
 # THE CODING STANDARD CAUGHT THE FIRST DRAFT. `CodingStandardTests` failed on a 44-line method - the per-line
 # check and the per-option check were one method - which is a rule this repository enforces by test rather than
 # by review. Split into `TryRead` and `TryPrice`.
+
+# TASK 5 IS BUILT: confirm-then-replace, and AIWB-36 and AIWB-37 through the path a customer takes.
+#
+# The confirmation appears ONLY when there is something to lose, and it names how much: an empty workspace
+# applies straight away, because a confirmation that guards nothing is a step a customer learns to click
+# through. It also says what is NOT changed - the address - because that is the fear a customer has at that
+# moment. The count is the workspace's own unit count, and it is singular at one rather than "the 1 items".
+#
+# ONE THING FOUND BY RUNNING IT RATHER THAN BY READING IT, AND IT IS THE SORT OF BUG THAT SHIPS. The dialog
+# closes itself BEFORE it reports a confirmation, so an `OnDismissed` handler that cleared the pending choice
+# cleared the very candidate about to be applied. Every part worked: the dialog appeared, the copy was right,
+# the button clicked - and nothing happened. The pending choice is now deliberately not cleared on close, and
+# the reason is written beside it, because the next person to look will think clearing it is tidier.
+#
+# AIWB-37 GOES THROUGH TWO PAGES, AND THAT IS THE TEST BEING RIGHT RATHER THAN AWKWARD. The address field is on
+# the review step, not the builder, so the test sets it there, comes back to the builder to have a suggestion
+# replace the setup, and returns to the review step to find the address where it was. A test that reached into
+# the session to set an address would have asserted the command rather than the journey.
+#
+# AIWB-38 (a version conflict applies nothing and says the workspace changed) is unit and was covered by task 4,
+# where a token can be cancelled and a version made stale deterministically. The refusal is surfaced on the page
+# rather than swallowed - a customer looking at a suggestion that is no longer based on what they have is worth
+# telling - but nothing asserts that rendering, because reaching a conflict from a browser means racing one.
 
 # TASK 4 IS BUILT: `ReplaceComposition`, one atomic versioned write that touches the composition only.
 #

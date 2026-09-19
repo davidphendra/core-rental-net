@@ -77,7 +77,7 @@ stories:
     type: feat
     bcps: 8
     risk: P0
-    status: planned
+    status: passing
   - id: e05s09
     slug: record-gate-and-deploy
     title: It can be measured, gated, and turned on deliberately
