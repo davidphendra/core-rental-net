@@ -21,6 +21,17 @@ internal static class TestPaths
         => Assembly("tests", "CoreRentalNet.E2E.LocalProvider", "CoreRentalNet.E2E.LocalProvider.dll");
 
     /// <summary>
+    /// The stand-in agent's assembly: the other end of the wire the suggestion run is read from.
+    /// </summary>
+    /// <remarks>
+    /// Started as a process rather than run in-process, because the browser reaches it over a socket
+    /// exactly as it would a deployed agent, and an agent that answered in the same process could hide a
+    /// client that never really sent anything.
+    /// </remarks>
+    public static string LocalAgentAssembly()
+        => Assembly("tests", "CoreRentalNet.E2E.LocalAgent", "CoreRentalNet.E2E.LocalAgent.dll");
+
+    /// <summary>
     /// The application's own directory, so a development build finds its static assets exactly as
     /// <c>dotnet run</c> would.
     /// </summary>

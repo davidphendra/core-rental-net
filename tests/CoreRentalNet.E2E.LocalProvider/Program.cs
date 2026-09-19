@@ -38,8 +38,9 @@ const string RoleClaimType = "https://core-rental.periang.auth0/roles";
 var accounts = new Dictionary<string, Account>(StringComparer.Ordinal)
 {
     // Holds the permission the builder's gate requires, and the role twice: the Action writes it
-    // into the ID token and the permission's name states it too.
-    ["reader"] = new("auth0|reader", "Dewi Reader", "dewi@example.com", ["read:catalog", "manager:role"], ["Manager"]),
+    // into the ID token and the permission's name states it too. It also holds the AI permission,
+    // because it is the account the browser tier drives the suggestion run as.
+    ["reader"] = new("auth0|reader", "Dewi Reader", "dewi@example.com", ["read:catalog", "use:ai", "manager:role"], ["Manager"]),
     ["builder"] = new("auth0|builder", "Sari Builder", "sari@example.com", ["read:catalog"], []),
     ["viewer"] = new("auth0|viewer", "Andi Viewer", "andi@example.com", ["read:catalog"], []),
     // Signed in, but entitled to nothing.

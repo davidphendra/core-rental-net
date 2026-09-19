@@ -156,6 +156,52 @@ internal sealed class ProcessPool : IAsyncDisposable
             $"{Environment.NewLine}{process.Output()}");
     }
 
+    /// <summary>Waits until the stand-in agent says it is ready to be asked.</summary>
+    /// <remarks>
+    /// Its own health route rather than a route that would run the agent: waiting on a run would answer a
+    /// scenario and change what the next test reads.
+    /// </remarks>
+    public static async Task WaitUntilAgentReadyAsync(string agentUrl, AppProcess process)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(90);
+        var health = $"{agentUrl}/health";
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            if (process.HasExited)
+            {
+                throw new InvalidOperationException(
+                    $"The stand-in agent exited with code {process.ExitCode} before becoming ready." +
+                    $"{Environment.NewLine}{process.Output()}");
+            }
+
+            try
+            {
+                var response = await client.GetAsync(new Uri(health)).ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+            catch (HttpRequestException)
+            {
+                // Not listening yet.
+            }
+            catch (TaskCanceledException)
+            {
+                // Still starting.
+            }
+
+            await Task.Delay(500).ConfigureAwait(false);
+        }
+
+        throw new TimeoutException(
+            $"The stand-in agent at {agentUrl} did not become ready within 90 seconds." +
+            $"{Environment.NewLine}{process.Output()}");
+    }
+
     public async ValueTask DisposeAsync()
     {
         foreach (var process in processes)

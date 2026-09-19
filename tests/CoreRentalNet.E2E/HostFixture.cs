@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -37,6 +38,9 @@ public sealed class HostFixture : IAsyncLifetime
     /// <summary>The local provider's issuer address, for tests that assert where a redirect went.</summary>
     public string ProviderAuthority { get; private set; } = string.Empty;
 
+    /// <summary>Where the stand-in agent is, for the tests that choose which answer it gives.</summary>
+    public string AgentUrl { get; private set; } = string.Empty;
+
     public IPlaywright Playwright { get; private set; } = null!;
 
     public IBrowser Browser { get; private set; } = null!;
@@ -72,6 +76,15 @@ public sealed class HostFixture : IAsyncLifetime
 
         await ProcessPool.WaitUntilProviderReadyAsync(ProviderAuthority, provider).ConfigureAwait(false);
 
+        // The stand-in agent before the hosts, for the same reason and the same way: an application told
+        // where its agent is at start-up is the deployment this suite means to drive, rather than one that
+        // discovered it later.
+        var agentPort = TestPaths.FreePort();
+        AgentUrl = $"http://127.0.0.1:{agentPort}";
+        var agent = StartLocalAgent();
+
+        await ProcessPool.WaitUntilAgentReadyAsync(AgentUrl, agent).ConfigureAwait(false);
+
         var authenticatedPort = TestPaths.FreePort();
         AuthenticatedBaseUrl = $"http://127.0.0.1:{authenticatedPort}";
 
@@ -88,6 +101,16 @@ public sealed class HostFixture : IAsyncLifetime
                 ["Auth0__ClientId"] = "core-rental-e2e",
                 ["Auth0__ClientSecret"] = "local-provider-secret",
                 ["Auth0__Authority"] = ProviderAuthority,
+                // The suggestion run: a real socket to the stand-in, reached the credential-free way,
+                // because the endpoint that spends the money is only reachable where a permission is.
+                ["Agent__Enabled"] = "true",
+                ["Agent__ProjectEndpoint"] = AgentUrl,
+                ["Agent__AgentName"] = "stand-in",
+                // What entitles a caller to spend. The provider writes the account's permissions into the
+                // access token, and this reads the one that grants the builder - so the gate is a real
+                // claim on a real token rather than a section that happens to be visible.
+                ["Authorization__AIUse__ClaimType"] = "permissions",
+                ["Authorization__AIUse__ClaimValue"] = "use:ai",
             });
 
         await ProcessPool.WaitUntilReadyAsync(AuthenticatedBaseUrl, authenticated, requireAssets: true).ConfigureAwait(false);
@@ -167,6 +190,40 @@ public sealed class HostFixture : IAsyncLifetime
                 ["ASPNETCORE_URLS"] = ProviderAuthority,
                 ["Logging__LogLevel__Default"] = "Warning",
             });
+    }
+
+    /// <summary>
+    /// The stand-in agent, started as a process so the application reaches it over a socket exactly as it
+    /// would a deployed agent.
+    /// </summary>
+    /// <remarks>
+    /// It serves the Responses protocol and reads the answer's scenario from its own control route, which
+    /// <see cref="ChooseScenarioAsync"/> sets per test.
+    /// </remarks>
+    private AppProcess StartLocalAgent()
+        => processes.Start(
+            TestPaths.LocalAgentAssembly(),
+            TestPaths.RepositoryRoot(),
+            new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = AgentUrl,
+                ["Logging__LogLevel__Default"] = "Warning",
+            });
+
+    /// <summary>Chooses the scenario the stand-in acts, for the test that is about to run.</summary>
+    /// <remarks>
+    /// A run's answer is chosen by the test rather than guessed from the customer's words, so a test about
+    /// a failure does not have to phrase its way into one.
+    /// </remarks>
+    public async Task ChooseScenarioAsync(string name)
+    {
+        using var client = new HttpClient();
+
+        var chosen = await client
+            .PostAsJsonAsync($"{AgentUrl}/scenario", new { name })
+            .ConfigureAwait(false);
+
+        chosen.EnsureSuccessStatusCode();
     }
 
     /// <summary>
