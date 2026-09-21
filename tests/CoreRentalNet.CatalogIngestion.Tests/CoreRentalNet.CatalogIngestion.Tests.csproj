@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.CatalogIngestion.Tests</RootNamespace>
+    <!-- This project references the tool, and the tool references SemanticChunker.NET, whose transitive
+         ICU4N build target raises ICU4N_IDE_0002. The demotion has to be repeated wherever ICU4N enters
+         the graph, because it is a target warning and TreatWarningsAsErrors does not cover it. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);ICU4N_IDE_0002</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Tools/CoreRentalNet.CatalogIngestion/CoreRentalNet.CatalogIngestion.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+</Project>

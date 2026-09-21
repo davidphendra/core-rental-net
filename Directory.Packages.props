@@ -14,6 +14,9 @@
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <!-- BackgroundService, so the time-driven run has a home. -->
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
+    <!-- The ingestion tool reads its own appsettings.json, so its configuration comes from a file beside
+         it rather than from a command line. -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
     <!-- Auth0's package as the identity wrapper, over the standard OpenID Connect handler it is
          built on. MIT. 1.11.0 is the release that targets net10.0. -->
     <PackageVersion Include="Auth0.AspNetCore.Authentication" Version="1.11.0" />
@@ -55,6 +58,15 @@
          the tool names these types itself and a transitive version is one that resolution chooses. -->
     <PackageVersion Include="Azure.AI.Extensions.OpenAI" Version="3.0.0-beta.2" />
     <PackageVersion Include="OpenAI" Version="2.12.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Chunking">
+    <!-- The ingestion tool splits each product's text with this, and it is pinned exactly because its
+         boundaries can change with its version. -->
+    <PackageVersion Include="SemanticChunker.NET" Version="1.5.0" />
+    <!-- The embedding abstraction SemanticChunker.NET is built on, named directly by the adapter that
+         bridges the tool's own embedding port to it. -->
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

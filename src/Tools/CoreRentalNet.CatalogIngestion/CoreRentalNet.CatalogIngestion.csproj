@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CoreRentalNet.CatalogIngestion</RootNamespace>
+    <!-- SemanticChunker.NET brings ICU4N, whose build target raises ICU4N_IDE_0002 when it cannot find
+         NuGet.Build.Tasks.Pack. The warning is about satellite assemblies this tool does not use, and it is
+         a target warning rather than a compiler one, so TreatWarningsAsErrors does not cover it. Demoted
+         here, in the project that causes it, rather than repository-wide. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);ICU4N_IDE_0002</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="OpenAI" />
+    <PackageReference Include="SemanticChunker.NET" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The catalogue loader, so the tool reads products.json exactly as the application does. The
+         Catalogue module is unchanged by this tool and owns that parsing. -->
+    <ProjectReference Include="../../Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
+    <!-- The SQLite plumbing, so the tool's database file is opened with the same journal mode and busy
+         timeout the application uses. -->
+    <ProjectReference Include="../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Infrastructure/CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- Gitignored and usually absent, so it is copied only when it exists. Without this it would sit in
+         the project folder and never be read, because the tool loads its configuration from the output
+         directory rather than from the working directory. -->
+    <None Update="appsettings.Local.json" Condition="Exists('appsettings.Local.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CoreRentalNet.CatalogIngestion.Tests" />
+  </ItemGroup>
+
+</Project>
