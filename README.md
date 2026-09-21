@@ -199,33 +199,38 @@ already-running host instead of starting one on `http://localhost:5199`.
 ```
 src/BuildingBlocks/     Money, opaque tokens, the business calendar, SQLite plumbing
 src/Modules/Catalog/    205 products, read-only in memory, no database at all
+src/Modules/Discovery/  The catalogue's vector index and the selection signal; owns the Discovery_ tables
+src/Tools/              CoreRentalNet.CatalogIngestion, the deliberate step that builds that index
 src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quote
 src/Modules/Rentals/    Orders, invoices, periods, the schedule
 src/Host/               The Blazor application, its components and its design tokens
 src/shared/data/        products.json, the single source of truth for every price
-specs/                  the release plan, epic capsules, decisions and commit plan
+specs/                  the requirement in flight, its decisions, and the design prototypes
 ```
 
 `specs/` is the record of why, not just what:
 
-- `specs/release-plan.yaml` — the epics, what state each is in, their order, and the risk register
-- `specs/epics/` — the epic capsules: stories, tasks, test matrices and the reasoning inside them
+- `specs/catalog-ingestion.md` — the requirement in flight: the ingestion change, its scope, its
+  guarantees and the prerequisites it is waiting on
 - `specs/adr/` — the decisions, with the alternatives that were rejected and why
-- `specs/COMMIT_PLAN_LATEST.md` — how a change of this size is committed, and where baseline numbers go
+- `specs/design/` — design prototypes, kept as references
 
-The pre-`e05` documents — `architecture-style.md`, `architecture.md`, `test-matrix.md`, `state.yaml`,
-the DDD migration plan and the whole of `specs/verifications/` — were removed with the restructure that
-`specs/adr/0003` describes. What they carried lives in the list above, in `CONVENTIONS.md` and in this
-file.
+The plan documents this file once listed — a release plan, epic capsules and a commit plan — were
+removed deliberately and are not coming back. The requirement is `specs/catalog-ingestion.md`;
+`CONVENTIONS.md`, the ADRs and this file carry the rest.
 
 ## Decisions worth knowing before you read the code
 
 - **Money** is `decimal` in IDR, rounded once per line, and the client never sends an amount that
   influences a charge. The draft stores product references; prices are recomputed from the catalog
   on every read and frozen only when an invoice is issued.
-- **One SQLite file**, one instance, module isolation by table prefix. WAL locally; a rollback
-  journal is required on a network filesystem, which is why the journal mode is configuration.
-  This application must never scale out.
+- **Two local SQLite files**, one write process each, module isolation by table prefix. The
+  application database (`Sqlite:DatabasePath`) and the catalogue vector file (`Database:Path`, built
+  deliberately by `CoreRentalNet.CatalogIngestion`) are separate because the vectors are derived data
+  seeded per environment rather than schema. The ingestion tool is standalone — it references no
+  discovery project and writes only its own file. WAL locally; a rollback journal is required on a
+  network filesystem, which is why the journal mode is configuration. This application must never
+  scale out.
 - **No payment provider.** Payment cannot fail by construction, so there is no retry, no dunning
   and no failure state to model.
 - **No accounts.** A draft is addressed by an opaque token in an `HttpOnly` cookie; an order by a

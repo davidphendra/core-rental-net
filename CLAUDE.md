@@ -7,27 +7,21 @@ assumption in a prompt.
 
 1. `CONVENTIONS.md` — the conventions: **persistence-record Domain + Application services**, the
    coding budgets, and the test rules. Each rule names the architecture test that enforces it.
-2. `specs/release-plan.yaml` — the live plan: which epics exist, what state each is in, and the risk
-   register. This is where "what is next" is answered.
-3. `specs/epics/<epic>/epic.yaml` — the active capsule: its stories, the decisions taken inside it and
-   the reasoning behind them. `e05-ai-workspace-builder` is the only one in flight.
-4. `specs/epics/<epic>/<epic>-test-matrix.md` — that epic's scenarios, and the definitions of the
-   baselines. The requirement for the work in flight.
-5. `specs/adr/` — the decisions, with the alternatives that were rejected and why.
-6. `README.md` — the module map, the trust model and the measured SQLite constraints.
+2. `README.md` — the module map, the trust model and the SQLite constraints.
+3. `specs/catalog-ingestion.md` — the requirement in flight: the ingestion change, its decisions, its
+   guarantees and the prerequisites it is waiting on.
+4. `specs/adr/` — the decisions, with the alternatives that were rejected and why.
 
-The pre-`e05` documents this chain used to name — `architecture-style.md`, `architecture.md`,
-`test-matrix.md`, `state.yaml` and the DDD migration plan — were removed with the restructure
-`specs/adr/0003` describes, and `specs/verifications/` went with them. Their content is carried by the
-six items above. The chain is stated here and nowhere else, because it was once stated twice and the
-copies drifted: three documents went on naming five files after `specs/` had stopped holding them.
+The plan documents this chain once named — a release plan, epic capsules and a test matrix — were
+removed deliberately and are not coming back, so `specs/catalog-ingestion.md` is the requirement now.
+The chain is stated here and nowhere else, because it was once stated twice and the copies drifted:
+three documents went on naming five files after `specs/` had stopped holding them.
 
 ## Hard rules
 
-- **The requirement does not change.** A structural step is done only when the baselines are green.
-  `e05-test-matrix.md` defines them — `BUILD`, `NONBROWSER`, `BROWSER`, `AGENT`, `COST` — and where
-  each is measured. Record the numbers where the work is described: the active capsule's test matrix
-  has a Baselines section for exactly that. `specs/verifications/` no longer exists.
+- **A step is done only when the baselines are green.** `specs/catalog-ingestion.md` defines them —
+  `BUILD`, `NONBROWSER`, `BROWSER`, `AGENT` — and where each is measured. Record the numbers where
+  the work is described.
 - **Domain is records. Application is services.** A persisted type is a plain record with no
   business methods. Business rules live in an `I…Service` implementation in `Application`.
 - **Callers depend on the interface, never the class.** DI injects the `sealed` implementation
@@ -49,6 +43,14 @@ copies drifted: three documents went on naming five files after `specs/` had sto
   bump is a silent lost update.
 - **Never deploy or provision without explicit product-owner consent**.
 - **No secrets in the repository.** `appsettings.Local.json` is gitignored and development-only.
+- **Do not save changes, artifacts or commits.** Nothing is written or committed without the product
+  owner asking for it.
+- **Do not push to origin.**
+- **Do not take shortcuts.**
+- **Do not assume.**
+- **Do not do anything other than what was discussed.**
+- **Be clear on the plan; no assumption.** State the plan plainly before acting.
+- **Do not build when a requirement is unclear or an assumption is present — ask first.**
 
 ## Conventions
 
