@@ -2,6 +2,8 @@ using System.Text;
 using AwesomeAssertions;
 using CoreRentalNet.Host.Agents;
 using CoreRentalNet.Host.AiBuilder;
+using CoreRentalNet.Modules.Discovery.Application.Selection;
+using CoreRentalNet.Modules.Discovery.Application.Shortlist;
 using CoreRentalNet.Modules.Workspace.Application.Rules;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -115,6 +117,43 @@ public sealed class SuggestionRunTests
             .Should().NotContain("Checking the suggestion", "nothing was checked");
     }
 
+    [Fact] // SCR-19
+    public async Task A_run_whose_retrieval_fails_is_unavailable_and_applies_nothing()
+    {
+        // The run cannot be built at all: there is no shortlist, so there is nothing to check a suggestion
+        // against and nothing to apply. It takes the same outcome an unreachable agent takes - an outage the
+        // customer retries - rather than falling back to the whole catalogue, which is the behaviour this epic
+        // exists to remove, or to a name search, which would produce a bad shortlist that looks like a good one.
+        var frames = await Run(scripted: [Completed()], shortlist: new UnavailableCatalogShortlist());
+
+        var failed = frames.Should().ContainSingle(frame => frame.Event == "failed").Subject;
+
+        failed.Data.Should().Be(SuggestionEventStream.Unavailable);
+        failed.Data.Should().NotContain("deployment", "a diagnostic belongs on the run record, not on the page");
+
+        frames.Should().NotContain(frame => frame.Event == "result", "nothing is shown that was not checked");
+        frames.Where(frame => frame.Event == "stage").Should()
+            .ContainSingle("retrieval failed before the second stage, so only the reading was announced");
+    }
+
+    [Fact] // SCR-18
+    public async Task A_search_that_outlives_the_run_s_budget_ends_it_as_a_failure_and_not_as_a_stop()
+    {
+        // The embedding call is a network hop, and until e06s03 task 2 it sat OUTSIDE the run's budget: the
+        // budget opened inside the agent, after the catalogue had already been searched. A search that hung
+        // would then have held the run open until the customer gave up, and the recorded timeout would have been
+        // a statement about two thirds of a run.
+        var frames = await Run(
+            scripted: [Completed()],
+            shortlist: new HangingCatalogShortlist(),
+            budget: RunBudgets.Spent());
+
+        var failed = frames.Should().ContainSingle(frame => frame.Event == "failed").Subject;
+
+        failed.Data.Should().Be(SuggestionEventStream.Unavailable, "running out of time is a failure, not a stop");
+        frames.Should().NotContain(frame => frame.Event == "result", "nothing is applied by a run that timed out");
+    }
+
     [Fact]
     public async Task An_empty_run_writes_its_stages_and_stops()
     {
@@ -131,9 +170,15 @@ public sealed class SuggestionRunTests
     {
         // The two halves of the rule. A stop is not an error, so no failure frame is written; and the text is
         // kept rather than retracted, because it carries no price and no product name and cannot mislead.
+        // The customer stops after reading the first thing the model said, which is what the socket going away
+        // looks like from here: the token is signalled mid-run, not before it.
+        using var stopping = new CancellationTokenSource();
+
         var (frames, thrown) = await Attempt(
             scripted: [new AgentSuggestionEvent.NarrativeDelta(Answer)],
-            then: new OperationCanceledException("the customer pressed stop"));
+            then: new OperationCanceledException("the customer pressed stop"),
+            budget: RunBudgets.Open(stopping.Token),
+            stop: stopping);
 
         thrown.Should().BeOfType<OperationCanceledException>(
             "the endpoint is what turns this into an ordinary end, and it must be able to tell");
@@ -158,11 +203,14 @@ public sealed class SuggestionRunTests
         var run = new SuggestionRun(
             new ScriptedSuggestionAgent([new AgentSuggestionEvent.NarrativeDelta(Answer)]),
             new SuggestionRequestBuilder(catalogue, slots),
+            new StubCatalogShortlist(catalogue.All.Select(product => product.Sku).ToArray()),
+            new RecordingOffers(),
+            new RetrievalFacts("text-embedding-3-large", 512),
             new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
             stream,
             NullLoggerFactory.Instance);
 
-        var act = async () => await run.RunAsync(new RunRequest("a quiet corner", null), "a-customer", CancellationToken.None);
+        var act = async () => await run.RunAsync(new RunRequest("a quiet corner", null), "a-customer", Budget());
 
         // The socket being gone surfaces as the same cancellation a reload produces, which is why the endpoint
         // needs no second rule for it - and why the guard is released by the same `using`.
@@ -214,9 +262,24 @@ public sealed class SuggestionRunTests
                     "A calm, focused setup.")]),
             "payload-hash");
 
+    /// <summary>The same harness, for the sibling test class about when a shortlist counts as offered.</summary>
+    internal static async Task<IReadOnlyList<Frame>> FramesAsync(
+        AgentSuggestionEvent[] scripted,
+        ICatalogShortlist? shortlist = null,
+        IOfferSelection? offers = null)
+        => await Run(scripted, shortlist: shortlist, offers: offers);
+
+    /// <summary>A run with no deadline worth reaching, for the tests that are about something else.</summary>
+    private static RunBudget Budget(int timeoutSeconds = SuggestionAgentSettings.DefaultTimeoutSeconds)
+        => RunBudget.Over(CancellationToken.None, timeoutSeconds);
+
     /// <summary>Runs one scripted run and reads the frames it wrote.</summary>
-    private static async Task<IReadOnlyList<Frame>> Run(AgentSuggestionEvent[] scripted)
-        => (await Attempt(scripted)).Frames;
+    private static async Task<IReadOnlyList<Frame>> Run(
+        AgentSuggestionEvent[] scripted,
+        ICatalogShortlist? shortlist = null,
+        RunBudget? budget = null,
+        IOfferSelection? offers = null)
+        => (await Attempt(scripted, shortlist: shortlist, budget: budget, offers: offers)).Frames;
 
     /// <summary>
     /// Runs one scripted run, and reports both what it wrote and anything it threw.
@@ -227,7 +290,11 @@ public sealed class SuggestionRunTests
     /// </remarks>
     private static async Task<(IReadOnlyList<Frame> Frames, Exception? Thrown)> Attempt(
         AgentSuggestionEvent[] scripted,
-        Exception? then = null)
+        Exception? then = null,
+        ICatalogShortlist? shortlist = null,
+        RunBudget? budget = null,
+        CancellationTokenSource? stop = null,
+        IOfferSelection? offers = null)
     {
         var context = new DefaultHttpContext();
         var written = new MemoryStream();
@@ -242,13 +309,16 @@ public sealed class SuggestionRunTests
             var slots = new WorkspaceSlotSettings();
 
             var run = new SuggestionRun(
-                new ScriptedSuggestionAgent(scripted, then),
+                new ScriptedSuggestionAgent(scripted, then, stop),
                 new SuggestionRequestBuilder(catalogue, slots),
+                shortlist ?? new StubCatalogShortlist(catalogue.All.Select(product => product.Sku).ToArray()),
+                offers ?? new RecordingOffers(),
+                new RetrievalFacts("text-embedding-3-large", 512),
                 new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
                 stream,
                 NullLoggerFactory.Instance);
 
-            await run.RunAsync(new RunRequest("a quiet corner", null), "a-customer", CancellationToken.None);
+            await run.RunAsync(new RunRequest("a quiet corner", null), "a-customer", budget ?? Budget());
         }
         catch (Exception exception)
         {
@@ -275,5 +345,5 @@ public sealed class SuggestionRunTests
         return frames;
     }
 
-    private sealed record Frame(string Event, string Data);
+    internal sealed record Frame(string Event, string Data);
 }

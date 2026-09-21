@@ -29,6 +29,11 @@ builder.AddCatalogOpenApi();
 builder.AddWorkspace();
 builder.AddRentals();
 
+// The catalogue index and the shortlist. It embeds through the same project the agent is reached through,
+// with its own credential, and a deployment that has not been told where to embed gets a hidden feature
+// rather than a failed request.
+builder.AddDiscovery();
+
 // The suggestion agent is reached through the Foundry client, and is unavailable rather than open when
 // it has not been configured. Nothing else in the application knows that Foundry exists.
 builder.AddSuggestionAgent();
@@ -47,5 +52,9 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode(options => options.ContentSecurityFrameAncestorsPolicy = "'none'");
 
 await app.ApplyMigrationsInDevelopmentAsync();
+
+// After the migrations, because in development those are what create the index's tables. An index that is absent
+// or stale hides the AI feature and names the tool to run; it does not stop the application.
+await app.GateSuggestionOnIndexAsync();
 
 await app.RunAsync();

@@ -2,6 +2,8 @@ using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.Host.Agents;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
+using CoreRentalNet.Modules.Discovery.Application.Selection;
+using CoreRentalNet.Modules.Discovery.Application.Shortlist;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
@@ -42,7 +44,11 @@ internal static class SuggestionEndpoint
         RunRequest ask,
         RunGuard guard,
         ISuggestionAgent agent,
+        SuggestionAgentSettings settings,
         SuggestionRequestBuilder requests,
+        ICatalogShortlist shortlist,
+        IOfferSelection offers,
+        RetrievalFacts retrieval,
         SuggestionValidator validator,
         IOpaqueTokenService tokens,
         ILoggerFactory loggers)
@@ -63,7 +69,7 @@ internal static class SuggestionEndpoint
 
         using (lease)
         {
-            await WriteAsync(context, ask, agent, requests, validator, tokens, loggers);
+            await WriteAsync(context, ask, agent, settings, requests, shortlist, offers, retrieval, validator, tokens, loggers);
         }
     }
 
@@ -80,7 +86,11 @@ internal static class SuggestionEndpoint
         HttpContext context,
         RunRequest ask,
         ISuggestionAgent agent,
+        SuggestionAgentSettings settings,
         SuggestionRequestBuilder requests,
+        ICatalogShortlist shortlist,
+        IOfferSelection offers,
+        RetrievalFacts retrieval,
         SuggestionValidator validator,
         IOpaqueTokenService tokens,
         ILoggerFactory loggers)
@@ -93,8 +103,12 @@ internal static class SuggestionEndpoint
             // reader can see that two runs belong to the same account without the record holding an account.
             var customer = tokens.HashOf(CustomerKey.Of(context.User) ?? "anonymous");
 
-            await new SuggestionRun(agent, requests, validator, stream, loggers)
-                .RunAsync(ask, customer, context.RequestAborted);
+            // The run's deadline opens HERE, before the catalogue is searched. It used to open inside the
+            // agent, which left the embedding call - a network call - outside the number the run is allowed.
+            using var budget = RunBudget.Over(context.RequestAborted, settings.TimeoutSeconds);
+
+            await new SuggestionRun(agent, requests, shortlist, offers, retrieval, validator, stream, loggers)
+                .RunAsync(ask, customer, budget);
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
         {

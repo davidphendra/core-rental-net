@@ -9,7 +9,12 @@ namespace CoreRentalNet.ArchitectureTests;
 /// </summary>
 public sealed class SourceLayoutTests
 {
-    private static readonly string[] ModuleNames = ["Catalog", "Workspace", "Rentals"];
+    /// <summary>
+    /// Every module that owns tables or has a Domain or an Application to check. A module missing from this
+    /// list is one ARC-02, ARC-03 and ARC-06 do not cover, which is why a new module is added here in the
+    /// same change that creates it rather than by a later tidy-up.
+    /// </summary>
+    private static readonly string[] ModuleNames = ["Catalog", "Discovery", "Workspace", "Rentals"];
 
     [Fact] // ARC-02
     public void Each_persisting_module_declares_at_most_one_DbContext()

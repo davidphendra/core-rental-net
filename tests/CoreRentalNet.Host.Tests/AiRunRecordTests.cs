@@ -2,6 +2,7 @@ using System.Text.Json;
 using AwesomeAssertions;
 using CoreRentalNet.Host.Agents;
 using CoreRentalNet.Host.AiBuilder;
+using CoreRentalNet.Modules.Discovery.Application.Shortlist;
 using CoreRentalNet.Modules.Workspace.Application.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Microsoft.AspNetCore.Http;
@@ -54,6 +55,36 @@ public sealed class AiRunRecordTests
         Text(line, "verdict").Should().Be("suggested", "a word a person can read, not the number an enum defaults to");
     }
 
+    [Fact] // SCR-21
+    public async Task A_run_is_recorded_with_what_it_was_given_and_not_only_what_it_produced()
+    {
+        // THE POINT OF THE FIELD. An answer drawn from fourteen products cannot be explained without knowing
+        // which fourteen: without them, a poor answer is indistinguishable from a model that chose badly among
+        // good options, and the epic's own evaluation tier would have nothing to grade the retrieval against.
+        var line = await Record(scripted: [new AgentSuggestionEvent.NarrativeDelta(Answer), Completed()]);
+
+        var shortlist = line.GetProperty("shortlist").EnumerateArray().Select(sku => sku.GetString()).ToArray();
+
+        shortlist.Should().Equal(["DSKB08XN4JDR"], "the stub's one product, in the order retrieval chose");
+        Text(line, "embeddingModel").Should().Be("text-embedding-3-large");
+        line.GetProperty("embeddingWidth").GetInt32().Should().Be(512);
+    }
+
+    [Fact] // SCR-21
+    public async Task A_run_that_never_retrieved_records_an_empty_shortlist_and_still_names_the_deployment()
+    {
+        // The shortlist is empty because there was none, and the model and width are still recorded: they
+        // describe the deployment the run WOULD have used, which is what an operator needs when the reason a run
+        // failed is that the deployment did not answer.
+        var line = await Record(
+            scripted: [Completed()],
+            shortlist: new UnavailableCatalogShortlist());
+
+        Text(line, "verdict").Should().Be("unavailable");
+        line.GetProperty("shortlist").EnumerateArray().Should().BeEmpty();
+        Text(line, "embeddingModel").Should().Be("text-embedding-3-large");
+    }
+
     [Fact] // the raw output is the point: a rejected run is otherwise unexplainable
     public async Task The_model_s_own_answer_is_kept_as_it_arrived()
     {
@@ -94,12 +125,29 @@ public sealed class AiRunRecordTests
     [Fact] // and so is a stopped one, which is not a failure and must not read like one
     public async Task A_stopped_run_is_recorded_as_stopped_rather_than_as_a_failure()
     {
+        using var stopping = new CancellationTokenSource();
+
         var line = await Record(
             scripted: [new AgentSuggestionEvent.NarrativeDelta(Answer)],
-            then: new OperationCanceledException("the customer pressed stop"));
+            then: new OperationCanceledException("the customer pressed stop"),
+            budget: RunBudgets.Open(stopping.Token),
+            stop: stopping);
 
         Text(line, "verdict").Should().Be("stopped");
         Text(line, "rawOutput").Should().Be(Answer, "what it had already said is kept");
+    }
+
+    [Fact] // AIWB-51, at the level where the verdict is decided
+    public async Task A_run_that_ran_out_of_time_is_recorded_as_unavailable_and_not_as_stopped()
+    {
+        // The record is where "timed out" has to be legible: a stop is a customer who changed their mind, and a
+        // timeout is something to fix. Reporting one as the other puts a decision in the record that nobody made.
+        var line = await Record(
+            scripted: [Completed()],
+            shortlist: new HangingCatalogShortlist(),
+            budget: RunBudgets.Spent());
+
+        Text(line, "verdict").Should().Be("unavailable");
     }
 
     [Fact] // an answer that does not survive being checked is recorded as invalid, not as a suggestion
@@ -123,7 +171,12 @@ public sealed class AiRunRecordTests
     }
 
     /// <summary>Runs one scripted run against a logger a test can read, and returns the line it wrote.</summary>
-    private static async Task<JsonElement> Record(AgentSuggestionEvent[] scripted, Exception? then = null)
+    private static async Task<JsonElement> Record(
+        AgentSuggestionEvent[] scripted,
+        Exception? then = null,
+        RunBudget? budget = null,
+        CancellationTokenSource? stop = null,
+        ICatalogShortlist? shortlist = null)
     {
         var logs = new CapturingLoggerProvider();
         var context = new DefaultHttpContext();
@@ -134,8 +187,11 @@ public sealed class AiRunRecordTests
 
         var stream = await SuggestionEventStream.BeginAsync(context.Response, CancellationToken.None);
         var run = new SuggestionRun(
-            new ScriptedSuggestionAgent(scripted, then),
+            new ScriptedSuggestionAgent(scripted, then, stop),
             new SuggestionRequestBuilder(catalogue, slots),
+            shortlist ?? new StubCatalogShortlist(catalogue.All.Select(product => product.Sku).ToArray()),
+            new RecordingOffers(),
+            new RetrievalFacts("text-embedding-3-large", 512),
             new SuggestionValidator(catalogue, slots, new SuggestionSpread(SuggestionSpread.DefaultFactor)),
             stream,
             LoggerFactory.Create(builder => builder.AddProvider(logs)));
@@ -143,7 +199,7 @@ public sealed class AiRunRecordTests
         var act = async () => await run.RunAsync(
             new RunRequest("a quiet corner", null),
             "opaque-customer-id",
-            CancellationToken.None);
+            budget ?? RunBudgets.Open());
 
         if (then is null)
         {

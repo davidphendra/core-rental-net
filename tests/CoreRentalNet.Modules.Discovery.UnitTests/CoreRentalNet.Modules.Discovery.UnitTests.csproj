@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.Modules.Discovery.UnitTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Modules/Discovery/CoreRentalNet.Modules.Discovery.Application/CoreRentalNet.Modules.Discovery.Application.csproj" />
+    <!-- The adapter, so the port's failure path can be exercised without a file: a failure to embed happens
+         before anything is read, so a context that is never queried is enough. -->
+    <ProjectReference Include="../../src/Modules/Discovery/CoreRentalNet.Modules.Discovery.Infrastructure/CoreRentalNet.Modules.Discovery.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+</Project>

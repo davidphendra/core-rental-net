@@ -1,5 +1,5 @@
-using System.Runtime.CompilerServices;
 using CoreRentalNet.Host.Agents;
+using CoreRentalNet.Host.AiBuilder;
 
 namespace CoreRentalNet.Host.Tests;
 
@@ -12,21 +12,31 @@ namespace CoreRentalNet.Host.Tests;
 /// </remarks>
 /// <param name="events">The events to replay, in order.</param>
 /// <param name="then">What the transport does when the script runs out - a stop, most of the time.</param>
-internal sealed class ScriptedSuggestionAgent(AgentSuggestionEvent[] events, Exception? then = null)
-    : ISuggestionAgent
+/// <param name="stop">Signalled once the script has been replayed, so a test can model a customer who stops
+/// <b>after</b> reading something. Without it, a stopped run would be one that never started: a token cancelled
+/// before the first write makes every later write throw, which is a different story from the one the tests tell.
+/// </param>
+internal sealed class ScriptedSuggestionAgent(
+    AgentSuggestionEvent[] events,
+    Exception? then = null,
+    CancellationTokenSource? stop = null) : ISuggestionAgent
 {
     public async IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(
         SuggestionRequest request,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        RunBudget budget)
     {
         await Task.Yield();
 
+        // The run's token is deliberately NOT checked here. This fake replays what it was given and then does
+        // what `then` says, and the real adapter's cancellation behaviour is proved against the real adapter -
+        // in StandInTransportTests and SuggestionAgentTests. A fake that also policed the token would make the
+        // stopped-run tests model the cancellation twice: once by the token and once by the script.
         foreach (var raised in events)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             yield return raised;
         }
+
+        stop?.Cancel();
 
         if (then is not null)
         {

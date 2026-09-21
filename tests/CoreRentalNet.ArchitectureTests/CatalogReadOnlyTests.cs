@@ -43,6 +43,27 @@ public sealed class CatalogReadOnlyTests
             "Catalog is an in-memory snapshot with no database");
     }
 
+    [Fact] // CAT-13
+    public void The_rule_is_about_a_catalog_module_that_exists()
+    {
+        // NON-VACUITY, AND IT NOW MATTERS MORE THAN IT DID. Both rules above pass on an empty assembly, and
+        // e06 added a second module that owns a vector table and a mutable selection signal ON PURPOSE - so the
+        // pressure to give Catalog a persistence layer too is now real, and the tempting way to make these
+        // rules stop complaining is to loosen them. What they are about is asserted here rather than assumed,
+        // so a rule that has stopped scanning anything fails instead of passing quietly.
+        var types = CatalogAssemblies().SelectMany(assembly => assembly.GetExportedTypes()).ToArray();
+
+        types.Should().Contain(typeof(Product), "otherwise the mutation rule has no type to inspect");
+        types.Should().Contain(typeof(IProductCatalog));
+        types.Should().Contain(typeof(ProductCatalog), "otherwise the persistence rule has no type to inspect");
+
+        var methods = types
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            .ToArray();
+
+        methods.Should().NotBeEmpty("otherwise the mutation rule inspects no method");
+    }
+
     private static IEnumerable<Assembly> CatalogAssemblies() =>
     [
         typeof(Product).Assembly,

@@ -35,6 +35,8 @@
     <ProjectReference Include="../../Modules/Workspace/CoreRentalNet.Modules.Workspace.Infrastructure/CoreRentalNet.Modules.Workspace.Infrastructure.csproj" />
     <ProjectReference Include="../../Modules/Rentals/CoreRentalNet.Modules.Rentals.Application/CoreRentalNet.Modules.Rentals.Application.csproj" />
     <ProjectReference Include="../../Modules/Rentals/CoreRentalNet.Modules.Rentals.Infrastructure/CoreRentalNet.Modules.Rentals.Infrastructure.csproj" />
+    <ProjectReference Include="../../Modules/Discovery/CoreRentalNet.Modules.Discovery.Application/CoreRentalNet.Modules.Discovery.Application.csproj" />
+    <ProjectReference Include="../../Modules/Discovery/CoreRentalNet.Modules.Discovery.Infrastructure/CoreRentalNet.Modules.Discovery.Infrastructure.csproj" />
     <ProjectReference Include="../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Infrastructure/CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
 
   </ItemGroup>

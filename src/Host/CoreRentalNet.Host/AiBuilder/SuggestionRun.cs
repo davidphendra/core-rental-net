@@ -1,7 +1,8 @@
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using CoreRentalNet.Host.Agents;
+using CoreRentalNet.Modules.Discovery.Application.Selection;
+using CoreRentalNet.Modules.Discovery.Application.Shortlist;
 using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Host.AiBuilder;
@@ -30,86 +31,111 @@ namespace CoreRentalNet.Host.AiBuilder;
 internal sealed class SuggestionRun(
     ISuggestionAgent agent,
     SuggestionRequestBuilder requests,
+    ICatalogShortlist shortlist,
+    IOfferSelection offers,
+    RetrievalFacts retrieval,
     SuggestionValidator validator,
     SuggestionEventStream stream,
     ILoggerFactory loggers)
-{
-    private readonly NarrativeFieldReader _reader = new();
+{    private readonly NarrativeFieldReader _reader = new();
 
-    /// <summary>Everything the model wrote, kept for the record: the raw answer is what a bad run is debugged on.</summary>
-    private readonly StringBuilder _raw = new();
+    /// <summary>The catalogue search and its two failure endings, kept out of this class's own budget.</summary>
+    private readonly CatalogSearch _search = new(shortlist, stream);
 
-    private string _payloadHash = string.Empty;
-    private string _query = string.Empty;
-    private AgentRunUsage? _usage;
-    private AiRunVerdict _verdict = AiRunVerdict.Unavailable;
+    /// <summary>What the run offers the model, recorded once.</summary>
+    private readonly OfferRecorder _offers = new(offers, loggers);
+
+    /// <summary>Everything the run accumulates: what was asked, what it was given, what it cost, how it ended.</summary>
+    private readonly RunLedger _ledger = new();
 
     /// <summary>Writes the whole run, and returns when the stream has ended.</summary>
     /// <param name="customer">
     /// The account this run is for, already made opaque. The record names a run by a hash rather than by an
     /// account, and the caller is the one holding the token service that does it.
     /// </param>
-    public async Task RunAsync(RunRequest ask, string customer, CancellationToken cancellationToken)
+    public async Task RunAsync(RunRequest ask, string customer, RunBudget budget)
     {
+        ArgumentNullException.ThrowIfNull(budget);
+
         var started = Stopwatch.GetTimestamp();
 
-        _query = ask.Query?.Trim() ?? string.Empty;
+        _ledger.Query = ask.Query?.Trim() ?? string.Empty;
 
         try
         {
-            await WriteAsync(ask, cancellationToken);
+            await WriteAsync(ask, budget);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (budget.Customer.IsCancellationRequested)
         {
             // Stopped, and worth distinguishing from a failure in the record: one is a customer who changed
             // their mind and the other is something to fix.
-            _verdict = AiRunVerdict.Stopped;
+            _ledger.Verdict = AiRunVerdict.Stopped;
 
             throw;
+        }
+        catch (OperationCanceledException)
+        {
+            // THE RUN'S OWN DEADLINE, AND IT IS A FAILURE RATHER THAN AN ENDING. Until e06 this could not
+            // happen here: the budget opened inside the agent, which turned its own expiry into an unavailable
+            // event before it ever reached this method. Now that the budget covers retrieval too, an expiry
+            // during the search arrives here as a cancellation - and reporting it as "stopped" would put a
+            // customer's decision in the record for something the application did to itself.
+            _ledger.Verdict = AiRunVerdict.Unavailable;
+
+            await _search.TimedOutAsync(budget);
         }
         finally
         {
             // Written however the run ended, including when it was stopped: a run with no record is exactly the
             // run nobody can explain.
-            AiRunLog.Ran(loggers.CreateLogger(AiRunLog.Category), Record(customer, started));
+            AiRunLog.Ran(loggers.CreateLogger(AiRunLog.Category), _ledger.For(customer, started, retrieval));
         }
     }
 
-    /// <summary>What this run was, assembled once it is over and there is nothing left to wait for.</summary>
-    private AiRunRecord Record(string customer, long started)
-        => new(
-            RunId: Guid.NewGuid().ToString("n"),
-            Query: _query,
-            PayloadHash: _payloadHash,
-            Model: _usage?.Model ?? string.Empty,
-            PromptVersion: _usage?.PromptVersion ?? string.Empty,
-            ModelCalls: _usage?.ModelCalls ?? 0,
-            InputTokens: _usage?.InputTokens ?? 0,
-            OutputTokens: _usage?.OutputTokens ?? 0,
-            LatencyMilliseconds: (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,
-            RawOutput: _raw.ToString(),
-            Verdict: _verdict,
-            CustomerId: customer);
 
     /// <summary>Writes the whole run, and returns when the stream has ended.</summary>
-    private async Task WriteAsync(RunRequest ask, CancellationToken cancellationToken)
+    private async Task WriteAsync(RunRequest ask, RunBudget budget)
     {
-        await stream.StageAsync(SuggestionStageCopy.Reading, cancellationToken);
+        await stream.StageAsync(SuggestionStageCopy.Reading, budget.Run);
+
+        // The catalogue is searched BEFORE the model is asked, and the whole point of the epic is that what the
+        // model is then shown is the result of that search rather than all 205 products.
+        var products = await _search.ProductsAsync(_ledger.Query, budget);
+
+        if (products is null)
+        {
+            // A failure the customer retries. The verdict already means "no agent, no identity, no transport, or
+            // too slow"; this adds a cause to it rather than an outcome.
+            _ledger.Verdict = AiRunVerdict.Unavailable;
+            return;
+        }
+
+        _ledger.Shortlist = [.. products.Select(item => item.Sku)];
+
+        await stream.StageAsync(SuggestionStageCopy.Matching, budget.Run);
 
         // Read here rather than inside the agent: what crosses the wire is the query and this application's
         // own projection, and the projection is the phase the second stage names.
-        var request = requests.Build(ask);
+        var request = requests.Build(ask, products);
 
-        await stream.StageAsync(SuggestionStageCopy.Matching, cancellationToken);
-
-        await foreach (var raised in agent.StreamAsync(request, cancellationToken))
+        await foreach (var raised in agent.StreamAsync(request, budget))
         {
-            if (await HandleAsync(raised, cancellationToken))
+            // Not every event means the model was reached: the adapter yields UNAVAILABLE when it cannot build
+            // the agent, when the transport refuses, or when a run times out - and none of those is an offer.
+            // What proves it is an event only a model can produce: a narrative fragment, or an answer.
+            if (raised is not AgentSuggestionEvent.Unavailable)
+            {
+                await _offers.RecordAsync(_ledger.Shortlist, budget);
+            }
+
+            if (await HandleAsync(raised, budget.Run))
             {
                 return;
             }
         }
     }
+
+
 
     /// <summary>Writes one event, and says whether the run is over.</summary>
     private async Task<bool> HandleAsync(AgentSuggestionEvent raised, CancellationToken cancellationToken)
@@ -117,7 +143,7 @@ internal sealed class SuggestionRun(
         switch (raised)
         {
             case AgentSuggestionEvent.NarrativeDelta delta:
-                _raw.Append(delta.Text);
+                _ledger.Raw.Append(delta.Text);
 
                 await WriteFieldsAsync(delta.Text, cancellationToken);
                 return false;
@@ -126,7 +152,7 @@ internal sealed class SuggestionRun(
                 return await CompleteAsync(completed, cancellationToken);
 
             case AgentSuggestionEvent.Unavailable:
-                _verdict = AiRunVerdict.Unavailable;
+                _ledger.Verdict = AiRunVerdict.Unavailable;
 
                 // The reason is diagnostic, not customer-facing: the browser words this outcome, and the
                 // reason itself belongs on the run record rather than on the page.
@@ -150,19 +176,19 @@ internal sealed class SuggestionRun(
 
         // The run's cost arrives beside the answer rather than inside it: a model cannot observe how many calls
         // it took, and asking it produced a plausible invention that validation accepted.
-        _usage = completed.Result.RunUsage;
-        _payloadHash = completed.PayloadHash;
+        _ledger.Usage = completed.Result.RunUsage;
+        _ledger.PayloadHash = completed.PayloadHash;
 
         if (!Frames(completed.Result, out var frame))
         {
-            _verdict = AiRunVerdict.Invalid;
+            _ledger.Verdict = AiRunVerdict.Invalid;
 
             await stream.FailedAsync(SuggestionEventStream.Invalid, cancellationToken);
 
             return true;
         }
 
-        _verdict = frame.Status is SuggestionResultFrame.NotWorkspace
+        _ledger.Verdict = frame.Status is SuggestionResultFrame.NotWorkspace
             ? AiRunVerdict.Refused
             : AiRunVerdict.Suggested;
 

@@ -24,8 +24,17 @@ internal static class SuggestionAgentRegistration
         var settings = SuggestionAgentSettings.From(builder.Configuration);
 
         builder.Services.AddSingleton(settings);
-        builder.Services.AddSingleton<ISuggestionAgent>(
-            settings.IsConfigured ? new FoundrySuggestionAgent(settings) : new NoAgentConfigured());
+
+        // Availability, which the index's freshness check can turn off after the container is built.
+        var availability = new SuggestionAvailability();
+        builder.Services.AddSingleton(availability);
+
+        // A factory rather than an instance, so the answer that arrives from the database still counts: the
+        // check runs after Build, and an instance chosen here would already be the wrong one.
+        builder.Services.AddSingleton<ISuggestionAgent>(_ =>
+            settings.IsConfigured && availability.IsAvailable
+                ? new FoundrySuggestionAgent(settings)
+                : new NoAgentConfigured());
         builder.Services.AddSingleton<RunGuard>();
 
         // The run's input: the catalogue this application already loaded, and the slot capacities it

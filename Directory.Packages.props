@@ -44,6 +44,17 @@
     <PackageVersion Include="Microsoft.Agents.AI.Foundry" Version="1.20.0-preview.260831.1" />
     <PackageVersion Include="Azure.AI.Projects" Version="3.0.0-beta.2" />
     <PackageVersion Include="Azure.Identity" Version="1.21.0" />
+    <!-- Named directly by the module's embedding adapter, which takes a credential rather than resolving one. -->
+    <PackageVersion Include="Azure.Core" Version="1.62.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="The catalogue ingestion tool">
+    <!-- Pinned to the Foundry set above, and they must move together with it: the ingestion tool reaches the
+         embedding deployment through the project client, so a version of either that disagrees with
+         Azure.AI.Projects is a client that cannot be built. Direct references rather than transitive, because
+         the tool names these types itself and a transitive version is one that resolution chooses. -->
+    <PackageVersion Include="Azure.AI.Extensions.OpenAI" Version="3.0.0-beta.2" />
+    <PackageVersion Include="OpenAI" Version="2.12.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

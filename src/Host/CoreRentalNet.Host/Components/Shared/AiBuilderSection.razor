@@ -1,21 +1,23 @@
 @* The AI section: ask for a suggestion, read the run as it happens, and stop it if it takes too long.
 
-   Gated twice, and the two gates answer different questions. `SuggestionAgentSettings` says whether this
+   Gated three times, and the gates answer different questions. `SuggestionAgentSettings` says whether this
    deployment has an agent at all, so a deployment without one looks exactly as it did before the feature
-   existed. The permission says whether this customer may spend. Neither is authorisation on its own: the
-   endpoint checks the permission for itself, because a section that is not rendered is presentation rather
-   than a gate. *@
+   existed. `SuggestionAvailability` says whether the catalogue index it would search is usable, which is only
+   knowable by reading the database and is decided after start-up. The permission says whether this customer may
+   spend. None of them is authorisation on its own: the endpoint checks the permission for itself, because a
+   section that is not rendered is presentation rather than a gate. *@
 @using System.Text.Json
 @using CoreRentalNet.Host.Agents
 @using CoreRentalNet.Host.AiBuilder
 @using CoreRentalNet.Modules.Workspace.Application.Commands.ReplaceComposition
 @inject IJSRuntime JavaScript
 @inject SuggestionAgentSettings Agent
+@inject SuggestionAvailability Availability
 @inject IWorkspaceSession Session
 @inject IReplaceCompositionHandler Compositions
 @implements IAsyncDisposable
 
-@if (Agent.IsConfigured)
+@if (Agent.IsConfigured && Availability.IsAvailable)
 {
     <AuthorizeView Policy="@AiPolicy.Name">
         <Authorized>

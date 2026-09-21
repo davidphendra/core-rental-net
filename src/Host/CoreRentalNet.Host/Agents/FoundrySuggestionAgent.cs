@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Text;
+using CoreRentalNet.Host.AiBuilder;
 using Microsoft.Agents.AI;
 
 namespace CoreRentalNet.Host.Agents;
@@ -43,8 +44,10 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
 
     public async IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(
         SuggestionRequest request,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        RunBudget budget)
     {
+        ArgumentNullException.ThrowIfNull(budget);
+
         var payload = SuggestionPayload.From(request);
         var agent = TryCreate(out var creationFailure);
 
@@ -54,12 +57,10 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
             yield break;
         }
 
-        using var budget = Budget(cancellationToken);
-
         var text = new StringBuilder();
         var failed = false;
 
-        await foreach (var raised in Relay(agent, payload.Json, text, cancellationToken, budget.Token))
+        await foreach (var raised in Relay(agent, payload.Json, text, budget))
         {
             failed |= raised is AgentSuggestionEvent.Unavailable;
 
@@ -84,15 +85,6 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
 
     /// <summary>What the customer is told when the answer is not the shape the contract promised.</summary>
     private const string NotTheContract = "The agent's answer was not the expected contract.";
-
-    /// <summary>The run's hard timeout: above the p95 target, so a slow-but-correct run finishes.</summary>
-    private CancellationTokenSource Budget(CancellationToken cancellationToken)
-    {
-        var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        budget.CancelAfter(TimeSpan.FromSeconds(_settings.TimeoutSeconds));
-
-        return budget;
-    }
 
     /// <summary>The typed result and the run's cost, each found by what it carries rather than by where it sits.</summary>
     /// <remarks>
@@ -120,18 +112,20 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
     }
 
     /// <summary>Passes the agent's text on as it arrives, and reads nothing into it.</summary>
-    /// <param name="caller">The request's own token: the one that says the customer is still there.</param>
-    /// <param name="cancellationToken">The run's budget, which is the caller's token plus the hard timeout.</param>
+    /// <remarks>
+    /// The two tokens travel together in the budget so this method cannot be called with them swapped — which
+    /// would report a timeout as a stop and a stop as a timeout, and would pass any test that only looked at the
+    /// name of the outcome.
+    /// </remarks>
     private static async IAsyncEnumerable<AgentSuggestionEvent> Relay(
         AIAgent agent,
         string json,
         StringBuilder text,
-        CancellationToken caller,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        RunBudget budget)
     {
         await using var updates = agent
-            .RunStreamingAsync(json, cancellationToken: cancellationToken)
-            .GetAsyncEnumerator(cancellationToken);
+            .RunStreamingAsync(json, cancellationToken: budget.Run)
+            .GetAsyncEnumerator(budget.Run);
 
         while (true)
         {
@@ -143,7 +137,7 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
             {
                 moved = await updates.MoveNextAsync();
             }
-            catch (OperationCanceledException) when (caller.IsCancellationRequested)
+            catch (OperationCanceledException) when (budget.Customer.IsCancellationRequested)
             {
                 // The customer stopped the run, or their browser went away. That is an <b>ending</b>, not an
                 // unavailable run, so it is rethrown as itself rather than dressed up as one - the page

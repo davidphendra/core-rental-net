@@ -1,3 +1,4 @@
+using CoreRentalNet.Modules.Discovery.Infrastructure;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -27,5 +28,9 @@ internal static class DatabaseStartup
 
         await scope.ServiceProvider.GetRequiredService<WorkspaceContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<RentalsContext>().Database.MigrateAsync();
+
+        // The index's tables, so a fresh clone can run the ingestion tool and then a run without a manual
+        // migration step first. The ROWS are not created here - that is the tool's deliberate job.
+        await scope.ServiceProvider.GetRequiredService<DiscoveryContext>().Database.MigrateAsync();
     }
 }

@@ -213,7 +213,7 @@ public sealed class StandInTransportTests
     {
         var events = new List<AgentSuggestionEvent>();
 
-        await foreach (var raised in new FoundrySuggestionAgent(settings).StreamAsync(Request(), CancellationToken.None))
+        await foreach (var raised in new FoundrySuggestionAgent(settings).StreamAsync(Request(), RunBudgets.Open()))
         {
             events.Add(raised);
         }

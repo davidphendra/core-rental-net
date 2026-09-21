@@ -18,15 +18,8 @@ namespace CoreRentalNet.Host.Tests;
 /// </remarks>
 public sealed class SuggestionContractTests
 {
-    /// <summary>
-    /// Parsed once: <c>JsonSchema.FromText</c> registers a schema globally by its <c>$id</c>, and registering
-    /// the same one twice throws.
-    /// </summary>
-    private static readonly Lazy<IReadOnlyDictionary<string, JsonSchema>> Parsed = new(() =>
-        Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "contracts"), "*.json")
-            .ToDictionary(
-                file => Path.GetFileName(file)!,
-                file => JsonSchema.FromText(File.ReadAllText(file))!));
+    // The schemas are parsed once for the whole assembly, in SharedContracts: JsonSchema.FromText registers each
+    // one globally by its $id, so a second class parsing them would throw rather than merely repeat work.
 
     private const string AgentResult =
         """
@@ -103,8 +96,8 @@ public sealed class SuggestionContractTests
     }
 
     private static EvaluationResults Evaluate(string file, object instance)
-        => Parsed.Value[file].Evaluate(JsonSerializer.SerializeToElement(instance, SuggestionJson.Options));
+        => SharedContracts.Schemas[file].Evaluate(JsonSerializer.SerializeToElement(instance, SuggestionJson.Options));
 
     private static EvaluationResults EvaluateRaw(string file, string json)
-        => Parsed.Value[file].Evaluate(JsonDocument.Parse(json).RootElement);
+        => SharedContracts.Schemas[file].Evaluate(JsonDocument.Parse(json).RootElement);
 }

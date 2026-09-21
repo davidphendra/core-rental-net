@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.Host.Agents;
 using CoreRentalNet.Host.AiBuilder;
+using CoreRentalNet.Modules.Discovery.Application.Shortlist;
 using CoreRentalNet.Modules.Workspace.Application.Rules;
 using Xunit;
 
@@ -28,12 +29,22 @@ public sealed class SuggestionBoundaryTests
     }
 
     [Fact] // AIWB-40, from the other side: what a builder is given cannot be a customer
-    public void The_builder_is_given_the_catalogue_the_slots_and_the_customer_s_sentence()
+    public void The_builder_is_given_the_catalogue_the_slots_the_sentence_and_the_shortlist()
     {
+        // AMENDED BY e06, AND THE AMENDMENT IS THE POINT OF ASSERTING THIS AT ALL. It used to say Build took
+        // "RunRequest" and nothing else - a deliberate over-statement, because a builder that can only be handed
+        // the customer's sentence cannot be handed an account, an address or a draft. e06 gave it a second
+        // argument, and the second argument had to be justified rather than slipped in: a shortlist of SKUs is
+        // catalogue-derived and carries no identity, which is what keeps the rule's PURPOSE intact even though
+        // its letter changed. What it must never become is a draft, an address or a customer, and the constructor
+        // assertion below is what holds that line.
         var build = typeof(SuggestionRequestBuilder).GetMethod(nameof(SuggestionRequestBuilder.Build))!;
+        var parameters = build.GetParameters();
 
-        build.GetParameters().Select(parameter => parameter.ParameterType.Name)
-            .Should().Equal("RunRequest");
+        parameters.Should().HaveCount(2);
+        parameters[0].ParameterType.Should().Be<RunRequest>();
+        parameters[1].ParameterType.Should().Be<IReadOnlyList<ShortlistItem>>(
+            "the shortlist is identifiers chosen by retrieval, and nothing about the customer travels with it");
 
         typeof(SuggestionRequestBuilder).GetConstructors().Single()
             .GetParameters().Select(parameter => parameter.ParameterType.Name)
@@ -46,7 +57,9 @@ public sealed class SuggestionBoundaryTests
         var catalogue = new TestCatalogue().Add("DSKB08XN4JDR", 266_000m);
         var builder = new SuggestionRequestBuilder(catalogue, new WorkspaceSlotSettings());
 
-        var payload = SuggestionPayload.From(builder.Build(new RunRequest("a quiet corner", null)));
+        var payload = SuggestionPayload.From(builder.Build(
+            new RunRequest("a quiet corner", null),
+            StubCatalogShortlist.Items("DSKB08XN4JDR")));
 
         payload.Json.Should().Contain("a quiet corner", "the customer's own words are the request");
 

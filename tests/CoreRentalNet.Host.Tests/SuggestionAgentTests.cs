@@ -54,7 +54,7 @@ public sealed class SuggestionAgentTests
 
         settings.IsConfigured.Should().BeFalse("the feature is off by default");
 
-        new NoAgentConfigured().StreamAsync(Request(), CancellationToken.None)
+        new NoAgentConfigured().StreamAsync(Request(), RunBudgets.Open())
             .ToBlockingEnumerable()
             .OfType<AgentSuggestionEvent.Unavailable>()
             .Should().ContainSingle();
@@ -146,7 +146,7 @@ public sealed class SuggestionAgentTests
 
         var act = async () =>
         {
-            await foreach (var happened in agent.StreamAsync(Request(), stopping.Token))
+            await foreach (var happened in agent.StreamAsync(Request(), RunBudgets.Open(stopping.Token)))
             {
                 raised.Add(happened);
             }
@@ -237,7 +237,7 @@ public sealed class SuggestionAgentTests
     {
         var events = new List<AgentSuggestionEvent>();
 
-        await foreach (var raised in agent.StreamAsync(Request(), CancellationToken.None))
+        await foreach (var raised in agent.StreamAsync(Request(), RunBudgets.Open()))
         {
             events.Add(raised);
         }

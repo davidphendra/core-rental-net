@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.Modules.Discovery.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <!-- The embedding deployment is reached from here because BOTH composition roots need it: the ingestion
+         tool builds the index with it, and the application embeds every customer's sentence with it. The
+         adapter takes a credential rather than resolving one, so no root is bypassed and none is duplicated. -->
+    <PackageReference Include="Azure.AI.Extensions.OpenAI" />
+    <PackageReference Include="Azure.AI.Projects" />
+    <PackageReference Include="Azure.Core" />
+    <PackageReference Include="OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CoreRentalNet.Modules.Discovery.Domain/CoreRentalNet.Modules.Discovery.Domain.csproj" />
+    <!-- Outward reference: this project implements the port the application project declares. -->
+    <ProjectReference Include="../CoreRentalNet.Modules.Discovery.Application/CoreRentalNet.Modules.Discovery.Application.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Infrastructure/CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -24,6 +24,9 @@
     <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Domain/CoreRentalNet.Modules.Rentals.Domain.csproj" />
     <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Application/CoreRentalNet.Modules.Rentals.Application.csproj" />
     <ProjectReference Include="../../src/Modules/Rentals/CoreRentalNet.Modules.Rentals.Infrastructure/CoreRentalNet.Modules.Rentals.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Modules/Discovery/CoreRentalNet.Modules.Discovery.Domain/CoreRentalNet.Modules.Discovery.Domain.csproj" />
+    <ProjectReference Include="../../src/Modules/Discovery/CoreRentalNet.Modules.Discovery.Application/CoreRentalNet.Modules.Discovery.Application.csproj" />
+    <ProjectReference Include="../../src/Modules/Discovery/CoreRentalNet.Modules.Discovery.Infrastructure/CoreRentalNet.Modules.Discovery.Infrastructure.csproj" />
   </ItemGroup>
 
 

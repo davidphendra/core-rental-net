@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CoreRentalNet.Modules.Discovery.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../CoreRentalNet.Modules.Discovery.Domain/CoreRentalNet.Modules.Discovery.Domain.csproj" />
+    <ProjectReference Include="../../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Application/CoreRentalNet.BuildingBlocks.Application.csproj" />
+    <!-- The shortlist is expressed in the catalogue's own published vocabulary, so this module reaches
+         the catalogue through its Application contracts and never through its Domain or Infrastructure. -->
+    <ProjectReference Include="../../Catalog/CoreRentalNet.Modules.Catalog.Application/CoreRentalNet.Modules.Catalog.Application.csproj" />
+  </ItemGroup>
+
+</Project>

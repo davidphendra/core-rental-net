@@ -23,6 +23,13 @@ namespace CoreRentalNet.Host.AiBuilder;
 /// projection is a change to what the model saw, and hashing the file would miss it.
 /// </para>
 /// <para>
+/// <b>What the run was GIVEN is here, not only what it produced.</b> An answer drawn from fourteen products
+/// cannot be explained without knowing which fourteen, and a poor one is otherwise indistinguishable from a
+/// model that chose badly among good options. The embedding model and width travel with it for the same reason:
+/// a shortlist is only explicable against the deployment whose vectors put it in that order, and the width is
+/// what the query vector had to match.
+/// </para>
+/// <para>
 /// The applied candidate is NOT here, and that is not an omission: it is not known when a run ends. It is
 /// written as <see cref="AiRunApplication"/> when a customer chooses one, and the two are joined on
 /// <see cref="RunId"/>.
@@ -32,6 +39,9 @@ internal sealed record AiRunRecord(
     string RunId,
     string Query,
     string PayloadHash,
+    IReadOnlyList<string> Shortlist,
+    string EmbeddingModel,
+    int EmbeddingWidth,
     string Model,
     string PromptVersion,
     int ModelCalls,
