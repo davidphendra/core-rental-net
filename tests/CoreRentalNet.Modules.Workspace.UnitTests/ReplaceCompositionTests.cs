@@ -172,7 +172,7 @@ public sealed class ReplaceCompositionTests
     /// <summary>Puts a product in a slot the way the page does, and keeps the version honest.</summary>
     private static async Task AssignAsync(WorkspaceTestContext context, string sku)
     {
-        var catalogue = new TestCatalog()
+        var catalogue = new TestCatalogService()
             .Add("DSK0001", 400_000m, CatalogCategory.Desk, null)
             .Add("CHA0001", 400_000m, CatalogCategory.Chair, null)
             .Add("MON0001", 300_000m);

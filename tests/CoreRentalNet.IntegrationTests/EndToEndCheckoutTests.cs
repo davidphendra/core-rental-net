@@ -27,7 +27,7 @@ using CoreRentalNet.Modules.Rentals.Domain.Rentals;
 namespace CoreRentalNet.IntegrationTests;
 
 /// <summary>
-/// The whole funnel against two real databases and the real catalog file: a draft is filled,
+/// The whole funnel against two real databases and the real catalogService file: a draft is filled,
 /// checkout turns it into an order, and the draft is left terminal.
 /// </summary>
 public sealed class EndToEndCheckoutTests
@@ -36,8 +36,8 @@ public sealed class EndToEndCheckoutTests
     private const string Chair = "CHAB09R9WB61";
     private const string Monitor = "MONB000PB2KW";
 
-    private static IProductCatalog RealCatalog()
-        => new ProductCatalog(
+    private static IProductCatalogService RealCatalog()
+        => new ProductCatalogService(
             RepoRoot.Combine("src", "shared", "data", "products.json"),
             RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "wwwroot"));
 

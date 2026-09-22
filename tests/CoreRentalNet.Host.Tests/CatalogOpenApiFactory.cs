@@ -31,6 +31,10 @@ public sealed class CatalogOpenApiFactory : WebApplicationFactory<Program>
         builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(
         [
             new KeyValuePair<string, string?>("Sqlite:DatabasePath", _database),
+            // The similarityService search's permission, so the document test can assert the scope it declares. The
+            // deployment's own value; the transformer reads it from configuration rather than naming it.
+            new KeyValuePair<string, string?>("Authorization:SimilaritySearch:ClaimType", "permissions"),
+            new KeyValuePair<string, string?>("Authorization:SimilaritySearch:ClaimValue", "searchsimilarity:aibuilder"),
         ]));
 
         builder.ConfigureTestServices(services =>

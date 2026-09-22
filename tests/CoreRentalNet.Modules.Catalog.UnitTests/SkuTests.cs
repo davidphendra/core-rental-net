@@ -14,7 +14,7 @@ public sealed class SkuTests
     public void A_sku_is_kept_exactly_as_the_file_writes_it()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalog(file.Path, null);
+        var catalog = new ProductCatalogService(file.Path, null);
 
         catalog.All.Select(product => product.Sku).Should().Contain("CHA0001");
     }
@@ -23,7 +23,7 @@ public sealed class SkuTests
     public void The_same_sku_is_found_whatever_its_case()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalog(file.Path, null);
+        var catalog = new ProductCatalogService(file.Path, null);
 
         catalog.Find("CHA0001")!.Sku.Should().Be(catalog.Find("cha0001")!.Sku);
     }

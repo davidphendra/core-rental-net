@@ -21,13 +21,13 @@ public sealed class SemanticProductChunkerTests
 
     private static ChunkerSettings Settings() => new(256, 1, "Percentile", 95, null, 1, 200);
 
-    private static SemanticProductChunker Chunker(StandInEmbeddingClient embeddings)
+    private static SemanticProductChunker Chunker(StandInEmbeddingRepository embeddings)
         => new(new ClientEmbeddingGenerator(embeddings), Settings());
 
     [Fact]
     public async Task A_product_text_becomes_at_least_one_vector_of_the_configured_width()
     {
-        var vectors = await Chunker(new StandInEmbeddingClient(Width))
+        var vectors = await Chunker(new StandInEmbeddingRepository(Width))
             .ChunkAsync(ProductText(), CancellationToken.None);
 
         vectors.Should().NotBeEmpty();
@@ -37,7 +37,7 @@ public sealed class SemanticProductChunkerTests
     [Fact]
     public async Task The_same_text_splits_the_same_way_twice()
     {
-        var chunker = Chunker(new StandInEmbeddingClient(Width));
+        var chunker = Chunker(new StandInEmbeddingRepository(Width));
 
         var first = await chunker.ChunkAsync(ProductText(), CancellationToken.None);
         var second = await chunker.ChunkAsync(ProductText(), CancellationToken.None);
@@ -50,7 +50,7 @@ public sealed class SemanticProductChunkerTests
     {
         // The library pairs each text with the embedding at the same position, so a short answer would draw
         // boundaries between the wrong sentences without failing anywhere else.
-        var generator = new ClientEmbeddingGenerator(new StandInEmbeddingClient(Width, answerWith: 1));
+        var generator = new ClientEmbeddingGenerator(new StandInEmbeddingRepository(Width, answerWith: 1));
 
         var act = async () => await generator.GenerateAsync(["one", "two", "three"]);
 

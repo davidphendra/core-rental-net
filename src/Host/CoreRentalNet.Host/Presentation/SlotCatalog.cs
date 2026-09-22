@@ -17,9 +17,9 @@ public static class SlotCatalog
     /// The one query that answers <see cref="ForSlot"/>, which is the inverse of the same mapping.
     /// </summary>
     /// <remarks>
-    /// A clicked slot asks the catalog for its own kind of thing and nothing else: the desk asks for
+    /// A clicked slot asks the catalogService for its own kind of thing and nothing else: the desk asks for
     /// desks, and the lamp asks for the lamp subcategory - six lamps rather than the whole accessory
-    /// category. Before this, opening any box loaded every category in the catalog and filtered the
+    /// category. Before this, opening any box loaded every category in the catalogService and filtered the
     /// result down, which is four queries to show six lamps.
     /// </remarks>
     public static SearchCatalogQuery QueryFor(SlotId slot) => slot switch
@@ -31,7 +31,7 @@ public static class SlotCatalog
         SlotId.Plant => Accessories(CatalogSubCategory.Plant),
         SlotId.CoffeeStation => Accessories(CatalogSubCategory.Coffee),
         SlotId.RelaxZone => Accessories(CatalogSubCategory.Beanbag),
-        _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "No catalog query answers for this slot."),
+        _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "No catalogService query answers for this slot."),
     };
 
     private static SearchCatalogQuery Accessories(CatalogSubCategory subCategory)

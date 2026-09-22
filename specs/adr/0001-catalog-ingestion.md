@@ -105,3 +105,7 @@ to the retrieval module, which this work leaves exactly as it found it.
 - The tool's test project was rebuilt from the pre-change suite: its command-line settings tests are gone,
   and its 38 tests now cover the chain (catalogue → chunk → embedding → stored row), the store and its
   nearest-row ranking, the renderer, the splitter and the vector codec, alongside the configuration.
+- **D4 was reversed by [0003](0003-discovery-reads-the-tool.md).** There is now a recipe table,
+  `product_embedding_recipe`, because the application must decide whether it can search the vectors at all and
+  a recipe kept apart from the rows it describes is one that can lie about them. The cost recorded here — no
+  staleness check — is what that buys back.

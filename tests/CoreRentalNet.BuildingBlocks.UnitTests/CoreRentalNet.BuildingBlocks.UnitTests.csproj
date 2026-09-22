@@ -7,6 +7,9 @@
   <ItemGroup>
     <ProjectReference Include="../../src/BuildingBlocks/CoreRentalNet.BuildingBlocks.Application/CoreRentalNet.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/CoreRentalNet.BuildingBlocks.Domain/CoreRentalNet.BuildingBlocks.Domain.csproj" />
+    <!-- The vector codec lives in the shared Infrastructure project; its test belongs with it rather than
+         with either of the two projects that use it. -->
+    <ProjectReference Include="../../src/BuildingBlocks/CoreRentalNet.BuildingBlocks.Infrastructure/CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

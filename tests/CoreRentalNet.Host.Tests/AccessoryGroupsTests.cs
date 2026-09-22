@@ -8,7 +8,7 @@ namespace CoreRentalNet.Host.Tests;
 
 /// <summary>
 /// The order and the wording both the panel and the store render from, which is the point of it
-/// being one definition: two surfaces showing the same catalog cannot disagree about what to call
+/// being one definition: two surfaces showing the same catalogService cannot disagree about what to call
 /// a group or which comes first.
 /// </summary>
 public sealed class AccessoryGroupsTests

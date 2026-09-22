@@ -47,7 +47,7 @@ public sealed class ApplicationDependencyTests
         =>
         [
             typeof(IMoneyService).Assembly,
-            typeof(IProductCatalog).Assembly,
+            typeof(IProductCatalogService).Assembly,
             typeof(IPlaceOrder).Assembly,
             typeof(IWorkspaceService).Assembly,
         ];

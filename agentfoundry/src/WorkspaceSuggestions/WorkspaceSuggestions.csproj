@@ -39,6 +39,9 @@
     <!-- Agent Framework core + the workflow the two agents are composed in -->
     <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.20.0-preview.260831.1" />
     <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.20.0" />
+    <!-- The MCP client the catalogue's tools are discovered through. Pinned to the same major as the
+         catalogue's server, so one protocol has one version on both sides of the wire. -->
+    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
     <!-- Foundry SDK: AIProjectClient and AsAIAgent -->
     <PackageReference Include="Azure.AI.Projects" Version="3.0.0-beta.2" />
     <PackageReference Include="Azure.Identity" Version="1.21.0" />

@@ -44,14 +44,18 @@ internal static class AgentRegistration
         => Required(configuration, ModelKey);
 
     /// <summary>Registers every agent on the roster under its own name, which is also its executor identity.</summary>
-    public static IServiceCollection AddRosterAgents(this IServiceCollection services, IChatClient client)
+    public static IServiceCollection AddRosterAgents(
+        this IServiceCollection services,
+        IChatClient client,
+        IReadOnlyList<AITool> tools)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(tools);
 
         foreach (var profile in AgentRoster.All)
         {
-            services.AddKeyedSingleton<AIAgent>(profile.Name, AgentFactory.Build(profile, client));
+            services.AddKeyedSingleton<AIAgent>(profile.Name, AgentFactory.Build(profile, client, ToolsFor(profile, tools)));
         }
 
         return services;
@@ -63,11 +67,14 @@ internal static class AgentRegistration
     /// answer is what the host streams, so anything added below it would be part of what a model appears to
     /// have said.
     /// </remarks>
-    public static AIAgent BuildWorkflowAgent(IChatClient client, string model)
+    public static AIAgent BuildWorkflowAgent(IChatClient client, string model, IReadOnlyList<AITool> tools)
     {
         ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(tools);
 
-        var agents = AgentRoster.All.ToDictionary(profile => profile.Name, profile => AgentFactory.Build(profile, client));
+        var agents = AgentRoster.All.ToDictionary(
+            profile => profile.Name,
+            profile => AgentFactory.Build(profile, client, ToolsFor(profile, tools)));
 
         var workflow = new WorkspaceSuggestionWorkflow(
                 agents[AgentRoster.Rephraser.Name],
@@ -76,6 +83,15 @@ internal static class AgentRegistration
 
         return new UsageReportingAgent(workflow, model, PromptVersions());
     }
+
+    /// <summary>The tools one agent is given: the suggestor reads the catalogue, and the rephraser does not.</summary>
+    /// <remarks>
+    /// The rephraser turns a sentence into a specification and names no product, so a tool would let it choose
+    /// one before the specification exists. The name is also the identity the workflow records, which is what
+    /// this keys on - the same name the roster is registered under.
+    /// </remarks>
+    internal static IReadOnlyList<AITool> ToolsFor(AgentProfile profile, IReadOnlyList<AITool> tools)
+        => profile.Name == AgentRoster.Suggestor.Name ? tools : [];
 
     /// <summary>Both prompts, because a run is two agents and one of them alone would understate what ran.</summary>
     public static string PromptVersions()

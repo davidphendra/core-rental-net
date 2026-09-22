@@ -30,7 +30,7 @@ public sealed class CatalogReadOnlyTests
             .ToArray();
 
         offenders.Should().BeEmpty(
-            "the catalog is a read-only source: no add, update or delete exists anywhere");
+            "the catalogService is a read-only source: no add, update or delete exists anywhere");
     }
 
     [Fact] // CAT-13
@@ -54,8 +54,8 @@ public sealed class CatalogReadOnlyTests
         var types = CatalogAssemblies().SelectMany(assembly => assembly.GetExportedTypes()).ToArray();
 
         types.Should().Contain(typeof(Product), "otherwise the mutation rule has no type to inspect");
-        types.Should().Contain(typeof(IProductCatalog));
-        types.Should().Contain(typeof(ProductCatalog), "otherwise the persistence rule has no type to inspect");
+        types.Should().Contain(typeof(IProductCatalogService));
+        types.Should().Contain(typeof(ProductCatalogService), "otherwise the persistence rule has no type to inspect");
 
         var methods = types
             .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
@@ -67,8 +67,8 @@ public sealed class CatalogReadOnlyTests
     private static IEnumerable<Assembly> CatalogAssemblies() =>
     [
         typeof(Product).Assembly,
-        typeof(IProductCatalog).Assembly,
-        typeof(ProductCatalog).Assembly,
+        typeof(IProductCatalogService).Assembly,
+        typeof(ProductCatalogService).Assembly,
     ];
 
     /// <summary>Checked by name so this project needs no reference to EF Core.</summary>

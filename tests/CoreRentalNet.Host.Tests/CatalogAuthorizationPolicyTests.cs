@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using AwesomeAssertions;
-using CoreRentalNet.Host.Composition;
+using CoreRentalNet.Host.Extentions;
 using CoreRentalNet.Host.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -25,8 +25,8 @@ namespace CoreRentalNet.Host.Tests;
 /// it is not the behaviour anyone intended and no unit test would see it.
 /// </para>
 /// <para>
-/// Built through <see cref="AuthorizationRegistration.AddCatalogAuthorization"/> and
-/// <see cref="IdentityRegistration.AddOptionalIdentity"/> rather than by hand, so the test fails if
+/// Built through <see cref="AuthorizationRegistrationExtentions.AddCatalogAuthorization"/> and
+/// <see cref="IdentityRegistrationExtentions.AddOptionalIdentity"/> rather than by hand, so the test fails if
 /// the composition root stops registering either. The identity registration is used for its
 /// configuration singletons; with a domain and client id present it also registers the OIDC handler,
 /// which is never asked to answer here.
@@ -58,7 +58,7 @@ public sealed class CatalogAuthorizationPolicyTests
             // Signed in, no permission at all.
             SignedIn(new Claim("name", "Dewi")),
             // The words the same, in the other order. The gate is exact, so this is a different value.
-            SignedIn(new Claim(ClaimType, "catalog:read")),
+            SignedIn(new Claim(ClaimType, "catalogService:read")),
             // Contains the configured value rather than being it.
             SignedIn(new Claim(ClaimType, "read:catalog:everything")),
             // The value under a claim type nobody configured.

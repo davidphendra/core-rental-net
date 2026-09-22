@@ -1,4 +1,4 @@
-@* The zones that sit below the stage, in the design's four-column grid. Only zones the catalog
+@* The zones that sit below the stage, in the design's four-column grid. Only zones the catalogService
    can actually fill are rendered. *@
 <div class="zone-list mt-section-gap grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter max-w-4xl mx-auto">
     @foreach (var slot in View.Slots.Where(slot => ZoneIds.Contains(slot.Slot)))

@@ -13,7 +13,7 @@ namespace WorkspaceSuggestions.Agents;
 /// </remarks>
 internal static class AgentFactory
 {
-    public static AIAgent Build(AgentProfile profile, IChatClient client)
+    public static AIAgent Build(AgentProfile profile, IChatClient client, IReadOnlyList<AITool>? tools = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(client);
@@ -30,6 +30,9 @@ internal static class AgentFactory
                 {
                     Instructions = instructions.Text,
                     ResponseFormat = profile.Output,
+                    // An agent with no catalogue to read is given no tools, not an empty list: the framework
+                    // sends what is here, and an empty tool array would say the model may call nothing.
+                    Tools = tools is { Count: > 0 } ? [.. tools] : null,
                 },
             });
     }

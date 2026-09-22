@@ -19,7 +19,7 @@ namespace CoreRentalNet.Modules.Rentals.Application.Commands.Checkout;
 /// </remarks>
 public sealed class CheckoutCommandHandler(
     IConvertWorkspaceToOrder converter,
-    IProductCatalog catalog,
+    IProductCatalogService catalogService,
     IRentalRepository rentals,
     IPlaceOrder placeOrder,
     ICheckoutConfirmation confirmation) : ICheckoutCommandHandler
@@ -45,7 +45,7 @@ public sealed class CheckoutCommandHandler(
             return existing;
         }
 
-        // Price it from the catalog, and refuse visibly if anything has gone.
+        // Price it from the catalogService, and refuse visibly if anything has gone.
         var lines = PriceLines(conversion);
 
         // Now, and only now, the draft becomes terminal.
@@ -133,8 +133,8 @@ public sealed class CheckoutCommandHandler(
     }
 
     /// <summary>
-    /// Prices every line from the catalog rather than from the draft: the client sends no amount, and
-    /// a product that has left the catalog is refused by name rather than priced from memory
+    /// Prices every line from the catalogService rather than from the draft: the client sends no amount, and
+    /// a product that has left the catalogService is refused by name rather than priced from memory
     ///.
     /// </summary>
     private IReadOnlyList<OrderLineRequest> PriceLines(WorkspaceConversion conversion)
@@ -143,9 +143,9 @@ public sealed class CheckoutCommandHandler(
 
         foreach (var line in conversion.Lines)
         {
-            var price = catalog.Find(line.Sku)
+            var price = catalogService.Find(line.Sku)
                 ?? throw new DomainRuleViolationException(
-                    $"'{line.Sku}' is no longer in the catalog. Remove it from your workspace before renting.");
+                    $"'{line.Sku}' is no longer in the catalogService. Remove it from your workspace before renting.");
 
             lines.Add(new OrderLineRequest(price.Sku, price.Name, line.Quantity, price.MonthlyPrice));
         }

@@ -12,7 +12,7 @@ namespace CoreRentalNet.Modules.Workspace.Application.Commands.AssignProduct;
 public sealed class AssignProductHandler(
     IWorkspaceRepository repository,
     IOpaqueTokenService tokens,
-    IProductCatalog catalog,
+    IProductCatalogService catalogService,
     IWorkspaceService workspaceService) : IAssignProductHandler
 {
     /// <inheritdoc />
@@ -20,8 +20,8 @@ public sealed class AssignProductHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var price = catalog.Find(command.Sku)
-            ?? throw new DomainRuleViolationException($"The catalog does not know the product '{command.Sku}'.");
+        var price = catalogService.Find(command.Sku)
+            ?? throw new DomainRuleViolationException($"The catalogService does not know the product '{command.Sku}'.");
 
         var slot = CatalogSlotMapping.SlotFor(price.Category, price.SubCategory);
         var workspace = await WorkspaceResolver.ResolveAsync(repository, tokens, command.DraftToken, cancellationToken).ConfigureAwait(false);

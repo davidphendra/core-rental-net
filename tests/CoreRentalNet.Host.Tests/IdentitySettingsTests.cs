@@ -75,8 +75,8 @@ public sealed class IdentitySettingsTests
         {
             ["Auth0:Domain"] = "tenant.example",
             ["Auth0:ClientId"] = "client",
-            ["Auth0:Scope"] = "  openid profile email catalog:read  ",
-        }).Build()).Scope.Should().Be("openid profile email catalog:read");
+            ["Auth0:Scope"] = "  openid profile email catalogService:read  ",
+        }).Build()).Scope.Should().Be("openid profile email catalogService:read");
 
     [Fact] //, the browser suite's authority
     public void A_named_authority_replaces_the_one_the_domain_implies()

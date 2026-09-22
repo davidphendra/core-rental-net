@@ -1,4 +1,7 @@
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Application.Embeddings;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Hashing;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Storage;
 using CoreRentalNet.CatalogIngestion.Tests.Chunking;
@@ -20,16 +23,18 @@ public sealed class IngestionPipelineTests
 {
     private const int Width = 384;
 
+    private static EmbeddingRecipe Recipe(string cataloguePath)
+        => new("all-MiniLM-L6-v2-embedding", Width, ProductVectorContract.Composition, CatalogHash.OfFile(cataloguePath));
+
     private static IngestionPipeline Pipeline(
         string cataloguePath,
         string databasePath,
-        IProductChunker chunker,
-        int width = Width)
+        IProductChunker chunker)
         => new(
-            new ProductCatalog(cataloguePath, webRootPath: null),
+            new ProductCatalogService(cataloguePath, webRootPath: null),
             chunker,
             new SqliteProductEmbeddingStore(databasePath),
-            width,
+            Recipe(cataloguePath),
             TimeProvider.System);
 
     [Fact]
@@ -107,6 +112,24 @@ public sealed class IngestionPipelineTests
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*was configured*");
         StoredRows.Read(database.Path).Should().HaveCount(3);
     }
+    [Fact]
+    public async Task The_run_records_what_built_the_vectors_beside_them()
+    {
+        // The application will not search these vectors unless the recipe beside them says they came from the
+        // model and width it is configured with, so a run that wrote rows and no recipe writes a dead file.
+        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var database = new TemporaryDatabase();
+
+        await Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width)).RunAsync(CancellationToken.None);
+
+        var recipe = StoredRecipes.Read(database.Path);
+
+        recipe.Should().NotBeNull();
+        recipe!.ModelId.Should().Be("all-MiniLM-L6-v2-embedding");
+        recipe.Width.Should().Be(Width);
+        recipe.Composition.Should().Be(ProductVectorContract.Composition);
+        recipe.CatalogueHash.Should().Be(CatalogHash.OfFile(catalogue.Path));
+    }
 
     [Fact]
     public void A_catalogue_holding_no_products_is_refused_before_the_pipeline_runs()
@@ -115,7 +138,7 @@ public sealed class IngestionPipelineTests
         // the behaviour it depends on: no products is a failure, not an empty result.
         using var catalogue = new TemporaryCatalogFile(CatalogJson.NoRows);
 
-        var act = () => new ProductCatalog(catalogue.Path, webRootPath: null);
+        var act = () => new ProductCatalogService(catalogue.Path, webRootPath: null);
 
         act.Should().Throw<Exception>().WithMessage("*no products*");
     }

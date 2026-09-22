@@ -1,6 +1,6 @@
 using AwesomeAssertions;
-using CoreRentalNet.Host.Agents;
-using CoreRentalNet.Host.Composition;
+using CoreRentalNet.Host.Configs;
+using CoreRentalNet.Host.Extentions;
 using CoreRentalNet.Modules.Discovery.Application.Indexing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,20 +10,20 @@ using Xunit;
 namespace CoreRentalNet.Host.Tests;
 
 /// <summary>
-/// What start-up does when the catalogue index is not the one this deployment would build.
+/// What start-up does when the stored vectors are not the ones this deployment would build.
 /// </summary>
 /// <remarks>
-/// The decision taken for this epic was to <b>hide the feature rather than refuse to start</b>: the storefront,
+/// The decision taken for this epic was to <b>refuse the feature rather than refuse to start</b>: the storefront,
 /// the catalogue and the orders are not hostage to an optional feature's derived data. These tests hold both
-/// halves of that — the feature really is hidden, and the application really does keep going.
+/// halves of that — the search really is refused, and the application really does keep going.
 /// </remarks>
 public sealed class DiscoveryUnavailableTests
 {
     private static DiscoverySettings Configured()
-        => new("https://example.services.ai.azure.com/api/projects/demo", "embeddings", "text-embedding-3-large", 512, 2, 0.1, 30);
+        => new("http://localhost:8080/v1", "all-MiniLM-L6-v2-embedding", "App_Data/product_embedding.db", 384);
 
     private static DiscoverySettings Unconfigured()
-        => new(string.Empty, string.Empty, string.Empty, 0, 2, 0.1, 30);
+        => new(string.Empty, string.Empty, string.Empty, 384);
 
     /// <summary>An application with just enough registered to run the gate, and a log a test can read.</summary>
     private static (WebApplication App, StubCatalogIndexFreshness Freshness, CapturingLoggerProvider Logs) Host(
@@ -34,7 +34,7 @@ public sealed class DiscoveryUnavailableTests
         var logs = new CapturingLoggerProvider();
 
         builder.Services.AddSingleton(settings);
-        builder.Services.AddSingleton(new SuggestionAvailability());
+        builder.Services.AddSingleton(new CatalogIndexAvailability());
         builder.Services.AddSingleton<ICatalogIndexFreshness>(freshness);
         builder.Services.AddSingleton<ILoggerFactory>(LoggerFactory.Create(logging => logging.AddProvider(logs)));
 
@@ -42,76 +42,76 @@ public sealed class DiscoveryUnavailableTests
     }
 
     [Fact] // SCR-20
-    public async Task An_index_that_was_never_built_hides_the_feature_and_names_the_tool()
+    public void Vectors_that_were_never_built_refuse_the_search_and_name_the_tool()
     {
         var (app, _, logs) = Host(Configured(), new StubCatalogIndexFreshness(() => CatalogIndexVerdict.NotBuilt));
-        await using var host = app;
+        using var host = app;
 
-        await app.GateSuggestionOnIndexAsync();
+        app.GateSimilarityOnIndex();
 
-        app.Services.GetRequiredService<SuggestionAvailability>().IsAvailable.Should().BeFalse();
-        logs.Entries.Should().Contain(entry => entry.Level == LogLevel.Error && entry.Message.Contains("hidden"));
+        app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeFalse();
+        logs.Entries.Should().Contain(entry => entry.Level == LogLevel.Error && entry.Message.Contains("unavailable"));
         logs.Entries.Should().Contain(entry => entry.Message.Contains("CatalogIngestion"));
     }
 
     [Fact] // SCR-20
-    public async Task An_index_that_is_current_hides_nothing()
+    public void Vectors_that_are_current_refuse_nothing()
     {
         var (app, freshness, logs) = Host(Configured(), new StubCatalogIndexFreshness(() => CatalogIndexVerdict.Usable));
-        await using var host = app;
+        using var host = app;
 
-        await app.GateSuggestionOnIndexAsync();
+        app.GateSimilarityOnIndex();
 
         freshness.Checks.Should().Be(1, "the check has to have run for this to prove anything");
-        app.Services.GetRequiredService<SuggestionAvailability>().IsAvailable.Should().BeTrue();
-        logs.Entries.Should().NotContain(entry => entry.Message.Contains("hidden"));
+        app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeTrue();
+        logs.Entries.Should().NotContain(entry => entry.Message.Contains("unavailable"));
     }
 
     [Fact] // SCR-20
-    public async Task A_stale_index_says_which_of_the_recorded_values_moved()
+    public void Stale_vectors_say_which_of_the_recorded_values_moved()
     {
         var (app, _, logs) = Host(
             Configured(),
-            new StubCatalogIndexFreshness(() => CatalogIndexVerdict.Stale("the catalogue has changed since the index was built")));
-        await using var host = app;
+            new StubCatalogIndexFreshness(() => CatalogIndexVerdict.Stale("the catalogue has changed since the vectors were built")));
+        using var host = app;
 
-        await app.GateSuggestionOnIndexAsync();
+        app.GateSimilarityOnIndex();
 
         // The operator has to be able to act on the line, so it says which value disagreed rather than only that
         // something did.
-        app.Services.GetRequiredService<SuggestionAvailability>().Reason.Should().Contain("catalogue has changed");
+        app.Services.GetRequiredService<CatalogIndexAvailability>().Reason.Should().Contain("catalogue has changed");
         logs.Entries.Should().Contain(entry => entry.Message.Contains("catalogue has changed"));
     }
 
     [Fact] // SCR-20
     public async Task The_application_starts_even_when_the_check_itself_fails()
     {
-        // The safe direction at start-up: hiding costs a feature, and throwing costs the whole application. A
+        // The safe direction at start-up: refusing costs a feature, and throwing costs the whole application. A
         // genuine defect is still visible in the log rather than silent.
         var (app, _, logs) = Host(
             Configured(),
             new StubCatalogIndexFreshness(() => throw new InvalidOperationException("the database is unreadable")));
         await using var host = app;
 
-        var gate = async () => await app.GateSuggestionOnIndexAsync();
+        var gate = () => app.GateSimilarityOnIndex();
 
-        await gate.Should().NotThrowAsync();
-        app.Services.GetRequiredService<SuggestionAvailability>().IsAvailable.Should().BeFalse();
+        gate.Should().NotThrow();
+        app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeFalse();
         logs.Entries.Should().Contain(entry => entry.Level == LogLevel.Error && entry.Message.Contains("could not be checked"));
     }
 
     [Fact] // SCR-20
-    public async Task Nothing_is_checked_when_the_deployment_has_not_been_told_where_to_embed()
+    public void Nothing_is_checked_when_the_deployment_has_not_been_told_where_to_embed()
     {
-        // The feature is already hidden for want of configuration, and the embedding client registered is the one
-        // that refuses. Reading the index anyway would be a database read on every start-up for a deployment that
+        // The feature is already unavailable for want of configuration, and the embedding client registered is the
+        // one that refuses. Reading the vectors anyway would be a file read on every start-up for a deployment that
         // cannot use it.
         var (app, freshness, _) = Host(Unconfigured(), new StubCatalogIndexFreshness(() => CatalogIndexVerdict.NotBuilt));
-        await using var host = app;
+        using var host = app;
 
-        await app.GateSuggestionOnIndexAsync();
+        app.GateSimilarityOnIndex();
 
         freshness.Checks.Should().Be(0);
-        app.Services.GetRequiredService<SuggestionAvailability>().IsAvailable.Should().BeTrue();
+        app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeTrue();
     }
 }

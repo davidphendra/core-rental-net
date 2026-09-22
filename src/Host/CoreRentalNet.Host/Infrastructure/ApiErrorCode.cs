@@ -21,14 +21,14 @@ internal static class ApiErrorCode
     /// <summary>A filter was sent that the catalogue does not publish.</summary>
     public const string UnknownFilter = "catalog.unknown_filter";
 
+    /// <summary>The catalogue's stored vectors cannot be searched right now.</summary>
+    public const string SimilarityUnavailable = "catalog.similarity_unavailable";
+
     /// <summary>No token was presented, or the one presented was not accepted.</summary>
     public const string Unauthenticated = "catalog.unauthenticated";
 
     /// <summary>A token was accepted, and it does not entitle the caller to this.</summary>
     public const string NotPermitted = "catalog.not_permitted";
-
-    /// <summary>This customer already has a suggestion run in flight, and a run is paid for.</summary>
-    public const string RunInFlight = "builder.run_in_flight";
 
     /// <summary>Nothing answers this path.</summary>
     public const string UnknownRoute = "api.unknown_route";

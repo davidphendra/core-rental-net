@@ -9,7 +9,7 @@ using Xunit;
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
 /// <summary>
-/// The mapping from one catalog row to a product, tested from rows alone: the loader reads no file
+/// The mapping from one catalogService row to a product, tested from rows alone: the loader reads no file
 /// shape other than the text it is given.
 /// </summary>
 public sealed class CatalogRecordMapperTests

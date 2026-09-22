@@ -1,5 +1,5 @@
 using CoreRentalNet.Host.Components;
-using CoreRentalNet.Host.Composition;
+using CoreRentalNet.Host.Extentions;
 using CoreRentalNet.Host.Presentation;
 
 // The composition root, and nothing else: what the application is made of, in the order it is
@@ -7,7 +7,7 @@ using CoreRentalNet.Host.Presentation;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddLocalDevelopmentSettings();
-// Before anything formats a value: see BusinessCulture for why the culture is set here and read
+// Before anything formats a value: see BusinessCultureExtentions for why the culture is set here and read
 // from configuration rather than written beside each format string.
 builder.AddBusinessCulture();
 builder.AddBuildingBlocks();
@@ -16,27 +16,27 @@ var identity = builder.AddOptionalIdentity();
 builder.AddCatalogAuthorization();
 builder.AddCatalogApiAuthentication(identity);
 builder.AddCatalogApiAuthorization(identity);
-// The AI section is gated on a permission the deployment configures, and is closed when it has not:
-// no section, rather than an open one. The catalogue's own rule is untouched, and stays open.
-builder.AddAiAuthorization();
+// Similarity search is a second capability on the same catalogue, with its own permission: a deployment
+// may allow a caller to read the catalogue and not to search it by meaning, which embeds their sentence at
+// a server. Closed when the deployment has not said which claim entitles a caller.
+builder.AddSimilaritySearchAuthorization(identity);
+builder.AddCatalogMcpAuthorization(identity);
 builder.AddPresentation();
 
 builder.AddSqliteDatabase();
 builder.AddCatalog();
 builder.AddCatalogApi();
+builder.AddCatalogMcp();
 builder.AddApiResponses();
 builder.AddCatalogOpenApi();
 builder.AddWorkspace();
 builder.AddRentals();
 
-// The catalogue index and the shortlist. It embeds through the same project the agent is reached through,
-// with its own credential, and a deployment that has not been told where to embed gets a hidden feature
-// rather than a failed request.
+// The catalogue vectors. The vectors are built by the ingestion tool against a local
+// OpenAI-compatible server, and this application embeds its customer queries through the same one and reads
+// those vectors out of the tool's own file. A deployment that has not been told where either is gets a feature
+// that reports itself unavailable rather than a failed request.
 builder.AddDiscovery();
-
-// The suggestion agent is reached through the Foundry client, and is unavailable rather than open when
-// it has not been configured. Nothing else in the application knows that Foundry exists.
-builder.AddSuggestionAgent();
 
 builder.Services.AddScoped<IWorkspaceSession, WorkspaceSession>();
 
@@ -53,8 +53,8 @@ app.MapRazorComponents<App>()
 
 await app.ApplyMigrationsInDevelopmentAsync();
 
-// After the migrations, because in development those are what create the index's tables. An index that is absent
-// or stale hides the AI feature and names the tool to run; it does not stop the application.
-await app.GateSuggestionOnIndexAsync();
+// Vectors that are absent or stale refuse the similarity search and name the tool to run; they do not stop
+// the application.
+app.GateSimilarityOnIndex();
 
 await app.RunAsync();

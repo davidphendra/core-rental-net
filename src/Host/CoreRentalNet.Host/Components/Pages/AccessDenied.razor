@@ -1,6 +1,6 @@
 @page "/access-denied"
 @layout MarketingLayout
-@* Where a signed-in account without catalog access lands. The authorization middleware answers a
+@* Where a signed-in account without catalogService access lands. The authorization middleware answers a
    request that arrives with a redirect to the address in the cookie options, and without a page here
    that redirect goes to the handler's default, which this application does not serve: a blank 404
    where an explanation belongs. What it says is the same component the router renders for a

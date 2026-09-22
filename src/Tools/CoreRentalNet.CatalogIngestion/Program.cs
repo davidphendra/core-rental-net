@@ -1,4 +1,8 @@
 using System.ClientModel;
+using CoreRentalNet.BuildingBlocks.Application.Embeddings;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Embeddings;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Hashing;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 using CoreRentalNet.CatalogIngestion;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Embeddings;
@@ -57,18 +61,29 @@ async Task<int> Run()
     // The same loader the application uses, so what is embedded is what a caller would read. The web root is
     // absent on purpose: this tool never draws an image, and passing one would only let image resolution fail
     // for a reason that does not matter here.
-    var catalogue = new ProductCatalog(settings.CataloguePath, webRootPath: null);
+    var catalogue = new ProductCatalogService(settings.CataloguePath, webRootPath: null);
 
-    var embeddings = OpenAiCompatibleEmbeddingClient.Build(settings.LlmServer, settings.LlmModel);
+    var embeddings = OpenAiCompatibleEmbeddingRepository.Build(settings.LlmServer, settings.LlmModel);
     var chunker = new SemanticProductChunker(new ClientEmbeddingGenerator(embeddings), settings.Chunker);
     var store = new SqliteProductEmbeddingStore(settings.DatabasePath);
 
-    var written = await new IngestionPipeline(catalogue, chunker, store, settings.Width, TimeProvider.System)
+    var written = await new IngestionPipeline(catalogue, chunker, store, Recipe(), TimeProvider.System)
         .RunAsync(CancellationToken.None);
 
     Console.WriteLine($"Wrote {written} vectors from {settings.CataloguePath} into {settings.DatabasePath}.");
     return 0;
 }
+
+// What built the vectors, written into the file beside them: the model, the width, the composition of the
+// text, and the hash of the catalogue file this run actually read. The application compares all four against
+// its own configuration before it searches anything, so a disagreement hides the feature and names this tool
+// instead of ranking vectors that are not comparable.
+EmbeddingRecipe Recipe()
+    => new(
+        settings.LlmModel,
+        settings.Width,
+        ProductVectorContract.Composition,
+        CatalogHash.OfFile(settings.CataloguePath));
 
 // The message is what an operator can act on: it names the file, the key or the server. Anything that is not
 // one of the failures this tool expects is a defect, and for a defect the stack trace is what says where it

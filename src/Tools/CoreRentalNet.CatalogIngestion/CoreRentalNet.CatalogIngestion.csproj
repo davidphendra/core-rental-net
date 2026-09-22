@@ -12,9 +12,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <!-- The vec0 extension, so the tool can create and fill the virtual table the application searches. -->
+    <PackageReference Include="HiraokaHyperTools.sqlite-vec" ExcludeAssets="contentFiles" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
-    <PackageReference Include="OpenAI" />
+    <!-- Named directly rather than left transitive: Describe names ClientResultException itself, and the
+         policy here is that a type a project names is a package that project pins. -->
+    <PackageReference Include="System.ClientModel" />
+    <!-- SemanticChunker.NET, and through it the library's embedding abstraction. The embedding client
+         itself is no longer the tool's own: it moved to BuildingBlocks.Infrastructure, because the
+         application embeds through the same server and one adapter is what keeps the two comparable. -->
     <PackageReference Include="SemanticChunker.NET" />
   </ItemGroup>
 
@@ -23,7 +30,8 @@
          Catalogue module is unchanged by this tool and owns that parsing. -->
     <ProjectReference Include="../../Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
     <!-- The SQLite plumbing, so the tool's database file is opened with the same journal mode and busy
-         timeout the application uses. -->
+         timeout the application uses, plus the shared vector contract, blob codec and embedding client
+         that the application reads these same vectors with. -->
     <ProjectReference Include="../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Infrastructure/CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 

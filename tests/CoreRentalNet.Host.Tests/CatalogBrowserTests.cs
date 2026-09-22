@@ -11,8 +11,8 @@ namespace CoreRentalNet.Host.Tests;
 /// </summary>
 /// <remarks>
 /// The browser is asked through a query, so the tests answer with a list of their own and assert the
-/// rules rather than the catalog: which tab is current, what happens to the search when the tab
-/// changes, and that the catalog is asked with both.
+/// rules rather than the catalogService: which tab is current, what happens to the search when the tab
+/// changes, and that the catalogService is asked with both.
 /// </remarks>
 public sealed class CatalogBrowserTests
 {

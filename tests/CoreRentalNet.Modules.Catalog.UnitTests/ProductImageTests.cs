@@ -4,7 +4,7 @@ using ProductImageResolver = CoreRentalNet.Modules.Catalog.Infrastructure.Produc
 
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
-/// <summary>The two image rules, without a catalog file in the way.</summary>
+/// <summary>The two image rules, without a catalogService file in the way.</summary>
 public sealed class ProductImageTests
 {
     [Fact] // CAT-53

@@ -6,8 +6,8 @@ using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Services;
 
-/// <summary>Prices a draft from the catalog, on every read.</summary>
-public sealed class WorkspaceQuoteService(IMoneyService money, IProductCatalog catalog) : IWorkspaceQuoteService
+/// <summary>Prices a draft from the catalogService, on every read.</summary>
+public sealed class WorkspaceQuoteService(IMoneyService money, IProductCatalogService catalogService) : IWorkspaceQuoteService
 {
     public WorkspaceQuote Quote(Domain.Workspace workspace)
     {
@@ -17,7 +17,7 @@ public sealed class WorkspaceQuoteService(IMoneyService money, IProductCatalog c
 
         foreach (var assignment in workspace.Assignments)
         {
-            var price = catalog.Find(assignment.Sku);
+            var price = catalogService.Find(assignment.Sku);
 
             lines.Add(price is null
                 ? new QuoteLine(assignment.Slot, assignment.Sku, "(no longer available)", assignment.Quantity, null, null, null, false)

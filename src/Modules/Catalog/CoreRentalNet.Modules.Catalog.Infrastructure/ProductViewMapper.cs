@@ -38,7 +38,7 @@ public static class ProductViewMapper
             ProductCategory.Chair => CatalogCategory.Chair,
             ProductCategory.Desk => CatalogCategory.Desk,
             ProductCategory.Accessory => CatalogCategory.Accessory,
-            _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown catalog category."),
+            _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown catalogService category."),
         };
 
     private static CatalogSubCategory SubCategory(ProductSubCategory subCategory)
@@ -49,6 +49,6 @@ public static class ProductViewMapper
             ProductSubCategory.Lamp => CatalogSubCategory.Lamp,
             ProductSubCategory.Monitor => CatalogSubCategory.Monitor,
             ProductSubCategory.Plant => CatalogSubCategory.Plant,
-            _ => throw new ArgumentOutOfRangeException(nameof(subCategory), subCategory, "Unknown catalog subcategory."),
+            _ => throw new ArgumentOutOfRangeException(nameof(subCategory), subCategory, "Unknown catalogService subcategory."),
         };
 }

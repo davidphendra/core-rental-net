@@ -1,5 +1,5 @@
 using AwesomeAssertions;
-using CoreRentalNet.Host.Composition;
+using CoreRentalNet.Host.Extentions;
 using CoreRentalNet.Host.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

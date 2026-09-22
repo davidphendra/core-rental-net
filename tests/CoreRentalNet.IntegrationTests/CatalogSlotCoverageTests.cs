@@ -7,7 +7,7 @@ using Xunit;
 namespace CoreRentalNet.IntegrationTests;
 
 /// <summary>
-/// Proves the catalog-to-slot mapping stays total over the real file. If someone adds a
+/// Proves the catalogService-to-slot mapping stays total over the real file. If someone adds a
 /// product with a new subcategory, this fails instead of the customer seeing a dead card.
 /// </summary>
 public sealed class CatalogSlotCoverageTests
@@ -17,7 +17,7 @@ public sealed class CatalogSlotCoverageTests
     [Fact] // SLOT-06
     public void Every_product_in_the_real_catalog_maps_to_exactly_one_slot()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         var mapped = catalog.All
             .Select(product => (product.Sku, Slot: CatalogSlotMapping.SlotFor(product.Category, product.SubCategory)))
@@ -30,7 +30,7 @@ public sealed class CatalogSlotCoverageTests
     [Fact] // SLOT-06
     public void Every_slot_has_at_least_one_product_that_can_fill_it()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         var reachable = catalog.All
             .Select(product => CatalogSlotMapping.SlotFor(product.Category, product.SubCategory))
@@ -45,7 +45,7 @@ public sealed class CatalogSlotCoverageTests
     [Fact] // SLOT-02
     public void The_catalog_is_large_enough_to_fill_a_workspace_and_then_some()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         catalog.All.Count.Should().BeGreaterThan(new SlotRuleProvider().TotalCapacity);
     }
@@ -59,7 +59,7 @@ public sealed class CatalogSlotCoverageTests
         // vocabulary a FINER partition than the slots. Discovery takes the best two products in each
         // (category, subCategory) bucket, so a nine-bucket catalogue would hand the run more than fourteen
         // products, and "two per slot" would stop being what the shortlist is.
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         var buckets = catalog.All
             .GroupBy(product => (product.Category, product.SubCategory))
@@ -81,7 +81,7 @@ public sealed class CatalogSlotCoverageTests
         // design rests on: the catalogue's own vocabulary is used for the buckets, with no mapping of its own
         // and no mirrored slot type, ONLY because the two partitions are the same. If that stops being true the
         // shortcut is no longer available and the buckets have to be expressed some other way.
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         var buckets = catalog.All.Select(product => (product.Category, product.SubCategory)).Distinct().ToArray();
         var slots = Enum.GetValues<SlotId>();

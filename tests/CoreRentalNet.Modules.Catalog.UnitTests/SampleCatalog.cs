@@ -1,6 +1,6 @@
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
-/// <summary>The seven sample rows the catalog tests read from, written as the file would hold them.</summary>
+/// <summary>The seven sample rows the catalogService tests read from, written as the file would hold them.</summary>
 internal static class SampleCatalog
 {
     /// <summary>

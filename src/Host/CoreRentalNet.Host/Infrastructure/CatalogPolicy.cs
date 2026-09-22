@@ -1,7 +1,7 @@
 namespace CoreRentalNet.Host.Infrastructure;
 
 /// <summary>
-/// The name of the policy that guards the catalog, in one place.
+/// The name of the policy that guards the catalogService, in one place.
 /// </summary>
 /// <remarks>
 /// A name rather than a value: it is how the page and its registration refer to the same rule, so it

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
 
-/// <summary>The tabs' words and icons, which come from the catalog's own vocabulary.</summary>
+/// <summary>The tabs' words and icons, which come from the catalogService's own vocabulary.</summary>
 public sealed class CatalogTabsTests
 {
     [Fact]

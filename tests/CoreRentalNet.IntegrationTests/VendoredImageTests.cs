@@ -23,7 +23,7 @@ public sealed class VendoredImageTests
     [Fact] // UI-06
     public void The_vendored_images_resolve_to_real_files()
     {
-        var catalog = new ProductCatalog(ProductsJson, WebRoot);
+        var catalog = new ProductCatalogService(ProductsJson, WebRoot);
 
         var vendored = catalog.All
             .Where(product => product.ImagePath.StartsWith("/images/vendored/", StringComparison.Ordinal))
@@ -45,7 +45,7 @@ public sealed class VendoredImageTests
     [Fact] // UI-06
     public void The_real_catalog_carries_no_unvendored_remote_image_path()
     {
-        var catalog = new ProductCatalog(ProductsJson, WebRoot);
+        var catalog = new ProductCatalogService(ProductsJson, WebRoot);
 
         catalog.All.Should().NotContain(
             product => product.ImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase),
@@ -65,7 +65,7 @@ public sealed class VendoredImageTests
             [{ "skuNo": "AAA0001", "name": "Remote", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "https://example.invalid/remote.png", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
-        var product = new ProductCatalog(file.Path, webRoot.Path).Find("AAA0001")!;
+        var product = new ProductCatalogService(file.Path, webRoot.Path).Find("AAA0001")!;
 
         product.ImagePath.Should().Be("/images/vendored/AAA0001.png", "a remote image is replaced by its local copy");
         product.ImageAvailable.Should().BeTrue();
@@ -75,13 +75,13 @@ public sealed class VendoredImageTests
     public void A_product_whose_image_file_is_absent_is_flagged_with_a_placeholder_path()
     {
         // Every shipped product now carries a vendored photograph, so the absent-file case is
-        // exercised with a row written for it rather than with whatever the catalog happens to hold.
+        // exercised with a row written for it rather than with whatever the catalogService happens to hold.
         using var file = new TemporaryFile(
             """
             [{ "skuNo": "AAA0001", "name": "No picture", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/absent.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
-        var product = new ProductCatalog(file.Path, WebRoot).Find("AAA0001")!;
+        var product = new ProductCatalogService(file.Path, WebRoot).Find("AAA0001")!;
 
         product.ImageAvailable.Should().BeFalse("the file is not on disk");
         product.ImagePath.Should().StartWith("/placeholders/", "a missing image falls back to a drawn placeholder");

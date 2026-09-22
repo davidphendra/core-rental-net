@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Controllers;
 using Xunit;
 
@@ -200,6 +201,33 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
         {
             scope.Value.GetString().Should().NotBeNullOrWhiteSpace($"scope '{scope.Name}' has no description");
         }
+    }
+
+    [Fact] // API-13, API-39
+    public async Task The_document_describes_the_similarity_search_and_the_permission_it_needs()
+    {
+        using var document = await GetDocumentAsync();
+
+        var operation = document.RootElement
+            .GetProperty("paths").GetProperty("/api/catalog/similarity").GetProperty("get");
+
+        var parameters = operation.GetProperty("parameters").EnumerateArray()
+            .Select(parameter => parameter.GetProperty("name").GetString())
+            .ToArray();
+
+        parameters.Should().BeEquivalentTo(["category", "subCategory", "query", "view", "limit"]);
+
+        // Its own permission, not the catalogue's: a generated client would otherwise be made to ask for a
+        // scope that does not entitle it to search by meaning.
+        var scopes = operation.GetProperty("security").EnumerateArray()
+            .SelectMany(requirement => requirement.GetProperty("Auth0").EnumerateArray())
+            .Select(scope => scope.GetString())
+            .ToArray();
+
+        scopes.Should().Equal("searchsimilarity:aibuilder");
+
+        // A caller has to be told that an unusable index is retryable rather than a failure of its request.
+        operation.GetProperty("responses").TryGetProperty("503", out _).Should().BeTrue();
     }
 
     private async Task<JsonDocument> GetDocumentAsync()

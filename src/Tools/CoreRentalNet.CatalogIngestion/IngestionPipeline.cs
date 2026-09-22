@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Storage;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
@@ -16,16 +17,17 @@ namespace CoreRentalNet.CatalogIngestion;
 /// table and re-running the tool is idempotent.
 /// </para>
 /// <para>
-/// <b>It depends on the catalogue's published port and on a width, not on a loader and a configuration.</b>
-/// Reading the file is <see cref="IProductCatalog"/>'s business, and the only setting this run needs is the
-/// number it checks each vector against.
+/// <b>It depends on the catalogue's published port and on a recipe, not on a loader and a configuration.</b>
+/// Reading the file is <see cref="IProductCatalogService"/>'s business, and what this run needs beyond that is what it
+/// checks each vector against and what it records beside the vectors — which is the recipe, and nothing else
+/// out of the settings file.
 /// </para>
 /// </remarks>
 internal sealed class IngestionPipeline(
-    IProductCatalog catalogue,
+    IProductCatalogService catalogue,
     IProductChunker chunker,
     IProductEmbeddingStore store,
-    int width,
+    EmbeddingRecipe recipe,
     TimeProvider clock)
 {
     /// <summary>Writes the catalogue's vectors, and answers how many rows were written.</summary>
@@ -58,7 +60,7 @@ internal sealed class IngestionPipeline(
                 vector)));
         }
 
-        store.ReplaceAll(rows, clock.GetUtcNow());
+        store.ReplaceAll(rows, recipe, clock.GetUtcNow());
 
         return rows.Count;
     }
@@ -76,12 +78,12 @@ internal sealed class IngestionPipeline(
                 $"Product '{product.Sku}' produced no chunks, so it would be absent from the table. Nothing has been written.");
         }
 
-        float[]? miswidthed = vectors.FirstOrDefault(vector => vector.Length != width);
+        float[]? miswidthed = vectors.FirstOrDefault(vector => vector.Length != recipe.Width);
 
         if (miswidthed is not null)
         {
             throw new InvalidOperationException(
-                $"The embedding server returned a vector {miswidthed.Length} wide where {width} was configured. "
+                $"The embedding server returned a vector {miswidthed.Length} wide where {recipe.Width} was configured. "
                 + "A width is what makes a stored vector comparable with a query, so nothing has been written.");
         }
     }

@@ -4,7 +4,7 @@ using CoreRentalNet.Modules.Catalog.Infrastructure.Contracts;
 
 namespace CoreRentalNet.Modules.Catalog.Infrastructure.Loader;
 
-/// <summary>Reads the catalog file into its row shape, or says why it cannot.</summary>
+/// <summary>Reads the catalogService file into its row shape, or says why it cannot.</summary>
 /// <remarks>
 /// The failure is deliberately loud: a broken file stops the application at start-up rather than
 /// producing a half-populated shop, so every message names the file. The rows this returns are
@@ -19,7 +19,7 @@ internal static class ProductFile
     {
         if (string.IsNullOrWhiteSpace(path))
         {
-            throw new ProductLoadException("No catalog file path was configured.");
+            throw new ProductLoadException("No catalogService file path was configured.");
         }
 
         if (!File.Exists(path))

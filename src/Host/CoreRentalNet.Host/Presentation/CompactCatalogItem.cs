@@ -7,17 +7,17 @@ namespace CoreRentalNet.Host.Presentation;
 /// with, and nothing it renders.
 /// </summary>
 /// <remarks>
-/// The image path, the image flag and the featured flag are absent because the caller that asks for
-/// this names SKUs and recomputes amounts - the application resolves pictures, and the agent has no
-/// page to draw. The price is a number rather than a Money object, and the currency travels once on
-/// the envelope, because the catalogue holds one currency and repeating it on every row is most of
-/// what the compact projection leaves out.
+/// The image path, the image flag and the featured flag are absent because the caller that asks for this
+/// names SKUs and recomputes amounts - the application resolves pictures, and the agent has no page to draw.
+/// The price is a number and its currency travels beside it, so a row read on its own still says what its
+/// price is in; the envelope states the one currency the catalogue is priced in as well, because an answer
+/// with no rows has no row to read it from.
 /// </remarks>
 public sealed record CompactCatalogItem(
     string Sku,
-    string Name,
     CatalogCategory Category,
+    string Name,
     CatalogSubCategory? SubCategory,
-    decimal PricePerMonth,
     string Description,
-    CatalogMetadata Metadata);
+    decimal PricePerMonth,
+    string Currency);

@@ -56,8 +56,8 @@ public sealed class CommittedConfigurationTests
         // one whose money it charges. Configure en-US and it is the only thing that fails: every page
         // still renders, every money unit test still passes, and every amount is simply dollars.
         // The currency an amount is stated in is the amount's own (Money.Currency, read from the
-        // catalog); the culture only decides how that amount is written. The two are kept in step on
-        // purpose: the catalog must state the settlement currency (a product priced in another one is
+        // catalogService); the culture only decides how that amount is written. The two are kept in step on
+        // purpose: the catalogService must state the settlement currency (a product priced in another one is
         // refused at load), and en-ID is the culture that writes that currency the way Denpasar reads
         // it. This test is the assertion that the two halves describe the same money.
         region.ISOCurrencySymbol.Should().Be(

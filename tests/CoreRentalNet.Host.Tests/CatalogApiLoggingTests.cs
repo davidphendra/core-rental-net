@@ -1,6 +1,7 @@
 using System.Net;
 using AwesomeAssertions;
 using CoreRentalNet.Host.Controllers;
+using CoreRentalNet.Host.Helpers;
 using Xunit;
 
 namespace CoreRentalNet.Host.Tests;
@@ -24,7 +25,7 @@ public sealed class CatalogApiLoggingTests(CatalogApiAuthorizedFactory factory)
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var entry = factory.Logs.Entries
-            .Where(candidate => candidate.Category == CatalogApiLog.Category)
+            .Where(candidate => candidate.Category == CatalogApiLogHelper.Category)
             .Should().ContainSingle().Subject;
 
         entry.Property("Caller").Should().Be(CatalogApiTestHandler.Caller);
@@ -41,7 +42,7 @@ public sealed class CatalogApiLoggingTests(CatalogApiAuthorizedFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         factory.Logs.Entries
-            .Where(candidate => candidate.Category == CatalogApiLog.Category)
+            .Where(candidate => candidate.Category == CatalogApiLogHelper.Category)
             .Should().BeEmpty("a refused call is not recorded as a read");
     }
 }

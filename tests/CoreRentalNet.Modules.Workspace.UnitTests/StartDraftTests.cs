@@ -12,7 +12,7 @@ public sealed class StartDraftTests
     private static WorkspaceTestContext NewContext()
     {
         var context = new WorkspaceTestContext();
-        context.Catalog
+        context.CatalogService
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("DSK0001", 800000m, CatalogCategory.Desk, null);
         return context;
@@ -55,7 +55,7 @@ public sealed class StartDraftTests
     public async Task A_started_draft_can_be_filled_and_read_back()
     {
         var context = NewContext();
-        var catalog = context.Catalog;
+        var catalog = context.CatalogService;
         await new StartDraftHandler(context.Repository, WorkspaceTestContext.Tokens).HandleAsync(new StartDraftCommand(context.Token));
 
         await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces)

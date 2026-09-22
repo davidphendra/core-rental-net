@@ -23,8 +23,8 @@ internal static class CompactCatalogProjection
 
     /// <summary>One product as this projection carries it.</summary>
     /// <remarks>
-    /// Exposed because the suggestion payload carries the same projection, and a second copy of this
-    /// mapping is how the two would come to disagree about what the agent is told and what a caller reads.
+    /// The price and its currency both come from the module's <c>Money</c>, so this projection converts
+    /// nothing: it chooses which fields cross and leaves the arithmetic where the module keeps it.
     /// </remarks>
     public static CompactCatalogItem Item(ProductView product)
     {
@@ -32,12 +32,12 @@ internal static class CompactCatalogProjection
 
         return new CompactCatalogItem(
             product.Sku,
-            product.Name,
             product.Category,
+            product.Name,
             product.SubCategory,
-            product.MonthlyPrice.Amount,
             product.Description,
-            product.Metadata);
+            product.MonthlyPrice.Amount,
+            product.MonthlyPrice.Currency);
     }
 
     /// <summary>The currency a catalogue's prices are stated in, which an envelope states once.</summary>

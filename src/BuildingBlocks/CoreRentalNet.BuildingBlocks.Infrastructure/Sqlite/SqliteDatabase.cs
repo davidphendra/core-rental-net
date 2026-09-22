@@ -13,8 +13,26 @@ namespace CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 /// </remarks>
 public static class SqliteDatabase
 {
+    /// <summary>The name of the vec0 extension, as SQLite resolves it against the app's native folders.</summary>
+    private const string VectorExtension = "vec0";
+
     /// <summary>An open connection with the settings' pragmas already applied, and its directory created.</summary>
     public static SqliteConnection Open(SqliteDatabaseSettings settings)
+        => Open(settings, loadVectorExtension: false);
+
+    /// <summary>
+    /// An open connection that can search vectors: the same as <see cref="Open"/>, with vec0 loaded.
+    /// </summary>
+    /// <remarks>
+    /// <b>Only the vector paths ask for this.</b> Almost every connection in the application is an ordinary
+    /// SQLite file with nothing to do with vectors, and loading a native extension on those would make a
+    /// missing vec0 binary break the modules that do not use it. The tool that writes the vectors and the
+    /// adapter that searches them opt in; nothing else does.
+    /// </remarks>
+    public static SqliteConnection OpenWithVectors(SqliteDatabaseSettings settings)
+        => Open(settings, loadVectorExtension: true);
+
+    private static SqliteConnection Open(SqliteDatabaseSettings settings, bool loadVectorExtension)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -23,6 +41,13 @@ public static class SqliteDatabase
         var connection = new SqliteConnection(settings.ConnectionString);
         connection.Open();
         ApplyPragmas(connection, settings);
+
+        if (loadVectorExtension)
+        {
+            // Microsoft.Data.Sqlite enables extension loading for the call itself; the name resolves against
+            // the native folders the package copied vec0 into.
+            connection.LoadExtension(VectorExtension);
+        }
 
         return connection;
     }

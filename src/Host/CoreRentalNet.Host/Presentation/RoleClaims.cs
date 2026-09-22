@@ -15,7 +15,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// </para>
 /// <para>
 /// The suffix is the tenant's convention, not an Auth0 rule, so a permission that does not carry it
-/// is left alone: the one that entitles a reader to the catalog names no role. The name before the
+/// is left alone: the one that entitles a reader to the catalogService names no role. The name before the
 /// suffix is shown as the tenant spells it, with its first letter capitalised.
 /// </para>
 /// </remarks>

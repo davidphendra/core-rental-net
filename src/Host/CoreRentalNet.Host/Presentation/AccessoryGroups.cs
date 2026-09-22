@@ -8,8 +8,8 @@ namespace CoreRentalNet.Host.Presentation;
 /// The accessory subcategories in the order they are displayed, with the label above each.
 /// </summary>
 /// <remarks>
-/// The order is the one thing here the catalog cannot answer, because it is how the products are
-/// arranged on a screen rather than what they are; the wording is the label on the catalog's own
+/// The order is the one thing here the catalogService cannot answer, because it is how the products are
+/// arranged on a screen rather than what they are; the wording is the label on the catalogService's own
 /// subcategory. Held as data rather than as a condition in the markup so that the panel, the store
 /// and the picker cannot disagree about either. The order is an immutable constant, not global
 /// mutable state.
@@ -25,7 +25,7 @@ public static class AccessoryGroups
         CatalogSubCategory.Beanbag,
     ];
 
-    /// <summary>The label above this subcategory's products, from the catalog's own subcategory.</summary>
+    /// <summary>The label above this subcategory's products, from the catalogService's own subcategory.</summary>
     public static string LabelFor(CatalogSubCategory subCategory) => subCategory.Label();
 
     /// <summary>

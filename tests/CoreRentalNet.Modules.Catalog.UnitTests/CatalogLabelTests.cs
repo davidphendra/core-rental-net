@@ -6,7 +6,7 @@ using Xunit;
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
 /// <summary>
-/// The words the catalog publishes for its own vocabulary.
+/// The words the catalogService publishes for its own vocabulary.
 /// </summary>
 /// <remarks>
 /// The labels are what the tabs, the group headings and the search all name things by, so a missing

@@ -5,7 +5,7 @@ internal sealed class TemporaryCatalogFile : IDisposable
 {
     public TemporaryCatalogFile(string contents)
     {
-        Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"core-rental-catalog-{Guid.NewGuid():N}.json");
+        Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"core-rental-catalogService-{Guid.NewGuid():N}.json");
         File.WriteAllText(Path, contents);
     }
 

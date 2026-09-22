@@ -7,9 +7,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Host/CoreRentalNet.Host/CoreRentalNet.Host.csproj" />
-    <!-- The stand-in the browser tier drives, started in-process here so the application's client can be
-         held against a real socket without a process to wait for and reap. Same agent both ways. -->
-    <ProjectReference Include="../CoreRentalNet.E2E.LocalAgent/CoreRentalNet.E2E.LocalAgent.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,11 +19,6 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
 
-
-  <ItemGroup>
-    <!-- The stand-in agent, started in this process: it is the other end of the wire the adapter
-         reads, so it belongs to the test rather than to a deployment. -->
-  </ItemGroup>
 
   <ItemGroup>
     <!-- The contract is the ONE artefact shared with the agent tree, and there is no project reference

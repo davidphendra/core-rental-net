@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
 using Xunit;

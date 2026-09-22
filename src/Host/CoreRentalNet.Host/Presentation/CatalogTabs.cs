@@ -16,10 +16,10 @@ public static class CatalogTabs
         CatalogTab.Accessories,
     ];
 
-    /// <summary>What a tab is called, from the label on the catalog's own category.</summary>
+    /// <summary>What a tab is called, from the label on the catalogService's own category.</summary>
     public static string LabelFor(CatalogTab tab) => CategoryFor(tab).Label();
 
-    /// <summary>The icon the design gives each tab, from the glyph on the catalog's own category.</summary>
+    /// <summary>The icon the design gives each tab, from the glyph on the catalogService's own category.</summary>
     public static string GlyphFor(CatalogTab tab) => CategoryFor(tab).Glyph();
 
     /// <summary>The one category a tab shows.</summary>
@@ -28,7 +28,7 @@ public static class CatalogTabs
         CatalogTab.Desks => CatalogCategory.Desk,
         CatalogTab.Chairs => CatalogCategory.Chair,
         CatalogTab.Accessories => CatalogCategory.Accessory,
-        _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, "Unknown catalog tab."),
+        _ => throw new ArgumentOutOfRangeException(nameof(tab), tab, "Unknown catalogService tab."),
     };
 
     /// <summary>

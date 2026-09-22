@@ -1,5 +1,5 @@
 using AwesomeAssertions;
-using CoreRentalNet.Modules.Discovery.Infrastructure;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Hashing;
 using Xunit;
 
 namespace CoreRentalNet.IntegrationTests;

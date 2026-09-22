@@ -8,7 +8,7 @@ using Xunit;
 namespace CoreRentalNet.IntegrationTests;
 
 /// <summary>
-/// Exercises the real catalog file. This is the test that would fail if someone edited
+/// Exercises the real catalogService file. This is the test that would fail if someone edited
 /// products.json into an unusable state.
 /// </summary>
 public sealed class CatalogFileTests
@@ -18,7 +18,7 @@ public sealed class CatalogFileTests
     [Fact] // CAT-01
     public void The_real_catalog_file_loads_with_the_expected_shape()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         catalog.All.Should().HaveCount(205);
 
@@ -36,7 +36,7 @@ public sealed class CatalogFileTests
     [Fact] // CAT-01, API-26
     public void Two_products_in_the_same_slot_differ_in_what_they_say_about_themselves()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         // The reason metadata exists: before it, every product in a slot carried the same sentence
         // and a request could only be matched against the product's name.
@@ -54,7 +54,7 @@ public sealed class CatalogFileTests
     [Fact] // CAT-01
     public void Every_real_product_is_usable()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         catalog.All.Should().OnlyContain(product => !string.IsNullOrWhiteSpace(product.Name));
         catalog.All.Should().OnlyContain(product => !string.IsNullOrWhiteSpace(product.Description));
@@ -72,7 +72,7 @@ public sealed class CatalogFileTests
     [Fact] // CAT-08
     public void The_real_catalog_has_exactly_two_featured_products()
     {
-        var featured = new ProductCatalog(ProductsJson, null).Featured();
+        var featured = new ProductCatalogService(ProductsJson, null).Featured();
 
         featured.Should().HaveCount(2);
         featured.Select(product => product.Name).Should()
@@ -83,7 +83,7 @@ public sealed class CatalogFileTests
     [Fact] // CAT-01, API-31
     public void The_matching_vocabulary_is_closed_and_predictable()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         // What a criterion is matched against is `tag:<token>` or `attribute:<slot>:<key>:<value>`,
         // so the vocabulary has to be well formed rather than merely present: a tag with a space in
@@ -100,7 +100,7 @@ public sealed class CatalogFileTests
     [Fact] // CAT-09
     public void The_real_catalog_contains_no_partner_product()
     {
-        var catalog = new ProductCatalog(ProductsJson, null);
+        var catalog = new ProductCatalogService(ProductsJson, null);
 
         catalog.All.Should().NotContain(product => product.Name.Contains("Motorcycle", StringComparison.OrdinalIgnoreCase));
     }
@@ -110,7 +110,7 @@ public sealed class CatalogFileTests
     {
         using var file = new TemporaryFile("{ \"this is\" not json ]");
 
-        var action = () => _ = new ProductCatalog(file.Path, null);
+        var action = () => _ = new ProductCatalogService(file.Path, null);
 
         action.Should().Throw<ProductLoadException>()
             .WithMessage($"*not valid JSON*{file.Path}*");
@@ -121,7 +121,7 @@ public sealed class CatalogFileTests
     {
         var missing = Path.Combine(Path.GetTempPath(), $"core-rental-missing-{Guid.NewGuid():N}.json");
 
-        var action = () => _ = new ProductCatalog(missing, null);
+        var action = () => _ = new ProductCatalogService(missing, null);
 
         action.Should().Throw<ProductLoadException>()
             .WithMessage($"*not found*{missing}*");
@@ -132,7 +132,7 @@ public sealed class CatalogFileTests
     {
         using var file = new TemporaryFile("[]");
 
-        var action = () => _ = new ProductCatalog(file.Path, null);
+        var action = () => _ = new ProductCatalogService(file.Path, null);
 
         action.Should().Throw<ProductLoadException>().WithMessage("*no products*");
     }
@@ -143,7 +143,7 @@ public sealed class CatalogFileTests
         using var file = new TemporaryFile(
             """[{ "skuNo": "AAA0001", "name": "Thing", "category": "spaceship", "pricePerMonth": 100, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]""");
 
-        var action = () => _ = new ProductCatalog(file.Path, null);
+        var action = () => _ = new ProductCatalogService(file.Path, null);
 
         action.Should().Throw<ProductLoadException>().WithMessage("*AAA0001*spaceship*");
     }
@@ -157,7 +157,7 @@ public sealed class CatalogFileTests
              { "skuNo": "aaa0001", "name": "Two", "category": "chair", "pricePerMonth": 200, "description": "d", "image": "/i.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
-        var action = () => _ = new ProductCatalog(file.Path, null);
+        var action = () => _ = new ProductCatalogService(file.Path, null);
 
         action.Should().Throw<ProductLoadException>().WithMessage("*duplicate*AAA0001*");
     }
@@ -174,7 +174,7 @@ public sealed class CatalogFileTests
              { "skuNo": "AAA0002", "name": "Absent", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "/placeholders/absent.svg", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
-        var catalog = new ProductCatalog(file.Path, webRoot.Path);
+        var catalog = new ProductCatalogService(file.Path, webRoot.Path);
 
         catalog.Find("AAA0001")!.ImageAvailable.Should().BeTrue();
         catalog.Find("AAA0002")!.ImageAvailable.Should().BeFalse();
@@ -189,7 +189,7 @@ public sealed class CatalogFileTests
              { "skuNo": "AAA0002", "name": "Remote", "category": "chair", "pricePerMonth": 100, "description": "d", "image": "https://example.invalid/remote.png", "metadata": { "tags": ["x"], "attributes": { "k": "v" }, "bestFor": [], "notFor": [] } }]
             """);
 
-        var catalog = new ProductCatalog(file.Path, null);
+        var catalog = new ProductCatalogService(file.Path, null);
 
         catalog.Find("AAA0001")!.ImageAvailable.Should().BeFalse();
         catalog.Find("AAA0002")!.ImageAvailable.Should().BeTrue();
@@ -201,7 +201,7 @@ public sealed class CatalogFileTests
         using var file = new TemporaryFile(
             """[{ "skuNo": "AAA0001", "name": "No image", "category": "chair", "pricePerMonth": 100, "description": "d" }]""");
 
-        var action = () => _ = new ProductCatalog(file.Path, null);
+        var action = () => _ = new ProductCatalogService(file.Path, null);
 
         action.Should().Throw<ProductLoadException>().WithMessage("*AAA0001*image*");
     }

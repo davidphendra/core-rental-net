@@ -1,5 +1,4 @@
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
-using CoreRentalNet.Modules.Discovery.Infrastructure;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -53,23 +52,6 @@ internal sealed class SqliteTestDatabase : IAsyncDisposable
     public async Task<RentalsContext> CreateMigratedRentalsContextAsync()
     {
         var context = CreateRentalsContext();
-        await context.Database.MigrateAsync();
-        return context;
-    }
-
-    public DiscoveryContext CreateDiscoveryContext()
-    {
-        // Configured through the module's own settings, exactly as the host does, so the tests
-        // cannot drift from the application.
-        var options = new DbContextOptionsBuilder<DiscoveryContext>();
-        DiscoveryPersistence.Configure(options, Settings);
-
-        return new DiscoveryContext(options.Options);
-    }
-
-    public async Task<DiscoveryContext> CreateMigratedDiscoveryContextAsync()
-    {
-        var context = CreateDiscoveryContext();
         await context.Database.MigrateAsync();
         return context;
     }

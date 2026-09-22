@@ -21,12 +21,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
     <!-- An access token is read for its permissions, so its token type is a direct dependency. -->
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
-    <!-- The workspace-suggestion agent is reached through the Foundry client. This project is the only
-         one that references it, and the adapter under Agents/ is the only class that touches an Azure
-         type, so nothing else in the application can grow a dependency on Foundry by accident. -->
-    <PackageReference Include="Microsoft.Agents.AI.Foundry" />
-    <PackageReference Include="Azure.AI.Projects" />
-    <PackageReference Include="Azure.Identity" />
+    <!-- The MCP server the catalogue's tools are published over, so a machine caller can discover and
+         call them. Pinned at the same major as the agent's client: one protocol, one version, both sides. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,7 +13,7 @@ namespace CoreRentalNet.Host.Tests;
 /// <remarks>
 /// The caller this exists for names SKUs and recomputes amounts, so the image path and the display
 /// flags are weight it cannot use - measured at 34% of the answer before the projection existed. What
-/// it does read, the description and the metadata, must survive.
+/// it does read - the description, the price and the currency beside it - must survive.
 /// </remarks>
 public sealed class CatalogApiCompactViewTests(CatalogApiFactory factory) : IClassFixture<CatalogApiFactory>
 {
@@ -23,15 +23,17 @@ public sealed class CatalogApiCompactViewTests(CatalogApiFactory factory) : ICla
         var item = await FirstItemAsync("/api/catalog?view=compact&subCategory=monitor");
 
         item.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
-            ["sku", "name", "category", "subCategory", "pricePerMonth", "description", "metadata"]);
+            ["sku", "category", "name", "subCategory", "description", "pricePerMonth", "currency"]);
 
-        // The three fields the projection exists to drop, and the shape the price takes: a number,
-        // because the currency is stated once on the envelope rather than on every row.
+        // The fields the projection exists to drop - everything a caller cannot use, and the metadata the
+        // meaning search matches against server-side. The price is a number and its currency travels beside
+        // it, so a row read on its own still says what its price is in.
         item.TryGetProperty("imagePath", out _).Should().BeFalse();
         item.TryGetProperty("imageAvailable", out _).Should().BeFalse();
         item.TryGetProperty("isFeatured", out _).Should().BeFalse();
+        item.TryGetProperty("metadata", out _).Should().BeFalse();
         item.GetProperty("pricePerMonth").ValueKind.Should().Be(JsonValueKind.Number);
-        item.GetProperty("metadata").GetProperty("tags").GetArrayLength().Should().BeGreaterThan(0);
+        item.GetProperty("currency").GetString().Should().Be("IDR");
     }
 
     [Fact] // API-35
@@ -48,7 +50,7 @@ public sealed class CatalogApiCompactViewTests(CatalogApiFactory factory) : ICla
     }
 
     [Fact] // API-33
-    public async Task The_currency_is_stated_once_on_the_envelope_and_never_on_a_row()
+    public async Task The_currency_is_stated_on_the_envelope_and_on_every_row()
     {
         var response = await factory.CreateClient().GetAsync("/api/catalog?view=compact");
         using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -57,9 +59,11 @@ public sealed class CatalogApiCompactViewTests(CatalogApiFactory factory) : ICla
         body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
             ["value", "count", "total", "truncated", "currency"]);
 
-        // The catalogue is priced in one currency and the loader refuses a row that is not, so
-        // stating it here is truthful - and it is what makes the price a number.
+        // The catalogue is priced in one currency and the loader refuses a row that is not, so stating it
+        // here is truthful. It is stated on the row as well so that a row read on its own - a tool answer in
+        // a model's context - still says what its price is in.
         body.GetProperty("currency").GetString().Should().Be("IDR");
+        body.GetProperty("value")[0].GetProperty("currency").GetString().Should().Be("IDR");
         body.GetProperty("value").GetArrayLength().Should().Be(205);
         body.GetProperty("count").GetInt32().Should().Be(205);
     }

@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using Microsoft.Extensions.AI;
 
 namespace CoreRentalNet.CatalogIngestion.Embeddings;
@@ -15,7 +16,7 @@ namespace CoreRentalNet.CatalogIngestion.Embeddings;
 /// and nothing else should have to know.
 /// </para>
 /// </remarks>
-internal sealed class ClientEmbeddingGenerator(IEmbeddingClient embeddings) : IEmbeddingGenerator<string, Embedding<float>>
+internal sealed class ClientEmbeddingGenerator(IEmbeddingRepository embeddings) : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <inheritdoc />
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(

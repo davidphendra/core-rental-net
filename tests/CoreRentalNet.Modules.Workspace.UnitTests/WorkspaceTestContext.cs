@@ -14,7 +14,7 @@ internal sealed class WorkspaceTestContext
 
     public static IMoneyService Money { get; } = new MoneyService();
 
-    public TestCatalog Catalog { get; } = new();
+    public TestCatalogService CatalogService { get; } = new();
 
     public InMemoryWorkspaceRepository Repository { get; } = new();
 
@@ -28,7 +28,7 @@ internal sealed class WorkspaceTestContext
 
     public string Token => RawToken;
 
-    public IWorkspaceQuoteService Quotes => new WorkspaceQuoteService(Money, Catalog);
+    public IWorkspaceQuoteService Quotes => new WorkspaceQuoteService(Money, CatalogService);
 
     public IWorkspaceViewService Views => new WorkspaceViewService(SlotRules, Quotes, Queries);
 

@@ -18,7 +18,7 @@ public sealed class WorkspaceCommandTests
     private static WorkspaceTestContext NewContext()
     {
         var context = new WorkspaceTestContext();
-        context.Catalog
+        context.CatalogService
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("DSK0001", 800000m, CatalogCategory.Desk, null)
             .Add("MON0001", 300000m)
@@ -33,7 +33,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces);
 
         await handler.HandleAsync(new AssignProductCommand(context.Token, "cfe0001"));
 
@@ -49,7 +49,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces);
 
         var action = async () => await handler.HandleAsync(new AssignProductCommand(context.Token, "XXX0000"));
 
@@ -60,7 +60,7 @@ public sealed class WorkspaceCommandTests
     public async Task A_command_against_an_unknown_draft_reports_not_found()
     {
         var context = NewContext();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces);
 
         var action = async () => await handler.HandleAsync(new AssignProductCommand(context.Token, "CHA0001"));
 
@@ -72,7 +72,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
+        var handler = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces);
 
         await handler.HandleAsync(new AssignProductCommand(context.Token, "MON0001", 3));
 
@@ -98,7 +98,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces)
             .HandleAsync(new AssignProductCommand(context.Token, "PLT0001"));
 
         await new RemoveAssignmentHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
@@ -117,7 +117,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces)
             .HandleAsync(new AssignProductCommand(context.Token, "MON0001", 2));
 
         await new ChangeQuantityHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
@@ -131,7 +131,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         var workspace = await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces)
             .HandleAsync(new AssignProductCommand(context.Token, "MON0001"));
 
         await new ChangeQuantityHandler(context.Repository, WorkspaceTestContext.Tokens, context.Workspaces)
@@ -159,7 +159,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces);
+        var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces);
         var read = new GetWorkspaceHandler(context.Repository, WorkspaceTestContext.Tokens, context.Views);
 
         (await read.HandleAsync(new GetWorkspaceQuery(context.Token))).CanCheckout.Should().BeFalse();
@@ -188,7 +188,7 @@ public sealed class WorkspaceCommandTests
     {
         var context = NewContext();
         await context.DraftAsync();
-        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.Catalog, context.Workspaces)
+        await new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, context.CatalogService, context.Workspaces)
             .HandleAsync(new AssignProductCommand(context.Token, "DSK0001"));
 
         var quote = await new GetWorkspaceQuoteHandler(context.Repository, WorkspaceTestContext.Tokens, context.Quotes)

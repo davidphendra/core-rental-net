@@ -49,7 +49,7 @@ public sealed class CheckoutTests
         }
     }
 
-    private sealed class FakePrices : IProductCatalog
+    private sealed class FakePrices : IProductCatalogService
     {
         private readonly Dictionary<string, ProductView> views = new(StringComparer.OrdinalIgnoreCase);
 

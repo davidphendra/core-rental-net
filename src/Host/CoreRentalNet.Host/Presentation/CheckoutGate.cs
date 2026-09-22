@@ -8,7 +8,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// <remarks>
 /// <para>
 /// The domain decides whether a workspace can be rented: a desk and a chair, and nothing in it that
-/// has left the catalog. The order itself also refuses a blank delivery address, which is asked for
+/// has left the catalogService. The order itself also refuses a blank delivery address, which is asked for
 /// on the review page - so this is the two together, and it belongs to that button rather than to
 /// <see cref="WorkspaceView.CanCheckout"/>.
 /// </para>

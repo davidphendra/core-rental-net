@@ -9,7 +9,7 @@ namespace CoreRentalNet.Host.Tests;
 /// and looks nothing up. The richer read side is exercised by the catalogue's own tests, and a double that
 /// implements more than the caller uses is a double that has to be maintained for nothing.
 /// </remarks>
-internal sealed class TestCatalogue : IProductCatalog
+internal sealed class TestCatalogue : IProductCatalogService
 {
     private readonly List<ProductView> _products = [];
 

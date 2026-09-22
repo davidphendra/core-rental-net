@@ -1,8 +1,10 @@
 # Catalog ingestion — spec
 
 The requirement in flight. It describes the standalone ingestion tool: what it reads, how it chunks and
-embeds, the one table it writes, and what it deliberately does not do. The decision record is
-[`adr/0001-catalog-ingestion.md`](adr/0001-catalog-ingestion.md).
+embeds, the tables it writes, and what it deliberately does not do. The decision records are
+[`adr/0001-catalog-ingestion.md`](adr/0001-catalog-ingestion.md) — what the tool is — and
+[`adr/0002-ingestion-tool-internals.md`](adr/0002-ingestion-tool-internals.md) — its internals, and what the
+review changed.
 
 ## Purpose
 
@@ -16,7 +18,9 @@ SQLite file the tool owns.
 embedding the chunks through a local server, and writing the table.
 
 **Out** — the retrieval module (`Discovery`) and the application: not read, not referenced, not changed.
-Ranking, search and the suggester's use of this table are separate work. Also out: deploying or
+Ranking and the suggester's use of this table are separate work. The catalogue's own **similarity search**,
+which was follow-on work when this was written, is now built and recorded in
+[`adr/0004-catalogue-similarity-search.md`](adr/0004-catalogue-similarity-search.md). Also out: deploying or
 provisioning anything.
 
 ## Pipeline
@@ -57,7 +61,7 @@ one launched from the project.
 
 ## Store
 
-One table in the tool's own SQLite file, written with raw `Microsoft.Data.Sqlite`:
+Two tables in the tool's own SQLite file, written with raw `Microsoft.Data.Sqlite`:
 
 ```sql
 CREATE TABLE IF NOT EXISTS product_embedding (
@@ -68,6 +72,14 @@ CREATE TABLE IF NOT EXISTS product_embedding (
     embedding   BLOB NOT NULL,
     created_at  TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS product_embedding_recipe (
+    modelId       TEXT NOT NULL,
+    width         INTEGER NOT NULL,
+    composition   TEXT NOT NULL,
+    catalogueHash TEXT NOT NULL,
+    created_at    TEXT NOT NULL
+);
 ```
 
 - `id` — a new GUID per row.
@@ -76,7 +88,11 @@ CREATE TABLE IF NOT EXISTS product_embedding (
 - `embedding` — 384 little-endian floats, 1,536 bytes.
 - `created_at` — the run's UTC time, ISO-8601, the same on every row of one run.
 
-There is **no recipe table**: nothing records the model, width, chunker or catalogue hash.
+The second table is the **recipe**: one row saying which model, which width, which composition of a product's
+text and which catalogue file the vectors beside it came from. It is written in the same transaction as the
+vectors, because a recipe that described a different run would be worse than none — the application trusts it
+to decide whether the vectors can be searched at all ([ADR 0003](adr/0003-discovery-reads-the-tool.md)
+reverses the earlier decision to have no recipe table).
 
 ## Guarantees
 
@@ -98,7 +114,7 @@ There is **no recipe table**: nothing records the model, width, chunker or catal
 
 ## Tests
 
-All in `tests/CoreRentalNet.CatalogIngestion.Tests/` (38 tests), against hand-written stand-ins for the
+All in `tests/CoreRentalNet.CatalogIngestion.Tests/` (39 tests), against hand-written stand-ins for the
 server and the splitter — no network, and no claim about retrieval quality:
 
 - **The chain** — `IngestionPipelineTests`: a real `products.json` and a real SQLite file; one row per chunk
@@ -106,16 +122,20 @@ server and the splitter — no network, and no claim about retrieval quality:
   vector refuses the run and leaves the stored rows intact. The loader's refusal of an empty catalogue is
   asserted too, because it is what makes an empty table unreachable.
 - **The store** — `SqliteProductEmbeddingStoreTests`: the table is created on first write, ids are unique,
-  one timestamp per run, the blob decodes to the floats written, **ranking the stored rows by cosine finds
-  the nearest**, and a database holding a **foreign table is refused rather than emptied** — the search
-  asserted where a consumer would perform it, since the tool has no search method of its own.
+  one timestamp per run, the blob decodes to the floats written, **the recipe is written beside the vectors and
+  replaced with them**, **ranking the stored rows by cosine finds the nearest**, and a database holding a
+  **foreign table is refused rather than emptied** — the search asserted where a consumer would perform it,
+  since the tool has no search method of its own.
 - **The renderer** — `EmbeddedTextTests`: name, description and every metadata value; attributes ordered so
-  the text is reproducible; an empty section omitted entirely.
+  the text is reproducible; an empty section omitted entirely. It is the only renderer of a product's text in
+  the solution now, and `ProductVectorContract.Composition` is what it has to stay in step with.
 - **The splitter** — `SemanticProductChunkerTests`: the real `SemanticChunker.NET` yields vectors of the
   configured width, the same way twice, and a short answer from the server is refused rather than paired by
   position.
-- **The codec** — `VectorBlobTests`: four bytes per float, written little-endian. The tool only writes, so
-  there is no decoder to test; a consumer's expectation is pinned as the exact bytes.
+- **The codec** — `VectorBlobTests`, in `tests/CoreRentalNet.BuildingBlocks.UnitTests/`: four bytes per float,
+  little-endian, pinned as exact bytes rather than only round-tripped — a round trip passes just as well when
+  both directions are wrong in the same way. The codec itself is shared with the application, which is the
+  only thing that reads what this tool writes.
 - **Configuration** — `ConfigurationReaderTests` (17): defaults, a present-but-unusable value refused by
   name, and paths resolved against a base directory it is given rather than one it finds itself.
 
@@ -126,7 +146,7 @@ Recorded at the end of this change:
 | Baseline | Measured |
 |---|---|
 | `BUILD` | `dotnet build CoreRentalNet.sln` — **0 warnings, 0 errors** |
-| `NONBROWSER` | **819 passed, 0 failed** across all ten offline projects |
+| `NONBROWSER` | **815 passed, 0 failed** across all ten offline projects (measured after [ADR 0003](adr/0003-discovery-reads-the-tool.md) moved the vectors to the application's readers; see that record for the one local-database condition this depends on) |
 | `BROWSER` | not run; unchanged by this work |
 | `AGENT` | not run; unchanged by this work |
 | Live run | **638 rows / 205 products** written in 25 s against the local server; schema, 1,536-byte blobs, GUID ids and one UTC timestamp verified with `sqlite3`; a direct nearest query returns desks and a monitor for "work with two screens" and coffee items for "relax with a coffee" |

@@ -12,6 +12,10 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    <!-- The vec0 extension, which is what turns a distance into a MATCH query in SQLite. It ships the
+         native vec0 library for linux/osx/win and targets netstandard2.0. MIT. Authored by the sqlite-vec
+         author; the package is the maintained wrapper because the official one is pinned to an old alpha. -->
+    <PackageVersion Include="HiraokaHyperTools.sqlite-vec" Version="0.1.9" />
     <!-- BackgroundService, so the time-driven run has a home. -->
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
     <!-- The ingestion tool reads its own appsettings.json, so its configuration comes from a file beside
@@ -58,6 +62,10 @@
          the tool names these types itself and a transitive version is one that resolution chooses. -->
     <PackageVersion Include="Azure.AI.Extensions.OpenAI" Version="3.0.0-beta.2" />
     <PackageVersion Include="OpenAI" Version="2.12.0" />
+    <!-- The transport exception type the ingestion tool's failure classifier names directly. It arrives with
+         OpenAI, but the tool names it, so the tool pins it. 1.15.0 rather than 1.14.0 because the agent's
+         Foundry client requires at least that, and one central version has to satisfy both. -->
+    <PackageVersion Include="System.ClientModel" Version="1.15.0" />
   </ItemGroup>
 
   <ItemGroup Label="Chunking">
@@ -67,6 +75,13 @@
     <!-- The embedding abstraction SemanticChunker.NET is built on, named directly by the adapter that
          bridges the tool's own embedding port to it. -->
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="The catalogue's MCP surface">
+    <!-- The MCP server the catalogue's tools are published over, so a machine caller can discover and call
+         them. MIT. The agent's client is pinned to the same major, so one protocol has one version on both
+         sides of the wire. -->
+    <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup Label="Tests">

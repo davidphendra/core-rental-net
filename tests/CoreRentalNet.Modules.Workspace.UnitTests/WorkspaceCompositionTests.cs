@@ -14,7 +14,7 @@ public sealed class WorkspaceCompositionTests
     {
         var context = new WorkspaceTestContext();
         await context.DraftAsync();
-        var catalog = new TestCatalog()
+        var catalog = new TestCatalogService()
             .Add("CHA0001", 400000m, CatalogCategory.Chair, null)
             .Add("MON0001", 300000m);
         var assign = new AssignProductHandler(context.Repository, WorkspaceTestContext.Tokens, catalog, context.Workspaces);

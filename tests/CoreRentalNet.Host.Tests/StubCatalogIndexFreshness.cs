@@ -8,14 +8,10 @@ internal sealed class StubCatalogIndexFreshness(Func<CatalogIndexVerdict> verdic
     /// <summary>How many times the check ran, so a test can prove it was skipped rather than passed.</summary>
     public int Checks { get; private set; }
 
-    public Task<CatalogIndexVerdict> CheckAsync(
-        string catalogueHash,
-        string modelId,
-        int width,
-        CancellationToken cancellationToken)
+    public CatalogIndexVerdict Check(string catalogueHash, string modelId, int width, string composition)
     {
         Checks++;
 
-        return Task.FromResult(verdict());
+        return verdict();
     }
 }

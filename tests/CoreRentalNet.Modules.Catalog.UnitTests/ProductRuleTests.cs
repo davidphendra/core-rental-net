@@ -7,7 +7,7 @@ using Xunit;
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
 /// <summary>
-/// The rules a catalog row has to satisfy, asserted through the loader that enforces them: the record
+/// The rules a catalogService row has to satisfy, asserted through the loader that enforces them: the record
 /// itself carries no validation, so the loader is what refuses a row the catalogue would not accept.
 /// </summary>
 public sealed class ProductRuleTests

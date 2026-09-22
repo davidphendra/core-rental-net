@@ -6,10 +6,19 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <!-- The OpenAI-compatible embedding adapter, which the ingestion tool and the application both use:
+         one client, because the vectors the first writes are compared with the vectors the second asks
+         for. Direct rather than transitive, because this project names the client type itself. -->
+    <PackageReference Include="OpenAI" />
+    <!-- The native vec0 extension, loaded on the connections that search vectors. The source helper the
+         package carries is excluded: the loader is stated once, by us, in SqliteDatabase. -->
+    <PackageReference Include="HiraokaHyperTools.sqlite-vec" ExcludeAssets="contentFiles" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../CoreRentalNet.BuildingBlocks.Domain/CoreRentalNet.BuildingBlocks.Domain.csproj" />
+    <!-- Inward reference: the shared adapter implements the shared kernel's embedding port. -->
+    <ProjectReference Include="../CoreRentalNet.BuildingBlocks.Application/CoreRentalNet.BuildingBlocks.Application.csproj" />
   </ItemGroup>
 
 </Project>

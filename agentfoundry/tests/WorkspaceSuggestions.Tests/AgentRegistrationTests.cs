@@ -51,7 +51,7 @@ public sealed class AgentRegistrationTests
     {
         var services = new ServiceCollection();
 
-        services.AddRosterAgents(new ScriptedChatClient("{}"));
+        services.AddRosterAgents(new ScriptedChatClient("{}"), []);
 
         using var provider = services.BuildServiceProvider();
 
@@ -66,7 +66,7 @@ public sealed class AgentRegistrationTests
     [Fact]
     public void The_workflow_is_published_as_the_single_named_agent_foundry_resolves()
     {
-        var agent = AgentRegistration.BuildWorkflowAgent(new ScriptedChatClient("{}"), "gpt-4.1-mini");
+        var agent = AgentRegistration.BuildWorkflowAgent(new ScriptedChatClient("{}"), "gpt-4.1-mini", []);
 
         agent.Name.Should().Be(WorkspaceSuggestionWorkflow.AgentName);
         agent.Name.Should().Be("core-rental-workspace-suggestion-agent");
@@ -76,7 +76,7 @@ public sealed class AgentRegistrationTests
     public void The_reported_prompt_version_names_every_prompt_the_run_used()
     {
         // One string for a run that is two agents: reporting only the suggestor would understate what ran.
-        AgentRegistration.PromptVersions().Should().Be("rephraser.v1+suggestor.v1");
+        AgentRegistration.PromptVersions().Should().Be("rephraser.v1+suggestor.v2");
     }
 
     [Theory]

@@ -21,8 +21,8 @@
 
     @* Refusals are surfaced by the page, beside the canvas they concern. One error surface, and
        it is where the customer is looking. *@
-    @* The catalog takes the rest of the panel. The design ends the panel with a link to the
-       summary; that link is not here, by request, so the room it used is the catalog's. The
+    @* The catalogService takes the rest of the panel. The design ends the panel with a link to the
+       summary; that link is not here, by request, so the room it used is the catalogService's. The
        floating bar is still the way out, and still closes until the workspace can be rented. *@
     <div class="flex-1 min-h-0 flex flex-col gap-6 mt-4 pt-4">
         <SearchField Id="panel-search" Label="Search these products by name"
@@ -78,7 +78,7 @@
 
     /// <summary>
     /// The one way the query changes: typed into the field, or cleared by its control. Either way the
-    /// catalog is asked again, because the filtering is the query's to do.
+    /// catalogService is asked again, because the filtering is the query's to do.
     /// </summary>
     private Task SetQueryAsync(string value)
     {

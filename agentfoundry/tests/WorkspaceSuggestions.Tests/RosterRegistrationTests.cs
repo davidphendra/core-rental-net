@@ -19,7 +19,7 @@ public sealed class RosterRegistrationTests
     {
         var services = new ServiceCollection();
 
-        services.AddRosterAgents(new FixedChatClient("{}"));
+        services.AddRosterAgents(new FixedChatClient("{}"), []);
 
         using var provider = services.BuildServiceProvider();
 

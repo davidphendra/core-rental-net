@@ -1,25 +1,35 @@
-using System.Buffers.Binary;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 using Microsoft.Data.Sqlite;
 
 namespace CoreRentalNet.CatalogIngestion.Tests.Storage;
 
-/// <summary>Reads the table back the way any consumer would, with SQL rather than through the tool.</summary>
+/// <summary>Reads the vector table back the way a consumer would, with SQL rather than through the tool.</summary>
 /// <remarks>
-/// A test that asserted what the tool was asked to write would prove the call, not the file. Reading the rows
-/// back — and decoding the blob with the format the table is documented to hold — proves what is actually
-/// stored, which is the thing a future searcher depends on.
+/// <para>
+/// A test that asserted what the tool was asked to write would prove the call, not the file. This reads the
+/// rows back — <b>naming the table in full rather than from the shared constant</b>, so that a rename on
+/// either side of the contract fails here — and decodes the blob with the codec the application reads it with,
+/// because that is what a consumer actually does.
+/// </para>
+/// <para>
+/// The vector table is a <c>vec0</c> virtual table, so every connection here loads the extension: without it
+/// SQLite does not know the module and the table cannot even be read.
+/// </para>
+/// <para>
+/// The byte order itself is not asserted here: it belongs to the codec's own test, and a reader that used its
+/// own decoder would agree with a writer that had changed the format.
+/// </para>
 /// </remarks>
 internal static class StoredRows
 {
     public static IReadOnlyList<StoredRow> Read(string databasePath)
     {
-        using var connection = new SqliteConnection(
-            new SqliteConnectionStringBuilder { DataSource = databasePath }.ToString());
-
-        connection.Open();
+        using var connection = Open(databasePath);
 
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT id, skuNo, name, description, embedding, created_at FROM product_embedding;";
+        command.CommandText =
+            "SELECT id, skuNo, name, description, embedding, created_at FROM product_embedding;";
 
         var rows = new List<StoredRow>();
 
@@ -32,27 +42,40 @@ internal static class StoredRows
                 reader.GetString(1),
                 reader.GetString(2),
                 reader.GetString(3),
-                Decode((byte[])reader[4]),
+                VectorBlob.ToFloats((byte[])reader[4]),
                 reader.GetString(5)));
         }
 
         return rows;
     }
 
-    /// <summary>The floats a stored blob holds: little-endian IEEE-754, the format the tool writes.</summary>
+    /// <summary>The SKUs nearest a query, nearest first, as sqlite-vec ranks them.</summary>
     /// <remarks>
-    /// Decoded here rather than through the tool, because the tool only writes and has no decoder. That is the
-    /// point: a consumer reads the table with the format it was told to expect, so the test does the same.
+    /// The ranking is the extension's, which is the point: the tool stores vectors and the consumer's
+    /// <c>MATCH</c> query is what orders them, so the two are asserted against each other rather than against a
+    /// cosine written here.
     /// </remarks>
-    private static float[] Decode(byte[] bytes)
+    public static IReadOnlyList<string> Nearest(string databasePath, float[] queryVector)
     {
-        var values = new float[bytes.Length / sizeof(float)];
+        using var connection = Open(databasePath);
 
-        for (var index = 0; index < values.Length; index++)
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT skuNo FROM product_embedding WHERE embedding MATCH vec_f32($query) AND k = 10 ORDER BY distance ASC;";
+        command.Parameters.Add("$query", SqliteType.Blob).Value = VectorBlob.ToBytes(queryVector);
+
+        var skus = new List<string>();
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
         {
-            values[index] = BinaryPrimitives.ReadSingleLittleEndian(bytes.AsSpan(index * sizeof(float)));
+            skus.Add(reader.GetString(0));
         }
 
-        return values;
+        return skus;
     }
+
+    private static SqliteConnection Open(string databasePath)
+        => SqliteDatabase.OpenWithVectors(SqliteDatabaseSettings.Local(databasePath));
 }

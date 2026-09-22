@@ -71,7 +71,7 @@ public sealed class ModuleBoundaryTests
     public void The_catalog_application_contracts_are_public_and_complete()
     {
         var catalogDomain = typeof(CoreRentalNet.Modules.Catalog.Domain.Product).Assembly;
-        var catalogContracts = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalog).Assembly;
+        var catalogContracts = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalogService).Assembly;
 
         catalogDomain.Should().NotBeSameAs(catalogContracts);
 
@@ -82,7 +82,7 @@ public sealed class ModuleBoundaryTests
 
         // Non-vacuity: the namespace holds the port, the view and the vocabulary. Without this
         // check the rule below would pass on an empty namespace.
-        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalog));
+        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalogService));
         contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.ProductView));
         contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory));
 
@@ -92,7 +92,7 @@ public sealed class ModuleBoundaryTests
     [Fact] // ARC-01
     public void The_catalog_port_publishes_its_vocabulary_and_not_the_domain_types()
     {
-        var port = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalog);
+        var port = typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalogService);
 
         var mentioned = port.GetMethods()
             .SelectMany(method => method.GetParameters()
