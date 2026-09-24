@@ -2,10 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://corerental/schemas/suggestion.request.schema.json",
   "title": "Suggestion request",
-  "description": "What the application sends to the workspace-suggestion agent: one customer sentence, the slot rules, and the whole compact catalogue. The catalogue is the projection as it exists, description included - the agent is tool-less and never calls back, so everything it may choose from is in this payload.",
+  "description": "What the application sends to the workspace-suggestion agent: one customer sentence, the slot rules, and the currency to think in. The catalogue is NOT carried - the agent searches it through the MCP tools it was given, so what the agent may choose from is whatever those tools return.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["runId", "query", "currency", "slots", "catalogue"],
+  "required": ["runId", "query", "currency", "slots"],
   "properties": {
     "runId": {
       "type": "string",
@@ -32,12 +32,6 @@
       "minItems": 1,
       "description": "The slots and how many of each a composition may hold.",
       "items": { "$ref": "#/$defs/slotRule" }
-    },
-    "catalogue": {
-      "type": "array",
-      "minItems": 1,
-      "description": "The whole compact projection. No prices are quoted back - the agent states SKUs and quantities only.",
-      "items": { "$ref": "#/$defs/catalogueItem" }
     }
   },
   "$defs": {
@@ -52,30 +46,6 @@
     },
     "slotName": {
       "enum": ["Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone"]
-    },
-    "catalogueItem": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["sku", "name", "category", "subCategory", "pricePerMonth", "description", "metadata"],
-      "properties": {
-        "sku": { "type": "string", "minLength": 1 },
-        "name": { "type": "string", "minLength": 1 },
-        "category": { "enum": ["desk", "chair", "accessory"] },
-        "subCategory": { "enum": ["beanbag", "coffee", "lamp", "monitor", "plant", null] },
-        "pricePerMonth": { "type": "integer", "minimum": 0 },
-        "description": { "type": "string", "description": "Kept: the projection is pushed as it exists." },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["tags", "attributes", "bestFor", "notFor"],
-          "properties": {
-            "tags": { "type": "array", "items": { "type": "string" } },
-            "attributes": { "type": "object", "additionalProperties": { "type": "string" } },
-            "bestFor": { "type": "array", "items": { "type": "string" } },
-            "notFor": { "type": "array", "items": { "type": "string" } }
-          }
-        }
-      }
     }
   }
 }

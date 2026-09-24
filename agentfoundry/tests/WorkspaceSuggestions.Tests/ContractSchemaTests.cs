@@ -58,23 +58,30 @@ public sealed class ContractSchemaTests
             "a quiet corner for two monitors",
             "IDR",
             1_000_000,
-            [new SlotRule(WorkspaceSlot.Desk, 1), new SlotRule(WorkspaceSlot.Monitor, 3)],
-            [
-                new CatalogueItem(
-                    "DSKB08XN4JDR",
-                    "HON Mod Desk Shell, 60 x 30 x 29, Mahogany",
-                    "desk",
-                    null,
-                    266_000,
-                    "This 60 inch desk shell is part of the HON Mod Desk Collection.",
-                    new CatalogueMetadata(
-                        ["desk", "workstations"],
-                        new Dictionary<string, string> { ["material"] = "Metal" },
-                        ["focused work"],
-                        ["a move every month"])),
-            ]);
+            [new SlotRule(WorkspaceSlot.Desk, 1), new SlotRule(WorkspaceSlot.Monitor, 3)]);
 
         Schemas.Evaluate("suggestion.request.schema.json", request).IsValid.Should().BeTrue();
+    }
+
+    [Fact] // the request no longer carries the catalogue, and the schema forbids it returning
+    public void A_request_carrying_a_catalogue_is_rejected()
+    {
+        // The agent searches the catalogue through its MCP tools, so the request must not push it. Pinned
+        // because the two trees could otherwise drift back: the schema is what the application serializes
+        // against, and `additionalProperties: false` is what makes a stray field a refusal rather than a
+        // silent passenger.
+        Schemas.EvaluateRaw("suggestion.request.schema.json", """
+            {
+              "runId": "run-1",
+              "query": "q",
+              "currency": "IDR",
+              "slots": [ { "slot": "Desk", "capacity": 1 } ],
+              "catalogue": [ { "sku": "X", "name": "n", "category": "desk", "subCategory": null,
+                               "pricePerMonth": 1, "description": "d",
+                               "metadata": { "tags": [], "attributes": {}, "bestFor": [], "notFor": [] } } ]
+            }
+            """).IsValid.Should().BeFalse(
+                "the catalogue is searched through the agent's tools, not pushed in the request");
     }
 
     [Fact] // the contract enforces the design: no price may cross

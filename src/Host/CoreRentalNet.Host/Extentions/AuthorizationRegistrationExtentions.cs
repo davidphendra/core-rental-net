@@ -34,6 +34,28 @@ internal static class AuthorizationRegistrationExtentions
     }
 
     /// <summary>
+    /// The permission that guards the AI workspace builder, closed when the deployment has not configured it.
+    /// </summary>
+    /// <remarks>
+    /// <b>Closed</b>, because a suggestion run is a paid model call: a deployment that has not said which claim
+    /// entitles a customer has not been finished, and the safe reading of an unfinished rule is nobody. The
+    /// page hides the section for the same reason, but hiding a section is presentation rather than
+    /// authorisation - the endpoint checks this policy for itself.
+    /// </remarks>
+    public static void AddAiAuthorization(this WebApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddAuthorization(options => options.AddPolicy(
+            AiPolicy.Name,
+            policy => policy.AddRequirements(new ClaimRequirement(
+                ClaimSettings.From(builder.Configuration, ClaimSettings.AiUse),
+                UnconfiguredBehaviour.Closed))));
+
+        builder.Services.AddSingleton<IAuthorizationHandler, ClaimAuthorizationHandler>();
+    }
+
+    /// <summary>
     /// The same requirement, for a machine caller.
     /// </summary>
     /// <remarks>

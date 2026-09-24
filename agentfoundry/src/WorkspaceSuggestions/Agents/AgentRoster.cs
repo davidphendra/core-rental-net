@@ -19,7 +19,7 @@ internal static class AgentRoster
 
     public static AgentProfile Suggestor { get; } = new(
         Name: "suggestor",
-        PromptFileName: "suggestor.v2.md",
+        PromptFileName: "suggestor.v3.md",
         Description: "Composes candidate workspace setups from the catalogue and the specification it is handed.",
         Output: ChatResponseFormat.ForJsonSchema<SuggestionResult>());
 

@@ -30,6 +30,9 @@ internal static class ApiErrorCode
     /// <summary>A token was accepted, and it does not entitle the caller to this.</summary>
     public const string NotPermitted = "catalog.not_permitted";
 
+    /// <summary>This customer already has a suggestion run in flight, and a run is paid for.</summary>
+    public const string RunInFlight = "builder.run_in_flight";
+
     /// <summary>Nothing answers this path.</summary>
     public const string UnknownRoute = "api.unknown_route";
 

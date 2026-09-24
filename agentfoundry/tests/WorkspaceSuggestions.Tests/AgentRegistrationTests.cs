@@ -76,7 +76,7 @@ public sealed class AgentRegistrationTests
     public void The_reported_prompt_version_names_every_prompt_the_run_used()
     {
         // One string for a run that is two agents: reporting only the suggestor would understate what ran.
-        AgentRegistration.PromptVersions().Should().Be("rephraser.v1+suggestor.v2");
+        AgentRegistration.PromptVersions().Should().Be("rephraser.v1+suggestor.v3");
     }
 
     [Theory]

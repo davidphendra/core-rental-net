@@ -21,6 +21,9 @@ builder.AddCatalogApiAuthorization(identity);
 // a server. Closed when the deployment has not said which claim entitles a caller.
 builder.AddSimilaritySearchAuthorization(identity);
 builder.AddCatalogMcpAuthorization(identity);
+// The AI section is gated on a permission the deployment configures, and is closed when it has not: no
+// section, rather than an open one. The catalogue's own rule is untouched, and stays open.
+builder.AddAiAuthorization();
 builder.AddPresentation();
 
 builder.AddSqliteDatabase();
@@ -37,6 +40,10 @@ builder.AddRentals();
 // those vectors out of the tool's own file. A deployment that has not been told where either is gets a feature
 // that reports itself unavailable rather than a failed request.
 builder.AddDiscovery();
+
+// The suggestion agent is reached through the Foundry client, and is unavailable rather than open when it has
+// not been configured. Nothing else in the application knows that Foundry exists.
+builder.AddSuggestionAgent();
 
 builder.Services.AddScoped<IWorkspaceSession, WorkspaceSession>();
 

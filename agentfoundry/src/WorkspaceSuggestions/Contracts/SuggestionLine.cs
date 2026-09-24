@@ -14,7 +14,7 @@ public sealed record SuggestionLine(
     [property: Description("The slot this line fills.")]
     WorkspaceSlot Slot,
     [property: JsonPropertyName("sku")]
-    [property: Description("A SKU from the catalogue the request carried.")]
+    [property: Description("A SKU from a catalogue search result.")]
     string Sku,
     [property: JsonPropertyName("quantity")]
     [property: Description("How many of this SKU, never exceeding the slot's capacity.")]

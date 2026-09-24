@@ -10,8 +10,8 @@ using Xunit;
 namespace WorkspaceSuggestions.Tests;
 
 /// <summary>
-/// AIWB-09 to AIWB-12: the pipeline — rephraser then suggestor, in that order, with the catalogue still in
-/// front of the suggestor.
+/// AIWB-09 to AIWB-12: the pipeline — rephraser then suggestor, in that order, with the rephraser's
+/// specification still in front of the suggestor.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -44,14 +44,11 @@ public sealed class WorkflowTests
                          "rationale": "A calm, focused setup for a small room." } ] }
         """;
 
-    /// <summary>The request as the application would push it: the sentence and the catalogue together.</summary>
+    /// <summary>The request as the application sends it: the sentence and the slot rules, and no catalogue.</summary>
     private const string Request =
         """
         { "runId": "run-1", "query": "a quiet corner for one screen", "currency": "IDR", "ceilingMonthly": 1500000,
-          "slots": [ { "slot": "Desk", "capacity": 1 }, { "slot": "Monitor", "capacity": 3 } ],
-          "catalogue": [ { "sku": "DSKB08XN4JDR", "name": "HON Mod Desk Shell", "category": "desk", "subCategory": null,
-                           "pricePerMonth": 266000, "description": "A 60 inch desk shell.",
-                           "metadata": { "tags": [ "desk" ], "attributes": {}, "bestFor": [], "notFor": [] } } ] }
+          "slots": [ { "slot": "Desk", "capacity": 1 }, { "slot": "Monitor", "capacity": 3 } ] }
         """;
 
     [Fact] // AIWB-09
@@ -81,16 +78,16 @@ public sealed class WorkflowTests
     }
 
     [Fact] // AIWB-10
-    public async Task The_suggestor_still_sees_the_catalogue_the_request_carried()
+    public async Task The_suggestor_still_sees_the_specification_the_rephraser_produced()
     {
         var (agent, client) = Build();
 
         _ = await agent.RunAsync(Request);
 
-        // The second call is the suggestor's. Default chaining is what keeps the catalogue in front of it;
-        // chainOnlyAgentResponses would have handed it the specification and nothing else.
-        client.Requests[1].Should().Contain("DSKB08XN4JDR", "the catalogue arrived in the original request");
-        client.Requests[1].Should().Contain("a wide, stable surface", "and so did the rephraser's specification");
+        // The second call is the suggestor's. Default chaining is what keeps the rephraser's specification in
+        // front of it; chainOnlyAgentResponses would have handed it nothing. The catalogue is no longer part of
+        // this — the suggestor searches it through its tools.
+        client.Requests[1].Should().Contain("a wide, stable surface", "the rephraser's specification is chained through");
     }
 
     [Fact] // AIWB-11

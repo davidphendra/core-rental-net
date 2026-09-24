@@ -70,7 +70,7 @@
         "sku": {
           "type": "string",
           "minLength": 1,
-          "description": "Must exist in the catalogue the request carried; the application rejects the whole run otherwise."
+          "description": "Must exist in the catalogue; the application rejects the whole run otherwise."
         },
         "quantity": {
           "type": "integer",

@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.AiBuilder;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
@@ -78,6 +79,11 @@ internal static class ApplicationPipelineExtentions
         app.MapControllers();
         MapDevelopmentDocumentation(app);
         MapCatalogMcp(app);
+
+        // The suggestion run: a minimal-API endpoint rather than a controller, because its answer is held open
+        // and written to for as long as the run takes. It carries its own permission; a customer who never sees
+        // the AI section must not be able to spend through a path they were not shown.
+        app.MapSuggestionEndpoint();
 
         if (identity.IsConfigured)
         {
