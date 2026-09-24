@@ -34,8 +34,8 @@ internal static class ConfigurationReader
     /// </remarks>
     private static readonly ImmutableHashSet<string> s_safeToRepeat = ImmutableHashSet.Create(
         StringComparer.Ordinal,
-        "Llm:Server",
-        "Llm:Model",
+        "Embedding:Server",
+        "Embedding:Model",
         "Embedding:Width",
         "Catalog:FilePath",
         "Database:Path",
@@ -59,8 +59,8 @@ internal static class ConfigurationReader
         return new IngestionSettings(
             ResolvedPath(configuration, "Catalog:FilePath", IngestionSettings.DefaultCataloguePath, baseDirectory),
             ResolvedPath(configuration, "Database:Path", IngestionSettings.DefaultDatabasePath, baseDirectory),
-            Server(configuration, "Llm:Server", IngestionSettings.DefaultLlmServer),
-            Text(configuration, "Llm:Model", IngestionSettings.DefaultLlmModel),
+            Server(configuration, "Embedding:Server", IngestionSettings.DefaultEmbeddingServer),
+            Text(configuration, "Embedding:Model", IngestionSettings.DefaultEmbeddingModel),
             Positive(configuration, "Embedding:Width", IngestionSettings.DefaultWidth),
             Chunker(configuration));
     }

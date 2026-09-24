@@ -18,8 +18,8 @@ namespace CoreRentalNet.CatalogIngestion;
 internal sealed record IngestionSettings(
     string CataloguePath,
     string DatabasePath,
-    string LlmServer,
-    string LlmModel,
+    string EmbeddingServer,
+    string EmbeddingModel,
     int Width,
     ChunkerSettings Chunker)
 {
@@ -30,10 +30,10 @@ internal sealed record IngestionSettings(
     public const string DefaultDatabasePath = "App_Data/product_embedding.db";
 
     /// <summary>The local OpenAI-compatible embedding server.</summary>
-    public const string DefaultLlmServer = "http://localhost:8080/v1";
+    public const string DefaultEmbeddingServer = "http://localhost:8080/v1";
 
     /// <summary>The embedding model that server serves.</summary>
-    public const string DefaultLlmModel = "all-MiniLM-L6-v2-embedding";
+    public const string DefaultEmbeddingModel = "all-MiniLM-L6-v2-embedding";
 
     /// <summary>How wide that model's vectors are.</summary>
     public const int DefaultWidth = 384;

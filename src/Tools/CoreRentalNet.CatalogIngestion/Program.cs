@@ -63,7 +63,7 @@ async Task<int> Run()
     // for a reason that does not matter here.
     var catalogue = new ProductCatalogService(settings.CataloguePath, webRootPath: null);
 
-    var embeddings = OpenAiCompatibleEmbeddingService.Build(settings.LlmServer, settings.LlmModel);
+    var embeddings = OpenAiCompatibleEmbeddingService.Build(settings.EmbeddingServer, settings.EmbeddingModel);
     var semanticProductChunker = new SemanticProductChunker(new ClientEmbeddingGenerator(embeddings), settings.Chunker);
     var store = new SqliteProductEmbeddingStore(settings.DatabasePath);
 
@@ -86,7 +86,7 @@ async Task<int> Run()
 // instead of ranking vectors that are not comparable.
 EmbeddingRecipe Recipe()
     => new(
-        settings.LlmModel,
+        settings.EmbeddingModel,
         settings.Width,
         ProductVectorContract.Composition,
         CatalogHash.OfFile(settings.CataloguePath));

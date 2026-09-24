@@ -20,8 +20,8 @@ public sealed class ConfigurationReaderTests
     {
         ["Catalog:FilePath"] = "/tmp/products.json",
         ["Database:Path"] = "/tmp/product_embedding.db",
-        ["Llm:Server"] = "http://localhost:8080/v1",
-        ["Llm:Model"] = "all-MiniLM-L6-v2-embedding",
+        ["Embedding:Server"] = "http://localhost:8080/v1",
+        ["Embedding:Model"] = "all-MiniLM-L6-v2-embedding",
         ["Embedding:Width"] = "384",
         ["Chunker:TokenLimit"] = "256",
         ["Chunker:BufferSize"] = "1",
@@ -43,8 +43,8 @@ public sealed class ConfigurationReaderTests
 
         settings.CataloguePath.Should().Be("/tmp/products.json");
         settings.DatabasePath.Should().Be("/tmp/product_embedding.db");
-        settings.LlmServer.Should().Be("http://localhost:8080/v1");
-        settings.LlmModel.Should().Be("all-MiniLM-L6-v2-embedding");
+        settings.EmbeddingServer.Should().Be("http://localhost:8080/v1");
+        settings.EmbeddingModel.Should().Be("all-MiniLM-L6-v2-embedding");
         settings.Width.Should().Be(384);
         settings.Chunker.Should().Be(new ChunkerSettings(256, 1, "Percentile", 95, null, 1, 200));
     }
@@ -56,8 +56,8 @@ public sealed class ConfigurationReaderTests
         // to work with, and a file only has to say what differs from them.
         var settings = Read(new Dictionary<string, string?>());
 
-        settings.LlmServer.Should().Be(IngestionSettings.DefaultLlmServer);
-        settings.LlmModel.Should().Be(IngestionSettings.DefaultLlmModel);
+        settings.EmbeddingServer.Should().Be(IngestionSettings.DefaultEmbeddingServer);
+        settings.EmbeddingModel.Should().Be(IngestionSettings.DefaultEmbeddingModel);
         settings.Width.Should().Be(IngestionSettings.DefaultWidth);
         settings.Chunker.TokenLimit.Should().Be(ChunkerSettings.DefaultTokenLimit);
         settings.Chunker.BufferSize.Should().Be(ChunkerSettings.DefaultBufferSize);
@@ -71,10 +71,10 @@ public sealed class ConfigurationReaderTests
     [InlineData("Embedding:Width", "abc")]
     [InlineData("Embedding:Width", "0")]
     [InlineData("Embedding:Width", "")]
-    [InlineData("Llm:Server", "not-a-url")]
-    [InlineData("Llm:Server", "/v1")]
-    [InlineData("Llm:Server", "ftp://localhost")]
-    [InlineData("Llm:Model", "")]
+    [InlineData("Embedding:Server", "not-a-url")]
+    [InlineData("Embedding:Server", "/v1")]
+    [InlineData("Embedding:Server", "ftp://localhost")]
+    [InlineData("Embedding:Model", "")]
     [InlineData("Chunker:ThresholdType", "Vibes")]
     [InlineData("Chunker:TokenLimit", "-1")]
     [InlineData("Chunker:ThresholdAmount", "zero")]

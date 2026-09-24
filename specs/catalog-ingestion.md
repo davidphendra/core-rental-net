@@ -29,7 +29,7 @@ provisioning anything.
 2. **Render** each product with `EmbeddedText` — **name + description + the whole metadata** (tags,
    bestFor, notFor, every attribute), attributes ordered, empty sections omitted, `\n`-joined.
 3. **Chunk** that text with `SemanticChunker.NET`, using the `Chunker:*` settings.
-4. **Embed** each chunk through `Llm:Server` / `Llm:Model`.
+4. **Embed** each chunk through `Embedding:Server` / `Embedding:Model`.
 5. **Check, then write.** Before the first write: the catalogue is non-empty, every product produced at
    least one chunk, and every vector is `Embedding:Width` wide. A failure writes nothing.
 6. **Replace** the table in one transaction — `DELETE`, then every row. Re-running is idempotent.
@@ -42,8 +42,8 @@ is `--help`.
 
 | Key | Default |
 |---|---|
-| `Llm:Server` | `http://localhost:8080/v1` |
-| `Llm:Model` | `all-MiniLM-L6-v2-embedding` |
+| `Embedding:Server` | `http://localhost:8080/v1` |
+| `Embedding:Model` | `all-MiniLM-L6-v2-embedding` |
 | `Embedding:Width` | `384` |
 | `Catalog:FilePath` | `../../shared/data/products.json` (relative to the tool's project directory) |
 | `Database:Path` | `App_Data/product_embedding.db` (relative to the tool's project directory) |
@@ -58,6 +58,13 @@ is `--help`.
 Paths resolve against the **tool's project directory**, found by walking up from the build output to
 `CoreRentalNet.CatalogIngestion.csproj`, so a run launched from `bin` reads and writes the same files as
 one launched from the project.
+
+**Three of these are facts the application also reads** — the server, the model and the width — and it
+names its own copies `VectorEmbedding:Server`, `VectorEmbedding:Model` and `VectorEmbedding:Width`. The two
+are separate processes reading separate files, so those facts are shared by value and not by section: the
+application compares the model this tool stamped beside the vectors against the one it is configured with
+before it searches, because ingestion and retrieval embedding through different models is not a worse
+answer, it is a meaningless one.
 
 ## Store
 
@@ -146,10 +153,10 @@ Recorded at the end of this change:
 | Baseline | Measured |
 |---|---|
 | `BUILD` | `dotnet build CoreRentalNet.sln` — **0 warnings, 0 errors** |
-| `NONBROWSER` | **815 passed, 0 failed** across all ten offline projects (measured after [ADR 0003](adr/0003-discovery-reads-the-tool.md) moved the vectors to the application's readers; see that record for the one local-database condition this depends on) |
+| `NONBROWSER` | **704 passed, 0 failed** across the nine offline projects. Corrected from 815 across ten: the tenth was the Discovery unit-test project, which went with the shortlist it covered ([ADR 0005](adr/0005-agent-catalogue-tools.md)). The count moved twice since — down as the builder's tests went with the builder, back up as it was restored, plus the configuration guard this change adds. [ADR 0003](adr/0003-discovery-reads-the-tool.md) records the one local-database condition this depends on. |
 | `BROWSER` | not run; unchanged by this work |
 | `AGENT` | not run; unchanged by this work |
 | Live run | **638 rows / 205 products** written in 25 s against the local server; schema, 1,536-byte blobs, GUID ids and one UTC timestamp verified with `sqlite3`; a direct nearest query returns desks and a monitor for "work with two screens" and coffee items for "relax with a coffee" |
 
-`ARCHITECTURE` is one of the ten and passes, having caught and then confirmed the fix for **ARC-05** (no
+`ARCHITECTURE` is one of the nine and passes, having caught and then confirmed the fix for **ARC-05** (no
 project may pin its own package versions).

@@ -34,7 +34,7 @@ Constraints that shape the record:
 and **no** `Modules.Discovery` project. It creates and writes its own database file; nothing else reads
 it yet.
 
-**D2 — Embeddings come from the local OpenAI-compatible server.** `Llm:Server` and `Llm:Model` name it;
+**D2 — Embeddings come from the local OpenAI-compatible server.** `Embedding:Server` and `Embedding:Model` name it;
 the model is `all-MiniLM-L6-v2-embedding` and the width is **384**. The width is **verified, never
 requested**: the server ignores the OpenAI `dimensions` option, so a vector of another width is refused
 rather than stored.
