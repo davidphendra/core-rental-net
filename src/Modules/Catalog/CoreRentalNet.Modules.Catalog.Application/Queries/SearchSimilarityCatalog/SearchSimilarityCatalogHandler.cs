@@ -31,7 +31,7 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchSimilarityCata
 /// </remarks>
 public sealed class SearchSimilarityCatalogHandler(
     IProductCatalogService catalogueService,
-    IEmbeddingRepository embeddingRepository,
+    IEmbeddingService embeddingService,
     IProductSimilarityService productSimilarityService) : ISearchSimilarityCatalogHandler
 {
     /// <inheritdoc />
@@ -43,7 +43,7 @@ public sealed class SearchSimilarityCatalogHandler(
         ArgumentException.ThrowIfNullOrWhiteSpace(query.Query);
 
         var eligible = catalogueService.Search(query.Category, query.SubCategory, search: null);
-        var queryVectors = await embeddingRepository.EmbedAsync([query.Query], cancellationToken);
+        var queryVectors = await embeddingService.EmbedAsync([query.Query], cancellationToken);
         var nearestCatalogsVector = await productSimilarityService.NearestAsync(queryVectors[0], cancellationToken);
 
         var bySku = nearestCatalogsVector.ToDictionary(

@@ -12,7 +12,7 @@ namespace WorkspaceSuggestions.Contracts;
 /// </para>
 /// <para>
 /// <b>It carries no usage, deliberately.</b> The run's cost was once a required field of this type, which
-/// meant the only party asked for a model-call count, a token count, a deployment name and a prompt version
+/// meant the only party asked for a model-call count, a tokenService count, a deployment name and a prompt version
 /// was the one party unable to observe any of them: a schema demanding <c>two</c> from a model that cannot
 /// count its own calls, and validation would have passed because integers are integers. The framework counts
 /// those, so the code reports them — see <see cref="RunUsageReport"/> — and the model is asked only what it

@@ -18,7 +18,7 @@ namespace CoreRentalNet.IntegrationTests;
 /// implied otherwise would be worse than one that says so.
 /// </para>
 /// </remarks>
-internal sealed class StandInEmbeddingRepository : IEmbeddingRepository
+internal sealed class StandInEmbeddingService : IEmbeddingService
 {
     private readonly int _width;
     private readonly int? _answerWith;
@@ -26,7 +26,7 @@ internal sealed class StandInEmbeddingRepository : IEmbeddingRepository
     /// <param name="width">The width every vector is produced at.</param>
     /// <param name="answerWith">A vector count to answer with instead of the number asked for, so a test can
     /// hold a short answer against the refusal that must follow.</param>
-    public StandInEmbeddingRepository(int width, int? answerWith = null)
+    public StandInEmbeddingService(int width, int? answerWith = null)
     {
         _width = width;
         _answerWith = answerWith;

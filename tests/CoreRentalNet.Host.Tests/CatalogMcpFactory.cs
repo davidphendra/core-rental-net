@@ -87,8 +87,8 @@ public class CatalogMcpFactory : WebApplicationFactory<Program>
             services.AddSingleton<IProductSimilarityService>(provider =>
                 Similarity(provider.GetRequiredService<IProductCatalogService>()));
 
-            services.RemoveAll<IEmbeddingRepository>();
-            services.AddSingleton<IEmbeddingRepository>(new StubEmbeddingRepository());
+            services.RemoveAll<IEmbeddingService>();
+            services.AddSingleton<IEmbeddingService>(new StubEmbeddingService());
         });
     }
 

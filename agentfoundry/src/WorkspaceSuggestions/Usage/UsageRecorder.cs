@@ -7,7 +7,7 @@ namespace WorkspaceSuggestions.Usage;
 /// <remarks>
 /// <para>
 /// <b>This exists because the model cannot know these numbers.</b> They were once required fields of the
-/// result the model produced, which meant a live run would have had the model invent a call count, a token
+/// result the model produced, which meant a live run would have had the model invent a call count, a tokenService
 /// count, a deployment name and a prompt version - and validation would have passed, because integers are
 /// integers. The schema said the call count "can never drift unnoticed" while the only party asked for it
 /// had no way to observe it.
@@ -56,7 +56,7 @@ internal sealed class UsageRecorder
     public RunUsage Snapshot(string model, string promptVersion)
         => new(ModelCalls, Clamp(InputTokens), Clamp(OutputTokens), model, promptVersion);
 
-    /// <summary>The contract carries token counts as integers; a run cannot reach the ceiling, but a bug
+    /// <summary>The contract carries tokenService counts as integers; a run cannot reach the ceiling, but a bug
     /// that accumulated across runs could, and wrapping negative would be worse than saturating.</summary>
     private static int Clamp(long value) => value > int.MaxValue ? int.MaxValue : (int)value;
 }

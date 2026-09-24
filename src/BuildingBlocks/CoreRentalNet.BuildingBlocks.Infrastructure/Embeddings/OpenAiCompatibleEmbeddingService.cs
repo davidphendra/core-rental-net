@@ -27,7 +27,7 @@ namespace CoreRentalNet.BuildingBlocks.Infrastructure.Embeddings;
 /// model — which is an argument for one adapter rather than two that agree until one of them is edited.
 /// </para>
 /// </remarks>
-public sealed class OpenAiCompatibleEmbeddingRepository : IEmbeddingRepository
+public sealed class OpenAiCompatibleEmbeddingService : IEmbeddingService
 {
     /// <summary>The key the client requires and the server ignores.</summary>
     /// <remarks>
@@ -42,7 +42,7 @@ public sealed class OpenAiCompatibleEmbeddingRepository : IEmbeddingRepository
 
     /// <summary>The adapter over one embedding client.</summary>
     /// <param name="embeddingClient">The client to send through, built by <see cref="Build"/> or by a test.</param>
-    public OpenAiCompatibleEmbeddingRepository(EmbeddingClient embeddingClient)
+    public OpenAiCompatibleEmbeddingService(EmbeddingClient embeddingClient)
     {
         ArgumentNullException.ThrowIfNull(embeddingClient);
 
@@ -52,7 +52,7 @@ public sealed class OpenAiCompatibleEmbeddingRepository : IEmbeddingRepository
     /// <summary>The client for one server and one of the models it serves.</summary>
     /// <param name="server">The server's base URL including its version path, e.g. http://localhost:8080/v1.</param>
     /// <param name="model">The identifier the server knows the model by.</param>
-    public static IEmbeddingRepository Build(string server, string model)
+    public static IEmbeddingService Build(string server, string model)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(server);
         ArgumentException.ThrowIfNullOrWhiteSpace(model);
@@ -61,7 +61,7 @@ public sealed class OpenAiCompatibleEmbeddingRepository : IEmbeddingRepository
             new ApiKeyCredential(PlaceholderApiKey),
             new OpenAIClientOptions { Endpoint = new Uri(server, UriKind.Absolute) });
 
-        return new OpenAiCompatibleEmbeddingRepository(llmClient.GetEmbeddingClient(model));
+        return new OpenAiCompatibleEmbeddingService(llmClient.GetEmbeddingClient(model));
     }
 
     /// <inheritdoc />

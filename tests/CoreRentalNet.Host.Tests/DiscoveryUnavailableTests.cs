@@ -26,25 +26,25 @@ public sealed class DiscoveryUnavailableTests
         => new(string.Empty, string.Empty, string.Empty, 384);
 
     /// <summary>An application with just enough registered to run the gate, and a log a test can read.</summary>
-    private static (WebApplication App, StubCatalogIndexFreshness Freshness, CapturingLoggerProvider Logs) Host(
+    private static (WebApplication App, StubCatalogIndexFreshnessService Freshness, CapturingLoggerProvider Logs) Host(
         DiscoverySettings settings,
-        StubCatalogIndexFreshness freshness)
+        StubCatalogIndexFreshnessService freshnessService)
     {
         var builder = WebApplication.CreateBuilder();
         var logs = new CapturingLoggerProvider();
 
         builder.Services.AddSingleton(settings);
         builder.Services.AddSingleton(new CatalogIndexAvailability());
-        builder.Services.AddSingleton<ICatalogIndexFreshness>(freshness);
+        builder.Services.AddSingleton<ICatalogIndexFreshnessService>(freshnessService);
         builder.Services.AddSingleton<ILoggerFactory>(LoggerFactory.Create(logging => logging.AddProvider(logs)));
 
-        return (builder.Build(), freshness, logs);
+        return (builder.Build(), freshnessService, logs);
     }
 
     [Fact] // SCR-20
     public void Vectors_that_were_never_built_refuse_the_search_and_name_the_tool()
     {
-        var (app, _, logs) = Host(Configured(), new StubCatalogIndexFreshness(() => CatalogIndexVerdict.NotBuilt));
+        var (app, _, logs) = Host(Configured(), new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.NotBuilt));
         using var host = app;
 
         app.GateSimilarityOnIndex();
@@ -57,7 +57,7 @@ public sealed class DiscoveryUnavailableTests
     [Fact] // SCR-20
     public void Vectors_that_are_current_refuse_nothing()
     {
-        var (app, freshness, logs) = Host(Configured(), new StubCatalogIndexFreshness(() => CatalogIndexVerdict.Usable));
+        var (app, freshness, logs) = Host(Configured(), new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.Usable));
         using var host = app;
 
         app.GateSimilarityOnIndex();
@@ -72,7 +72,7 @@ public sealed class DiscoveryUnavailableTests
     {
         var (app, _, logs) = Host(
             Configured(),
-            new StubCatalogIndexFreshness(() => CatalogIndexVerdict.Stale("the catalogue has changed since the vectors were built")));
+            new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.Stale("the catalogue has changed since the vectors were built")));
         using var host = app;
 
         app.GateSimilarityOnIndex();
@@ -90,7 +90,7 @@ public sealed class DiscoveryUnavailableTests
         // genuine defect is still visible in the log rather than silent.
         var (app, _, logs) = Host(
             Configured(),
-            new StubCatalogIndexFreshness(() => throw new InvalidOperationException("the database is unreadable")));
+            new StubCatalogIndexFreshnessService(() => throw new InvalidOperationException("the database is unreadable")));
         await using var host = app;
 
         var gate = () => app.GateSimilarityOnIndex();
@@ -106,7 +106,7 @@ public sealed class DiscoveryUnavailableTests
         // The feature is already unavailable for want of configuration, and the embedding client registered is the
         // one that refuses. Reading the vectors anyway would be a file read on every start-up for a deployment that
         // cannot use it.
-        var (app, freshness, _) = Host(Unconfigured(), new StubCatalogIndexFreshness(() => CatalogIndexVerdict.NotBuilt));
+        var (app, freshness, _) = Host(Unconfigured(), new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.NotBuilt));
         using var host = app;
 
         app.GateSimilarityOnIndex();

@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace WorkspaceSuggestions.Tools;
 
-/// <summary>The token endpoint's answer, as this agent reads it.</summary>
+/// <summary>The tokenService endpoint's answer, as this agent reads it.</summary>
 /// <remarks>
 /// Only the two fields the provider is documented to send are read; anything else in the answer is ignored, so
 /// a provider that adds a field does not break the agent.

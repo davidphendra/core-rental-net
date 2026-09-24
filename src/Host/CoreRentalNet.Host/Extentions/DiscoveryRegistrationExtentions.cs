@@ -39,14 +39,14 @@ internal static class DiscoveryRegistrationExtentions
 
         builder.Services.AddSingleton(settings);
 
-        builder.Services.AddSingleton<IEmbeddingRepository>(
+        builder.Services.AddSingleton<IEmbeddingService>(
             settings.IsConfigured
-                ? OpenAiCompatibleEmbeddingRepository.Build(settings.Server, settings.Model)
+                ? OpenAiCompatibleEmbeddingService.Build(settings.Server, settings.Model)
                 : new EmbeddingNotConfigured());
 
         var databasePath = ResolveDatabasePath(builder, settings.EmbeddingDatabase);
 
-        builder.Services.AddSingleton<ICatalogIndexFreshness>(new CatalogIndexFreshness(databasePath));
+        builder.Services.AddSingleton<ICatalogIndexFreshnessService>(new CatalogIndexFreshnessService(databasePath));
 
         AddSimilaritySearch(builder, databasePath);
     }

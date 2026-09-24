@@ -3,10 +3,10 @@ using System.Text;
 
 namespace WorkspaceSuggestions.Tests;
 
-/// <summary>A token endpoint that counts its calls and answers with a token of a chosen lifetime.</summary>
+/// <summary>A tokenService endpoint that counts its calls and answers with a tokenService of a chosen lifetime.</summary>
 /// <remarks>
 /// The lifetime is the parameter because the refresh rule is a comparison with the clock, and a lifetime of
-/// zero puts the token inside the margin without any test having to move time.
+/// zero puts the tokenService inside the margin without any test having to move time.
 /// </remarks>
 internal sealed class CountingTokenHandler(int expiresIn) : HttpMessageHandler
 {
@@ -29,7 +29,7 @@ internal sealed class CountingTokenHandler(int expiresIn) : HttpMessageHandler
         return new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(
-                $$"""{"access_token":"token-{{Requests}}","expires_in":{{expiresIn}}}""",
+                $$"""{"access_token":"tokenService-{{Requests}}","expires_in":{{expiresIn}}}""",
                 Encoding.UTF8,
                 "application/json"),
         };

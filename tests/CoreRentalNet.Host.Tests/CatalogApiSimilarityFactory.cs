@@ -82,8 +82,8 @@ public sealed class CatalogApiSimilarityFactory : WebApplicationFactory<Program>
 
             // The handler embeds the sentence before it searches, so the search needs one vector. It is fixed
             // and of no consequence to the endpoint: what these tests assert is the endpoint, not retrieval.
-            services.RemoveAll<IEmbeddingRepository>();
-            services.AddSingleton<IEmbeddingRepository>(new StubEmbeddingRepository());
+            services.RemoveAll<IEmbeddingService>();
+            services.AddSingleton<IEmbeddingService>(new StubEmbeddingService());
         });
     }
 

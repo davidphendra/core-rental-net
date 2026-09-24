@@ -71,7 +71,7 @@ internal static class DiscoveryStartupExtentions
 
     /// <summary>Whether the stored vectors match what this deployment would build.</summary>
     private static CatalogIndexVerdict Check(WebApplication app, DiscoverySettings settings)
-        => app.Services.GetRequiredService<ICatalogIndexFreshness>().Check(
+        => app.Services.GetRequiredService<ICatalogIndexFreshnessService>().Check(
             CatalogHash.OfFile(CatalogPathHelper.Resolve(app.Configuration)),
             settings.Model,
             settings.Width,

@@ -15,7 +15,7 @@ namespace WorkspaceSuggestions.Usage;
 /// <see cref="ChatResponse.Usage"/> carries it for a non-streamed call, but a streamed update has no
 /// <c>Usage</c> property at all — the figure arrives as a <see cref="UsageContent"/> inside the update's
 /// contents. A client that emits neither still has its call counted, so the call count is always a
-/// measurement even when the token counts cannot be.
+/// measurement even when the tokenService counts cannot be.
 /// </para>
 /// </remarks>
 internal sealed class UsageRecordingChatClient(IChatClient inner) : DelegatingChatClient(inner)

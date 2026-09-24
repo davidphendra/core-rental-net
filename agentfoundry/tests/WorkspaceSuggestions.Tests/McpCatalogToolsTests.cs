@@ -19,7 +19,7 @@ public sealed class McpCatalogToolsTests
     {
         var settings = CatalogToolSettings.From(new ConfigurationBuilder().Build());
 
-        await using var catalogue = await McpCatalogTools.ConnectAsync(settings, new StubCatalogAccessToken());
+        await using var catalogue = await McpCatalogTools.ConnectAsync(settings, new StubCatalogAccessTokenService());
 
         catalogue.Tools.Should().BeEmpty();
     }
@@ -37,7 +37,7 @@ public sealed class McpCatalogToolsTests
 
         await using var catalogue = await McpCatalogTools.ConnectAsync(
             CatalogToolSettings.From(configuration),
-            new StubCatalogAccessToken());
+            new StubCatalogAccessTokenService());
 
         catalogue.Tools.Should().BeEmpty("a half-configured capability is off, not half-open");
     }

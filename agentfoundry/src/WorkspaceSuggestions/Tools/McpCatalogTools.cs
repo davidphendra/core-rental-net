@@ -24,18 +24,18 @@ internal sealed class McpCatalogTools(McpClient? client, IReadOnlyList<AITool> t
     /// <summary>Connects to the catalogue's MCP server and lists what it offers, or nothing when unconfigured.</summary>
     public static async Task<ICatalogTools> ConnectAsync(
         CatalogToolSettings settings,
-        ICatalogAccessToken token,
+        ICatalogAccessTokenService tokenService,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        ArgumentNullException.ThrowIfNull(token);
+        ArgumentNullException.ThrowIfNull(tokenService);
 
         if (!settings.IsConfigured)
         {
             return new McpCatalogTools(null, []);
         }
 
-        var http = new HttpClient(new BearerHandler(token));
+        var http = new HttpClient(new BearerHandler(tokenService));
 
         var client = await McpClient.CreateAsync(
             new HttpClientTransport(

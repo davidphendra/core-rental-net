@@ -22,7 +22,7 @@ namespace CoreRentalNet.BuildingBlocks.Application.Embeddings;
 /// drifts.
 /// </para>
 /// </remarks>
-public interface IEmbeddingRepository
+public interface IEmbeddingService
 {
     /// <summary>One vector per text, in the order the texts were given.</summary>
     Task<IReadOnlyList<float[]>> EmbedAsync(IReadOnlyList<string> texts, CancellationToken cancellationToken);

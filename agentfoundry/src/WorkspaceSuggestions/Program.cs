@@ -17,27 +17,27 @@ Env.NoClobber().TraversePath().Load();
 var builder = AgentHost.CreateBuilder(args);
 
 // One model client, shared by every agent: the roster's agents are built from it, keyed by name.
-var client = AgentRegistration.BuildChatClient(builder.Configuration);
+var chatClient = AgentRegistration.BuildChatClient(builder.Configuration);
 
 // The catalogue's tools, discovered once from its MCP server. An unconfigured catalogue is no tools rather
 // than a broken agent; a configured one that cannot be reached stops the host, because an agent with no
 // tools would answer every run from memory. Disposed with the host, once app.Run returns.
 var settings = CatalogToolSettings.From(builder.Configuration);
-await using var catalogue = await McpCatalogTools.ConnectAsync(
+await using var mcpCatalogueClient = await McpCatalogTools.ConnectAsync(
     settings,
-    new Auth0CatalogAccessToken(settings, new HttpClient()));
+    new Auth0CatalogAccessTokenService(settings, new HttpClient()));
 
-builder.Services.AddRosterAgents(client, catalogue.Tools);
+builder.Services.AddRosterAgents(chatClient, mcpCatalogueClient.Tools);
 
 // The host serves the workflow, not an agent: rephraser then suggestor, published as one. Built eagerly
 // rather than resolved from DI, because AddFoundryResponses takes the agent instance. Only the suggestor is
 // handed the catalogue's tools.
-var agent = AgentRegistration.BuildWorkflowAgent(
-    client,
+var workflowSuggestorAgent = AgentRegistration.BuildWorkflowAgent(
+    chatClient,
     AgentRegistration.ModelName(builder.Configuration),
-    catalogue.Tools);
+    mcpCatalogueClient.Tools);
 
-builder.Services.AddFoundryResponses(agent);
+builder.Services.AddFoundryResponses(workflowSuggestorAgent);
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
 var app = builder.Build();

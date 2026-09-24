@@ -18,7 +18,7 @@ namespace CoreRentalNet.Host.Extentions;
 /// nothing and answer as if the catalogue held nothing.
 /// </para>
 /// </remarks>
-internal sealed class EmbeddingNotConfigured : IEmbeddingRepository
+internal sealed class EmbeddingNotConfigured : IEmbeddingService
 {
     private const string Reason =
         "No embedding server is configured, so no search can be embedded. Set Discovery:Server, "

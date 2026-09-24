@@ -25,13 +25,13 @@ namespace CoreRentalNet.Modules.Discovery.Infrastructure.Indexing;
 /// usually the cause of the rest — a catalogue that moved is a hash change and may be nothing else.
 /// </para>
 /// </remarks>
-public sealed class CatalogIndexFreshness : ICatalogIndexFreshness
+public sealed class CatalogIndexFreshnessService : ICatalogIndexFreshnessService
 {
     private readonly string _databasePath;
     private readonly SqliteDatabaseSettings _settings;
 
     /// <summary>The freshness check over one ingestion tool's vector file.</summary>
-    public CatalogIndexFreshness(string databasePath)
+    public CatalogIndexFreshnessService(string databasePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
 
@@ -67,7 +67,7 @@ public sealed class CatalogIndexFreshness : ICatalogIndexFreshness
 
         // A file written by a tool older than the recipe table answers "not built" rather than raising: the
         // operator's next action is the same either way, and it is to run the tool.
-        if (!HasRecipeTable(connection))
+        if (!HasEmbeddingRecipeTable(connection))
         {
             return null;
         }
@@ -84,7 +84,7 @@ public sealed class CatalogIndexFreshness : ICatalogIndexFreshness
     }
 
     /// <summary>Whether the tool's file holds the recipe table at all.</summary>
-    private static bool HasRecipeTable(SqliteConnection connection)
+    private static bool HasEmbeddingRecipeTable(SqliteConnection connection)
     {
         using var command = connection.CreateCommand();
         command.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table' AND name = $name;";

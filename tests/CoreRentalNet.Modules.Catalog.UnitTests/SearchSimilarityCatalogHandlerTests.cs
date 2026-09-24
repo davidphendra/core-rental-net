@@ -20,11 +20,11 @@ public sealed class SearchSimilarityCatalogHandlerTests
 
     private static SearchSimilarityCatalogHandler Handler(
         TemporaryCatalogFile file,
-        out StubEmbeddingRepository embeddings,
+        out StubEmbeddingService embeddings,
         out StubProductSimilarityService similarityService,
         params NearestProduct[] nearest)
     {
-        embeddings = new StubEmbeddingRepository(QueryVector);
+        embeddings = new StubEmbeddingService(QueryVector);
         similarityService = new StubProductSimilarityService(nearest);
 
         return new SearchSimilarityCatalogHandler(
@@ -142,7 +142,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
         var handler = new SearchSimilarityCatalogHandler(
             new ProductCatalogService(file.Path, null),
-            new StubEmbeddingRepository(QueryVector),
+            new StubEmbeddingService(QueryVector),
             new StubProductSimilarityService { Failure = new ProductSimilarityUnavailableException("no vectors") });
 
         var act = () => handler.HandleAsync(

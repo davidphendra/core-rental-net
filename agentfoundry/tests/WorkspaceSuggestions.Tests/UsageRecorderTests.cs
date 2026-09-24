@@ -14,7 +14,7 @@ public sealed class UsageRecorderTests
     [Fact]
     public void A_call_is_counted_even_when_the_client_reports_nothing()
     {
-        // The call count is always a measurement; the token counts are only as good as what the client says.
+        // The call count is always a measurement; the tokenService counts are only as good as what the client says.
         var recorder = new UsageRecorder();
 
         recorder.Called();

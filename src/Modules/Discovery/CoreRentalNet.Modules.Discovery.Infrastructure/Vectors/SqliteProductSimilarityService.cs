@@ -44,7 +44,8 @@ public sealed class SqliteProductSimilarityService : IProductSimilarityService
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<NearestProduct>> NearestAsync(float[] queryVector,
+    public async Task<IReadOnlyList<NearestProduct>> NearestAsync(
+        float[] queryVector,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(queryVector);

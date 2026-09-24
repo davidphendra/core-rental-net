@@ -14,7 +14,7 @@ namespace CoreRentalNet.CatalogIngestion.Tests.Embeddings;
 /// anything about retrieval quality. What it proves is the pipeline's shape and its refusals.
 /// </para>
 /// </remarks>
-internal sealed class StandInEmbeddingRepository(int width, int? answerWith = null) : IEmbeddingRepository
+internal sealed class StandInEmbeddingService(int width, int? answerWith = null) : IEmbeddingService
 {
     /// <summary>Every batch of texts this client was asked to embed, in order.</summary>
     public List<IReadOnlyList<string>> Calls { get; } = [];

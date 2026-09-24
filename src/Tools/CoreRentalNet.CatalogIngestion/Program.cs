@@ -63,11 +63,17 @@ async Task<int> Run()
     // for a reason that does not matter here.
     var catalogue = new ProductCatalogService(settings.CataloguePath, webRootPath: null);
 
-    var embeddings = OpenAiCompatibleEmbeddingRepository.Build(settings.LlmServer, settings.LlmModel);
-    var chunker = new SemanticProductChunker(new ClientEmbeddingGenerator(embeddings), settings.Chunker);
+    var embeddings = OpenAiCompatibleEmbeddingService.Build(settings.LlmServer, settings.LlmModel);
+    var semanticProductChunker = new SemanticProductChunker(new ClientEmbeddingGenerator(embeddings), settings.Chunker);
     var store = new SqliteProductEmbeddingStore(settings.DatabasePath);
 
-    var written = await new IngestionPipeline(catalogue, chunker, store, Recipe(), TimeProvider.System)
+    var written = await new IngestionPipeline(
+            catalogue,
+            semanticProductChunker,
+            store,
+            Recipe(),
+            TimeProvider.System
+        )
         .RunAsync(CancellationToken.None);
 
     Console.WriteLine($"Wrote {written} vectors from {settings.CataloguePath} into {settings.DatabasePath}.");

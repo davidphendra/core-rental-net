@@ -15,7 +15,7 @@ namespace CoreRentalNet.IntegrationTests;
 /// fourteen products and simply ranks them wrongly. Nothing downstream notices, which is why this check exists
 /// and why every one of the four has its own test rather than one test for "stale".
 /// </remarks>
-public sealed class CatalogIndexFreshnessTests
+public sealed class CatalogIndexFreshnessServiceTests
 {
     private const int Width = 384;
 
@@ -24,7 +24,7 @@ public sealed class CatalogIndexFreshnessTests
     private const string Model = "all-MiniLM-L6-v2-embedding";
 
     private static CatalogIndexVerdict Check(string path, string hash = Hash, string model = Model, int width = Width)
-        => new CatalogIndexFreshness(path).Check(hash, model, width, ProductVectorContract.Composition);
+        => new CatalogIndexFreshnessService(path).Check(hash, model, width, ProductVectorContract.Composition);
 
     /// <summary>A file with a recipe in it, as the tool would leave it.</summary>
     private static IngestedVectorFile Built(int width = Width, string model = Model, string? composition = null, string hash = Hash)

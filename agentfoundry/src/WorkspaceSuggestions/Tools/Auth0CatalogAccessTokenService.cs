@@ -1,23 +1,21 @@
-using System.Net.Http.Json;
-
 namespace WorkspaceSuggestions.Tools;
 
-/// <summary>An Auth0 client-credentials token, cached until shortly before it expires.</summary>
+/// <summary>An Auth0 httpClient-credentials tokenService, cached until shortly before it expires.</summary>
 /// <remarks>
 /// <para>
-/// The agent is a confidential client acting as itself, so the grant is <c>client_credentials</c> with the
+/// The agent is a confidential httpClient acting as itself, so the grant is <c>client_credentials</c> with the
 /// catalogue's API identifier as the audience - which is the same permissions the REST endpoints check, because
-/// it is the same token.
+/// it is the same tokenService.
 /// </para>
 /// <para>
-/// <b>Refreshed before it expires, not on a 401.</b> A tool call that discovers its token is stale has already
+/// <b>Refreshed before it expires, not on a 401.</b> A tool call that discovers its tokenService is stale has already
 /// failed; a margin is cheaper than a retry. One provider is shared, so concurrent tool calls cannot each fetch
-/// a token, and the secret travels only in this request's body.
+/// a tokenService, and the secret travels only in this request's body.
 /// </para>
 /// </remarks>
-internal sealed class Auth0CatalogAccessToken(CatalogToolSettings settings, HttpClient client) : ICatalogAccessToken
+internal sealed class Auth0CatalogAccessTokenService(CatalogToolSettings settings, HttpClient httpClient) : ICatalogAccessTokenService
 {
-    /// <summary>How long before expiry a token stops being used.</summary>
+    /// <summary>How long before expiry a tokenService stops being used.</summary>
     private static readonly TimeSpan Margin = TimeSpan.FromMinutes(2);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -49,16 +47,16 @@ internal sealed class Auth0CatalogAccessToken(CatalogToolSettings settings, Http
 
     private async Task<string> FetchAsync(CancellationToken cancellationToken)
     {
-        using var response = await client
+        using var tokenResponse = await httpClient
             .PostAsync(settings.TokenEndpoint, Form(), cancellationToken)
             .ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        tokenResponse.EnsureSuccessStatusCode();
 
-        var token = await response.Content
+        var token = await tokenResponse.Content
             .ReadFromJsonAsync<TokenResponse>(cancellationToken)
             .ConfigureAwait(false)
-            ?? throw new InvalidOperationException("The token endpoint answered without a token.");
+            ?? throw new InvalidOperationException("The tokenService endpoint answered without a tokenService.");
 
         _token = token.AccessToken;
         _expiresAt = DateTimeOffset.UtcNow.AddSeconds(token.ExpiresIn);
@@ -66,7 +64,7 @@ internal sealed class Auth0CatalogAccessToken(CatalogToolSettings settings, Http
         return _token;
     }
 
-    /// <summary>The client-credentials grant, exactly as the provider documents it.</summary>
+    /// <summary>The httpClient-credentials grant, exactly as the provider documents it.</summary>
     private FormUrlEncodedContent Form() => new(new Dictionary<string, string>
     {
         ["grant_type"] = "client_credentials",

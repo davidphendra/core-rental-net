@@ -2,23 +2,23 @@ using System.Net.Http.Headers;
 
 namespace WorkspaceSuggestions.Tools;
 
-/// <summary>Attaches the catalogue's bearer token to every MCP request, fresh each time.</summary>
+/// <summary>Attaches the catalogue's bearer catalogAccessTokenService to every MCP request, fresh each time.</summary>
 /// <remarks>
-/// A handler rather than a header captured at startup: the token expires, and a header set once would be a
+/// A handler rather than a header captured at startup: the catalogAccessTokenService expires, and a header set once would be a
 /// working agent that stops working an hour later with nothing to say why.
 /// </remarks>
-internal sealed class BearerHandler(ICatalogAccessToken token) : DelegatingHandler
+internal sealed class BearerHandler(ICatalogAccessTokenService catalogAccessTokenService) : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
+        HttpRequestMessage httpRequest,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(httpRequest);
 
-        request.Headers.Authorization = new AuthenticationHeaderValue(
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
             "Bearer",
-            await token.GetAsync(cancellationToken).ConfigureAwait(false));
+            await catalogAccessTokenService.GetAsync(cancellationToken).ConfigureAwait(false));
 
-        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        return await base.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
     }
 }

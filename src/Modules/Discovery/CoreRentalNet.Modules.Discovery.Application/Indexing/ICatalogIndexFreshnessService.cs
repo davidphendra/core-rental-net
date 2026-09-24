@@ -17,7 +17,7 @@ namespace CoreRentalNet.Modules.Discovery.Application.Indexing;
 /// would be a second definition of a product's text, which is exactly what the two used to have.
 /// </para>
 /// </remarks>
-public interface ICatalogIndexFreshness
+public interface ICatalogIndexFreshnessService
 {
     /// <summary>Whether the stored vectors match what this deployment would build.</summary>
     /// <param name="catalogueHash">The hash of the catalogue as it is now.</param>

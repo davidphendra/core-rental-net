@@ -7,7 +7,7 @@ namespace WorkspaceSuggestions.Tools;
 /// where a half-configured capability is off rather than half-open.
 /// </para>
 /// <para>
-/// <b>The secret is used to acquire a token and nothing else.</b> It is read here, sent only to the token
+/// <b>The secret is used to acquire a tokenService and nothing else.</b> It is read here, sent only to the tokenService
 /// endpoint, and never logged or echoed in a refusal, so no error line can carry it.
 /// </para>
 /// </remarks>

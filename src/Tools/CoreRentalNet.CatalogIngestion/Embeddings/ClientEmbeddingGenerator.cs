@@ -16,7 +16,7 @@ namespace CoreRentalNet.CatalogIngestion.Embeddings;
 /// and nothing else should have to know.
 /// </para>
 /// </remarks>
-internal sealed class ClientEmbeddingGenerator(IEmbeddingRepository embeddings) : IEmbeddingGenerator<string, Embedding<float>>
+internal sealed class ClientEmbeddingGenerator(IEmbeddingService embeddingService) : IEmbeddingGenerator<string, Embedding<float>>
 {
     /// <inheritdoc />
     public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
@@ -27,7 +27,7 @@ internal sealed class ClientEmbeddingGenerator(IEmbeddingRepository embeddings) 
         ArgumentNullException.ThrowIfNull(values);
 
         var texts = values.ToArray();
-        var vectors = await embeddings.EmbedAsync(texts, cancellationToken).ConfigureAwait(false);
+        var vectors = await embeddingService.EmbedAsync(texts, cancellationToken).ConfigureAwait(false);
 
         if (vectors.Count != texts.Length)
         {
