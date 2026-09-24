@@ -75,6 +75,51 @@ public sealed class SearchSimilarityCatalogHandlerTests
     }
 
     [Fact]
+    public async Task A_category_filter_keeps_every_subcategory_of_that_category()
+    {
+        // Accessories are five kinds under one category: narrowing to the category keeps all five and drops
+        // the desk and the chair, whatever the distances are.
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var handler = Handler(
+            file,
+            out _,
+            out _,
+            new NearestProduct("CHA0001", 0.1),
+            new NearestProduct("DSK0001", 0.2),
+            new NearestProduct("MON0001", 0.3),
+            new NearestProduct("LMP0001", 0.4),
+            new NearestProduct("PLT0001", 0.5),
+            new NearestProduct("CFE0001", 0.6),
+            new NearestProduct("BBG0001", 0.7));
+
+        var products = await handler.HandleAsync(
+            new SearchSimilarityCatalogQuery(CatalogCategory.Accessory, null, "anything"),
+            CancellationToken.None);
+
+        products.Select(product => product.Sku).Should().Equal("MON0001", "LMP0001", "PLT0001", "CFE0001", "BBG0001");
+    }
+
+    [Fact]
+    public async Task A_filter_that_matches_none_of_the_nearest_products_is_empty()
+    {
+        // The nearest products are a chair and a desk and the filter asks for monitors: nothing is eligible, so
+        // the answer is empty rather than the unfiltered nearest, which would answer a question nobody asked.
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var handler = Handler(
+            file,
+            out _,
+            out _,
+            new NearestProduct("CHA0001", 0.1),
+            new NearestProduct("DSK0001", 0.2));
+
+        var products = await handler.HandleAsync(
+            new SearchSimilarityCatalogQuery(CatalogCategory.Accessory, CatalogSubCategory.Monitor, "anything"),
+            CancellationToken.None);
+
+        products.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Equal_distances_are_ordered_by_sku()
     {
         // Two products at the same distance still have to come back in a reproducible order.
