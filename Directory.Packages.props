@@ -84,6 +84,14 @@
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
   </ItemGroup>
 
+  <ItemGroup Label="The catalogue's name search">
+    <!-- Ranks the products a search matches, so the catalogue's name search can say which match is best
+         rather than returning them in file order. MIT. Version 7.0.2 is the latest release; its 8.x line is
+         still a preview, so this pins the last release rather than a preview. Its default scorer is Okapi
+         BM25 (k1 = 1.2, b = 0.75), and it brings its own tokenisation, stemming and query parsing. -->
+    <PackageVersion Include="Lifti.Core" Version="7.0.2" />
+  </ItemGroup>
+
   <ItemGroup Label="Tests">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />

@@ -74,42 +74,25 @@ public sealed class CatalogQueryTests
         catalog.Find("cha0001")!.Name.Should().Be("Chair CHA0001");
     }
 
-    [Theory] // CAT-12
-    [InlineData("CHA0001", 1)] // the name
-    [InlineData("chair", 1)] // and the kind, by its name
-    [InlineData("nothing like this", 0)]
-    [InlineData("coffee", 1)] // a word in the name "Coffee CFE0001"
-    [InlineData("machines", 0)] // the kind's label is not searched (CO-14)
-    [InlineData("bags", 0)] // nor is the label "Bean bags"
-    public void A_search_matches_a_name(string search, int expected)
-    {
-        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
-
-        catalog.Search(null, null, search).Should().HaveCount(expected);
-    }
-
     [Fact] // CAT-13
     public void A_search_stays_inside_the_category_it_was_asked_about()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
         var catalog = new ProductCatalogService(file.Path, null);
 
-        // The same term, against a category that holds none of it, and against the one that does.
-        catalog.Search(CatalogCategory.Desk, null, "lamp").Should().BeEmpty();
-        catalog.Search(CatalogCategory.Accessory, CatalogSubCategory.Lamp, null)
-            .Should().OnlyContain(item => item.SubCategory == CatalogSubCategory.Lamp);
+        catalog.Search(CatalogCategory.Desk, null).Should()
+            .OnlyContain(item => item.Category == CatalogCategory.Desk);
+
+        catalog.Search(CatalogCategory.Accessory, CatalogSubCategory.Lamp).Should()
+            .OnlyContain(item => item.SubCategory == CatalogSubCategory.Lamp);
     }
 
-    [Theory] // CAT-14
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void An_empty_search_narrows_nothing(string? search)
+    [Fact] // CAT-14
+    public void A_search_with_no_filters_returns_every_product()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
         var catalog = new ProductCatalogService(file.Path, null);
 
-        catalog.Search(null, null, search).Should().HaveCount(7);
+        catalog.Search(null, null).Should().HaveCount(7);
     }
 }

@@ -42,7 +42,7 @@ public sealed class SearchSimilarityCatalogHandler(
         ArgumentNullException.ThrowIfNull(query);
         ArgumentException.ThrowIfNullOrWhiteSpace(query.Query);
 
-        var eligible = catalogueService.Search(query.Category, query.SubCategory, search: null);
+        var eligible = catalogueService.Search(query.Category, query.SubCategory);
         var queryVectors = await embeddingService.EmbedAsync([query.Query], cancellationToken);
         var nearestCatalogsVector = await productSimilarityService.NearestAsync(queryVectors[0], cancellationToken);
 

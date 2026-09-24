@@ -31,7 +31,7 @@ public sealed class SearchCatalogueTool(
     /// <summary>The products whose name contains the term, capped.</summary>
     [McpServerTool(Name = ToolName, ReadOnly = true, Idempotent = true)]
     [Authorize(Policy = CatalogApiPolicy.Name)]
-    [Description("Find catalogue products whose name contains a term. For a word the customer named, not for a described need.")]
+    [Description("Find the catalogue products whose name best matches a term, best match first. For a word the customer named, not for a described need.")]
     public CompactCatalogCollection Search(
         [Description("A word or phrase that appears in a product's name.")] string search,
         [Description("Narrow to one category: desk, chair or accessory. Omit for all.")] string? category = null,

@@ -4,6 +4,7 @@ using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Discovery.Application.Indexing;
 using CoreRentalNet.Modules.Discovery.Infrastructure.Indexing;
+using CoreRentalNet.Modules.Discovery.Infrastructure.NameSearch;
 using CoreRentalNet.Modules.Discovery.Infrastructure.Vectors;
 
 namespace CoreRentalNet.Host.Extentions;
@@ -49,6 +50,10 @@ internal static class DiscoveryRegistrationExtentions
         builder.Services.AddSingleton<ICatalogIndexFreshnessService>(new CatalogIndexFreshnessService(databasePath));
 
         AddSimilaritySearch(builder, databasePath);
+
+        // The name search: an index built once from the catalogService snapshot and ranked by BM25. A
+        // singleton because it holds the index, and the catalogService it is built from is a singleton too.
+        builder.Services.AddSingleton<IProductNameSearchService, LiftiProductNameSearchService>();
     }
 
     /// <summary>

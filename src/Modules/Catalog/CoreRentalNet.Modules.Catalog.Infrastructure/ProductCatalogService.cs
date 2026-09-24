@@ -50,14 +50,10 @@ public sealed class ProductCatalogService : IProductCatalogService
         => _views.Where(view => view.IsFeatured).ToArray();
 
     /// <inheritdoc />
-    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory, string? search)
-    {
-        var term = search?.Trim() ?? string.Empty;
-
-        return _views
-            .Where(view => (category is null || view.Category == category)
-                && (subCategory is null || view.SubCategory == subCategory)
-                && (term.Length == 0 || view.Name.Contains(term, StringComparison.OrdinalIgnoreCase)))
-            .ToArray();
-    }
+    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory)
+        =>
+        [
+            .. _views.Where(view => (category is null || view.Category == category)
+                                && (subCategory is null || view.SubCategory == subCategory)),
+        ];
 }

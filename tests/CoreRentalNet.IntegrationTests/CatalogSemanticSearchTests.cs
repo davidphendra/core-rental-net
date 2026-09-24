@@ -101,8 +101,7 @@ public sealed class CatalogSemanticSearchTests
         var query = Fixture.Query("chair");
         var catalogue = new ProductCatalogService(ProductsJson, null);
 
-        new LiftiProductNameSearchService(catalogue)
-            .FindBestMatches(catalogue.All, query.Phrase)
+        (await new LiftiProductNameSearchService(catalogue).FindBestMatchesAsync(catalogue.All, query.Phrase))
             .Should().BeEmpty("no product's name contains 'my back hurts after sitting all day'");
 
         var products = await SearchAsync(query);

@@ -51,10 +51,9 @@ internal sealed class TestCatalogService : IProductCatalogService
     public IReadOnlyList<ProductView> Featured()
         => views.Values.Where(view => view.IsFeatured).ToArray();
 
-    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory, string? search)
+    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory)
         => views.Values
             .Where(view => (category is null || view.Category == category)
-                && (subCategory is null || view.SubCategory == subCategory)
-                && (string.IsNullOrWhiteSpace(search) || view.Name.Contains(search, StringComparison.OrdinalIgnoreCase)))
+                && (subCategory is null || view.SubCategory == subCategory))
             .ToArray();
 }

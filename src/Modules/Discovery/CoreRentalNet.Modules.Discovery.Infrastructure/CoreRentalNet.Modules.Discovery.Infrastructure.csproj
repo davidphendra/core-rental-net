@@ -8,6 +8,9 @@
     <!-- The vectors live in the ingestion tool's own SQLite file, searched with raw Microsoft.Data.Sqlite and
          the vec0 extension. There is no EF context any more: the module keeps no table of its own. -->
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <!-- The catalogue's name search: an in-memory index built from the snapshot, ranked by the package's
+         Okapi BM25. The module reads the catalogue and owns the index that ranks it. -->
+    <PackageReference Include="Lifti.Core" />
   </ItemGroup>
 
   <ItemGroup>

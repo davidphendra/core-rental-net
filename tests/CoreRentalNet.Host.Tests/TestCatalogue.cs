@@ -48,10 +48,8 @@ internal sealed class TestCatalogue : IProductCatalogService
     public IReadOnlyList<ProductView> Featured()
         => [.. _products.Where(product => product.IsFeatured)];
 
-    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory, string? search)
+    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory)
         => [.. _products.Where(product =>
             (category is null || product.Category == category)
-            && (subCategory is null || product.SubCategory == subCategory)
-            && (string.IsNullOrWhiteSpace(search)
-                || product.Name.Contains(search, StringComparison.OrdinalIgnoreCase)))];
+            && (subCategory is null || product.SubCategory == subCategory))];
 }

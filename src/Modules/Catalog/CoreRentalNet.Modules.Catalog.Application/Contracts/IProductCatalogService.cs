@@ -28,7 +28,7 @@ public interface IProductCatalogService
     /// <summary>The products carrying the popular badge.</summary>
     IReadOnlyList<ProductView> Featured();
 
-    /// <summary>Every filter is optional; an empty search narrows nothing. A term matches a
-    /// product's name only.</summary>
-    IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory, string? search);
+    /// <summary>Every product the filters allow, in catalog order. What a caller typed does not narrow
+    /// here: it ranks the answer — see <see cref="IProductNameSearchService"/>.</summary>
+    IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory);
 }

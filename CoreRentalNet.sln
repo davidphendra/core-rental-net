@@ -62,7 +62,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.BehaviourLock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.Modules.Rentals.Infrastructure", "src\Modules\Rentals\CoreRentalNet.Modules.Rentals.Infrastructure\CoreRentalNet.Modules.Rentals.Infrastructure.csproj", "{612EC9DC-9BEA-431E-B5AD-C9E9786FE230}"
 EndProject
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Discovery", "Discovery", "{45D4843E-D65D-046D-A47C-6FD9A62F431A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.Modules.Discovery.Domain", "src\Modules\Discovery\CoreRentalNet.Modules.Discovery.Domain\CoreRentalNet.Modules.Discovery.Domain.csproj", "{349EAD08-BEF7-41B0-B74A-1103EC89D23B}"
@@ -70,7 +69,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.Modules.Discovery.Application", "src\Modules\Discovery\CoreRentalNet.Modules.Discovery.Application\CoreRentalNet.Modules.Discovery.Application.csproj", "{A1CA4AB8-C264-4EF9-8B1A-77E21116BADB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreRentalNet.Modules.Discovery.Infrastructure", "src\Modules\Discovery\CoreRentalNet.Modules.Discovery.Infrastructure\CoreRentalNet.Modules.Discovery.Infrastructure.csproj", "{4D7478CA-826E-4ABD-93BF-1A0990504653}"
-EndProject
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{DCB6FCB8-FF92-AC57-0842-1F72A354D6B1}"
 EndProject
