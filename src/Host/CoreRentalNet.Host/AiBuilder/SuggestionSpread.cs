@@ -19,7 +19,7 @@ internal sealed record SuggestionSpread(decimal Factor)
     /// <summary>What a deployment that has tuned nothing gets.</summary>
     public const decimal DefaultFactor = 1.5m;
 
-    private const string Key = "Ai:SpreadFactor";
+    private const string Key = "AgentFoundry:SpreadFactor";
 
     /// <summary>Whether two totals are far enough apart to be shown as the ends of a range.</summary>
     public bool Holds(decimal cheapest, decimal dearest) => dearest >= cheapest * Factor;

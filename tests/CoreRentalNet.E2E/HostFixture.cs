@@ -103,9 +103,9 @@ public sealed class HostFixture : IAsyncLifetime
                 ["Auth0__Authority"] = ProviderAuthority,
                 // The suggestion run: a real socket to the stand-in, reached the credential-free way,
                 // because the endpoint that spends the money is only reachable where a permission is.
-                ["Agent__Enabled"] = "true",
-                ["Agent__ProjectEndpoint"] = AgentUrl,
-                ["Agent__AgentName"] = "stand-in",
+                ["AgentFoundry__Enabled"] = "true",
+                ["AgentFoundry__ProjectEndpoint"] = AgentUrl,
+                ["AgentFoundry__AgentName"] = "stand-in",
                 // What entitles a caller to spend. The provider writes the account's permissions into the
                 // access token, and this reads the one that grants the builder - so the gate is a real
                 // claim on a real token rather than a section that happens to be visible.

@@ -6,7 +6,7 @@ namespace CoreRentalNet.Host.Agents;
 /// endpoint is missing, and the AI section is then <b>absent</b> rather than open — the failure mode of a
 /// missing setting is "the feature is hidden", not "the feature is free".
 /// </remarks>
-internal sealed record SuggestionAgentSettings(
+internal sealed record AgentFoundrySettings(
     bool Enabled,
     string ProjectEndpoint,
     string AgentName,
@@ -38,14 +38,14 @@ internal sealed record SuggestionAgentSettings(
         => Uri.TryCreate(ProjectEndpoint, UriKind.Absolute, out var endpoint)
             && endpoint.Scheme == Uri.UriSchemeHttp;
 
-    public static SuggestionAgentSettings From(IConfiguration configuration)
+    public static AgentFoundrySettings From(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        return new SuggestionAgentSettings(
-            configuration.GetValue("Agent:Enabled", false),
-            configuration["Agent:ProjectEndpoint"]?.Trim() ?? string.Empty,
-            configuration["Agent:AgentName"]?.Trim() ?? "core-rental-workspace-suggestion-agent",
-            configuration.GetValue("Agent:TimeoutSeconds", DefaultTimeoutSeconds));
+        return new AgentFoundrySettings(
+            configuration.GetValue("AgentFoundry:Enabled", false),
+            configuration["AgentFoundry:ProjectEndpoint"]?.Trim() ?? string.Empty,
+            configuration["AgentFoundry:AgentName"]?.Trim() ?? "core-rental-workspace-suggestion-agent",
+            configuration.GetValue("AgentFoundry:TimeoutSeconds", DefaultTimeoutSeconds));
     }
 }

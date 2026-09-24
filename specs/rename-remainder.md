@@ -69,7 +69,9 @@ and matching comments in `tests/**`.
 
 ## Dead code and configuration the removal left behind
 
-- **`AIUse`** in `src/Host/.../appsettings.json` and `Authorization__AIUse__*` in `tests/CoreRentalNet.E2E/HostFixture.cs` — no code reads them since the builder was removed.
+- **`AIUse` is no longer dead.** It is read again: the builder was restored, and `AiPolicy` guards the section and
+  the endpoint with the claim (`Authorization:AIUse`). Its declaration in `src/Host/.../appsettings.json` and
+  `Authorization__AIUse__*` in `tests/CoreRentalNet.E2E/HostFixture.cs` are load-bearing and must not be swept.
 - **The E2E builder suite**: `tests/CoreRentalNet.E2E/Flows/AiBuilder*.cs` still drive `/api/builder/suggest`, and
   `HostFixture.StartLocalAgent` still starts the deleted `tests/CoreRentalNet.E2E.LocalAgent` project via
   `TestPaths.LocalAgentAssembly()`. The project is gone, so the BROWSER baseline is red. It is not in this

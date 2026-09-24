@@ -30,7 +30,7 @@ internal static class SuggestionAgentRegistrationExtentions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var settings = SuggestionAgentSettings.From(builder.Configuration);
+        var settings = AgentFoundrySettings.From(builder.Configuration);
 
         builder.Services.AddSingleton(settings);
 

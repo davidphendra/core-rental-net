@@ -199,7 +199,7 @@ already-running host instead of starting one on `http://localhost:5199`.
 ```
 src/BuildingBlocks/     Money, opaque tokens, the business calendar, SQLite plumbing
 src/Modules/Catalog/    205 products, read-only in memory, no database at all
-src/Modules/Discovery/  The catalogue's vector index and the selection signal; owns the Discovery_ tables
+src/Modules/Discovery/  The similarity search, the name search, the vector file's freshness; owns no tables
 src/Tools/              CoreRentalNet.CatalogIngestion, the deliberate step that builds that index
 src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quote
 src/Modules/Rentals/    Orders, invoices, periods, the schedule

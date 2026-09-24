@@ -34,7 +34,7 @@ internal static class DiscoveryStartupExtentions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        var settings = app.Services.GetRequiredService<DiscoverySettings>();
+        var settings = app.Services.GetRequiredService<VectorEmbeddingSettings>();
 
         if (!settings.IsConfigured)
         {
@@ -70,7 +70,7 @@ internal static class DiscoveryStartupExtentions
     }
 
     /// <summary>Whether the stored vectors match what this deployment would build.</summary>
-    private static CatalogIndexVerdict Check(WebApplication app, DiscoverySettings settings)
+    private static CatalogIndexVerdict Check(WebApplication app, VectorEmbeddingSettings settings)
         => app.Services.GetRequiredService<ICatalogIndexFreshnessService>().Check(
             CatalogHash.OfFile(CatalogPathHelper.Resolve(app.Configuration)),
             settings.Model,

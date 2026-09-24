@@ -36,7 +36,7 @@ internal static class DiscoveryRegistrationExtentions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var settings = DiscoverySettings.From(builder.Configuration);
+        var settings = VectorEmbeddingSettings.From(builder.Configuration);
 
         builder.Services.AddSingleton(settings);
 

@@ -151,7 +151,8 @@ removed with the shortlist it tested, and the Host's builder tests with the buil
   tool result is `An error occurred invoking 'search_similarity_catalogue'.`, never the exception's message. That is
   why D6 calls its sentence a second line of defence.
 - **`/mcp` is mounted outside `/api`** so the API's problem-details pipeline cannot reshape a JSON-RPC error.
-- **`AIUse` remains in `appsettings.json` and the browser fixture** with no code reading it, a leftover of the
-  removed builder. Recorded in `specs/rename-remainder.md` with the rest of the cleanup.
+- **`AIUse` is read again, and this note records it changing.** It was a leftover when the builder was removed;
+  the builder has since been restored, and `AiPolicy` guards the section and the endpoint with the claim. What
+  `specs/rename-remainder.md` recorded as dead is corrected there.
 - **The E2E suite still starts the deleted stand-in agent.** It is untouched by this change and does not run in the
   agreed definition of done, but the BROWSER baseline is red until it is dealt with.

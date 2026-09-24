@@ -19,15 +19,15 @@ namespace CoreRentalNet.Host.Tests;
 /// </remarks>
 public sealed class DiscoveryUnavailableTests
 {
-    private static DiscoverySettings Configured()
+    private static VectorEmbeddingSettings Configured()
         => new("http://localhost:8080/v1", "all-MiniLM-L6-v2-embedding", "App_Data/product_embedding.db", 384);
 
-    private static DiscoverySettings Unconfigured()
+    private static VectorEmbeddingSettings Unconfigured()
         => new(string.Empty, string.Empty, string.Empty, 384);
 
     /// <summary>An application with just enough registered to run the gate, and a log a test can read.</summary>
     private static (WebApplication App, StubCatalogIndexFreshnessService Freshness, CapturingLoggerProvider Logs) Host(
-        DiscoverySettings settings,
+        VectorEmbeddingSettings settings,
         StubCatalogIndexFreshnessService freshnessService)
     {
         var builder = WebApplication.CreateBuilder();

@@ -20,7 +20,7 @@ namespace CoreRentalNet.Host.Configs;
 /// configuration rather than in code, because only the operator knows where the tool was run.
 /// </para>
 /// </remarks>
-internal sealed record DiscoverySettings(
+internal sealed record VectorEmbeddingSettings(
     string Server,
     string Model,
     string EmbeddingDatabase,
@@ -36,14 +36,14 @@ internal sealed record DiscoverySettings(
             && !string.IsNullOrWhiteSpace(EmbeddingDatabase)
             && Width > 0;
 
-    public static DiscoverySettings From(IConfiguration configuration)
+    public static VectorEmbeddingSettings From(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        return new DiscoverySettings(
-            configuration["Discovery:Server"]?.Trim() ?? string.Empty,
-            configuration["Discovery:Model"]?.Trim() ?? string.Empty,
-            configuration["Discovery:EmbeddingDatabase"]?.Trim() ?? string.Empty,
-            configuration.GetValue("Discovery:Width", DefaultWidth));
+        return new VectorEmbeddingSettings(
+            configuration["VectorEmbedding:Server"]?.Trim() ?? string.Empty,
+            configuration["VectorEmbedding:Model"]?.Trim() ?? string.Empty,
+            configuration["VectorEmbedding:EmbeddingDatabase"]?.Trim() ?? string.Empty,
+            configuration.GetValue("VectorEmbedding:Width", DefaultWidth));
     }
 }

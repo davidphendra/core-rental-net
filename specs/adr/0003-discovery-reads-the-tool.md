@@ -133,8 +133,9 @@ has. It is also now **registered**, in `DiscoveryRegistration`, which is where t
   | 5 — the gate was unregistered | **D8**, and `DiscoveryRegistrationTests` is what would catch a repeat |
   | 6 — everything defined twice | **D2**, **D6**, **D7** |
 
-- **The application is told where the tool's file is** through `Discovery:EmbeddingDatabase`, and the rest of
-  its settings are the same three the tool takes: `Discovery:Server`, `Discovery:Model`, `Discovery:Width`.
+- **The application is told where the tool's file is** through `VectorEmbedding:EmbeddingDatabase`, and the rest of
+  its settings are the same three the tool takes: `VectorEmbedding:Server`, `VectorEmbedding:Model`,
+  `VectorEmbedding:Width`.
   `appsettings.Development.json` points at the local server and at the tool's conventional output path, so a
   fresh clone can ingest and then run.
 - **`System.ClientModel` gained a central pin**, at 1.15.0 rather than 1.14.0, because the tool names

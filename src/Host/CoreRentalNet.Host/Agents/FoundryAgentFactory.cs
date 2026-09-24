@@ -33,7 +33,7 @@ internal static class FoundryAgentFactory
     private const string PlaceholderKey = "not-needed";
 
     /// <summary>The per-agent endpoint the hosted agent answers on, derived rather than configured.</summary>
-    public static Uri AgentEndpoint(SuggestionAgentSettings settings)
+    public static Uri AgentEndpoint(AgentFoundrySettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -42,7 +42,7 @@ internal static class FoundryAgentFactory
     }
 
     /// <summary>The agent, built against whichever endpoint is configured.</summary>
-    public static AIAgent Build(SuggestionAgentSettings settings)
+    public static AIAgent Build(AgentFoundrySettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -57,7 +57,7 @@ internal static class FoundryAgentFactory
     /// The structured-output format is a property of the client and the protocol - not of this application,
     /// which never sets a schema - so a test that rebuilt its own client would be testing a replica.
     /// </remarks>
-    internal static IChatClient LocalChat(SuggestionAgentSettings settings)
+    internal static IChatClient LocalChat(AgentFoundrySettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -87,11 +87,11 @@ internal static class FoundryAgentFactory
     /// deliberate second decision rather than something that inherits this one.
     /// </para>
     /// </remarks>
-    private static AIAgent StandIn(SuggestionAgentSettings settings)
+    private static AIAgent StandIn(AgentFoundrySettings settings)
         => new ChatClientAgent(LocalChat(settings), new ChatClientAgentOptions { Name = settings.AgentName });
 
     /// <summary>A Foundry project: the per-agent endpoint, reached with the application's own identity.</summary>
-    private static AIAgent Hosted(SuggestionAgentSettings settings)
+    private static AIAgent Hosted(AgentFoundrySettings settings)
         => new AIProjectClient(new Uri(settings.ProjectEndpoint), new DefaultAzureCredential())
             .AsAIAgent(AgentEndpoint(settings));
 }

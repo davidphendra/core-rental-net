@@ -24,16 +24,16 @@ namespace CoreRentalNet.Host.Agents;
 /// </remarks>
 internal sealed class FoundrySuggestionAgent : ISuggestionAgent
 {
-    private readonly SuggestionAgentSettings _settings;
-    private readonly Func<SuggestionAgentSettings, AIAgent> _agent;
+    private readonly AgentFoundrySettings _settings;
+    private readonly Func<AgentFoundrySettings, AIAgent> _agent;
 
-    public FoundrySuggestionAgent(SuggestionAgentSettings settings)
+    public FoundrySuggestionAgent(AgentFoundrySettings settings)
         : this(settings, FoundryAgentFactory.Build)
     {
     }
 
     /// <summary>The agent is built by a delegate so a test can supply one over a fake model client.</summary>
-    internal FoundrySuggestionAgent(SuggestionAgentSettings settings, Func<SuggestionAgentSettings, AIAgent> agent)
+    internal FoundrySuggestionAgent(AgentFoundrySettings settings, Func<AgentFoundrySettings, AIAgent> agent)
     {
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(agent);
