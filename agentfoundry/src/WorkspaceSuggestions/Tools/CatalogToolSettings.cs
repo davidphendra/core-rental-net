@@ -1,41 +1,26 @@
 namespace WorkspaceSuggestions.Tools;
 
-/// <summary>Where the catalogue's tools are, and who this agent is when it calls them.</summary>
+/// <summary>Where the catalogue's MCP tools are.</summary>
 /// <remarks>
 /// <para>
-/// Every value is required together or the tools are absent - the shape the deployment settings already use,
-/// where a half-configured capability is off rather than half-open.
+/// The endpoint is the whole of it. There is no client id, no secret, no token endpoint and no audience: the
+/// credential presented to the catalogue is the caller's own token, carried in the request for the call, so
+/// the process holds no identity of its own to configure.
 /// </para>
 /// <para>
-/// <b>The secret is used to acquire a tokenService and nothing else.</b> It is read here, sent only to the tokenService
-/// endpoint, and never logged or echoed in a refusal, so no error line can carry it.
+/// An unconfigured deployment has an agent with no tools rather than a broken one, exactly as before.
 /// </para>
 /// </remarks>
-internal sealed record CatalogToolSettings(
-    string McpEndpoint,
-    string TokenEndpoint,
-    string Audience,
-    string ClientId,
-    string ClientSecret)
+internal sealed record CatalogToolSettings(string McpEndpoint)
 {
-    /// <summary>True when this deployment has been told where the catalogue is and who it is.</summary>
-    public bool IsConfigured
-        => !string.IsNullOrWhiteSpace(McpEndpoint)
-            && !string.IsNullOrWhiteSpace(TokenEndpoint)
-            && !string.IsNullOrWhiteSpace(Audience)
-            && !string.IsNullOrWhiteSpace(ClientId)
-            && !string.IsNullOrWhiteSpace(ClientSecret);
+    /// <summary>True when this deployment has been told where the catalogue is.</summary>
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(McpEndpoint);
 
-    /// <summary>The settings a deployment supplied, or the empty ones that leave the tools off.</summary>
+    /// <summary>Where the catalogue is, from configuration; empty when this deployment has none.</summary>
     public static CatalogToolSettings From(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        return new CatalogToolSettings(
-            configuration["CatalogTools:McpEndpoint"]?.Trim() ?? string.Empty,
-            configuration["CatalogTools:TokenEndpoint"]?.Trim() ?? string.Empty,
-            configuration["CatalogTools:Audience"]?.Trim() ?? string.Empty,
-            configuration["CatalogTools:ClientId"]?.Trim() ?? string.Empty,
-            configuration["CatalogTools:ClientSecret"] ?? string.Empty);
+        return new CatalogToolSettings(configuration["CatalogTools:McpEndpoint"]?.Trim() ?? string.Empty);
     }
 }

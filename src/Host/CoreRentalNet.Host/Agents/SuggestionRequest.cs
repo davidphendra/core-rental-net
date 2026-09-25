@@ -11,9 +11,10 @@ namespace CoreRentalNet.Host.Agents;
 /// pre-selected set of products and never the whole catalogue.
 /// </para>
 /// <para>
-/// Nothing else crosses: no identity, no address, no draft, no SKU and no price. The names and amounts a
-/// customer finally sees are resolved by the application from its own catalogue, which is the rule the
-/// validator enforces on the way back.
+/// Nothing else crosses: no identity, no address, no draft, no SKU and no price — except the customer's own
+/// access token, which the run presents to the catalogue. The agent takes it out of the model's input before
+/// the run, so it never reaches the prompt, and the names and amounts a customer sees are the catalogue
+/// tool's, stated back by the agent.
 /// </para>
 /// </remarks>
 internal sealed record SuggestionRequest(
@@ -21,4 +22,5 @@ internal sealed record SuggestionRequest(
     [property: JsonPropertyName("query")] string Query,
     [property: JsonPropertyName("currency")] string Currency,
     [property: JsonPropertyName("ceilingMonthly")] int? CeilingMonthly,
-    [property: JsonPropertyName("slots")] IReadOnlyList<SuggestionSlotRule> Slots);
+    [property: JsonPropertyName("slots")] IReadOnlyList<SuggestionSlotRule> Slots,
+    [property: JsonPropertyName("mcpAccessToken")] string? McpAccessToken = null);

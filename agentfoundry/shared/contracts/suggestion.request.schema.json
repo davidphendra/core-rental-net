@@ -27,6 +27,10 @@
       "minimum": 0,
       "description": "The monthly ceiling the customer named, when they named one. Null when they did not - the agent must not invent one."
     },
+    "mcpAccessToken": {
+      "type": ["string", "null"],
+      "description": "The caller's own access token, forwarded so the run can present it to the catalogue. The agent takes it out of the model's input before the run and never shows it to the model; it is absent when the caller's session holds none, and the run then has no catalogue to search."
+    },
     "slots": {
       "type": "array",
       "minItems": 1,

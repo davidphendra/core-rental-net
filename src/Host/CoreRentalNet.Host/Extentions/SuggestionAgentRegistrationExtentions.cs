@@ -4,18 +4,13 @@ using CoreRentalNet.Host.AiBuilder;
 namespace CoreRentalNet.Host.Extentions;
 
 /// <summary>
-/// Wires the AI workspace builder: the agent it asks, or the reason there is none, and the guard that admits
-/// one run per customer.
+/// Wires the AI workspace builder: the agent it asks, or the reason there is none.
 /// </summary>
 /// <remarks>
 /// <para>
 /// The choice between a real agent and a refusal is made once, here, rather than checked at every call site:
 /// with the feature off or the endpoint missing, the registered implementation answers <b>unavailable</b>,
 /// and the AI section is hidden. A missing setting therefore hides the feature instead of opening it.
-/// </para>
-/// <para>
-/// The guard is a singleton because its whole purpose is to know what is in flight across requests; a
-/// per-request instance would guard nothing.
 /// </para>
 /// <para>
 /// <b>There is no catalogue registration here.</b> The agent reaches the catalogue through the MCP tools the
@@ -43,16 +38,6 @@ internal static class SuggestionAgentRegistrationExtentions
             settings.IsConfigured
                 ? new FoundrySuggestionAgent(settings)
                 : new NoAgentConfigured());
-        builder.Services.AddSingleton<RunGuard>();
-
-        // The run's input: the customer's sentence and the slot capacities the application already read. A
-        // singleton because both of its dependencies are, and because it holds nothing.
-        builder.Services.AddSingleton<SuggestionRequestBuilder>();
-
-        // The trust boundary. A singleton for the same reason: the catalogue, the capacities and the spread
-        // factor are all read once, and it holds nothing between runs.
-        builder.Services.AddSingleton(SuggestionSpread.From(builder.Configuration));
-        builder.Services.AddSingleton<SuggestionValidator>();
 
         return builder;
     }

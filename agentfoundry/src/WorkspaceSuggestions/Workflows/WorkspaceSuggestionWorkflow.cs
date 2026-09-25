@@ -1,5 +1,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.AI;
+using WorkspaceSuggestions.Agents;
 
 namespace WorkspaceSuggestions.Workflows;
 
@@ -18,13 +20,15 @@ namespace WorkspaceSuggestions.Workflows;
 /// composing from memory.
 /// </para>
 /// </remarks>
-internal sealed class WorkspaceSuggestionWorkflow(AIAgent rephraser, AIAgent suggestor) : IWorkspaceWorkflow
+internal sealed class WorkspaceSuggestionWorkflow(IChatClient chatClient) : IWorkspaceWorkflow
 {
     /// <summary>The name Foundry resolves, and the identity the run record names.</summary>
     public const string AgentName = "core-rental-workspace-suggestion-agent";
 
-    public AIAgent AsAIAgent()
+    public AIAgent AsAIAgent(IReadOnlyList<AITool> tools)
         => AgentWorkflowBuilder
-            .BuildSequential([rephraser, suggestor])
+            .BuildSequential(
+                AgentFactory.Build(AgentRoster.Rephraser, chatClient),
+                AgentFactory.Build(AgentRoster.Suggestor, chatClient, tools))
             .AsAIAgent(name: AgentName);
 }

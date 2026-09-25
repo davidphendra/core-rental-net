@@ -40,7 +40,7 @@ public sealed class WorkflowTests
     private const string Result =
         """
         { "status": "suggested", "reason": null,
-          "options": [ { "lines": [ { "slot": "Desk", "sku": "DSKB08XN4JDR", "quantity": 1, "why": "a stable surface" } ],
+          "options": [ { "lines": [ { "slot": "Desk", "sku": "DSKB08XN4JDR", "name": "Sit-Stand Desk", "quantity": 1, "amount": 4200000, "why": "a stable surface" } ],
                          "rationale": "A calm, focused setup for a small room." } ] }
         """;
 
@@ -135,11 +135,10 @@ public sealed class WorkflowTests
 
     private static (AIAgent Agent, ScriptedChatClient Client) Build()
     {
-        // One client for both agents, so the script order is the call order.
+        // One client for both agents, so the script order is the call order. No catalogue tools: these tests
+        // are about the pipeline, not retrieval.
         var client = new ScriptedChatClient(Spec, Result);
-        var rephraser = AgentFactory.Build(AgentRoster.Rephraser, client);
-        var suggestor = AgentFactory.Build(AgentRoster.Suggestor, client);
 
-        return (new WorkspaceSuggestionWorkflow(rephraser, suggestor).AsAIAgent(), client);
+        return (new WorkspaceSuggestionWorkflow(client).AsAIAgent([]), client);
     }
 }

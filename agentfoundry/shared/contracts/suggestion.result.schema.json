@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://corerental/schemas/suggestion.result.schema.json",
   "title": "Suggestion result",
-  "description": "What the agent answers with: candidates, or the typed not-a-workspace verdict. NO PRICE, NO PRODUCT NAME AND NO IMAGE CROSSES - the application resolves those and recomputes every amount - and no band label is carried, because the application sorts the candidates by total and labels them by rank. It carries NO USAGE either: a model cannot observe a call count or a token count, so the run's cost follows the answer as a separate object - see run-usage.schema.json.",
+  "description": "What the agent answers with: candidates, or the typed verdict that no workspace could be composed. The agent states each line's name and amount as its catalogue tools returned them, and the application sums the lines for each candidate's total; no band label is carried, because the application orders the candidates by the order the agent returned them. It carries NO USAGE: a model cannot observe a call count or a token count, so the run's cost follows the answer as a separate object - see run-usage.schema.json.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,15 +11,15 @@
   ],
   "properties": {
     "status": {
-      "enum": ["suggested", "notWorkspace"],
-      "description": "notWorkspace is a result, not an error: the application words it and does not report a failure."
+      "enum": ["suggested", "notWorkspace", "catalogueUnavailable"],
+      "description": "notWorkspace and catalogueUnavailable are results, not errors: the application words them and reports no failure. catalogueUnavailable means this customer was offered no catalogue tool, or one reported a failure, so nothing was composed from memory."
     },
     "reason": {
       "type": [
         "string",
         "null"
       ],
-      "description": "A one-line reason, present when status is notWorkspace."
+      "description": "A one-line reason, present when the status is not suggested."
     },
     "options": {
       "type": "array",
@@ -59,7 +59,9 @@
       "required": [
         "slot",
         "sku",
+        "name",
         "quantity",
+        "amount",
         "why"
       ],
       "properties": {
@@ -70,12 +72,22 @@
         "sku": {
           "type": "string",
           "minLength": 1,
-          "description": "Must exist in the catalogue; the application rejects the whole run otherwise."
+          "description": "The SKU as a catalogue search returned it. The customer is shown the name beside it, never the SKU alone."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The product's name, exactly as the catalogue tool returned it. Nothing the model invents reaches the customer."
         },
         "quantity": {
           "type": "integer",
           "minimum": 1,
-          "description": "Must not exceed the slot's capacity; the application rejects the whole run otherwise."
+          "description": "How many of this SKU. The slot's capacity was stated in the request and is the model's to respect."
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "This line's total for its quantity, taken from the price the catalogue tool returned. The application sums the lines for the candidate's total rather than asking the model to add."
         },
         "why": {
           "type": "string",

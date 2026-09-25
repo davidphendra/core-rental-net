@@ -19,21 +19,11 @@ public sealed class ContractSchemaTests
             null,
             [
                 new SuggestionOption(
-                    [new SuggestionLine(WorkspaceSlot.Monitor, "MONB000PB2KW", 2, "two large displays side by side")],
+                    [new SuggestionLine(WorkspaceSlot.Monitor, "MONB000PB2KW", "UltraSharp 27", 2, 5_200_000m, "two large displays side by side")],
                     "A wide, stable surface for two displays, with a supportive chair for long sessions."),
             ]);
 
         Schemas.Evaluate("suggestion.result.schema.json", result).IsValid.Should().BeTrue();
-    }
-
-    [Fact] // the run's cost is code-written, and has a contract of its own
-    public void A_run_usage_report_serializes_to_something_the_run_usage_schema_accepts()
-    {
-        // It stopped being a field of the result because the model cannot observe a call count. It is still
-        // part of the answer, and still has to be pinned, or the two trees could drift apart on it silently.
-        var report = new RunUsageReport(new RunUsage(2, 172_000, 900, "gpt-4.1-mini", "rephraser.v1+suggestor.v1"));
-
-        Schemas.Evaluate("run-usage.schema.json", report).IsValid.Should().BeTrue();
     }
 
     [Fact] // and the result no longer mentions it at all
@@ -146,7 +136,7 @@ public sealed class ContractSchemaTests
         // that means nothing and a slot that WorkspaceSlot cannot parse, so a payload could satisfy the
         // contract and fail on the way in. A schema is only a contract where it is as narrow as the code.
         var slots = new[] { "Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone" };
-        var statuses = new[] { "suggested", "notWorkspace" };
+        var statuses = new[] { "suggested", "notWorkspace", "catalogueUnavailable" };
 
         foreach (var file in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "contracts"), "*.json"))
         {

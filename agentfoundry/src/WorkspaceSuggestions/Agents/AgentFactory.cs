@@ -13,7 +13,10 @@ namespace WorkspaceSuggestions.Agents;
 /// </remarks>
 internal static class AgentFactory
 {
-    public static AIAgent Build(AgentProfile profile, IChatClient client, IReadOnlyList<AITool>? tools = null)
+    public static AIAgent Build(
+        AgentProfile profile,
+        IChatClient client,
+        IReadOnlyList<AITool>? tools = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(client);

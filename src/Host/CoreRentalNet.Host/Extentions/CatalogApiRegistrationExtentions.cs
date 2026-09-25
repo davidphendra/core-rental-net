@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CoreRentalNet.Host.Binders;
+using CoreRentalNet.Host.Infrastructure;
 
 namespace CoreRentalNet.Host.Extentions;
 
@@ -30,7 +31,13 @@ internal static class CatalogApiRegistrationExtentions
 
         builder.Services
             .AddControllers(options => options.ModelBinderProviders.Insert(0, new CatalogEnumBinderProvider()))
-            .AddJsonOptions(options => Configure(options.JsonSerializerOptions));
+            .AddJsonOptions(options => Configure(options.JsonSerializerOptions))
+            // The framework admits a public controller only, and the builder's controller is internal because a
+            // public type may not name the guard, the agent or the validator. Added beside the framework's own
+            // provider rather than in place of it, so the rule for public controllers is untouched; what this
+            // adds is the provider's own rule, which is opt-in. See the provider for the why.
+            .ConfigureApplicationPartManager(manager =>
+                manager.FeatureProviders.Add(new InternalControllerFeatureProvider()));
 
         builder.Services.ConfigureHttpJsonOptions(options => Configure(options.SerializerOptions));
     }

@@ -1,20 +1,23 @@
 namespace CoreRentalNet.Host.Agents;
 
-/// <summary>Where the agent is, whether it may be used at all, and how long a run may take.</summary>
+/// <summary>Where the agent is, and whether it may be used at all.</summary>
 /// <remarks>
+/// <para>
 /// Everything comes from configuration. <see cref="IsConfigured"/> is false when the feature is off or the
 /// endpoint is missing, and the AI section is then <b>absent</b> rather than open — the failure mode of a
 /// missing setting is "the feature is hidden", not "the feature is free".
+/// </para>
+/// <para>
+/// <b>How long a run may take is not here, because it is not the application's to decide.</b> There was a
+/// <c>TimeoutSeconds</c> setting and a deadline built from it; the application now lets the agent bound its own
+/// run, and a run ends when the agent answers, when it fails, or when the customer stops it.
+/// </para>
 /// </remarks>
 internal sealed record AgentFoundrySettings(
     bool Enabled,
     string ProjectEndpoint,
-    string AgentName,
-    int TimeoutSeconds)
+    string AgentName)
 {
-    /// <summary>Above the p95 target, so a slow-but-correct run finishes rather than being cut off.</summary>
-    public const int DefaultTimeoutSeconds = 45;
-
     public bool IsConfigured
         => Enabled
             && !string.IsNullOrWhiteSpace(ProjectEndpoint)
@@ -45,7 +48,6 @@ internal sealed record AgentFoundrySettings(
         return new AgentFoundrySettings(
             configuration.GetValue("AgentFoundry:Enabled", false),
             configuration["AgentFoundry:ProjectEndpoint"]?.Trim() ?? string.Empty,
-            configuration["AgentFoundry:AgentName"]?.Trim() ?? "core-rental-workspace-suggestion-agent",
-            configuration.GetValue("AgentFoundry:TimeoutSeconds", DefaultTimeoutSeconds));
+            configuration["AgentFoundry:AgentName"]?.Trim() ?? "core-rental-workspace-suggestion-agent");
     }
 }

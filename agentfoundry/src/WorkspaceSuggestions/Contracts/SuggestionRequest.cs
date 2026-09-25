@@ -24,4 +24,7 @@ public sealed record SuggestionRequest(
     int? CeilingMonthly,
     [property: JsonPropertyName("slots")]
     [property: Description("The slots and their capacities.")]
-    IReadOnlyList<SlotRule> Slots);
+    IReadOnlyList<SlotRule> Slots,
+    [property: JsonPropertyName("mcpAccessToken")]
+    [property: Description("The caller's own access token, presented to the catalogue. Taken out of the model's input before the run.")]
+    string? McpAccessToken = null);

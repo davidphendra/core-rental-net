@@ -8,7 +8,7 @@ namespace WorkspaceSuggestions.Agents;
 /// profile and nothing else — which is the property ADR 0003 claims for this layout, and the reason there is
 /// no <c>RephraserAgent : SuggestorAgent</c> anywhere.
 /// </remarks>
-internal sealed record AgentProfile(
+public sealed record AgentProfile(
     string Name,
     string PromptFileName,
     string Description,

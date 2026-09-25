@@ -41,9 +41,8 @@ public sealed class AiBuilderSectionTests : AuthenticatedE2ETest
         canvas.Should().NotBeNull();
         section!.Y.Should().BeLessThan(canvas!.Y, "the section sits above the canvas");
 
-        // One line when idle. A collapsed section still holds the field and the control - what is absent is
-        // the prose around them, because an offer of help that fills the page before it is used is a section
-        // a customer scrolls past.
+        // The field and the control, and nothing else. What is absent while idle is the prose around them,
+        // because an offer of help that fills the page before it is used is a section a customer scrolls past.
         await Expect(Page.Locator("[data-testid='ai-section']")).ToHaveAttributeAsync("data-expanded", "false");
         await Expect(Page.Locator("[data-testid='ai-query']")).ToBeVisibleAsync();
         await Expect(Page.Locator("[data-testid='ai-submit']")).ToBeVisibleAsync();

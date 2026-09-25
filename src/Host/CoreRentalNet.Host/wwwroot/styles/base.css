@@ -112,6 +112,20 @@ button, input, textarea, select { font: inherit; color: inherit; }
 }
 .field textarea { min-height: calc(var(--unit) * 8); }
 .field input:focus, .field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--focus-ring); }
+
+/* The AI request row: the field and the controls beside it are one height and one shape, and both are
+   stated here rather than taken from the row. The height is two lines of body text plus the field's own
+   padding and its border; the corner is the field's own, so a control beside it reads as the same kind of
+   thing rather than as a pill. A control that stretched with the field instead would be dragged down the
+   page as a customer made the field taller, which is what they do when the sentence is long. The field
+   keeps its vertical resize, so it may still be dragged taller than its controls; what it may not do is
+   move them. */
+.ai__query,
+.ai__submit,
+.ai__cancel {
+  min-height: calc(var(--body-md-line) * 2 + var(--unit) * 3 + 2px);
+  border-radius: var(--radius-lg);
+}
 /* The search field's clear control: inside the field, at its right, and only while there is
    something to clear. The input keeps room on that side so the text never runs under it. */
 .search { position: relative; }

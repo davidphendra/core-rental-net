@@ -33,7 +33,7 @@ public sealed class RosterRegistrationTests
     [Fact]
     public void A_missing_project_endpoint_is_refused_by_name()
     {
-        var act = () => AgentRegistration.BuildChatClient(
+        var act = () => AgentFoundryRegistration.BuildChatClient(
             new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["AZURE_AI_MODEL_DEPLOYMENT_NAME"] = "gpt-4.1-mini",
@@ -45,7 +45,7 @@ public sealed class RosterRegistrationTests
     [Fact]
     public void A_missing_model_deployment_is_refused_by_name()
     {
-        var act = () => AgentRegistration.BuildChatClient(
+        var act = () => AgentFoundryRegistration.BuildChatClient(
             new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["FOUNDRY_PROJECT_ENDPOINT"] = "https://example.invalid/api/projects/probe",

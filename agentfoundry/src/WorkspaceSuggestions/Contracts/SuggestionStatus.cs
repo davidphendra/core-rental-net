@@ -17,4 +17,8 @@ public enum SuggestionStatus
 
     [JsonStringEnumMemberName("notWorkspace")]
     NotWorkspace,
+
+    /// <summary>No catalogue was available to this customer, so nothing was composed from memory.</summary>
+    [JsonStringEnumMemberName("catalogueUnavailable")]
+    CatalogueUnavailable,
 }

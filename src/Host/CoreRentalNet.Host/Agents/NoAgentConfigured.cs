@@ -1,4 +1,4 @@
-using CoreRentalNet.Host.AiBuilder;
+using System.Runtime.CompilerServices;
 
 namespace CoreRentalNet.Host.Agents;
 
@@ -12,7 +12,7 @@ internal sealed class NoAgentConfigured : ISuggestionAgent
 {
     public async IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(
         SuggestionRequest request,
-        RunBudget budget)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
 

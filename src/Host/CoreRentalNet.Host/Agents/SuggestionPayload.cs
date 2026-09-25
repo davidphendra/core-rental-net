@@ -17,7 +17,11 @@ internal sealed record SuggestionPayload(string Json, string Hash)
         ArgumentNullException.ThrowIfNull(request);
 
         var json = JsonSerializer.Serialize(request, SuggestionJson.Options);
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+
+        // Hashed WITHOUT the run's access token: the hash identifies what the run was drawn from, and a
+        // per-run credential would make every run's hash unique and the value meaningless.
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(request with { McpAccessToken = null }, SuggestionJson.Options)))).ToLowerInvariant();
 
         return new SuggestionPayload(json, hash);
     }

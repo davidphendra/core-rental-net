@@ -1,5 +1,3 @@
-using CoreRentalNet.Host.AiBuilder;
-
 namespace CoreRentalNet.Host.Agents;
 
 /// <summary>The application's only knowledge of the agent.</summary>
@@ -11,10 +9,12 @@ namespace CoreRentalNet.Host.Agents;
 internal interface ISuggestionAgent
 {
     /// <summary>Runs one suggestion, yielding what happens as it happens.</summary>
-    /// <remarks>
-    /// The budget is passed rather than the adapter making its own, because the run's deadline has to start
-    /// before the catalogue is searched — the search is a network call too, and a budget that opened afterwards
-    /// would leave it outside the number the run is allowed.
-    /// </remarks>
-    IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(SuggestionRequest request, RunBudget budget);
+    /// <param name="cancellationToken">
+    /// The customer's own token. <b>The application sets no deadline of its own</b> - how long a run may take is
+    /// the agent's to decide, so this is signalled only when the customer stops or their connection goes away,
+    /// which is an ending rather than a failure.
+    /// </param>
+    IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(
+        SuggestionRequest request,
+        CancellationToken cancellationToken);
 }

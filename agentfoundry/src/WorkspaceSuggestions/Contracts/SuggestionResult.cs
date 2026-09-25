@@ -7,8 +7,9 @@ namespace WorkspaceSuggestions.Contracts;
 /// <remarks>
 /// <para>
 /// This is the wire shape of <c>suggestion.result.schema.json</c> and the structured-output type the agent is
-/// configured with. <b>No price, no product name and no image crosses</b> — the application resolves those
-/// and recomputes every amount — and no band label is carried.
+/// configured with. <b>The name and the amount on each line are the catalogue tool's</b> - the model states
+/// what it was given rather than inventing it - and the application sums the lines for the candidate's
+/// total. No image crosses, and no band label is carried.
 /// </para>
 /// <para>
 /// <b>It carries no usage, deliberately.</b> The run's cost was once a required field of this type, which

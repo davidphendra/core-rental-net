@@ -8,16 +8,16 @@ namespace CoreRentalNet.Host.AiBuilder;
 /// </remarks>
 internal enum AiRunVerdict
 {
-    /// <summary>Candidates were checked and are being shown.</summary>
+    /// <summary>Candidates came back and are being shown.</summary>
     Suggested,
 
     /// <summary>The typed verdict that the request was not about a workspace. A result, not a failure.</summary>
     Refused,
 
-    /// <summary>The answer did not survive being checked against the catalogue.</summary>
+    /// <summary>The answer said it suggested something and carried no option at all.</summary>
     Invalid,
 
-    /// <summary>No agent, no identity, no transport, or too slow.</summary>
+    /// <summary>No agent, no identity, or no transport.</summary>
     Unavailable,
 
     /// <summary>The customer stopped it, or went away. Not a failure.</summary>

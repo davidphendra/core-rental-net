@@ -30,7 +30,7 @@
                                       Message="@ReplaceMessage"
                                       OnConfirm="ApplyChosenAsync" />
 
-            <section class="ai mb-section-gap rounded-lg border border-outline-variant p-stack-md"
+            <section class="ai mb-section-gap rounded-2xl bg-surface-container-lowest p-stack-md shadow-ambient"
                      data-testid="ai-section"
                      data-expanded="@(Expanded ? "true" : "false")"
                      aria-labelledby="ai-heading">
@@ -39,8 +39,8 @@
                    section a customer scrolls past. *@
                 @if (Expanded)
                 {
-                    <h2 id="ai-heading" class="text-title-lg font-title-lg text-primary">Not sure where to start?</h2>
-                    <p class="text-body-md font-body-md text-outline mb-stack-sm">
+                    <h2 id="ai-heading" class="text-headline-md font-headline-md text-primary">Not sure where to start?</h2>
+                    <p class="text-body-md font-body-md text-on-surface-variant mb-stack-sm">
                         Describe the workspace you need, and we will put options together.
                     </p>
                 }
@@ -52,18 +52,31 @@
                    the model's prose, which would announce a field at a time over the whole run. *@
                 <p class="sr-only" role="status" data-testid="ai-announcement">@announcement</p>
 
-                <form class="ai__request flex flex-wrap items-end gap-2" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
-                    <label class="sr-only" for="ai-query">Describe your workspace</label>
-                    <input id="ai-query"
-                           class="ai__query flex-1 min-w-0 rounded border border-outline-variant px-4 py-2"
-                           data-testid="ai-query"
-                           placeholder="A desk, a chair and a monitor"
-                           disabled="@running"
-                           @bind="query"
-                           @bind:event="oninput" />
+                @* Top-aligned, and each control's height comes from the stylesheet rather than from the row: a
+                   control that stretched with the field would follow it down the page as a customer made it
+                   taller, which is what they do when the sentence is long. *@
+                <form class="ai__request flex flex-wrap items-start gap-2" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+                    @* The field is the theme's own. `field` is what every other input in the application is
+                       built from, and its textarea rule is already two lines tall - so this is a wrapper
+                       rather than the same utilities written out again, and the AI section cannot drift
+                       from the rest of the forms. *@
+                    <div class="field flex-1 min-w-0">
+                        <label class="sr-only" for="ai-query">Describe your workspace</label>
+                        <textarea id="ai-query"
+                                  rows="2"
+                                  class="ai__query"
+                                  data-testid="ai-query"
+                                  placeholder="A desk, a chair and a monitor"
+                                  disabled="@running"
+                                  @ref="queryField"
+                                  @bind="query"
+                                  @bind:event="oninput"></textarea>
+                    </div>
 
+                    @* The theme's small button: a pill, carrying the application's own hover, disabled and
+                       focus states rather than a second set invented here. *@
                     <button type="submit"
-                            class="ai__submit rounded bg-primary px-4 py-2 text-on-primary"
+                            class="ai__submit button button--primary button--small"
                             data-testid="ai-submit"
                             disabled="@(running || string.IsNullOrWhiteSpace(query))">
                         Suggest
@@ -72,7 +85,7 @@
                     @if (running)
                     {
                         <button type="button"
-                                class="ai__cancel rounded border border-outline-variant px-4 py-2"
+                                class="ai__cancel button button--ghost button--small"
                                 data-testid="ai-cancel"
                                 @onclick="StopAsync">
                             Stop
@@ -98,7 +111,7 @@
                     }
                     else
                     {
-                        <ol class="ai__stages mt-stack-sm text-body-sm font-body-sm text-outline"
+                        <ol class="ai__stages mt-stack-sm text-label-md font-label-md text-on-surface-variant"
                             data-testid="ai-stages">
                             @foreach (var stage in stages)
                             {
@@ -128,7 +141,7 @@
                    needs to know whether their workspace moved. It did not. *@
                 @if (NotApplied)
                 {
-                    <p class="ai__not-applied mt-2 text-body-sm font-body-sm text-outline" data-testid="ai-not-applied">
+                    <p class="ai__not-applied mt-stack-sm text-label-md font-label-md text-on-surface-variant" data-testid="ai-not-applied">
                         Not applied to your workspace.
                     </p>
                 }
@@ -175,7 +188,7 @@
                             <div class="ai__candidates" data-testid="ai-candidates">
                                 @foreach (var candidate in outcome.Candidates)
                                 {
-                                    <article class="ai__option mb-stack-sm rounded border border-outline-variant p-3"
+                                    <article class="ai__option mb-stack-sm rounded-xl bg-surface-container-low p-stack-md"
                                              data-testid="ai-option">
                                         <header class="flex items-baseline justify-between gap-2">
                                             <span class="ai__total text-label-md font-label-md" data-testid="ai-total">
@@ -185,7 +198,7 @@
 
                                         <p class="text-body-md font-body-md">@candidate.Rationale</p>
 
-                                        <ul class="ai__lines text-body-sm font-body-sm text-outline">
+                                        <ul class="ai__lines text-label-md font-label-md text-on-surface-variant">
                                             @foreach (var line in candidate.Lines)
                                             {
                                                 <li class="ai__line" data-sku="@line.Sku">
@@ -239,6 +252,7 @@
     private SuggestionCandidate? pending;
     private string? applied;
     private string? applyFailed;
+    private ElementReference queryField;
     private IJSObjectReference? module;
     private DotNetObjectReference<AiBuilderSection>? self;
 
@@ -277,6 +291,29 @@
             await module.InvokeVoidAsync("stop");
         }
     }
+
+    /// <summary>Hands the field's Enter key to the component, once the field is on the page.</summary>
+    /// <remarks>
+    /// A textarea inserts a newline for Enter by itself, and nothing in the markup can tell that key from
+    /// Shift+Enter - so the browser is asked to stop instead and the component is told. This is what the field
+    /// did when it was a single line, and it is the key a customer reaches for after typing a sentence.
+    /// </remarks>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        self ??= DotNetObjectReference.Create(this);
+        module ??= await JavaScript.InvokeAsync<IJSObjectReference>("import", "./js/ai-run.js");
+
+        await module.InvokeVoidAsync("submitOnEnter", queryField, self);
+    }
+
+    /// <summary>The customer pressed Enter in the field. Sends, exactly as the button does.</summary>
+    [JSInvokable]
+    public Task SubmittedFromKeyboard() => SubmitAsync();
 
     /// <summary>One frame of the run: a stage, a piece of the model's words, the answer, or a failure.</summary>
     [JSInvokable]

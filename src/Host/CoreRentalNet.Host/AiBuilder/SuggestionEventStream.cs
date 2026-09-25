@@ -44,7 +44,7 @@ internal sealed class SuggestionEventStream(HttpResponse response)
         return new SuggestionEventStream(response);
     }
 
-    /// <summary>The code a run that could not be made reports: no agent, no identity, no transport, too slow.</summary>
+    /// <summary>The code a run that could not be made reports: no agent, no identity, or no transport.</summary>
     /// <remarks>
     /// A code rather than a sentence, and a stable one: the browser owns the words, so the difference
     /// between a failure and a refusal is decided in one place. The reason the agent gave is diagnostic and

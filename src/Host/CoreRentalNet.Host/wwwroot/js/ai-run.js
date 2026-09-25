@@ -57,6 +57,20 @@ export function stop() {
     }
 }
 
+/// Enter sends the request, and Shift+Enter starts a new line.
+///
+/// A textarea inserts a newline for Enter by itself, and nothing in the markup can tell that key from
+/// Shift+Enter - so the browser is asked to stop instead, and the component is told. This is what the field did
+/// when it was a single line, and it is the key a customer reaches for after typing a sentence.
+export function submitOnEnter(element, dotNet) {
+    element.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            dotNet.invokeMethodAsync('SubmittedFromKeyboard');
+        }
+    });
+}
+
 async function read(dotNet, response, controller) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();

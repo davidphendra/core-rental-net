@@ -25,13 +25,13 @@ public sealed class AgentToolWiringTests
     [Fact]
     public void The_suggestor_is_handed_the_catalogue_tools()
     {
-        AgentRegistration.ToolsFor(AgentRoster.Suggestor, Catalogue).Should().BeSameAs(Catalogue);
+        AgentFoundryRegistration.ToolsFor(AgentRoster.Suggestor, Catalogue).Should().BeSameAs(Catalogue);
     }
 
     [Fact]
     public void The_rephraser_is_handed_none()
     {
-        AgentRegistration.ToolsFor(AgentRoster.Rephraser, Catalogue).Should().BeEmpty();
+        AgentFoundryRegistration.ToolsFor(AgentRoster.Rephraser, Catalogue).Should().BeEmpty();
     }
 
     [Fact]

@@ -62,6 +62,10 @@
     <InternalsVisibleTo Include="WorkspaceSuggestions.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extentions\" />
+  </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.Web" />
 
 </Project>

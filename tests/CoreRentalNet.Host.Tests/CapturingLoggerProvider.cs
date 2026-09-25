@@ -28,7 +28,8 @@ internal sealed class CapturingLoggerProvider : ILoggerProvider
         string Category,
         LogLevel Level,
         string Message,
-        IReadOnlyList<KeyValuePair<string, object?>>? Properties)
+        IReadOnlyList<KeyValuePair<string, object?>>? Properties,
+        Exception? Exception = null)
     {
         /// <summary>The value of one structured property, or null when it is absent or null.</summary>
         public object? Property(string name)
@@ -52,6 +53,7 @@ internal sealed class CapturingLoggerProvider : ILoggerProvider
                 category,
                 logLevel,
                 formatter(state, exception),
-                state as IReadOnlyList<KeyValuePair<string, object?>>));
+                state as IReadOnlyList<KeyValuePair<string, object?>>,
+                exception));
     }
 }

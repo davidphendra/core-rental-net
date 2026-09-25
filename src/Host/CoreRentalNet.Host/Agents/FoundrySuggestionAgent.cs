@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using System.Text;
-using CoreRentalNet.Host.AiBuilder;
 using Microsoft.Agents.AI;
 
 namespace CoreRentalNet.Host.Agents;
@@ -44,10 +43,8 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
 
     public async IAsyncEnumerable<AgentSuggestionEvent> StreamAsync(
         SuggestionRequest request,
-        RunBudget budget)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(budget);
-
         var payload = SuggestionPayload.From(request);
         var agent = TryCreate(out var creationFailure);
 
@@ -60,7 +57,7 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
         var text = new StringBuilder();
         var failed = false;
 
-        await foreach (var raised in Relay(agent, payload.Json, text, budget))
+        await foreach (var raised in Relay(agent, payload.Json, text, cancellationToken))
         {
             failed |= raised is AgentSuggestionEvent.Unavailable;
 
@@ -113,19 +110,19 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
 
     /// <summary>Passes the agent's text on as it arrives, and reads nothing into it.</summary>
     /// <remarks>
-    /// The two tokens travel together in the budget so this method cannot be called with them swapped — which
-    /// would report a timeout as a stop and a stop as a timeout, and would pass any test that only looked at the
-    /// name of the outcome.
+    /// <b>A cancellation here is only ever the customer's.</b> The application sets no deadline of its own, so
+    /// there is no second reason for this token to be signalled - which is what makes the ending below
+    /// unambiguous rather than a guess between two possibilities.
     /// </remarks>
     private static async IAsyncEnumerable<AgentSuggestionEvent> Relay(
         AIAgent agent,
         string json,
         StringBuilder text,
-        RunBudget budget)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await using var updates = agent
-            .RunStreamingAsync(json, cancellationToken: budget.Run)
-            .GetAsyncEnumerator(budget.Run);
+            .RunStreamingAsync(json, cancellationToken: cancellationToken)
+            .GetAsyncEnumerator(cancellationToken);
 
         while (true)
         {
@@ -137,12 +134,11 @@ internal sealed class FoundrySuggestionAgent : ISuggestionAgent
             {
                 moved = await updates.MoveNextAsync();
             }
-            catch (OperationCanceledException) when (budget.Customer.IsCancellationRequested)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // The customer stopped the run, or their browser went away. That is an <b>ending</b>, not an
                 // unavailable run, so it is rethrown as itself rather than dressed up as one - the page
-                // reports a different thing for each. The two tokens are not the same question: this one
-                // says the customer left, and the budget's says the run ran out of time, which IS a failure.
+                // reports a different thing for each.
                 throw;
             }
             catch (Exception exception)
