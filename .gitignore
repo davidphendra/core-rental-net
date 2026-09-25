@@ -34,4 +34,5 @@ test-results/
 # Secrets. A developer's own tenant values and client secret live here, never in a tracked file.
 appsettings.Local.json
 appsettings.*.local.json
+.env
 *.pfx
