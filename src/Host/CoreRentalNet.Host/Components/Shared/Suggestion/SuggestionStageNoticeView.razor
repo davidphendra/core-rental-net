@@ -1,0 +1,34 @@
+@* The application's own stage lines. Retained and collapsed once a run ends, so where a run went is worth
+   being able to see afterwards and worth not having to look at. *@
+@if (Model.Collapsed)
+{
+    <button type="button"
+            class="ai__toggle mt-stack-sm underline"
+            data-testid="suggestion-stages-toggle"
+            aria-expanded="false"
+            @onclick="OnExpandStages">
+        What took so long?
+    </button>
+}
+else
+{
+    <ol class="ai__stages mt-stack-sm text-label-md font-label-md text-on-surface-variant"
+        data-testid="suggestion-stages">
+        @foreach (var stage in Model.StageWords)
+        {
+            <li class="ai__stage" data-stage="@stage">@stage</li>
+        }
+    </ol>
+}
+
+@code {
+    [Parameter, EditorRequired] public required SuggestionNotice Notice { get; set; }
+
+    [Parameter] public EventCallback OnExpandStages { get; set; }
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
+
+    private SuggestionStageNotice Model => (SuggestionStageNotice)Notice;
+}

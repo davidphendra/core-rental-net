@@ -34,7 +34,7 @@ public sealed class HostConfigurationTests
     /// that read the constants would follow a renamed section instead of failing on it. The template below is
     /// expanded over these names, so a permission the file has stopped declaring fails this test.
     /// </remarks>
-    private static readonly ImmutableArray<string> ClaimSections = ["CatalogRead", "SimilaritySearch", "AIUse"];
+    private static readonly ImmutableArray<string> ClaimSections = ["CatalogRead", "SimilaritySearch", "WorkspaceSuggestion"];
 
     /// <summary>The one key the host reads that no committed file may hold.</summary>
     /// <remarks>

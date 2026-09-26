@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The hosted suggestion agent, reached as a Foundry agent and authenticated with the application's own
+         identity. Three packages, one set: the agent SDK, the project client and the credential. They live
+         here rather than in the host because this is the only project that names them. -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" />
+    <PackageReference Include="Azure.AI.Projects" />
+    <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
@@ -14,6 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="../CoreRentalNet.Modules.Workspace.Domain/CoreRentalNet.Modules.Workspace.Domain.csproj" />
+    <!-- Outward reference: this project implements the port the application project declares. -->
+    <ProjectReference Include="../CoreRentalNet.Modules.Workspace.Application/CoreRentalNet.Modules.Workspace.Application.csproj" />
     <ProjectReference Include="../../../BuildingBlocks/CoreRentalNet.BuildingBlocks.Infrastructure/CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 

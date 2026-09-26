@@ -1,0 +1,37 @@
+@* The renderer: it draws each notice through the component the resolver names, and names no component itself.
+
+   This is the Strategy + Registry the architecture calls for: the run produces semantic notices, and the
+   mapping from a notice to its markup lives in one dictionary rather than in a chain of `if`s. *@
+@inject ISuggestionNoticeComponentResolver SuggestionNoticeComponentResolver
+
+@foreach (var suggestionNotice in Notices)
+{
+    <DynamicComponent Type="@SuggestionNoticeComponentResolver.ResolveComponentType(KindOf(suggestionNotice))"
+                      Parameters="@(new Dictionary<string, object?>
+                      {
+                          ["Notice"] = suggestionNotice,
+                          ["OnExpandStages"] = OnExpandStages,
+                          ["OnRetry"] = OnRetry,
+                          ["OnCandidateChosen"] = OnCandidateChosen,
+                      })" />
+}
+
+@code {
+    [Parameter, EditorRequired] public required IReadOnlyList<SuggestionNotice> Notices { get; set; }
+
+    [Parameter] public EventCallback OnExpandStages { get; set; }
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
+
+    private static SuggestionNoticeKind KindOf(SuggestionNotice suggestionNotice) => suggestionNotice switch
+    {
+        SuggestionStageNotice => SuggestionNoticeKind.Stage,
+        SuggestionNarrativeNotice => SuggestionNoticeKind.Narrative,
+        SuggestionOutcomeNotice => SuggestionNoticeKind.Outcome,
+        SuggestionFailureNotice => SuggestionNoticeKind.Failure,
+        SuggestionStoppedNotice => SuggestionNoticeKind.Stopped,
+        _ => throw new ArgumentOutOfRangeException(nameof(suggestionNotice), suggestionNotice, "No component draws this notice."),
+    };
+}

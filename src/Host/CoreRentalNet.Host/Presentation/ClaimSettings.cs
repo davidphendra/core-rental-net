@@ -19,8 +19,8 @@ public sealed record ClaimSettings
     /// <summary>The configuration section for the catalogue's similarity search, closed when it is unset.</summary>
     public const string SimilaritySearch = "SimilaritySearch";
 
-    /// <summary>The configuration section for the AI workspace builder, closed when it is unset.</summary>
-    public const string AiUse = "AIUse";
+    /// <summary>The configuration section for the workspace suggestion feature, closed when it is unset.</summary>
+    public const string WorkspaceSuggestion = "WorkspaceSuggestion";
 
     private ClaimSettings(string? claimType, string? claimValue)
     {

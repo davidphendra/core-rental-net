@@ -1,0 +1,59 @@
+@* Everything shown here was checked against the catalogue before it was rendered. The application does not
+   order or label the candidates - they are shown in the order the agent returned them. *@
+<div class="ai__outcome mt-stack-sm" data-testid="suggestion-outcome" data-status="@Model.ResultFrame.Status">
+    @if (Model.ResultFrame.Status is WorkspaceSuggestionResultFrame.NotWorkspace)
+    {
+        @* A result rather than an error, and guided rather than repeatable: the same words sent again produce
+           the same refusal, so what helps is being told what would work. *@
+        <p class="alert" role="status" data-testid="suggestion-refused">
+            That doesn't look like a workspace request — try describing the room, the work, or a budget.
+        </p>
+    }
+    else
+    {
+        <div class="ai__candidates" data-testid="suggestion-candidates">
+            @foreach (var candidate in Model.ResultFrame.Candidates)
+            {
+                <article class="ai__option mb-stack-sm rounded-xl bg-surface-container-low p-stack-md"
+                         data-testid="suggestion-option">
+                    <header class="flex items-baseline justify-between gap-2">
+                        <span class="ai__total text-label-md font-label-md" data-testid="suggestion-total">
+                            @candidate.MonthlyTotal.ToString("C")<span class="text-on-surface-variant">/mo</span>
+                        </span>
+                    </header>
+
+                    <p class="text-body-md font-body-md">@candidate.Rationale</p>
+
+                    <ul class="ai__lines text-label-md font-label-md text-on-surface-variant">
+                        @foreach (var line in candidate.Lines)
+                        {
+                            <li class="ai__line" data-sku="@line.Sku">
+                                @line.Quantity &times; @line.Name
+                                <span class="ai__line-total">@line.LineTotal.ToString("C")</span>
+                            </li>
+                        }
+                    </ul>
+
+                    <button type="button"
+                            class="ai__apply mt-stack-sm underline"
+                            data-testid="suggestion-apply"
+                            @onclick="() => OnCandidateChosen.InvokeAsync(candidate)">
+                        Use this setup
+                    </button>
+                </article>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required SuggestionNotice Notice { get; set; }
+
+    [Parameter] public EventCallback OnExpandStages { get; set; }
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
+
+    private SuggestionOutcomeNotice Model => (SuggestionOutcomeNotice)Notice;
+}

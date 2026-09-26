@@ -24,11 +24,6 @@
     <!-- The MCP server the catalogue's tools are published over, so a machine caller can discover and
          call them. Pinned at the same major as the agent's client: one protocol, one version, both sides. -->
     <PackageReference Include="ModelContextProtocol.AspNetCore" />
-    <!-- The hosted suggestion agent, reached as a Foundry agent and authenticated with the application's own
-         identity. Three packages, one set: the agent SDK, the project client and the credential. -->
-    <PackageReference Include="Microsoft.Agents.AI.Foundry" />
-    <PackageReference Include="Azure.AI.Projects" />
-    <PackageReference Include="Azure.Identity" />
   </ItemGroup>
 
   <ItemGroup>

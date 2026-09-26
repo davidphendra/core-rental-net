@@ -1,0 +1,21 @@
+@* The model's own words, each written the moment its JSON string closed. Never its JSON, and never a partial
+   value. Not a live region, and deliberately no role at all - this is commentary, and announcing it field by
+   field would talk over the run. *@
+<div class="ai__stream mt-stack-sm text-body-md font-body-md text-on-surface" data-testid="suggestion-narrative">
+    @foreach (var line in Model.NarrativeLines)
+    {
+        <p class="ai__line">@line</p>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required SuggestionNotice Notice { get; set; }
+
+    [Parameter] public EventCallback OnExpandStages { get; set; }
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
+
+    private SuggestionNarrativeNotice Model => (SuggestionNarrativeNotice)Notice;
+}

@@ -1,0 +1,25 @@
+@if (Model.NotApplied)
+{
+    <p class="ai__not-applied mt-stack-sm text-label-md font-label-md text-on-surface-variant" data-testid="suggestion-not-applied">
+        Not applied to your workspace.
+    </p>
+}
+
+<p class="alert mt-stack-sm" role="alert" data-testid="suggestion-failed">
+    This suggestion couldn't be completed. Nothing was applied.
+</p>
+<button type="button" class="ai__retry mt-2 underline" data-testid="suggestion-retry" @onclick="OnRetry">
+    Try again
+</button>
+
+@code {
+    [Parameter, EditorRequired] public required SuggestionNotice Notice { get; set; }
+
+    [Parameter] public EventCallback OnExpandStages { get; set; }
+
+    [Parameter] public EventCallback OnRetry { get; set; }
+
+    [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
+
+    private SuggestionFailureNotice Model => (SuggestionFailureNotice)Notice;
+}

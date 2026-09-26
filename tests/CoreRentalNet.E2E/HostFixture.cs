@@ -109,8 +109,8 @@ public sealed class HostFixture : IAsyncLifetime
                 // What entitles a caller to spend. The provider writes the account's permissions into the
                 // access token, and this reads the one that grants the builder - so the gate is a real
                 // claim on a real token rather than a section that happens to be visible.
-                ["Authorization__AIUse__ClaimType"] = "permissions",
-                ["Authorization__AIUse__ClaimValue"] = "use:ai",
+                ["Authorization__WorkspaceSuggestion__ClaimType"] = "permissions",
+                ["Authorization__WorkspaceSuggestion__ClaimValue"] = "use:ai",
             });
 
         await ProcessPool.WaitUntilReadyAsync(AuthenticatedBaseUrl, authenticated, requireAssets: true).ConfigureAwait(false);
