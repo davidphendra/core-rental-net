@@ -61,6 +61,6 @@ public static class CatalogTabs
     {
         ArgumentNullException.ThrowIfNull(handlerService);
 
-        return handlerService.Handle(new SearchCatalogQuery(Category: CategoryFor(tab), Search: search));
+        return handlerService.Handle(new SearchCatalogQuery(Category: CategoryFor(tab), TypedSearchText: search));
     }
 }

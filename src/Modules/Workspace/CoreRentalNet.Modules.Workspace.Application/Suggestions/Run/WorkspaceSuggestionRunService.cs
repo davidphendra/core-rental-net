@@ -18,6 +18,7 @@ public sealed class WorkspaceSuggestionRunService(
 {
     public async Task RunSuggestionAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
+        string callerAccessToken,
         IWorkspaceSuggestionEventWriter suggestionEventWriter,
         string hashedCustomerIdentity,
         CancellationToken cancellationToken)
@@ -27,15 +28,13 @@ public sealed class WorkspaceSuggestionRunService(
 
         try
         {
-            await suggestionEventWriter.WriteAsync(
-                new WorkspaceSuggestionStageStreamEvent(WorkspaceSuggestionStage.Reading),
-                cancellationToken);
-            await suggestionEventWriter.WriteAsync(
-                new WorkspaceSuggestionStageStreamEvent(WorkspaceSuggestionStage.Matching),
-                cancellationToken);
-
+            // The stages are the agent's to announce: it knows where a run went, including a retry the
+            // application cannot predict. The application only supplies the words.
             await suggestionStreamProcessor.ProcessAgentEventStreamAsync(
-                suggestionAgentAdapter.StreamSuggestionAsync(suggestionRequestPayload, cancellationToken),
+                suggestionAgentAdapter.StreamSuggestionAsync(
+                    suggestionRequestPayload,
+                    callerAccessToken,
+                    cancellationToken),
                 suggestionRunState,
                 suggestionEventWriter,
                 cancellationToken);

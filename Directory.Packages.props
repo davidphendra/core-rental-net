@@ -1,13 +1,12 @@
 <Project>
-
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
-
   <ItemGroup Label="Persistence">
     <!-- Pinned exactly: 10.0.0 resolves SQLitePCLRaw.lib.e_sqlite3 2.1.11, which carries a
          high-severity advisory with no fixed release in that branch. -->
+    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.22.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12" />
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
@@ -42,7 +41,6 @@
          than left to whatever the OpenID Connect handler happens to resolve. -->
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
   </ItemGroup>
-
   <ItemGroup Label="The workspace-suggestion agent">
     <!-- All three are preview or beta: there is no fully stable Foundry client. Pinned to the set
          Microsoft ships together in its own .NET hosted-agent sample, whose release dates agree. They
@@ -54,20 +52,18 @@
     <!-- Named directly by the module's embedding adapter, which takes a credential rather than resolving one. -->
     <PackageVersion Include="Azure.Core" Version="1.62.0" />
   </ItemGroup>
-
   <ItemGroup Label="The catalogue ingestion tool">
     <!-- Pinned to the Foundry set above, and they must move together with it: the ingestion tool reaches the
          embedding deployment through the project client, so a version of either that disagrees with
          Azure.AI.Projects is a client that cannot be built. Direct references rather than transitive, because
          the tool names these types itself and a transitive version is one that resolution chooses. -->
     <PackageVersion Include="Azure.AI.Extensions.OpenAI" Version="3.0.0-beta.2" />
-    <PackageVersion Include="OpenAI" Version="2.12.0" />
+    <PackageVersion Include="OpenAI" Version="2.13.0" />
     <!-- The transport exception type the ingestion tool's failure classifier names directly. It arrives with
          OpenAI, but the tool names it, so the tool pins it. 1.15.0 rather than 1.14.0 because the agent's
          Foundry client requires at least that, and one central version has to satisfy both. -->
     <PackageVersion Include="System.ClientModel" Version="1.15.0" />
   </ItemGroup>
-
   <ItemGroup Label="Chunking">
     <!-- The ingestion tool splits each product's text with this, and it is pinned exactly because its
          boundaries can change with its version. -->
@@ -76,14 +72,12 @@
          bridges the tool's own embedding port to it. -->
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.0" />
   </ItemGroup>
-
   <ItemGroup Label="The catalogue's MCP surface">
     <!-- The MCP server the catalogue's tools are published over, so a machine caller can discover and call
          them. MIT. The agent's client is pinned to the same major, so one protocol has one version on both
          sides of the wire. -->
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
   </ItemGroup>
-
   <ItemGroup Label="The catalogue's name search">
     <!-- Ranks the products a search matches, so the catalogue's name search can say which match is best
          rather than returning them in file order. MIT. Version 7.0.2 is the latest release; its 8.x line is
@@ -91,7 +85,6 @@
          BM25 (k1 = 1.2, b = 0.75), and it brings its own tokenisation, stemming and query parsing. -->
     <PackageVersion Include="Lifti.Core" Version="7.0.2" />
   </ItemGroup>
-
   <ItemGroup Label="Tests">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
@@ -114,5 +107,4 @@
          collector that ships nothing. The agent tree pins the same version for the same reason. -->
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>
-
 </Project>

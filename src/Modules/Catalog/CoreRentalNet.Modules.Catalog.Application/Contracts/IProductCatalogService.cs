@@ -28,7 +28,20 @@ public interface IProductCatalogService
     /// <summary>The products carrying the popular badge.</summary>
     IReadOnlyList<ProductView> Featured();
 
-    /// <summary>Every product the filters allow, in catalog order. What a caller typed does not narrow
+    /// <summary>Every product the eligibility rules allow, in catalog order. What a caller typed does not narrow
     /// here: it ranks the answer — see <see cref="IProductNameSearchService"/>.</summary>
-    IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory);
+    /// <param name="category">The category to narrow to, or null for all of them.</param>
+    /// <param name="subCategory">The accessory subcategory to narrow to, or null for all of them.</param>
+    /// <param name="maximumMonthlyAmount">The most a product may cost each month, or null for no ceiling.
+    /// A product above it is not eligible, so a good name match can never bring it back.</param>
+    /// <remarks>
+    /// <b>The ceiling narrows rather than ranking.</b> It is here, beside the category, rather than beside
+    /// what was typed, because a product a caller cannot afford is not a product to be ordered lower — it is
+    /// not a product. Both name searches narrow through this one operation, which is what stops the two of
+    /// them disagreeing about what is eligible.
+    /// </remarks>
+    IReadOnlyList<ProductView> Search(
+        CatalogCategory? category,
+        CatalogSubCategory? subCategory,
+        decimal? maximumMonthlyAmount = null);
 }

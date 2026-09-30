@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Components.Shared.Suggestion;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
@@ -43,6 +44,9 @@ internal static class WorkspaceSuggestionRegistrationExtentions
 
         builder.Services.AddSingleton<IWorkspaceSuggestionRunRecordWriter, LoggerWorkspaceSuggestionRunRecordWriter>();
 
+        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionStageChangedStreamEventHandler>();
+        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionRetryStreamEventHandler>();
+        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionCandidateApprovedStreamEventHandler>();
         builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionNarrativeDeltaStreamEventHandler>();
         builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionResultReadyStreamEventHandler>();
         builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionUnavailableStreamEventHandler>();
@@ -50,5 +54,11 @@ internal static class WorkspaceSuggestionRegistrationExtentions
 
         builder.Services.AddScoped<IWorkspaceSuggestionRequestFactory, WorkspaceSuggestionRequestFactory>();
         builder.Services.AddScoped<IWorkspaceSuggestionRunService, WorkspaceSuggestionRunService>();
+
+        // The panel's own composition: the registry a rendered notice is drawn through. It is registered here
+        // rather than with the run because it is the panel's, and a component that injects a service the
+        // container does not hold throws the moment the panel renders - which is the failure this line exists
+        // to prevent.
+        builder.Services.AddSingleton<ISuggestionNoticeComponentResolver, SuggestionNoticeComponentResolver>();
     }
 }

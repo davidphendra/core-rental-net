@@ -19,14 +19,29 @@ internal sealed class StubProductNameSearchService : IProductNameSearchService
     public IReadOnlyList<ProductView>? ProductsItWasGiven { get; private set; }
 
     /// <summary>What the handler searched for, or null when it never asked.</summary>
-    public string? SearchTextItWasGiven { get; private set; }
+    public string? TypedSearchTextItWasGiven { get; private set; }
 
-    public Task<IReadOnlyList<ProductView>> FindBestMatchesAsync(
+    /// <summary>The terms the handler searched for, or null when it never asked.</summary>
+    public IReadOnlyList<string>? ExpandedSearchTermsItWasGiven { get; private set; }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<ProductView>> FindBestMatchesForTypedSearchWordsAsync(
         IReadOnlyList<ProductView> productsMatchingTheFilters,
-        string searchText)
+        string typedSearchText)
     {
         ProductsItWasGiven = productsMatchingTheFilters;
-        SearchTextItWasGiven = searchText;
+        TypedSearchTextItWasGiven = typedSearchText;
+
+        return Task.FromResult(Matches);
+    }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<ProductView>> FindBestMatchesForExpandedSearchTermsAsync(
+        IReadOnlyList<ProductView> productsMatchingTheFilters,
+        IReadOnlyList<string> expandedSearchTerms)
+    {
+        ProductsItWasGiven = productsMatchingTheFilters;
+        ExpandedSearchTermsItWasGiven = expandedSearchTerms;
 
         return Task.FromResult(Matches);
     }

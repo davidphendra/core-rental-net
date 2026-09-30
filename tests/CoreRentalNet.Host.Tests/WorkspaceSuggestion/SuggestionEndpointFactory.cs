@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Host.Tests.WorkspaceSuggestion;
@@ -28,6 +30,21 @@ namespace CoreRentalNet.Host.Tests.WorkspaceSuggestion;
 /// </remarks>
 public sealed class SuggestionEndpointFactory : WebApplicationFactory<Program>
 {
+    private readonly IWorkspaceSuggestionAgentAdapter? _suggestionAgentAdapter;
+
+    /// <summary>No agent, so every run ends unavailable - which is its own assertion.</summary>
+    public SuggestionEndpointFactory()
+    {
+    }
+
+    /// <summary>
+    /// A stand-in agent, when a test wants to watch a run produce frames. Internal rather than public because
+    /// xUnit's class fixture requires exactly one public constructor, and the parameterless one is what the
+    /// suite's fixtures resolve; a test that wants a stand-in builds its own instance.
+    /// </summary>
+    internal SuggestionEndpointFactory(IWorkspaceSuggestionAgentAdapter suggestionAgentAdapter)
+        => _suggestionAgentAdapter = suggestionAgentAdapter;
+
     private const string ClaimType = "permissions";
     private const string ClaimValue = "builder:ai";
 
@@ -51,6 +68,12 @@ public sealed class SuggestionEndpointFactory : WebApplicationFactory<Program>
         {
             services.AddSingleton<ILoggerProvider>(Logs);
 
+            if (_suggestionAgentAdapter is not null)
+            {
+                services.RemoveAll<IWorkspaceSuggestionAgentAdapter>();
+                services.AddSingleton(_suggestionAgentAdapter);
+            }
+
             var identity = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -68,6 +91,14 @@ public sealed class SuggestionEndpointFactory : WebApplicationFactory<Program>
             services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, CatalogApiTestHandler>(
                 CatalogApiTestHandler.SchemeName,
                 _ => { });
+
+            // The run endpoint reads the caller's access token from the default sign-in, so the test sign-in has to
+            // be that default: otherwise the token the ticket carries is never found and every run is refused.
+            services.PostConfigure<AuthenticationOptions>(options =>
+            {
+                options.DefaultAuthenticateScheme = CatalogApiTestHandler.SchemeName;
+                options.DefaultChallengeScheme = CatalogApiTestHandler.SchemeName;
+            });
 
             // Re-pointed rather than left as the composition root built it: that policy is built from the
             // deployment's configuration, which is blank here, and a blank permission means nobody.

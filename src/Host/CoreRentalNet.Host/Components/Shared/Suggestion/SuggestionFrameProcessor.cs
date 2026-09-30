@@ -27,6 +27,10 @@ internal sealed class SuggestionFrameProcessor(SuggestionPanelState suggestionPa
 
                 return null;
 
+            case "retry":
+            case "candidate":
+                return AppendProgress(serverSentEventName, serverSentEventData);
+
             case "failed":
                 // A code, not a sentence: the words belong here, and the agent's own reason is diagnostic.
                 suggestionPanelState.FailWithCode(serverSentEventData);
@@ -39,6 +43,15 @@ internal sealed class SuggestionFrameProcessor(SuggestionPanelState suggestionPa
             default:
                 return null;
         }
+    }
+
+    /// <summary>A progress frame joins the run's timeline; a completed setup is not announced as loudly as a
+    /// stage, because a customer reads the setups themselves from the outcome frame.</summary>
+    private string? AppendProgress(string frameName, string frameData)
+    {
+        suggestionPanelState.AppendStage(frameData);
+
+        return frameName is "candidate" ? null : frameData;
     }
 
     /// <summary>The candidates ARE the terminal outcome, so this says they arrived rather than reading a line.</summary>

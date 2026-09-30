@@ -53,6 +53,27 @@ public sealed class SearchSimilarityCatalogHandlerTests
         products.Select(product => product.Sku).Should().Equal("DSK0001", "MON0001", "CHA0001");
     }
 
+    [Fact] // the ceiling is a filter like the category, so the meaning search cannot reach past it either
+    public async Task A_monthly_ceiling_narrows_the_meaning_search_too()
+    {
+        // The sample's chair is 400000 and its lamp 120000. At a ceiling of 200000 the chair is not eligible,
+        // even though it is the nearest product to the sentence — which is what stops a caller being offered
+        // something they cannot afford on the strength of a good meaning match.
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var handler = Handler(
+            file,
+            out _,
+            out _,
+            new NearestProduct("CHA0001", 0.1),
+            new NearestProduct("LMP0001", 0.2));
+
+        var products = await handler.HandleAsync(
+            new SearchSimilarityCatalogQuery(null, null, "somewhere to sit", MaximumMonthlyAmount: 200_000m),
+            CancellationToken.None);
+
+        products.Select(product => product.Sku).Should().Equal("LMP0001");
+    }
+
     [Fact]
     public async Task The_filters_narrow_before_the_distance_orders()
     {

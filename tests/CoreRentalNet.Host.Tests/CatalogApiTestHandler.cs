@@ -26,6 +26,16 @@ internal sealed class CatalogApiTestHandler(
     /// <summary>The subject every authenticated test request is made as.</summary>
     public const string Caller = "test-client";
 
+    /// <summary>The access token the test sign-in saves, which a run forwards to the agent.</summary>
+    /// <remarks>
+    /// A real sign-in saves one and the run endpoint now requires it: a run without the caller's token cannot read
+    /// the catalogue, so a request that carries none is refused before it is paid for.
+    /// </remarks>
+    public const string AccessToken = "header.eyJzdWIiOiJ0ZXN0LWNsaWVudCJ9.signature";
+
+    /// <summary>The header a test sends to be signed in with no token for this API.</summary>
+    public const string WithoutAccessTokenHeader = "X-Test-Without-Access-Token";
+
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         if (!Request.Headers.TryGetValue(PermissionsHeader, out var values) || values.Count == 0)
@@ -39,7 +49,15 @@ internal sealed class CatalogApiTestHandler(
             .Append(new Claim("sub", Caller));
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, SchemeName));
+        var properties = new AuthenticationProperties();
 
-        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, SchemeName)));
+        // The ticket carries the token the way a sign-in cookie carries the one the identity provider issued,
+        // because that is where the run endpoint reads it from.
+        if (!Request.Headers.ContainsKey(WithoutAccessTokenHeader))
+        {
+            properties.StoreTokens([new AuthenticationToken { Name = "access_token", Value = AccessToken }]);
+        }
+
+        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, properties, SchemeName)));
     }
 }

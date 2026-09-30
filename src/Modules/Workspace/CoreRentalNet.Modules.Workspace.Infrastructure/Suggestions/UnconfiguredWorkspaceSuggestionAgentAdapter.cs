@@ -13,6 +13,7 @@ public sealed class UnconfiguredWorkspaceSuggestionAgentAdapter : IWorkspaceSugg
 {
     public async IAsyncEnumerable<WorkspaceSuggestionAgentEvent> StreamSuggestionAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
+        string callerAccessToken,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.CompletedTask;

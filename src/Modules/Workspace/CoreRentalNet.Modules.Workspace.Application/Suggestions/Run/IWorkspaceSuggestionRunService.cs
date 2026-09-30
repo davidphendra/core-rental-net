@@ -7,6 +7,7 @@ public interface IWorkspaceSuggestionRunService
 {
     Task RunSuggestionAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
+        string callerAccessToken,
         IWorkspaceSuggestionEventWriter suggestionEventWriter,
         string hashedCustomerIdentity,
         CancellationToken cancellationToken);

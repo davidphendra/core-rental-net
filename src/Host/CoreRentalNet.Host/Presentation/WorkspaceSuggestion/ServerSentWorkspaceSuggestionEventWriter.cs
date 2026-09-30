@@ -54,6 +54,10 @@ internal sealed class ServerSentWorkspaceSuggestionEventWriter(HttpResponse http
                 => WriteFrameAsync("text", textStreamEvent.NarrativeWords, cancellationToken),
             WorkspaceSuggestionResultStreamEvent resultStreamEvent
                 => WriteFrameAsync("result", WorkspaceSuggestionResultJson.Serialize(resultStreamEvent.ResultFrame), cancellationToken),
+            WorkspaceSuggestionRetryStreamEvent retryStreamEvent
+                => WriteFrameAsync("retry", retryStreamEvent.RetryWords, cancellationToken),
+            WorkspaceSuggestionCandidateStreamEvent candidateStreamEvent
+                => WriteFrameAsync("candidate", candidateStreamEvent.CandidateWords, cancellationToken),
             WorkspaceSuggestionFailedStreamEvent failedStreamEvent
                 => WriteFrameAsync("failed", failedStreamEvent.FailureCode, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(

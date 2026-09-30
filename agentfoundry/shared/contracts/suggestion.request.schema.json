@@ -2,35 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://corerental/schemas/suggestion.request.schema.json",
   "title": "Suggestion request",
-  "description": "What the application sends to the workspace-suggestion agent: one customer sentence, the slot rules, and the currency to think in. The catalogue is NOT carried - the agent searches it through the MCP tools it was given, so what the agent may choose from is whatever those tools return.",
+  "description": "What the application sends to the workspace-suggestion agent: one customer sentence, the slot rules, and the currency to think in. The catalogue is NOT carried - the agent searches it through the MCP tools it was given, so what the agent may choose from is whatever those tools return. Nor is the caller's token: it travels on the invocation, because a request is a message and a message is recorded, hashed and shown.",
   "type": "object",
   "additionalProperties": false,
   "required": ["runId", "query", "currency", "slots"],
   "properties": {
-    "runId": {
-      "type": "string",
-      "minLength": 1,
-      "description": "Opaque identifier for this run. Carried so the application can record it; it is not an identity."
-    },
-    "query": {
-      "type": "string",
-      "minLength": 1,
-      "description": "The customer's own words, verbatim. The only free text that crosses to Foundry."
-    },
-    "currency": {
-      "type": "string",
-      "const": "IDR",
-      "description": "Stated once, because the catalogue holds one currency."
-    },
-    "ceilingMonthly": {
-      "type": ["integer", "null"],
-      "minimum": 0,
-      "description": "The monthly ceiling the customer named, when they named one. Null when they did not - the agent must not invent one."
-    },
-    "mcpAccessToken": {
-      "type": ["string", "null"],
-      "description": "The caller's own access token, forwarded so the run can present it to the catalogue. The agent takes it out of the model's input before the run and never shows it to the model; it is absent when the caller's session holds none, and the run then has no catalogue to search."
-    },
+    "runId": { "type": "string", "minLength": 1, "description": "Opaque identifier for this run. Carried so the application can record it; it is not an identity." },
+    "query": { "type": "string", "minLength": 1, "description": "The customer's own words, verbatim. The only free text that crosses to Foundry." },
+    "currency": { "type": "string", "const": "IDR", "description": "Stated once, because the catalogue holds one currency." },
+    "ceilingMonthly": { "type": ["integer", "null"], "minimum": 0, "description": "The monthly ceiling the customer named, when they named one. Null when they did not - the agent must not invent one." },
     "slots": {
       "type": "array",
       "minItems": 1,

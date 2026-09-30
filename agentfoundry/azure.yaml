@@ -25,16 +25,20 @@ services:
                   capacity: 100
 
     workspace-suggestions:
-        project: src/WorkspaceSuggestions
+        project: src/CoreRentalNet.Agents
         host: azure.ai.agent
         language: csharp
         uses:
             - ai-project
         env:
             AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+            # FOUNDRY_AGENT_NAME is deliberately NOT mapped here: the hosting platform reserves the FOUNDRY_
+            # prefix and injects the resolved agent name itself. Mapping it from an azd variable nobody set once
+            # injected it empty, and an agent name that is present and empty is worse than one that is absent.
+            # The name below and the injected name must agree; a deployment that renames one renames both.
         codeConfiguration:
             dependencyResolution: remote_build
-            entryPoint: WorkspaceSuggestions.dll
+            entryPoint: CoreRentalNet.Agents.dll
             runtime: dotnet_10
         container:
             resources:
@@ -52,6 +56,43 @@ services:
         # The Foundry agent identity. Distinct from the service key above on purpose: the service key
         # names the folder and the azd service, the name is what Foundry resolves.
         name: core-rental-workspace-suggestion-agent
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+
+    # A second agent service, because azd addresses azure.ai.agent SERVICES by their key in this file, not the
+    # keyed agents inside a container. `azd ai agent invoke echo-agent "..."` therefore needs a service keyed
+    # `echo-agent`; the container it runs is the same project, and the name below is what Foundry resolves.
+    echo-agent:
+        project: src/CoreRentalNet.Agents
+        host: azure.ai.agent
+        language: csharp
+        uses:
+            - ai-project
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+            # Which agent a request that names none gets. `azd ai agent invoke --local` sends no agent name and
+            # `azd ai agent run <service>` does not pass the service name through locally, so the container has
+            # to be told. Remotely the platform injects FOUNDRY_AGENT_NAME and the two agree.
+            AGENTHOST__DEFAULTAGENTNAME: echo-agent
+        codeConfiguration:
+            dependencyResolution: remote_build
+            entryPoint: CoreRentalNet.Agents.dll
+            runtime: dotnet_10
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        description: A test aid that replies with the message it was sent, unchanged. No model, no catalogue.
+        displayName: Echo Agent
+        kind: hosted
+        metadata:
+            tags:
+                - AI Agent Hosting
+                - Responses Protocol
+                - Agent Framework
+                - .NET
+        name: echo-agent
         protocols:
             - protocol: responses
               version: 2.0.0

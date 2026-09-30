@@ -111,7 +111,7 @@
         return Task.CompletedTask;
     }
 
-    private void Load() => products = CatalogSearch.Handle(request with { Search = query });
+    private void Load() => products = CatalogSearch.Handle(request with { TypedSearchText = query });
 
     private async Task PickAsync(ProductView product)
     {

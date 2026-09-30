@@ -18,6 +18,9 @@ public sealed class WorkspaceSuggestionRunState(string workspaceQuery)
     /// <summary>True once the run has reached an ending, so the processor stops reading.</summary>
     public bool HasEnded { get; private set; }
 
+    /// <summary>How the run has ended, or is heading to end. Read to word a run that produced no frame.</summary>
+    public WorkspaceSuggestionVerdict Verdict => _ledger.Verdict;
+
     /// <summary>Keeps the raw text and returns whatever narrative fields have closed since the last fragment.</summary>
     public IReadOnlyList<WorkspaceSuggestionNarrativeField> AppendNarrativeText(string narrativeText)
     {
@@ -47,6 +50,17 @@ public sealed class WorkspaceSuggestionRunState(string workspaceQuery)
             _ledger.Verdict = WorkspaceSuggestionVerdict.Refused;
 
             return WorkspaceSuggestionResultFrame.Refused();
+        }
+
+        if (suggestionAnswer.Status is WorkspaceSuggestionAnswerStatus.CatalogueUnavailable
+            && suggestionAnswer.Candidates.Count == 0)
+        {
+            // The agent streamed its ending without a setup because no catalogue could be searched. That is
+            // "unavailable" to the customer, not a malformed answer: nothing was composed from memory, and
+            // nothing was wrong with what arrived.
+            _ledger.Verdict = WorkspaceSuggestionVerdict.Unavailable;
+
+            return null;
         }
 
         if (suggestionAnswer.Candidates.Count == 0)

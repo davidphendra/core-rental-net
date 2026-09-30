@@ -80,7 +80,7 @@ public sealed class CatalogController(
         [FromQuery] CatalogProjection? view,
         [FromQuery, Range(1, int.MaxValue)] int? limit)
     {
-        var matched = searchCatalogHandler.Handle(new SearchCatalogQuery(category, subCategory, NullIfBlank(search)));
+        var matched = searchCatalogHandler.Handle(new SearchCatalogQuery(category, subCategory, TypedSearchText: NullIfBlank(search)));
         var page = CatalogAnswer.Cap(matched, limit ?? CatalogApiLimits.Default);
 
         // Written after authorisation and after the answer: a refused call never reaches this line, and

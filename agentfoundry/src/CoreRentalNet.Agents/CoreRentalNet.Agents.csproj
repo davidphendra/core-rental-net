@@ -1,0 +1,67 @@
+﻿<Project>
+
+  <!--
+    Code deploy: Foundry zips THIS project folder and builds it server-side, so the repository root's
+    Directory.Packages.props is not in that zip. Two properties must be set before the SDK props are
+    imported, which is why the SDK is imported explicitly below instead of through the Project
+    element's Sdk attribute:
+
+      ImportDirectoryPackagesProps    stop walking up to the root Directory.Packages.props
+      ManagePackageVersionsCentrally  the root Directory.Build.props turns central management on, and
+                                      this project must not inherit it or every Version= below is an
+                                      NU1008 error. Verified: without it the build fails.
+
+    Package versions are therefore declared here, explicitly, as Microsoft's own .NET hosted sample does.
+  -->
+  <PropertyGroup>
+    <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+    <UserSecretsId>14b4a93f-56a8-4ae7-8ae2-ab30d243eec4</UserSecretsId>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Web" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>CoreRentalNet.Agents</RootNamespace>
+    <AssemblyName>CoreRentalNet.Agents</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- NU1903/NU1605: the Agent Framework hosting package is preview, and its transitive graph
+         reports advisories and downgrades that do not apply to a deliberately pinned preview set. -->
+    <NoWarn>$(NoWarn);NU1903;NU1605</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Agent Framework hosting: AgentHost, AddFoundryResponses, MapFoundryResponses -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry.Hosting" Version="1.20.0-preview.260831.1" />
+    <!-- Agent Framework core + the workflow the two agents are composed in -->
+    <PackageReference Include="Microsoft.Agents.AI.Foundry" Version="1.20.0-preview.260831.1" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.20.0" />
+    <!-- The MCP client the catalogue's tools are discovered through. Pinned to the same major as the
+         catalogue's server, so one protocol has one version on both sides of the wire. -->
+    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
+    <!-- Foundry SDK: AIProjectClient and AsAIAgent -->
+    <PackageReference Include="Azure.AI.Projects" Version="3.0.0-beta.2" />
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <!-- Local .env loading for development only -->
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Prompts travel with the binary. A hosted agent is deployed as a zipped project folder, and a
+         prompt that did not ship would let the agent start and then fail to find its own instructions.
+         The version lives in the file name, and EmbeddedInstructionSource derives it from there. -->
+    <EmbeddedResource Include="Features/**/*.md" LogicalName="CoreRentalNet.Agents.Prompts.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The tests exercise internal seams (the instruction source, the agent registration) rather than
+         widening them to public for the sake of a test. -->
+    <InternalsVisibleTo Include="CoreRentalNet.Agents.Tests" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.Web" />
+
+</Project>

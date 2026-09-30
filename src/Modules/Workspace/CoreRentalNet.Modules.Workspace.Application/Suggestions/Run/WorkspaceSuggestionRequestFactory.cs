@@ -22,14 +22,18 @@ public sealed class WorkspaceSuggestionRequestFactory(
     IProductCatalogService productCatalogService,
     WorkspaceSlotSettings workspaceSlotSettings) : IWorkspaceSuggestionRequestFactory
 {
-    public WorkspaceSuggestionRequestPayload Create(WorkspaceSuggestionQuery suggestionQuery, string accessToken)
+    /// <remarks>
+    /// <b>Nothing here is a secret.</b> The caller's token used to be a member of this payload; it now travels on
+    /// the invocation, so the run's document is the sentence, the rules and the currency — and there is no rule
+    /// left to remember about keeping a credential out of the hash.
+    /// </remarks>
+    public WorkspaceSuggestionRequestPayload Create(WorkspaceSuggestionQuery suggestionQuery)
         => new(
             RunId: Guid.NewGuid().ToString("n"),
             Query: suggestionQuery.Query.Trim(),
             Currency: CurrencyOf(productCatalogService.All),
             CeilingMonthly: suggestionQuery.CeilingMonthly,
-            Slots: EverySlotRule(),
-            McpAccessToken: accessToken);
+            Slots: EverySlotRule());
 
     /// <summary>The currency a run thinks in, read from the catalogue's own products.</summary>
     private static string CurrencyOf(IReadOnlyList<ProductView> everyProduct)

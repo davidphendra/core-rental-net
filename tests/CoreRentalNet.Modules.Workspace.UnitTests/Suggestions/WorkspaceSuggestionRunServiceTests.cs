@@ -8,7 +8,10 @@ namespace CoreRentalNet.Modules.Workspace.UnitTests.Suggestions;
 
 public sealed class WorkspaceSuggestionRunServiceTests
 {
-    [Fact] // the stages, then the answer; and one record, whichever way it ended
+    /// <summary>The caller's own token, which the run states on the invocation.</summary>
+    private const string TheCallersToken = "header.eyJzdWIiOiJjdXN0b21lci0xIn0.signature";
+
+    [Fact] // the answer, and one record, whichever way it ended
     public async Task A_run_writes_its_stages_then_its_answer_and_one_record()
     {
         var writer = new RecordingWorkspaceSuggestionEventWriter();
@@ -17,11 +20,12 @@ public sealed class WorkspaceSuggestionRunServiceTests
             WorkspaceSuggestionAnswerStatus.Suggested,
             [WorkspaceSuggestionRunStateTests.Candidate()]));
 
-        await service.RunSuggestionAsync(Payload(), writer, "CUSTOMER", CancellationToken.None);
+        await service.RunSuggestionAsync(Payload(), TheCallersToken, writer, "CUSTOMER", CancellationToken.None);
 
-        writer.Events[0].Should().BeOfType<WorkspaceSuggestionStageStreamEvent>();
-        writer.Events[1].Should().BeOfType<WorkspaceSuggestionStageStreamEvent>();
-        writer.Events[2].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        // The run writes the answer and nothing else: the stages are the agent's to announce, because only the
+        // agent knows how many attempts a run took.
+        writer.Events.Should().ContainSingle();
+        writer.Events[0].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
 
         records.Records.Should().ContainSingle();
         records.Records[0].Verdict.Should().Be(WorkspaceSuggestionVerdict.Suggested);
@@ -41,7 +45,7 @@ public sealed class WorkspaceSuggestionRunServiceTests
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
 
-        await service.RunSuggestionAsync(Payload(), writer, "CUSTOMER", cancellation.Token);
+        await service.RunSuggestionAsync(Payload(), TheCallersToken, writer, "CUSTOMER", cancellation.Token);
 
         records.Records.Should().ContainSingle();
         records.Records[0].Verdict.Should().Be(WorkspaceSuggestionVerdict.Stopped);
@@ -61,5 +65,5 @@ public sealed class WorkspaceSuggestionRunServiceTests
             records);
 
     private static WorkspaceSuggestionRequestPayload Payload()
-        => new("run", "a desk", "IDR", null, [], null);
+        => new("run", "a desk", "IDR", null, []);
 }

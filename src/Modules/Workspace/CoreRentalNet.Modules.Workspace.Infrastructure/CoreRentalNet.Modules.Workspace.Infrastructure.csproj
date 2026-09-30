@@ -11,11 +11,20 @@
     <PackageReference Include="Microsoft.Agents.AI.Foundry" />
     <PackageReference Include="Azure.AI.Projects" />
     <PackageReference Include="Azure.Identity" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="OpenAI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The suggestion reader is internal to this project, and it is the seam where the provider's streamed wire
+         shape stops and the application's vocabulary begins. The integration tier is where that crossing is
+         asserted, because nothing else can reach it. -->
+    <InternalsVisibleTo Include="CoreRentalNet.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -41,11 +41,9 @@ public sealed class SuggestionEndpointTests(SuggestionEndpointFactory factory, I
 
         output.WriteLine(frames);
 
-        // The application's own words, in its own order. No agent is configured in this environment, so the run
-        // reports itself unavailable rather than answering from memory - which is the outcome that proves the
-        // run reached the agent at all.
-        frames.Should().Contain("event: stage");
-        frames.Should().Contain("Reading your request");
+        // The stages are the agent's to announce, and no agent is configured in this environment, so the run
+        // reports itself unavailable with nothing before it - which is the outcome that proves the run reached
+        // the agent at all rather than answering from memory.
         frames.Should().Contain("event: failed");
         frames.Should().Contain(WorkspaceSuggestionFailureCode.Unavailable);
     }
@@ -103,7 +101,19 @@ public sealed class SuggestionEndpointTests(SuggestionEndpointFactory factory, I
     }
 
     /// <summary>Posts a run as the named permissions, with <c>null</c> posted as the JSON literal it is.</summary>
-    private async Task<HttpResponseMessage> PostAsync(string permission, object? body)
+    [Fact] // a run that cannot read the catalogue is refused before it is paid for
+    public async Task A_sign_in_without_a_token_for_this_api_is_refused_before_the_run_starts()
+    {
+        var response = await PostAsync(Permission, new { query = "a desk and a chair" }, withAccessToken: false);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        var problem = await response.Content.ReadAsStringAsync();
+
+        problem.Should().Contain("no token", "the refusal names the misconfiguration rather than the customer's mistake");
+    }
+
+    private async Task<HttpResponseMessage> PostAsync(string permission, object? body, bool withAccessToken = true)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, BuilderRoutes.Suggest)
         {
@@ -113,6 +123,11 @@ public sealed class SuggestionEndpointTests(SuggestionEndpointFactory factory, I
         };
 
         request.Headers.Add(CatalogApiTestHandler.PermissionsHeader, permission);
+
+        if (!withAccessToken)
+        {
+            request.Headers.Add(CatalogApiTestHandler.WithoutAccessTokenHeader, "true");
+        }
 
         return await factory.CreateClient().SendAsync(request);
     }

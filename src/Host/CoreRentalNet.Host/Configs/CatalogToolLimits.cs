@@ -1,6 +1,6 @@
 namespace CoreRentalNet.Host.Configs;
 
-/// <summary>What one MCP tool answer will carry, and how much of a sentence a tool will accept.</summary>
+/// <summary>What one MCP tool answer will carry, and what one MCP tool will accept.</summary>
 /// <remarks>
 /// <para>
 /// <b>Smaller than <see cref="CatalogApiLimits.Default"/> on purpose.</b> A tool answer is spent on a model's
@@ -15,15 +15,32 @@ namespace CoreRentalNet.Host.Configs;
 /// </remarks>
 internal static class CatalogToolLimits
 {
-    /// <summary>The rows a tool answer carries when the model names no limit.</summary>
-    public const int Default = 8;
+    /// <summary>The rows a tool answer carries when the caller names no limit.</summary>
+    public const int DefaultProductCount = 8;
 
-    /// <summary>The most a tool answer will carry, whatever the model asks for.</summary>
-    public const int Max = 25;
+    /// <summary>The most rows a tool answer will carry, whatever the caller asks for.</summary>
+    public const int MaximumProductCount = 25;
 
-    /// <summary>The longest term or sentence a tool will send to a search.</summary>
-    public const int MaxQueryLength = 400;
+    /// <summary>The longest one search term may be.</summary>
+    public const int MaximumSearchTermCharacterCount = 80;
+
+    /// <summary>The most terms one call will search with.</summary>
+    /// <remarks>
+    /// <b>The same number the agent's vocabulary-limit policy bounds one component to, and it cannot be stated
+    /// once.</b> The policy belongs to the agent's solution and this to the application's, so each side pins the
+    /// number with its own test and the contract is what keeps them equal.
+    /// <para>
+    /// It is eight because recall is already saturated well below it: measured over the real catalogue, three
+    /// terms within one category return the whole category, so a ninth buys almost nothing while it dilutes the
+    /// ranking the cap is spent on.
+    /// </para>
+    /// </remarks>
+    public const int MaximumSearchTermCount = 8;
+
+    /// <summary>The longest a single typed search text may be.</summary>
+    public const int MaximumSearchTextCharacterCount = 400;
 
     /// <summary>The requested cap, bounded so a caller cannot ask for the whole catalogue.</summary>
-    public static int Clamp(int limit) => limit < 1 ? Default : Math.Min(limit, Max);
+    public static int Clamp(int limit)
+        => limit < 1 ? DefaultProductCount : Math.Min(limit, MaximumProductCount);
 }

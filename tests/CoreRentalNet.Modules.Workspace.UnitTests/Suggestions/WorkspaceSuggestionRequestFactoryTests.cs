@@ -16,12 +16,12 @@ public sealed class WorkspaceSuggestionRequestFactoryTests
             new TestCatalogService().Add("DSK0001", 800_000),
             new WorkspaceSlotSettings(Monitor: 2));
 
-        var payload = factory.Create(new WorkspaceSuggestionQuery("  a desk and a chair  ", 1_500_000), "access-token");
+        var payload = factory.Create(new WorkspaceSuggestionQuery("  a desk and a chair  ", 1_500_000));
 
         payload.Query.Should().Be("a desk and a chair");
         payload.Currency.Should().Be("IDR");
         payload.CeilingMonthly.Should().Be(1_500_000);
-        payload.McpAccessToken.Should().Be("access-token");
+        // The token is not part of this document any more: it travels on the invocation.
         payload.Slots.Should().HaveCount(Enum.GetValues<SlotId>().Length);
         payload.Slots.Single(rule => rule.Slot is SlotId.Monitor).Capacity.Should().Be(2);
         payload.Slots.Single(rule => rule.Slot is SlotId.Desk).Capacity.Should().Be(1);
@@ -32,6 +32,6 @@ public sealed class WorkspaceSuggestionRequestFactoryTests
     {
         var factory = new WorkspaceSuggestionRequestFactory(new TestCatalogService(), new WorkspaceSlotSettings());
 
-        factory.Create(new WorkspaceSuggestionQuery("anything", null), string.Empty).Currency.Should().Be("IDR");
+        factory.Create(new WorkspaceSuggestionQuery("anything", null)).Currency.Should().Be("IDR");
     }
 }

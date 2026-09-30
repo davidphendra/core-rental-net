@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corerental/schemas/workspace-suggestion-event.schema.json",
+  "title": "Workspace suggestion event",
+  "description": "The run's streamed answer: a sequence of typed events rather than one document. A stage announces that it began and that it finished; an approved setup is streamed the moment the reviewer accepted it; a rejected attempt announces the next; and the run's ending is its own event, so a setup's arrival never implies a successful run. Nothing here is a model's raw words.",
+  "oneOf": [
+    { "$ref": "#/$defs/stageStarted" },
+    { "$ref": "#/$defs/stageCompleted" },
+    { "$ref": "#/$defs/candidate" },
+    { "$ref": "#/$defs/retry" },
+    { "$ref": "#/$defs/completed" }
+  ],
+  "$defs": {
+    "stageStarted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "customerWorkflowIdentifier", "processingStage"],
+      "properties": {
+        "type": { "const": "stageStarted" },
+        "customerWorkflowIdentifier": { "type": "string", "minLength": 1 },
+        "runUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelCalls", "inputTokens", "outputTokens", "model", "promptVersion"],
+      "description": "What the run cost, counted by the agent because a model cannot observe its own calls. Carried on the ending rather than as a separate object, so a reader finds it where it finds the outcome.",
+      "properties": {
+        "modelCalls": { "type": "integer", "minimum": 0 },
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "model": { "type": "string" },
+        "promptVersion": { "type": "string" }
+      }
+    },
+    "processingStage": { "$ref": "#/$defs/processingStage" }
+      }
+    },
+    "stageCompleted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "customerWorkflowIdentifier", "processingStage"],
+      "properties": {
+        "type": { "const": "stageCompleted" },
+        "customerWorkflowIdentifier": { "type": "string", "minLength": 1 },
+        "runUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelCalls", "inputTokens", "outputTokens", "model", "promptVersion"],
+      "description": "What the run cost, counted by the agent because a model cannot observe its own calls. Carried on the ending rather than as a separate object, so a reader finds it where it finds the outcome.",
+      "properties": {
+        "modelCalls": { "type": "integer", "minimum": 0 },
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "model": { "type": "string" },
+        "promptVersion": { "type": "string" }
+      }
+    },
+    "processingStage": { "$ref": "#/$defs/processingStage" }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "customerWorkflowIdentifier", "approvedWorkspaceSetup"],
+      "properties": {
+        "type": { "const": "candidate" },
+        "customerWorkflowIdentifier": { "type": "string", "minLength": 1 },
+        "approvedWorkspaceSetup": { "$ref": "#/$defs/setup" }
+      }
+    },
+    "retry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "customerWorkflowIdentifier", "nextAttemptNumber", "maximumAttemptCount"],
+      "properties": {
+        "type": { "const": "retry" },
+        "customerWorkflowIdentifier": { "type": "string", "minLength": 1 },
+        "nextAttemptNumber": { "type": "integer", "minimum": 1 },
+        "maximumAttemptCount": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "completed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "customerWorkflowIdentifier", "runStatus", "outcomeReason", "completedAttemptCount"],
+      "properties": {
+        "type": { "const": "completed" },
+        "customerWorkflowIdentifier": { "type": "string", "minLength": 1 },
+        "runStatus": { "enum": ["success", "rejected", "unavailable"] },
+        "outcomeReason": { "type": ["string", "null"] },
+        "completedAttemptCount": { "type": "integer", "minimum": 0 },
+        "runUsage": { "anyOf": [ { "$ref": "#/$defs/runUsage" }, { "type": "null" } ] }
+      }
+    },
+    "runUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modelCalls", "inputTokens", "outputTokens", "model", "promptVersion"],
+      "description": "What the run cost, counted by the agent because a model cannot observe its own calls. Carried on the ending rather than as a separate object, so a reader finds it where it finds the outcome.",
+      "properties": {
+        "modelCalls": { "type": "integer", "minimum": 0 },
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "model": { "type": "string" },
+        "promptVersion": { "type": "string" }
+      }
+    },
+    "processingStage": {
+      "enum": [
+        "verifyingRequest",
+        "rephrasingRequirement",
+        "retrievingCatalogueProducts",
+        "rerankingWorkspaceCandidates",
+          "composingWorkspaceSetups",
+        "validatingWorkspaceSetups",
+        "reviewingWorkspaceSetups"
+      ]
+    },
+    "setup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lines", "rationale"],
+      "properties": {
+        "lines": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/line" } },
+        "rationale": { "type": "string" }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slot", "sku", "name", "quantity", "amount", "why"],
+      "properties": {
+        "slot": { "enum": ["Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone"] },
+        "sku": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "quantity": { "type": "integer", "minimum": 1 },
+        "amount": { "type": "number", "minimum": 0 },
+        "why": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corerental/schemas/catalogue-retrieval.schema.json",
+  "title": "Catalogue retrieval",
+  "description": "The retriever's output and the pool's input: whether the catalogue could be searched, and what each search came back with. It carries NO PRODUCTS \u2014 the searches are recorded as they return, with every value the catalogue gave, so no model retypes product data. A search that found nothing because a budget excluded everything names the cheapest product it excluded, and that figure is how a bad allocation is corrected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "isAvailable",
+    "unavailableReason",
+    "searches"
+  ],
+  "properties": {
+    "isAvailable": {
+      "type": "boolean",
+      "description": "False when no tool was offered or a tool failed, so nothing was composed from memory."
+    },
+    "unavailableReason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "A one-line reason, present when isAvailable is false."
+    },
+    "searches": {
+      "type": "array",
+      "description": "One entry per search the retriever made, including the ones that found nothing.",
+      "items": {
+        "$ref": "#/$defs/componentSearchOutcome"
+      }
+    }
+  },
+  "$defs": {
+    "componentSearchOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "found"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "desk",
+            "chair",
+            "monitor",
+            "lamp",
+            "plant",
+            "bean_bag",
+            "coffee_machine"
+          ]
+        },
+        "found": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many products the search returned."
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The tool's own words when it found nothing, in particular when a budget excluded everything - it is the only place the cheapest matching product is stated."
+        }
+      }
+    }
+  }
+}

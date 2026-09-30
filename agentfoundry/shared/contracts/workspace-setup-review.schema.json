@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corerental/schemas/workspace-setup-review.schema.json",
+  "title": "Workspace setup review",
+  "description": "The reviewer's verdict on a composed setup set, and what a next attempt must satisfy when it is unacceptable. Validity only: whether another attempt runs is decided by deterministic code from this verdict and the attempt count, so there is no 'retry' value here and no SKU, product or price.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["isAcceptable", "issues", "summary"],
+  "properties": {
+    "isAcceptable": {
+      "type": "boolean",
+      "description": "True when every requested slot is answered within the stated ceiling by genuinely different setups."
+    },
+    "issues": {
+      "type": "array",
+      "maxItems": 4,
+      "description": "One entry per ground, each an instruction the next attempt can reinterpret. Empty when acceptable.",
+      "items": { "$ref": "#/$defs/reviewIssue" }
+    },
+    "summary": { "type": ["string", "null"], "description": "One line, when there is one." }
+  },
+  "$defs": {
+    "reviewIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issueCode", "requiredCorrectionDescription"],
+      "properties": {
+        "issueCode": {
+          "enum": [
+            "MISSING_SLOT",
+            "SLOT_PURPOSE_UNSATISFIED",
+            "MONTHLY_CEILING_EXCEEDED",
+            "SETUPS_NOT_DISTINCT",
+            "QUERY_MISMATCH",
+            "COMPONENT_BUDGET_EXCLUDES_ALL",
+            "BUDGET_ALLOCATION_EXCEEDS_TOTAL"
+          ]
+        },
+        "requiredCorrectionDescription": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What was not satisfied, in terms the rephraser can reinterpret. Never a replacement product."
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Domain;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 
@@ -18,9 +19,14 @@ public sealed class WorkspaceSuggestionResultReadyStreamEventHandler : IWorkspac
 
         var resultFrame = suggestionRunState.CompleteWithAgentAnswer(resultReadyAgentEvent);
 
+        // A run that streamed no frame is worded by how it ended: an unavailable catalogue is not an answer
+        // this application could not honour, and the customer is told the difference.
         await suggestionEventWriter.WriteAsync(
             resultFrame is null
-                ? new WorkspaceSuggestionFailedStreamEvent(WorkspaceSuggestionFailureCode.Invalid)
+                ? new WorkspaceSuggestionFailedStreamEvent(
+                    suggestionRunState.Verdict is WorkspaceSuggestionVerdict.Unavailable
+                        ? WorkspaceSuggestionFailureCode.Unavailable
+                        : WorkspaceSuggestionFailureCode.Invalid)
                 : new WorkspaceSuggestionResultStreamEvent(resultFrame),
             cancellationToken);
 

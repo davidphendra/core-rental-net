@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corerental/schemas/workspace-retrieval-requirement.schema.json",
+  "title": "Workspace retrieval requirement",
+  "description": "The rephraser's output and the retriever's input: what the workspace must be, what it may cost, and the words that find each part of it. It carries NO SKU, NO PRICE of a product and NO PRODUCT NAME, because deciding what is wanted and how to look for it is a different stage from choosing which product supplies it. Every one of the seven categories is always present; `relevant` says whether the customer asked for it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["original_query", "workspace_intent", "total_budget", "categories"],
+  "properties": {
+    "original_query": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The customer's sentence, echoed."
+    },
+    "workspace_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "style", "experience", "usage"],
+      "description": "What the whole workspace is for. Never a search query: the reviewer holds a composed set against it.",
+      "properties": {
+        "purpose": { "$ref": "#/$defs/intentPhrases" },
+        "style": { "$ref": "#/$defs/intentPhrases" },
+        "experience": { "$ref": "#/$defs/intentPhrases" },
+        "usage": { "$ref": "#/$defs/intentPhrases" }
+      }
+    },
+    "total_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount", "currency", "is_explicit"],
+      "description": "The monthly ceiling on the whole workspace, or nulls when no budget exists. A total is never derived.",
+      "properties": {
+        "amount": { "type": ["integer", "null"], "minimum": 0 },
+        "currency": { "type": ["string", "null"] },
+        "is_explicit": {
+          "type": "boolean",
+          "description": "True when the customer or the application stated it, false when no budget exists."
+        }
+      }
+    },
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "desk",
+        "chair",
+        "monitor",
+        "lamp",
+        "plant",
+        "bean_bag",
+        "coffee_machine"
+      ],
+      "description": "All seven, always present. A category the customer did not ask for is `relevant: false` with empty words.",
+      "properties": {
+        "desk": { "$ref": "#/$defs/componentExpansion" },
+        "chair": { "$ref": "#/$defs/componentExpansion" },
+        "monitor": { "$ref": "#/$defs/componentExpansion" },
+        "lamp": { "$ref": "#/$defs/componentExpansion" },
+        "plant": { "$ref": "#/$defs/componentExpansion" },
+        "bean_bag": { "$ref": "#/$defs/componentExpansion" },
+        "coffee_machine": { "$ref": "#/$defs/componentExpansion" }
+      }
+    }
+  },
+  "$defs": {
+    "intentPhrases": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "At most four phrases. Never a product and never a category's search words."
+    },
+    "componentExpansion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relevant", "retrieval_query", "search_terms", "synonyms", "semantic_concepts", "budget"],
+      "properties": {
+        "relevant": {
+          "type": "boolean",
+          "description": "True when the customer asked for this or strongly implied it. An unasked-for category is refused by the composition, not by the rephraser."
+        },
+        "retrieval_query": {
+          "type": "string",
+          "description": "One concise sentence stating what the customer needs this thing to do. The slot's purpose, and never a product."
+        },
+        "search_terms": {
+          "$ref": "#/$defs/searchWords",
+          "description": "The words this component's own request implies, as a catalogue would print them."
+        },
+        "synonyms": {
+          "$ref": "#/$defs/searchWords",
+          "description": "Other words a catalogue might use for the same thing."
+        },
+        "semantic_concepts": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Short phrases about purpose, style or situation - uses rather than things."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_amount", "currency", "is_explicit", "is_derived"],
+          "description": "The monthly ceiling on this component. Derived allocations are the rephraser's division of a total and are not to be confused with what a customer stated.",
+          "properties": {
+            "max_amount": { "type": ["integer", "null"], "minimum": 0 },
+            "currency": { "type": ["string", "null"] },
+            "is_explicit": { "type": "boolean" },
+            "is_derived": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "searchWords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80,
+        "description": "One to three words a catalogue title could contain. Never a sentence and never a product name."
+      },
+      "description": "At most eight words across search_terms and synonyms together, because more recall than eight buys nothing and costs the ranking."
+    }
+  }
+}

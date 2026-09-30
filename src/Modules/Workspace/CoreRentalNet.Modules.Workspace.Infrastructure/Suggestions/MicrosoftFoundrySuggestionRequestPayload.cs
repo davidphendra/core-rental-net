@@ -19,12 +19,9 @@ internal sealed record MicrosoftFoundrySuggestionRequestPayload(string Json, str
 
         var json = JsonSerializer.Serialize(suggestionRequestPayload, MicrosoftFoundrySuggestionAgentJson.Options);
 
-        // Hashed WITHOUT the run's access token: the hash identifies what the run was drawn from, and a
-        // per-run credential would make every run's hash unique and the value meaningless.
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(
-                suggestionRequestPayload with { McpAccessToken = null },
-                MicrosoftFoundrySuggestionAgentJson.Options)))).ToLowerInvariant();
+        // The bytes that are sent, hashed as they are: nothing in this payload is a per-run secret any more, so
+        // there is no field to take out first and no second serialization to keep in step with the first.
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
 
         return new MicrosoftFoundrySuggestionRequestPayload(json, hash);
     }

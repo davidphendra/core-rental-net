@@ -50,10 +50,15 @@ public sealed class ProductCatalogService : IProductCatalogService
         => _views.Where(view => view.IsFeatured).ToArray();
 
     /// <inheritdoc />
-    public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory)
+    public IReadOnlyList<ProductView> Search(
+        CatalogCategory? category,
+        CatalogSubCategory? subCategory,
+        decimal? maximumMonthlyAmount = null)
         =>
         [
             .. _views.Where(view => (category is null || view.Category == category)
-                                && (subCategory is null || view.SubCategory == subCategory)),
+                                && (subCategory is null || view.SubCategory == subCategory)
+                                && (maximumMonthlyAmount is null
+                                    || view.MonthlyPrice.Amount <= maximumMonthlyAmount)),
         ];
 }

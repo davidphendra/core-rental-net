@@ -82,7 +82,10 @@ public sealed class CheckoutTests
         public IReadOnlyList<ProductView> Featured()
             => views.Values.Where(view => view.IsFeatured).ToArray();
 
-        public IReadOnlyList<ProductView> Search(CatalogCategory? category, CatalogSubCategory? subCategory)
+        public IReadOnlyList<ProductView> Search(
+            CatalogCategory? category,
+            CatalogSubCategory? subCategory,
+            decimal? maximumMonthlyAmount = null)
             => views.Values.ToArray();
     }
 

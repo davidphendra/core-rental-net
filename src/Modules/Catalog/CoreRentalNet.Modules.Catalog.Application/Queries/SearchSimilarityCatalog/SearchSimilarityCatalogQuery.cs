@@ -15,7 +15,9 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchSimilarityCata
 /// <param name="Category">The category to narrow to, or null for all of them.</param>
 /// <param name="SubCategory">The subcategory to narrow to, or null for all of them.</param>
 /// <param name="Query">What the caller asked for, as a sentence.</param>
+/// <param name="MaximumMonthlyAmount">The most a product may cost each month, or null for no ceiling.</param>
 public sealed record SearchSimilarityCatalogQuery(
     CatalogCategory? Category,
     CatalogSubCategory? SubCategory,
-    string Query);
+    string Query,
+    decimal? MaximumMonthlyAmount = null);

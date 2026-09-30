@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://corerental/schemas/workspace-candidate-reranking.schema.json",
+  "title": "Workspace candidate reranking",
+  "description": "The reranker's output and the composition's input: which of the products a search returned answer each component's need, in the order they answer it best. It carries NO WORKSPACE, NO TOTAL and NO SLOT, because a product is not a workspace and the slot belongs to the search that returned it. Every one of the seven categories is always present; an empty list is a judgement that none of the products answer that component.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["categories"],
+  "properties": {
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "desk",
+        "chair",
+        "monitor",
+        "lamp",
+        "plant",
+        "bean_bag",
+        "coffee_machine"
+      ],
+      "properties": {
+        "desk": { "$ref": "#/$defs/componentAssessment" },
+        "chair": { "$ref": "#/$defs/componentAssessment" },
+        "monitor": { "$ref": "#/$defs/componentAssessment" },
+        "lamp": { "$ref": "#/$defs/componentAssessment" },
+        "plant": { "$ref": "#/$defs/componentAssessment" },
+        "bean_bag": { "$ref": "#/$defs/componentAssessment" },
+        "coffee_machine": { "$ref": "#/$defs/componentAssessment" }
+      }
+    }
+  },
+  "$defs": {
+    "componentAssessment": {
+      "type": "array",
+      "description": "This component's products, most relevant first. The order is the ranking.",
+      "items": { "$ref": "#/$defs/productAssessment" }
+    },
+    "productAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sku", "relevance", "reason"],
+      "properties": {
+        "sku": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A SKU from the products this component was given, exactly as it was written. A SKU that was not given is dropped."
+        },
+        "relevance": {
+          "enum": ["high", "medium", "low"],
+          "description": "How directly the product answers this component's need."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One clause about the need, in the composer's terms. Never a price, a product name or the customer's sentence."
+        }
+      }
+    }
+  }
+}

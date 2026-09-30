@@ -75,13 +75,23 @@ internal sealed class BuilderController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
     public async Task Suggest([FromBody] WorkspaceSuggestionQueryRequest suggestionQueryRequest)
     {
-        // Forwarded rather than checked, and named for the record by a hash: see the remarks.
-        var accessToken = await HttpContext.GetAccessTokenAsync().ConfigureAwait(false) ?? string.Empty;
+        // Read from the sign-in session, on the one request that has one, and forwarded rather than checked: the
+        // catalogue answers for the token itself when the agent presents it.
+        var callerAccessToken = await HttpContext.GetAccessTokenAsync().ConfigureAwait(false);
+
+        // Refused before the stream opens and before a run is paid for. A run without the caller's token cannot
+        // read the catalogue at all, so this is a misconfiguration being reported as one rather than a run being
+        // charged for and quietly failing at the far end.
+        if (string.IsNullOrWhiteSpace(callerAccessToken))
+        {
+            await RefuseBecauseTheSignInCarriedNoTokenAsync();
+
+            return;
+        }
 
         // Built before the stream opens, so a payload that cannot be built is still a status code.
         var suggestionRequestPayload = suggestionRequestFactory.Create(
-            new WorkspaceSuggestionQuery(suggestionQueryRequest.Query!, suggestionQueryRequest.CeilingMonthly),
-            accessToken);
+            new WorkspaceSuggestionQuery(suggestionQueryRequest.Query!, suggestionQueryRequest.CeilingMonthly));
 
         var suggestionEventWriter = await ServerSentWorkspaceSuggestionEventWriter.BeginAsync(
             Response,
@@ -89,8 +99,32 @@ internal sealed class BuilderController(
 
         await suggestionRunService.RunSuggestionAsync(
             suggestionRequestPayload,
+            callerAccessToken,
             suggestionEventWriter,
             User.HashCustomerIdentity(),
+            HttpContext.RequestAborted);
+    }
+
+    /// <summary>Refuses a run the caller's sign-in gave no token for, as a status code and a problem body.</summary>
+    /// <remarks>
+    /// <b>Written rather than returned, because this action returns no result.</b> It holds the response open for
+    /// the run, and a result that is never executed sets nothing — so <c>Problem(...)</c> here would leave the
+    /// response a success and hand the customer an empty stream instead of a refusal.
+    /// </remarks>
+    private async Task RefuseBecauseTheSignInCarriedNoTokenAsync()
+    {
+        Response.StatusCode = StatusCodes.Status403Forbidden;
+        Response.ContentType = ProblemJson;
+
+        await Response.WriteAsJsonAsync(
+            new ProblemDetails
+            {
+                Status = StatusCodes.Status403Forbidden,
+                Detail = "This sign-in carried no token for the application's API, so a workspace suggestion " +
+                         "cannot be run.",
+            },
+            options: null,
+            contentType: ProblemJson,
             HttpContext.RequestAborted);
     }
 }
