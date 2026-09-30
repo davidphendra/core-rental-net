@@ -151,8 +151,8 @@ src/CoreRentalNet.Agents/
 ├── Shared/                        reused by every feature
 │   ├── Agents/          AgentProfile · AgentFactory
 │   ├── Configuration/   HostedAgentName
-│   ├── Mcp/             caller-authorised MCP: settings · connection · chat client ·
-│   │                    token service · request splitter
+│   ├── Mcp/             caller-authorised MCP: header reader · per-call token holder ·
+│   │                    connection · chat client · attachment handler · request policy
 │   ├── Model/           model client · telemetry · guardrail · transport options · run usage
 │   ├── Prompts/         embedded instruction source
 │   ├── Serialization/   ContractJson
@@ -196,7 +196,7 @@ Found by building against the pinned packages, not assumed:
 
 | Concern | Where | Note |
 |---|---|---|
-| The caller's credential | `CallerAuthorisedMcpChatClient<TRequest>` | lifts the token out of the request before the model can read it; never logged |
+| The caller's credential | `CallerAccessTokenHeaderReader` → `IMcpAccessTokenService` → `CallerCatalogueAccessTokenAttachmentHandler` | read once off the invocation, held for the call, stamped on each MCP request; never logged |
 | Catalogue tools | the same decorator | offered only to a stage that declares `UsesCatalogueTools` |
 | Run cost | `AgentRunUsageAccumulator` | scoped to the run; counted where the calls are observed, and reported on the `completed` event |
 | Model telemetry | `ModelCallTelemetryChatClient` | one span and one line per call, per stage |
@@ -392,7 +392,8 @@ With an explicit request, which is the shape that carries the token, the ceiling
 
 ```bash
 curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
-  -d '{"model":"core-rental-workspace-suggestion-agent","input":"{\"runId\":\"r1\",\"query\":\"a desk and a chair under 500000\",\"currency\":\"IDR\",\"ceilingMonthly\":500000,\"slots\":[{\"slot\":\"Desk\",\"capacity\":1},{\"slot\":\"Chair\",\"capacity\":1}],\"mcpAccessToken\":\"<the caller's token>\"}","stream":true}' \
+  -H 'x-client-mcp-catalog-access-token: <the caller's token>' \
+  -d '{"model":"core-rental-workspace-suggestion-agent","input":"{\"runId\":\"r1\",\"query\":\"a desk and a chair under 500000\",\"currency\":\"IDR\",\"ceilingMonthly\":500000,\"slots\":[{\"slot\":\"Desk\",\"capacity\":1},{\"slot\":\"Chair\",\"capacity\":1}]}","stream":true}' \
   http://127.0.0.1:8088/responses
 ```
 
@@ -407,7 +408,8 @@ A run streams one typed event per line, in order:
  "runUsage":{"modelCalls":11,"inputTokens":9541,"outputTokens":844,"model":"gpt-4.1-mini","promptVersion":"…"}}
 ```
 
-The token is required: the agent searches the catalogue **as the caller**, so a run without one reports
+The token is required, and it travels on the invocation rather than in the body: the agent searches the catalogue
+**as the caller**, so a run whose request carries no `x-client-mcp-catalog-access-token` header reports
 `unavailable` rather than composing from memory.
 
 ### 4.6 End-to-end against the real catalogue

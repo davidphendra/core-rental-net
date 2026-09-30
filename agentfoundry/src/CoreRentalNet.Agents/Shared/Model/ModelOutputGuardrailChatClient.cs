@@ -7,7 +7,7 @@ namespace CoreRentalNet.Agents.Shared.Model;
 /// <summary>Fails a stage's model call whose answer repeats the caller's catalogue token.</summary>
 /// <remarks>
 /// <para>
-/// The token is lifted out of the request before any stage sees it, so a model that can echo it has seen it -
+/// The token is read off the invocation and never enters a message, so a model that can echo it has seen it -
 /// and a token in a model's answer is a token on its way to a customer. This is the one guardrail worth failing
 /// a run for: it cannot fire on a well-behaved model, and it is the difference between a leak and a failed run.
 /// </para>

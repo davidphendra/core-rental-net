@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
 using Xunit;
@@ -98,6 +99,58 @@ public sealed class ContractSchemaTests
             }
         }
     }
+
+    [Fact] // the copied schema is the artifact a reader or a package gets, and a stale copy is how the field came back
+    public void The_request_schema_that_was_copied_carries_no_credential_member()
+    {
+        var copiedSchema = Path.Combine(AppContext.BaseDirectory, "contracts", "suggestion.request.schema.json");
+
+        File.Exists(copiedSchema).Should().BeTrue("the schema is copied to the output, and the rule is checked there");
+
+        using var requestSchema = JsonDocument.Parse(File.ReadAllText(copiedSchema));
+
+        var declaredNames = requestSchema.RootElement
+            .GetProperty("properties")
+            .EnumerateObject()
+            .Select(property => property.Name)
+            .ToArray();
+
+        declaredNames.Should().Contain("query", "the scan must read the real request properties or it proves nothing");
+        declaredNames.Where(IsNamedLikeACredential).Should().BeEmpty(
+            "the caller's token travels on the invocation, and a schema that declares it puts it back in the payload");
+    }
+
+    [Fact] // the same rule over the compiled type, which is what a run actually serializes
+    public void The_request_type_the_agent_deserializes_declares_no_credential_member()
+    {
+        var declaredNames = typeof(SuggestionRequest).GetProperties().Select(property => property.Name).ToArray();
+
+        declaredNames.Should().Contain(
+            nameof(SuggestionRequest.Query),
+            "the scan must read the real request members or it proves nothing");
+        declaredNames.Where(IsNamedLikeACredential).Should().BeEmpty(
+            "a member named like a credential is a declaration that a secret travels in the message");
+    }
+
+    /// <summary>Whether a declared name says a credential rather than counting one.</summary>
+    /// <remarks>
+    /// The last word is the noun. <c>inputTokens</c> and <c>outputTokens</c> are counts of what a model read and
+    /// wrote, so a rule that matched the word anywhere would fail on those; a name whose final word is
+    /// <c>Token</c>, <c>Secret</c>, <c>Password</c> or <c>Credential</c> is claiming to carry one.
+    /// </remarks>
+    private static bool IsNamedLikeACredential(string declaredName)
+    {
+        var lastWord = DeclaredNameWordBoundary
+            .Split(declaredName)
+            .LastOrDefault(word => word.Length > 0);
+
+        return lastWord is not null
+            && new[] { "token", "secret", "password", "credential" }
+                .Contains(lastWord, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Where one word ends and the next begins: before a capital, and at a separator.</summary>
+    private static readonly Regex DeclaredNameWordBoundary = new(@"(?<!^)(?=[A-Z])|[_-]", RegexOptions.Compiled);
 
     /// <summary>Every enum in a schema document, with the path it sits at.</summary>
     private static IEnumerable<(string Path, IReadOnlyList<string> Members)> Enums(string json)

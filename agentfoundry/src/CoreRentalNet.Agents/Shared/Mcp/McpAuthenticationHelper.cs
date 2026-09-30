@@ -59,34 +59,53 @@ internal static class McpAuthenticationHelper
                     // somewhere else.
                     Name = mcpEndpointUri.ToString(),
                 },
-                new HttpClient(
-                    // A DelegatingHandler must be given the terminal handler it delegates to, or the first
-                    // request fails with "The inner handler has not been assigned."
-                    new CallerCatalogueAccessTokenAttachmentHandler(
-                        mcpAccessTokenService,
-                        catalogueServerRequestPolicy,
-                        loggerFactory.CreateLogger<CallerCatalogueAccessTokenAttachmentHandler>())
-                    {
-                        InnerHandler = new SocketsHttpHandler
-                        {
-                            UseCookies = false,
-                            AllowAutoRedirect = false,
-                            PooledConnectionLifetime = PooledConnectionLifetime,
-
-                            // The MAF sample states this as HttpClientHandler.CheckCertificateRevocationList;
-                            // SocketsHttpHandler — which pools better, and is what this transport uses — carries
-                            // the same setting on its TLS options, and its default is to check nothing.
-                            SslOptions = new System.Net.Security.SslClientAuthenticationOptions
-                            {
-                                CertificateRevocationCheckMode = X509RevocationMode.Online,
-                            },
-                        },
-                    })
-                {
-                    Timeout = CallTimeout,
-                },
+                BuildTheClientThatPresentsTheCallersToken(
+                    mcpAccessTokenService, catalogueServerRequestPolicy, loggerFactory),
                 loggerFactory,
                 ownsHttpClient: true),
             cancellationToken: cancellationToken);
     }
+
+    /// <summary>The client the transport is handed: the token handler over the terminal handler it delegates to.</summary>
+    /// <remarks>
+    /// Stated apart from <see cref="ConnectAsync"/> so what the transport is protected by can be read and asserted
+    /// without a network. It is a credential's whole safety on this side: one server, over TLS, with no redirect
+    /// and no cookie jar to carry it anywhere else.
+    /// </remarks>
+    internal static HttpClient BuildTheClientThatPresentsTheCallersToken(
+        IMcpAccessTokenService mcpAccessTokenService,
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILoggerFactory loggerFactory)
+        => new(BuildTheTokenAttachmentHandler(mcpAccessTokenService, catalogueServerRequestPolicy, loggerFactory))
+        {
+            Timeout = CallTimeout,
+        };
+
+    /// <summary>The handler that attaches the token, over the terminal handler it delegates to.</summary>
+    internal static CallerCatalogueAccessTokenAttachmentHandler BuildTheTokenAttachmentHandler(
+        IMcpAccessTokenService mcpAccessTokenService,
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILoggerFactory loggerFactory)
+        // A DelegatingHandler must be given the terminal handler it delegates to, or the first request fails
+        // with "The inner handler has not been assigned."
+        => new(
+            mcpAccessTokenService,
+            catalogueServerRequestPolicy,
+            loggerFactory.CreateLogger<CallerCatalogueAccessTokenAttachmentHandler>())
+        {
+            InnerHandler = new SocketsHttpHandler
+            {
+                UseCookies = false,
+                AllowAutoRedirect = false,
+                PooledConnectionLifetime = PooledConnectionLifetime,
+
+                // The MAF sample states this as HttpClientHandler.CheckCertificateRevocationList;
+                // SocketsHttpHandler — which pools better, and is what this transport uses — carries the same
+                // setting on its TLS options, and its default is to check nothing.
+                SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+                {
+                    CertificateRevocationCheckMode = X509RevocationMode.Online,
+                },
+            },
+        };
 }

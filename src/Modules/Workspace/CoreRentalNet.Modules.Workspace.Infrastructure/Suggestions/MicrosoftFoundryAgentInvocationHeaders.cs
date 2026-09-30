@@ -16,5 +16,5 @@ namespace CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 public static class MicrosoftFoundryAgentInvocationHeaders
 {
     /// <summary>The caller's own catalogue token, for the one run being started.</summary>
-    public const string CallerAccessToken = "x-client-caller-access-token";
+    public const string CallerAccessToken = "x-client-mcp-catalog-access-token";
 }

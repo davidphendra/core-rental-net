@@ -56,6 +56,19 @@ public sealed class NoWireContractCarriesASecretTests
             .Should().BeTrue("the rule outlived the exception, so the contract it guards must still be there to check");
     }
 
+    [Fact] // the schema is the agreement and the record is what fills it: a member named like a credential fails here too
+    public void No_wire_type_declares_a_json_member_that_is_a_secret()
+    {
+        var declaredNames = DeclaredJsonMemberNamesInEveryWireType().ToArray();
+
+        // Guards against the rule passing because it read nothing: both are declared by the request the
+        // application sends and the agent reads, so finding them proves the scan reached real records.
+        declaredNames.Should().Contain("runId").And.Contain("query");
+
+        declaredNames.Where(IsNamedLikeACredential).Should().BeEmpty(
+            "a wire member named like a credential is a declaration that a secret travels in a message");
+    }
+
     /// <summary>Whether a declared name says a credential rather than counting one.</summary>
     /// <remarks>
     /// <b>The last word is the noun, and that is the whole rule.</b> The run's usage is published as
@@ -78,6 +91,9 @@ public sealed class NoWireContractCarriesASecretTests
     /// <summary>Where one word ends and the next begins: before a capital, and at a separator.</summary>
     private static readonly Regex DeclaredNameWordBoundary = new(@"(?<!^)(?=[A-Z])|[_-]", RegexOptions.Compiled);
 
+    /// <summary>One declared wire name, read from the attribute that puts it on the wire.</summary>
+    private static readonly Regex JsonPropertyNameDeclaration = new(@"JsonPropertyName\(""([^""]+)""\)", RegexOptions.Compiled);
+
     /// <summary>Every member name declared by every published contract, qualified by its file.</summary>
     private static IEnumerable<string> DeclaredMemberNamesInEveryContract()
     {
@@ -93,6 +109,31 @@ public sealed class NoWireContractCarriesASecretTests
             foreach (var declaredName in declaredNames)
             {
                 yield return $"{Path.GetFileName(contractFile)}: {declaredName}";
+            }
+        }
+    }
+
+    /// <summary>Every JSON member name declared by a wire record, over the C# that fills the schemas.</summary>
+    /// <remarks>
+    /// The schema test above reads the agreement; this reads the code that produces it. A member added to a record
+    /// and not to its schema is exactly the drift that would otherwise reach the wire unnoticed, and it is
+    /// invisible to a check that only ever reads schemas.
+    /// </remarks>
+    private static IEnumerable<string> DeclaredJsonMemberNamesInEveryWireType()
+    {
+        var wireDirectories = new[]
+        {
+            RepoRoot.Combine("agentfoundry", "src", "CoreRentalNet.Agents", "Features", "WorkspaceSuggestion", "Domain", "Wire"),
+            RepoRoot.Combine("src", "Modules", "Workspace", "CoreRentalNet.Modules.Workspace.Application", "Suggestions", "Agent"),
+        };
+
+        foreach (var file in wireDirectories
+                     .Where(Directory.Exists)
+                     .SelectMany(directory => Directory.GetFiles(directory, "*.cs")))
+        {
+            foreach (Match declared in JsonPropertyNameDeclaration.Matches(File.ReadAllText(file)))
+            {
+                yield return declared.Groups[1].Value;
             }
         }
     }

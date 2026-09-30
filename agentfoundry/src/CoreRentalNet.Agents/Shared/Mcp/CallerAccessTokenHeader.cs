@@ -10,5 +10,5 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// </remarks>
 internal static class CallerAccessTokenHeader
 {
-    public const string Name = "x-client-caller-access-token";
+    public const string Name = "x-client-mcp-catalog-access-token";
 }

@@ -94,8 +94,8 @@ Console.WriteLine("[startup] model client built; registering the features");
 
 builder.Services.AddSingleton(modelClient);
 
-// Shared plumbing: one token per call, lifted out of the request before a model can read it, and presented to
-// whichever MCP server a feature searches.
+// Shared plumbing: one token per call, read from the invocation's own header before a model is involved, and
+// presented to whichever MCP server a feature searches.
 builder.Services.AddScoped<IMcpAccessTokenService, McpAccessTokenService>();
 
 // The features this deployable serves. A new feature is a new line here and a folder under Features/.

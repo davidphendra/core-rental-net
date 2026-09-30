@@ -12,8 +12,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// A stage that is shown something it does not need is a stage that can act on it. The verifier is shown the
 /// sentence and the slot rules; the composer is shown the expansion and the retrieved products, never the
 /// catalogue; the reviewer is shown the sentence, the expansion, what the searches came back with, and the
-/// setups. The caller's token is never in any of these, because it was lifted out of the request before the run
-/// began.
+/// setups. The caller's token is never in any of these, because it is read from the invocation's own header and
+/// never entered a message.
 /// </para>
 /// <para>
 /// <b>Two of these carry a crossing the stage must not have to work out for itself.</b> The rephraser is told

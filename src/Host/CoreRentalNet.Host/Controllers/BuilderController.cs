@@ -61,8 +61,9 @@ internal sealed class BuilderController(
     /// <para>
     /// <b>The customer's own token is forwarded, not checked.</b> The gate above answered whether this caller may
     /// run at all; the catalogue answers for the token itself when the agent presents it, and only the agent can
-    /// tell "no token" from "a token the catalogue refused". The agent takes it out of the model's input before
-    /// the run, so what reaches the prompt is the sentence and the slot rules and nothing else.
+    /// tell "no token" from "a token the catalogue refused". The agent reads it off the invocation's own
+    /// `x-client-mcp-catalog-access-token` header one layer down, so what reaches the prompt is the sentence and
+    /// the slot rules and nothing else.
     /// </para>
     /// </remarks>
     [HttpPost]
