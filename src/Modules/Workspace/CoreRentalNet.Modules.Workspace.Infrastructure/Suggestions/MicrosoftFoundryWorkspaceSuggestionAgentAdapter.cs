@@ -56,11 +56,6 @@ public sealed class MicrosoftFoundryWorkspaceSuggestionAgentAdapter : IWorkspace
 
         var text = new StringBuilder();
 
-        // The token is scoped to the run rather than placed in it: every request this run sends reads it from
-        // here as it is built, and the scope is disposed with the stream — so the token's life in this process is
-        // the run's and nothing longer.
-        using var callerAccessTokenForTheRun = CallerAccessTokenForTheRunScope.CarryTheTokenOf(callerAccessToken);
-
         await foreach (var raised in RelayStream(agent, payload.Json, text, cancellationToken))
         {
             // A failure ends the run here: the stream is not read on after the agent has said it could not answer.
