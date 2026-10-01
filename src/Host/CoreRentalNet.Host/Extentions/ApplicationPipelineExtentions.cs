@@ -1,5 +1,4 @@
 using CoreRentalNet.Host.Configs;
-using CoreRentalNet.Host.Controllers;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
 
@@ -24,7 +23,7 @@ internal static class ApplicationPipelineExtentions
         UseApiResponses(app);
         UseRevalidatingStaticFiles(app);
         UseIdentity(app, identity);
-        UseApplicationEndpoints(app, identity);
+        UseApplicationEndpoints(app);
 
         app.UseMiddleware<DraftTokenMiddleware>();
         app.UseAntiforgery();
@@ -69,7 +68,13 @@ internal static class ApplicationPipelineExtentions
     }
 
     /// <summary>The routes the application answers, and the ones a deployment may not have.</summary>
-    private static void UseApplicationEndpoints(WebApplication app, IdentitySettings identity)
+    /// <remarks>
+    /// The ones a deployment may not have are the document and the page that reads it, which are published in
+    /// development only. The account routes are not among them any more: they are a controller, discovered and
+    /// mapped like every other, and a deployment with no provider answers them by refusing rather than by not
+    /// publishing them. The gate is the controller's own, which is where the sign-in it starts is decided.
+    /// </remarks>
+    private static void UseApplicationEndpoints(WebApplication app)
     {
         // Mapped always, provider or not: with no provider the catalogService policy opens the endpoint,
         // exactly as it opens the store page, and with one the request is refused before it arrives.
@@ -78,13 +83,6 @@ internal static class ApplicationPipelineExtentions
         app.MapControllers();
         MapDevelopmentDocumentation(app);
         MapCatalogMcp(app);
-
-        if (identity.IsConfigured)
-        {
-            // Mapped only when there is an identity provider, so an unconfigured deployment has no
-            // account routes at all.
-            AccountController.MapEndpoints(app);
-        }
     }
 
     /// <summary>
