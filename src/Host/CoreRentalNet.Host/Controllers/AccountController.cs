@@ -33,6 +33,9 @@ namespace CoreRentalNet.Host.Controllers;
 [ApiController]
 internal sealed class AccountController(IdentitySettings identity) : ControllerBase
 {
+    /// <summary>The refusal shape the framework writes this controller's client errors in, named rather than left to the formatters.</summary>
+    private const string ProblemJson = "application/problem+json";
+
     /// <summary>Where the identity provider returns the browser after signing in.</summary>
     /// <remarks>
     /// The only address of ours the tenant has to be told about. Sign-out does not come back to a route here: the
@@ -48,6 +51,8 @@ internal sealed class AccountController(IdentitySettings identity) : ControllerB
 
     /// <summary>Starts a sign-in at the provider, and returns the browser to where it was going.</summary>
     [HttpGet(SignInPath)]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, ProblemJson)]
     public IActionResult Login([FromQuery] string? returnUrl)
         => ThereIsAProviderToSignInAt
             ? Challenge(
@@ -62,6 +67,8 @@ internal sealed class AccountController(IdentitySettings identity) : ControllerB
     /// sends the browser back to the root, so both schemes are named.
     /// </remarks>
     [HttpGet(SignOutPath)]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, ProblemJson)]
     public IActionResult Logout()
         => ThereIsAProviderToSignInAt
             ? SignOut(

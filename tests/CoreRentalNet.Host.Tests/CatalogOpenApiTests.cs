@@ -179,6 +179,36 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
     }
 
     [Fact] // API-18
+    public async Task The_document_says_the_account_routes_redirect_and_what_a_refusal_is()
+    {
+        using var document = await GetDocumentAsync();
+
+        var paths = document.RootElement.GetProperty("paths");
+        var declared = new List<string>();
+
+        // Declared on the action, because nothing about a ChallengeResult tells the document what status it
+        // produces - left to itself the operation claims the default 200, which is a status neither route
+        // ever answers. The path is read through the controller's own constant, which is also its route
+        // template, so the two cannot disagree; API-18 above reads the addresses as literals, which is what
+        // catches a constant that moves.
+        foreach (var route in new[] { AccountController.SignInPath, AccountController.SignOutPath })
+        {
+            var responses = paths.GetProperty(route).GetProperty("get").GetProperty("responses");
+
+            responses.TryGetProperty("302", out _).Should().BeTrue($"'{route}' redirects to the provider");
+
+            // The refusal a deployment with no provider answers with. It is problem details because the
+            // controller carries [ApiController], so the document and the response agree.
+            responses.TryGetProperty("404", out var refusal).Should().BeTrue($"'{route}' refuses with no provider");
+            ContentTypes(refusal).Should().Equal("application/problem+json");
+
+            declared.Add(route);
+        }
+
+        declared.Should().HaveCount(2, "both account routes are described, not just the one that was checked");
+    }
+
+    [Fact] // API-18
     public async Task The_requirement_is_the_permission_the_gate_checks()
     {
         using var document = await GetDocumentAsync();
