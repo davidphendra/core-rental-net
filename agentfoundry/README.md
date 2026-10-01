@@ -196,7 +196,7 @@ Found by building against the pinned packages, not assumed:
 
 | Concern | Where | Note |
 |---|---|---|
-| The caller's credential | `CallerAccessTokenHeaderReader` → `IMcpAccessTokenService` → `CallerCatalogueAccessTokenAttachmentHandler` | read once off the invocation, held for the call, stamped on each MCP request; never logged |
+| The caller's credential | `AccessTokenHeaderReader` → `IMcpAccessTokenService` → `McpAccessTokenHandler` | read once off the invocation, held for the call, stamped on each MCP request; never logged |
 | Catalogue tools | the same decorator | offered only to a stage that declares `UsesCatalogueTools` |
 | Run cost and model telemetry | `ModelCallTelemetryChatClient` | scoped to the run; the innermost decorator, wrapping the guardrail; one span and one line per call, the stage named by the call's options, and the run's total reported on the `completed` event |
 | Token-leak guardrail | `ModelOutputGuardrailChatClient` | fails the run loudly if an answer ever repeats the caller's token |

@@ -16,7 +16,7 @@ namespace CoreRentalNet.Host.Tests;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="CatalogReadAuthorizationHandlerTests"/> proves the rule. But the authorization
+/// <see cref="ClaimAuthorizationHandlerTests"/> proves the rule. But the authorization
 /// service knows nothing about this policy until <c>AddCatalogAuthorization</c> registers it, and
 /// nothing yet asserted that the name
 /// <see cref="CatalogPolicy.Name"/> resolves, that the requirement reaches the handler, or that the

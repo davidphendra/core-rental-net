@@ -15,8 +15,8 @@ namespace CoreRentalNet.Host.Tests;
 /// Asserted against the feature the framework builds its routes from, rather than through a request, because
 /// what is being checked is what discovery <b>admits</b>: a test that only fetched the builder's route would
 /// pass just as well if every internal class named <c>*Controller</c> had quietly become routable. That the
-/// provider is registered, and that the route answers because of it, is what <see cref="BuilderApiTests"/>
-/// covers.
+/// provider is registered, and that the route answers because of it, is what
+/// <see cref="CoreRentalNet.Host.Tests.WorkspaceSuggestion.SuggestionEndpointTests"/> covers.
 /// </remarks>
 public sealed class InternalControllerFeatureProviderTests
 {

@@ -12,7 +12,7 @@ namespace CoreRentalNet.Agents.Shared.Agents;
 /// contract taken from the profile. The chat client is a parameter rather than something built here, which is
 /// what lets the tests run the same code against a fake — no network, no model, no credential. The catalogue
 /// tools are not set here either: they are the call's, and
-/// <see cref="CoreRentalNet.Agents.Shared.Model.CallerAuthorisedMcpChatClient"/> offers them at the model call.
+/// <see cref="CoreRentalNet.Agents.Shared.Mcp.AuthorisedMcpChatClient"/> offers them at the model call.
 /// </remarks>
 internal static class AgentFactory
 {
