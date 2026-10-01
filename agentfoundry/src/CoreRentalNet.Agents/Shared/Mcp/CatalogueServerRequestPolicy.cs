@@ -17,11 +17,11 @@ internal sealed class CatalogueServerRequestPolicy
     private readonly string _catalogueServerAuthority;
     private readonly bool _plainTextToTheLoopbackIsPermitted;
 
-    public CatalogueServerRequestPolicy(CallerAuthorisedMcpSettings mcpSettings)
+    public CatalogueServerRequestPolicy(McpSetting mcpSetting)
     {
-        ArgumentNullException.ThrowIfNull(mcpSettings);
+        ArgumentNullException.ThrowIfNull(mcpSetting);
 
-        var catalogueServerUri = new Uri(mcpSettings.McpEndpoint, UriKind.Absolute);
+        var catalogueServerUri = new Uri(mcpSetting.McpEndpoint, UriKind.Absolute);
 
         _catalogueServerAuthority = catalogueServerUri.GetLeftPart(UriPartial.Authority);
         _plainTextToTheLoopbackIsPermitted =

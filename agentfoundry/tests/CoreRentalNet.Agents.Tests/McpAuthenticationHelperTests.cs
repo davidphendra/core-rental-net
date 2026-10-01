@@ -53,14 +53,14 @@ public sealed class McpAuthenticationHelperTests
             "a similarity search embeds the sentence and scans the index, and the transport default is too short");
     }
 
-    private static CallerCatalogueAccessTokenAttachmentHandler HandlerOverTheCatalogue()
+    private static McpAccessTokenHandler HandlerOverTheCatalogue()
         => McpAuthenticationHelper.BuildTheTokenAttachmentHandler(
             HolderHoldingNothing(),
             PolicyFor(TheCatalogueServer),
             NullLoggerFactory.Instance);
 
     private static CatalogueServerRequestPolicy PolicyFor(string mcpEndpoint)
-        => new(new CallerAuthorisedMcpSettings(mcpEndpoint));
+        => new(new McpSetting(mcpEndpoint));
 
     private static McpAccessTokenService HolderHoldingNothing()
         => new(NullLogger<McpAccessTokenService>.Instance);

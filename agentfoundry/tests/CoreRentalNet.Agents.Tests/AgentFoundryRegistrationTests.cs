@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Shared.Mcp;
@@ -77,22 +78,30 @@ public sealed class AgentFoundryRegistrationTests
     private static WorkspaceSuggestionWorkflow Workflow()
     {
         var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
-        var catalog = new CallerAuthorisedMcpSettings(string.Empty);
+        var catalog = new McpSetting(string.Empty);
+        var recordedToolAnswers = new McpToolAnswerLedger();
+        var runUsage = new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts");
 
-        var factory = new WorkspaceSuggestionWorkflowFactory(
+        var stageAgents = new WorkspaceSuggestionAgentBuilder(
             new ScriptedChatClient("{}"),
             tokens,
-            TheInvocationARunArrivesIn.CarryingNothing(),
-            new CallerAuthorisedMcpConnection(
-            catalog,
-            tokens,
-            NullLoggerFactory.Instance,
-            NullLogger<CallerAuthorisedMcpConnection>.Instance),
-            new WorkspaceSuggestionWorkflowOptions(),
-            new WorkspaceComponentSearchVocabularyLimitPolicy(),
-            new McpToolAnswerLedger(),
-            new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts"),
+            new McpAuthorizationConnection(
+                catalog,
+                tokens,
+                NullLoggerFactory.Instance,
+                NullLogger<McpAuthorizationConnection>.Instance),
+            recordedToolAnswers,
+            runUsage,
             NullLoggerFactory.Instance);
+
+        var factory = new WorkspaceSuggestionWorkflowFactory(
+            new WorkspaceSuggestionExecutorBuilder(
+                stageAgents,
+                tokens,
+                TheInvocationARunArrivesIn.CarryingNothing(),
+                new WorkspaceSuggestionWorkflowOptions(),
+                recordedToolAnswers,
+                runUsage));
 
         return new(
             factory,

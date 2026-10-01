@@ -23,7 +23,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// </remarks>
 internal sealed class WorkspaceInputExecutor(
     IMcpAccessTokenService accessTokens,
-    CallerAccessTokenHeaderReader callerAccessTokenHeaderReader,
+    AccessTokenHeaderReader accessTokenHeaderReader,
     WorkspaceSuggestionWorkflowOptions workflowOptions)
     : ChatEntryStageExecutor(WorkspaceWorkflowExecutorNames.Input)
 {
@@ -42,7 +42,7 @@ internal sealed class WorkspaceInputExecutor(
         // Read here, once, because this is the only stage still inside the HTTP request: the workflow may hand a
         // later stage to another thread, and a header read there would depend on the context surviving the hop.
         // The message carries nothing to take back out, so the run's token comes from one place and one only.
-        accessTokens.Token ??= callerAccessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
+        accessTokens.Token ??= accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
 
         var suggestionRequest = Read(messages) ?? FromSentence(messages);
 

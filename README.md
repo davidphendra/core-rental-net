@@ -136,7 +136,16 @@ application behaves exactly as described above. To turn it on against your own A
    not is told the builder is refused. The header's link is hidden unless the account carries the
    claim, so the affordance and the gate agree.
 
-6. Run the app and use the sign-in link in the header.
+6. **Allow Offline Access, or a session ends at the first token expiry.** The access token Auth0 issues is
+   short-lived; the sign-in cookie is not. The application asks the identity SDK for a refresh token and the
+   SDK exchanges it whenever the access token has expired - which is what keeps a session usable past the first
+   expiry, and the SDK adds `offline_access` to the login's scopes on its own. Auth0 issues a refresh token only
+   when the API has **Allow Offline Access** switched on (**APIs → your API → Settings**). Without it the SDK
+   finds no refresh token, ends the local session and sends the customer back to sign in; a session that was
+   already signed in when the setting was turned on is asked to sign in once. **Refresh Token Rotation** on the
+   same page is worth enabling, and the SDK stores the rotated token it returns.
+
+7. Run the app and use the sign-in link in the header.
 
 **Signing out takes one extra click.** The application clears its own cookie and sends the browser
 to the provider's logout endpoint; without an `id_token_hint` the provider asks for confirmation

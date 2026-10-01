@@ -8,13 +8,13 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// process holds no identity of its own to configure. One instance per server a feature uses, so the
 /// configuration key that names it belongs to the feature and not to this type.
 /// </remarks>
-public sealed record CallerAuthorisedMcpSettings(string McpEndpoint)
+public sealed record McpSetting(string McpEndpoint)
 {
     /// <summary>True when this deployment has been told where the server is.</summary>
     public bool IsConfigured => !string.IsNullOrWhiteSpace(McpEndpoint);
 
     /// <summary>The endpoint, read from the key the feature declares for it.</summary>
-    public static CallerAuthorisedMcpSettings FromConfiguration(
+    public static McpSetting FromConfiguration(
         IConfiguration configuration, string configurationKey)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -31,7 +31,7 @@ public sealed record CallerAuthorisedMcpSettings(string McpEndpoint)
                 "endpoint. It must be one, or empty when this deployment has no catalogue.");
         }
 
-        return new CallerAuthorisedMcpSettings(mcpEndpoint);
+        return new McpSetting(mcpEndpoint);
     }
 
     /// <summary>Whether the configured endpoint is one an MCP client can be pointed at.</summary>

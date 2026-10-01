@@ -55,5 +55,5 @@ public sealed class CatalogueServerRequestPolicyTests
             .Should().BeTrue("https protects the token whatever the host is called");
 
     private static CatalogueServerRequestPolicy PolicyFor(string mcpEndpoint)
-        => new(new CallerAuthorisedMcpSettings(mcpEndpoint));
+        => new(new McpSetting(mcpEndpoint));
 }

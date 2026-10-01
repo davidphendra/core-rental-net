@@ -14,24 +14,24 @@ namespace CoreRentalNet.Agents.Tests;
 internal static class TheInvocationARunArrivesIn
 {
     /// <summary>The reader as a run gets it, for an invocation carrying this header.</summary>
-    public static CallerAccessTokenHeaderReader Carrying(string headerName, string headerValue)
+    public static AccessTokenHeaderReader Carrying(string headerName, string headerValue)
         => Carrying(NullLoggerFactory.Instance, headerName, headerValue);
 
     /// <summary>The same, logging through the caller's factory so the reader's own line can be read back.</summary>
-    public static CallerAccessTokenHeaderReader Carrying(
+    public static AccessTokenHeaderReader Carrying(
         ILoggerFactory loggerFactory,
         string headerName,
         string headerValue)
         => ReaderOver(RequestCarrying((headerName, headerValue)), loggerFactory);
 
     /// <summary>The reader as a run gets it, for an invocation carrying no caller token.</summary>
-    public static CallerAccessTokenHeaderReader CarryingNothing()
+    public static AccessTokenHeaderReader CarryingNothing()
         => ReaderOver(RequestCarrying(), NullLoggerFactory.Instance);
 
-    private static CallerAccessTokenHeaderReader ReaderOver(
+    private static AccessTokenHeaderReader ReaderOver(
         IHttpContextAccessor httpContextAccessor,
         ILoggerFactory loggerFactory)
-        => new(httpContextAccessor, loggerFactory.CreateLogger<CallerAccessTokenHeaderReader>());
+        => new(httpContextAccessor, loggerFactory.CreateLogger<AccessTokenHeaderReader>());
 
     private static IHttpContextAccessor RequestCarrying(params (string HeaderName, string HeaderValue)[] headers)
     {

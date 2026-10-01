@@ -9,10 +9,10 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// the transport is wired somewhere the token was never meant to go, and letting it leave without the header would
 /// turn that into a confusing refusal at the other end while hiding the mis-wiring.
 /// </remarks>
-internal sealed class CallerCatalogueAccessTokenAttachmentHandler(
+internal sealed class McpAccessTokenHandler(
     IMcpAccessTokenService mcpAccessTokenService,
     CatalogueServerRequestPolicy catalogueServerRequestPolicy,
-    ILogger<CallerCatalogueAccessTokenAttachmentHandler> logger) : DelegatingHandler
+    ILogger<McpAccessTokenHandler> logger) : DelegatingHandler
 {
     /// <inheritdoc />
     protected override async Task<HttpResponseMessage> SendAsync(
@@ -25,7 +25,7 @@ internal sealed class CallerCatalogueAccessTokenAttachmentHandler(
             || !catalogueServerRequestPolicy.MayCarryTheCallersCatalogueAccessToken(requestUri))
         {
             throw new InvalidOperationException(
-                $"An MCP request to '{httpRequest.RequestUri}' is not one the caller's catalogue token may be " +
+                $"An MCP request to '{httpRequest.RequestUri}' is not one the caller's token may be " +
                 "attached to.");
         }
 
@@ -35,7 +35,7 @@ internal sealed class CallerCatalogueAccessTokenAttachmentHandler(
 
         // The origin and the method are safe to record and the token is not, so only those two are named.
         logger.LogDebug(
-            "Attached the caller's catalogue token to {Method} {Origin}.",
+            "Attached the caller's token to {Method} {Origin}.",
             httpRequest.Method,
             requestUri.GetLeftPart(UriPartial.Authority));
 

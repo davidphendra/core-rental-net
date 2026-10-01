@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Agents.Shared.Mcp;
 
@@ -23,13 +22,13 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// token the splitter had to recognise, so removing the message carrier removed the parameter with it.
 /// </para>
 /// </remarks>
-internal sealed class CallerAuthorisedMcpChatClient(
+internal sealed class AuthorisedMcpChatClient(
     IChatClient innerClient,
     IMcpAccessTokenService accessTokens,
-    CallerAuthorisedMcpConnection mcpConnection,
+    IMcpAuthorizationConnection mcpAuthorizationConnection,
     bool offersMcpTools,
     McpToolAnswerLedger recordedToolAnswers,
-    ILogger<CallerAuthorisedMcpChatClient> logger) : DelegatingChatClient(innerClient)
+    ILogger<AuthorisedMcpChatClient> logger) : DelegatingChatClient(innerClient)
 {
     /// <inheritdoc />
     public override async Task<ChatResponse> GetResponseAsync(
@@ -64,7 +63,7 @@ internal sealed class CallerAuthorisedMcpChatClient(
     {
         // The messages are the model's to read as they are: no member of one is a secret any more, because the
         // token is read from the invocation and never placed in a message.
-        if (!offersMcpTools || !mcpConnection.IsConfigured || string.IsNullOrEmpty(accessTokens.Token))
+        if (!offersMcpTools || !mcpAuthorizationConnection.IsConfigured || string.IsNullOrEmpty(accessTokens.Token))
         {
             logger.LogInformation(
                 "Chat call prepared: no MCP tools; caller token {Token}.",
@@ -73,7 +72,7 @@ internal sealed class CallerAuthorisedMcpChatClient(
             return (messages, options);
         }
 
-        var tools = await mcpConnection.ToolsAsync(cancellationToken);
+        var tools = await mcpAuthorizationConnection.ToolsAsync(cancellationToken);
 
         logger.LogInformation("Chat call prepared: {Count} MCP tool(s); caller token present.", tools.Count);
 

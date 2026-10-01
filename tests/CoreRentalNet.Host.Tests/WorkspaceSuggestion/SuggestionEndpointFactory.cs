@@ -1,5 +1,6 @@
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
+using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -87,6 +88,28 @@ public sealed class SuggestionEndpointFactory : WebApplicationFactory<Program>
 
             services.AddSingleton(IdentitySettings.From(identity));
             services.AddSingleton(ClaimSettings.From(identity, ClaimSettings.WorkspaceSuggestion));
+
+            // The endpoints read the caller's token through the identity SDK, and the SDK authenticates its own
+            // cookie scheme and reads the ticket's recorded expiry. So the test sign-in is made to look like an
+            // SDK sign-in: the SDK's cookie scheme is named as the test scheme, and the options it asks for are
+            // configured here. No refresh is reachable - the ticket's expiry is in the future - so nothing tries
+            // to sign the test client in again.
+            services.Configure<Auth0WebAppOptions>(Auth0Constants.AuthenticationScheme, options =>
+            {
+                options.Domain = "tenant.example";
+                options.ClientId = "client";
+                options.CookieAuthenticationScheme = CatalogApiTestHandler.SchemeName;
+            });
+
+            services.Configure<Auth0WebAppWithAccessTokenOptions>(Auth0Constants.AuthenticationScheme, options =>
+            {
+                options.Audience = "https://corerental/api";
+                options.UseRefreshTokens = true;
+
+                // A null answer is asserted as the endpoint's own refusal rather than as a sign-out, so the
+                // events that would end a real session are left unset in a test.
+                options.Events = null;
+            });
 
             services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, CatalogApiTestHandler>(
                 CatalogApiTestHandler.SchemeName,

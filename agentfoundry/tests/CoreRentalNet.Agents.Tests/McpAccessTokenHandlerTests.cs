@@ -19,7 +19,7 @@ namespace CoreRentalNet.Agents.Tests;
 /// that is presented without rebuilding the agent or the connection, and it is asserted here rather than assumed.
 /// </para>
 /// </remarks>
-public sealed class CallerCatalogueAccessTokenAttachmentHandlerTests
+public sealed class McpAccessTokenHandlerTests
 {
     private const string TheCatalogueServer = "https://catalogue.example/mcp";
     private const string TheCallersToken = "header.eyJzdWIiOiJjdXN0b21lci0xIn0.signature";
@@ -76,10 +76,10 @@ public sealed class CallerCatalogueAccessTokenAttachmentHandlerTests
     public async Task No_log_line_the_handler_writes_contains_the_callers_token()
     {
         var loggerFactory = new RunLogRecordingLoggerFactory();
-        var handler = new CallerCatalogueAccessTokenAttachmentHandler(
+        var handler = new McpAccessTokenHandler(
             HolderHolding(TheCallersToken),
             PolicyFor(TheCatalogueServer),
-            loggerFactory.CreateLogger<CallerCatalogueAccessTokenAttachmentHandler>())
+            loggerFactory.CreateLogger<McpAccessTokenHandler>())
         {
             InnerHandler = new RecordingMcpRequestHandler(),
         };
@@ -104,7 +104,7 @@ public sealed class CallerCatalogueAccessTokenAttachmentHandlerTests
         response.EnsureSuccessStatusCode();
     }
 
-    private static (CallerCatalogueAccessTokenAttachmentHandler Handler, RecordingMcpRequestHandler Server,
+    private static (McpAccessTokenHandler Handler, RecordingMcpRequestHandler Server,
         McpAccessTokenService Tokens) HandlerFor(string catalogueServer, string token)
     {
         var tokens = HolderHolding(token);
@@ -122,7 +122,7 @@ public sealed class CallerCatalogueAccessTokenAttachmentHandlerTests
     }
 
     private static CatalogueServerRequestPolicy PolicyFor(string catalogueServer)
-        => new(new CallerAuthorisedMcpSettings(catalogueServer));
+        => new(new McpSetting(catalogueServer));
 
     private static McpAccessTokenService HolderHolding(string token)
         => new(NullLogger<McpAccessTokenService>.Instance) { Token = token };

@@ -9,8 +9,8 @@ using CoreRentalNet.E2E.LocalProvider;
 // The browser suite's identity provider: just enough OpenID Connect for a real authorization-code
 // handshake with PKCE, on localhost, in this repository. The application points at it through the
 // ordinary Authority setting, so nothing between the browser and the servers is intercepted
-//. It is a demonstration of a provider, not a provider: no persistence, no consent, no
-// refresh tokens, and three accounts fixed in code.
+//. It is a demonstration of a provider, not a provider: no persistence, no consent, and accounts fixed in
+// code. It does issue and honour refresh tokens, because the application's session depends on them.
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
@@ -30,6 +30,17 @@ var credentials = new SigningCredentials(
     new RsaSecurityKey(rsa) { KeyId = keyId },
     SecurityAlgorithms.RsaSha256);
 var tokens = new JsonWebTokenHandler();
+
+// How long an access token the provider issues is valid, and the refresh tokens it has handed out. The lifetime
+// is configurable so the browser suite can make it short enough that the identity SDK refreshes within its own
+// leeway - which is the path that keeps a session usable after the first expiry, and the one worth exercising.
+var accessTokenLifetimeSeconds =
+    int.TryParse(Environment.GetEnvironmentVariable("ACCESS_TOKEN_TTL_SECONDS"), out var configuredLifetime)
+    && configuredLifetime > 0
+        ? configuredLifetime
+        : 3600;
+
+var refreshTokens = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
 
 // Where the provider puts a role, matching the application's default. The builder's gate reads a
 // permission, not this; the profile page reads the role.
@@ -68,10 +79,10 @@ app.MapGet("/.well-known/openid-configuration", (HttpRequest request) =>
         ["end_session_endpoint"] = $"{authority}/logout",
         ["response_types_supported"] = new[] { "code" },
         ["response_modes_supported"] = new[] { "query" },
-        ["grant_types_supported"] = new[] { "authorization_code" },
+        ["grant_types_supported"] = new[] { "authorization_code", "refresh_token" },
         ["subject_types_supported"] = new[] { "public" },
         ["id_token_signing_alg_values_supported"] = new[] { "RS256" },
-        ["scopes_supported"] = new[] { "openid", "profile", "email" },
+        ["scopes_supported"] = new[] { "openid", "profile", "email", "offline_access" },
         ["claims_supported"] = new[] { "sub", "name", "email", "nonce" },
         ["code_challenge_methods_supported"] = new[] { "S256" },
     });
@@ -118,6 +129,7 @@ app.MapGet("/authorize", (HttpRequest request) =>
     var nonce = query["nonce"].ToString();
     var codeChallenge = query["code_challenge"].ToString();
     var codeChallengeMethod = query["code_challenge_method"].ToString();
+    var scope = query["scope"].ToString();
 
     if (!string.Equals(query["response_type"], "code", StringComparison.Ordinal)
         || string.IsNullOrEmpty(clientId)
@@ -135,6 +147,7 @@ app.MapGet("/authorize", (HttpRequest request) =>
         nonce,
         codeChallenge,
         codeChallengeMethod,
+        scope,
         DateTimeOffset.UtcNow.AddMinutes(5));
 
     var separator = redirectUri.Contains('?', StringComparison.Ordinal) ? '&' : '?';
@@ -148,6 +161,35 @@ app.MapGet("/authorize", (HttpRequest request) =>
 app.MapPost("/oauth/token", async (HttpRequest request) =>
 {
     var form = await request.ReadFormAsync(request.HttpContext.RequestAborted);
+    var authority = Authority(request);
+
+    // The refresh grant, which the identity SDK exchanges whenever the access token has lapsed. The refresh
+    // token is an opaque value this provider keeps in memory, and it is rotated on every exchange.
+    if (string.Equals(form["grant_type"].ToString(), "refresh_token", StringComparison.Ordinal))
+    {
+        var presented = form["refresh_token"].ToString();
+
+        if (string.IsNullOrEmpty(presented) || !refreshTokens.TryRemove(presented, out var subject))
+        {
+            return Results.BadRequest(new { error = "invalid_grant" });
+        }
+
+        var refreshed = accounts.Values.FirstOrDefault(
+            candidate => string.Equals(candidate.Subject, subject, StringComparison.Ordinal));
+
+        if (refreshed is null)
+        {
+            return Results.BadRequest(new { error = "invalid_grant" });
+        }
+
+        return Results.Json(TokenResponseFor(
+            authority,
+            form["client_id"].ToString(),
+            refreshed,
+            nonce: null,
+            scope: "openid profile email offline_access"));
+    }
+
     var code = form["code"].ToString();
 
     if (string.IsNullOrEmpty(code) || !pending.TryRemove(code, out var issued))
@@ -162,16 +204,8 @@ app.MapPost("/oauth/token", async (HttpRequest request) =>
     }
 
     var account = accounts[issued.Account];
-    var authority = Authority(request);
 
-    return Results.Json(new
-    {
-        access_token = CreateToken(authority, issued.ClientId, account, nonce: null, accessToken: true),
-        id_token = CreateToken(authority, issued.ClientId, account, issued.Nonce, accessToken: false),
-        token_type = "Bearer",
-        expires_in = 3600,
-        scope = "openid profile email",
-    });
+    return Results.Json(TokenResponseFor(authority, issued.ClientId, account, issued.Nonce, issued.Scope));
 });
 
 app.MapGet("/userinfo", (HttpRequest request) =>
@@ -260,9 +294,38 @@ string CreateToken(string issuer, string audience, Account account, string? nonc
         Audience = audience,
         Claims = claims,
         IssuedAt = DateTime.UtcNow,
-        Expires = DateTime.UtcNow.AddHours(1),
+        Expires = DateTime.UtcNow.AddSeconds(accessTokenLifetimeSeconds),
         SigningCredentials = credentials,
     });
+}
+
+/// <summary>The token response for one account, including a refresh token when offline access was asked for.</summary>
+/// <remarks>
+/// A refresh token is issued on the same terms Auth0 issues one: the login has to ask for `offline_access`,
+/// which the application's own login does. Rotating it on every exchange is this provider's own choice.
+/// </remarks>
+object TokenResponseFor(string authority, string clientId, Account account, string? nonce, string? scope)
+{
+    var grantedScope = string.IsNullOrEmpty(scope) ? "openid profile email" : scope;
+
+    var response = new Dictionary<string, object>
+    {
+        ["access_token"] = CreateToken(authority, clientId, account, nonce: null, accessToken: true),
+        ["id_token"] = CreateToken(authority, clientId, account, nonce, accessToken: false),
+        ["token_type"] = "Bearer",
+        ["expires_in"] = accessTokenLifetimeSeconds,
+        ["scope"] = grantedScope,
+    };
+
+    if (grantedScope.Contains("offline_access", StringComparison.Ordinal))
+    {
+        var refreshToken = Base64UrlEncoder.Encode(RandomNumberGenerator.GetBytes(32));
+
+        refreshTokens[refreshToken] = account.Subject;
+        response["refresh_token"] = refreshToken;
+    }
+
+    return response;
 }
 
 static string? Bearer(HttpRequest request)

@@ -2,12 +2,10 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 
@@ -35,30 +33,20 @@ public static class WorkspaceSuggestionRegistration
         var workspaceSuggestionAgentIdentity = WorkspaceSuggestionAgentIdentity.FromConfiguration(configuration);
 
         services.AddSingleton(workspaceSuggestionAgentIdentity);
-        services.AddSingleton(CallerAuthorisedMcpSettings.FromConfiguration(configuration, CatalogueEndpointKey));
+        services.AddSingleton(McpSetting.FromConfiguration(configuration, CatalogueEndpointKey));
         var workflowOptions = configuration.GetSection("WorkspaceSuggestionWorkflow")
             .Get<WorkspaceSuggestionWorkflowOptions>() ?? new WorkspaceSuggestionWorkflowOptions();
 
         services.AddSingleton(workflowOptions);
 
-        // The bound is configuration rather than a constant so a deployment can move it, and it is registered as
-        // a type rather than passed around as two numbers so the stage that applies it cannot be given one of
-        // them and not the other.
-        // Which tools are the catalogue's is declared where the feature declares everything else about itself, so
-        // a deployment that publishes a third catalogue tool adds it here rather than editing the pool builder.
-        services.AddSingleton(new WorkspaceComponentProductPoolBuilder(CatalogueSearchToolNames.All));
-        services.AddSingleton(new WorkspaceComponentProductPoolPolicy(
-            workflowOptions.MaximumRetrievedProductsPerComponentForReranking));
-        services.AddSingleton(new WorkspaceComponentProductSelectionPolicy(
-            workflowOptions.MaximumSelectedProductsPerComponent));
-        services.AddSingleton(new WorkspaceComponentSearchVocabularyLimitPolicy(
-            workflowOptions.MaximumSearchTermCountPerComponent,
-            workflowOptions.MaximumSearchTermCharacterCount));
+        // The deterministic policies - the pool's bound, the selection's, the vocabulary's - are built by the
+        // executor builder from these options, which is the one source of what the bounds are. Registering them
+        // here as well would be a second source, and the two would be free to disagree.
 
         // Where a run's catalogue token is read from: the invocation's own headers, which the hosting layer
         // forwards for names carrying its client prefix. Nothing carries one in a message any more, so there is
         // no splitter to register and no member on the request for a splitter to recognise.
-        services.AddScoped<CallerAccessTokenHeaderReader>();
+        services.AddScoped<AccessTokenHeaderReader>();
 
         // One run's cost, counted across its stages, and the model and instructions that produced it.
         services.AddScoped(_ => new AgentRunUsageAccumulator(
@@ -66,12 +54,17 @@ public static class WorkspaceSuggestionRegistration
             WorkspaceSuggestionAgentRoster.PromptVersions));
 
         // Scoped like the run, so the tools a call listed stay callable for as long as its token lives.
-        services.AddScoped<CallerAuthorisedMcpConnection>();
+        services.AddScoped<IMcpAuthorizationConnection, McpAuthorizationConnection>();
 
         // One attempt's tool answers, recorded as they return and cleared when the next retrieval begins. Scoped
         // like the run, and read by the stage that ranks the products those answers carry.
         services.AddScoped<McpToolAnswerLedger>();
-        services.AddScoped<WorkspaceSuggestionWorkflowFactory>();
+
+        // The stage agents - the one place the decorators' order is stated - and the executors built from them.
+        // Both are scoped like the run, because the agents hold its token service and its usage accumulator and
+        // the executors hold its ledger.
+        services.AddScoped<WorkspaceSuggestionAgentBuilder>();
+        services.AddScoped<WorkspaceSuggestionExecutorBuilder>();
         services.AddScoped<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();
 
         // The served agent is the workflow agent itself, resolved per request and never wrapped: hosting can

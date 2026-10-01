@@ -1,3 +1,5 @@
+@inject NavigationManager Navigation
+
 @if (Model.NotApplied)
 {
     <p class="ai__not-applied mt-stack-sm text-label-md font-label-md text-on-surface-variant" data-testid="suggestion-not-applied">
@@ -5,14 +7,29 @@
     </p>
 }
 
-<p class="alert mt-stack-sm" role="alert" data-testid="suggestion-failed">
-    This suggestion couldn't be completed. Nothing was applied.
-</p>
-<button type="button" class="ai__retry mt-2 underline" data-testid="suggestion-retry" @onclick="OnRetry">
-    Try again
-</button>
+@if (Model.FailureCode == ExpiredSessionCode)
+{
+    @* A session that ended is not a failed run, and "try again" would fail the same way: the one useful thing is
+       the way back to sign in, with the page the customer was reading kept as where to return to. *@
+    <p class="alert mt-stack-sm" role="alert" data-testid="suggestion-session-expired">
+        Your session has expired.
+        <a class="underline" href="@SignInLink">Sign in again</a> to keep building.
+    </p>
+}
+else
+{
+    <p class="alert mt-stack-sm" role="alert" data-testid="suggestion-failed">
+        This suggestion couldn't be completed. Nothing was applied.
+    </p>
+    <button type="button" class="ai__retry mt-2 underline" data-testid="suggestion-retry" @onclick="OnRetry">
+        Try again
+    </button>
+}
 
 @code {
+    /// <summary>The failure code a refusal the session caused arrives under.</summary>
+    private const string ExpiredSessionCode = "session-expired";
+
     [Parameter, EditorRequired] public required SuggestionNotice Notice { get; set; }
 
     [Parameter] public EventCallback OnExpandStages { get; set; }
@@ -22,4 +39,20 @@
     [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
 
     private SuggestionFailureNotice Model => (SuggestionFailureNotice)Notice;
+
+    /// <summary>Where signing in again returns to: the page the customer was reading, as a local path.</summary>
+    /// <remarks>
+    /// The local path rather than the absolute address, because the sign-in route keeps the login page from
+    /// becoming an open redirect by accepting only a URL of this application's own.
+    /// </remarks>
+    private string SignInLink
+    {
+        get
+        {
+            var currentPage = new Uri(Navigation.Uri).PathAndQuery;
+            var returnUrl = string.IsNullOrEmpty(currentPage) ? "/" : currentPage;
+
+            return $"{AccountController.SignInPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+        }
+    }
 }

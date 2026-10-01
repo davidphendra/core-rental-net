@@ -1,8 +1,16 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Client;
 
 namespace CoreRentalNet.Agents.Shared.Mcp;
+
+internal interface IMcpAuthorizationConnection
+{
+    /// <summary>True when this deployment has been told where the server is.</summary>
+    bool IsConfigured { get; }
+
+    /// <summary>The tools the call's own token entitles, discovered once and kept for the call.</summary>
+    Task<IReadOnlyList<AITool>> ToolsAsync(CancellationToken cancellationToken);
+}
 
 /// <summary>One call's connection to an MCP server, and the tools its token entitles.</summary>
 /// <remarks>
@@ -16,22 +24,22 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// between calls would present one customer's token to the server for another's run.
 /// </para>
 /// </remarks>
-internal sealed class CallerAuthorisedMcpConnection(
-    CallerAuthorisedMcpSettings mcpSettings,
-    IMcpAccessTokenService accessTokens,
+internal sealed class McpAuthorizationConnection(
+    McpSetting mcpSetting,
+    IMcpAccessTokenService accessTokenService,
     ILoggerFactory loggerFactory,
-    ILogger<CallerAuthorisedMcpConnection> logger) : IAsyncDisposable
+    ILogger<McpAuthorizationConnection> logger) : IMcpAuthorizationConnection, IAsyncDisposable
 {
     private McpClient? _client;
     private IReadOnlyList<AITool>? _tools;
 
     /// <summary>True when this deployment has been told where the server is.</summary>
-    public bool IsConfigured => mcpSettings.IsConfigured;
+    public bool IsConfigured => mcpSetting.IsConfigured;
 
     /// <summary>The tools the call's own token entitles, discovered once and kept for the call.</summary>
     public async Task<IReadOnlyList<AITool>> ToolsAsync(CancellationToken cancellationToken)
     {
-        if (!mcpSettings.IsConfigured)
+        if (!mcpSetting.IsConfigured)
         {
             return [];
         }
@@ -44,12 +52,12 @@ internal sealed class CallerAuthorisedMcpConnection(
         try
         {
             _client = await McpAuthenticationHelper.ConnectAsync(
-                new Uri(mcpSettings.McpEndpoint, UriKind.Absolute),
-                accessTokens,
+                new Uri(mcpSetting.McpEndpoint, UriKind.Absolute),
+                accessTokenService,
 
                 // Built here rather than in the constructor: an unconfigured deployment has no endpoint to
                 // describe, and this is the point past which one is required.
-                new CatalogueServerRequestPolicy(mcpSettings),
+                new CatalogueServerRequestPolicy(mcpSetting),
                 loggerFactory,
                 cancellationToken);
 
@@ -59,7 +67,7 @@ internal sealed class CallerAuthorisedMcpConnection(
 
             logger.LogInformation(
                 "MCP server {Endpoint}: {Count} tool(s) available to this call.",
-                mcpSettings.McpEndpoint,
+                mcpSetting.McpEndpoint,
                 _tools.Count);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -69,7 +77,7 @@ internal sealed class CallerAuthorisedMcpConnection(
             logger.LogWarning(
                 exception,
                 "The MCP server at {Endpoint} refused this call's tools.",
-                mcpSettings.McpEndpoint);
+                mcpSetting.McpEndpoint);
 
             throw;
         }

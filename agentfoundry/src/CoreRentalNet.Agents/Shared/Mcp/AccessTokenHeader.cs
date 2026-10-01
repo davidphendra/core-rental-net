@@ -8,7 +8,7 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// context exposes the client headers, "those prefixed with <c>x-client-</c>", so a header outside that prefix is
 /// not forwarded at all — and a dropped token is indistinguishable from a catalogue refusal.
 /// </remarks>
-internal static class CallerAccessTokenHeader
+internal static class AccessTokenHeader
 {
     public const string Name = "x-client-mcp-catalog-access-token";
 }

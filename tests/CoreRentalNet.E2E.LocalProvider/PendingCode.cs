@@ -7,4 +7,5 @@ internal sealed record PendingCode(
     string? Nonce,
     string? CodeChallenge,
     string? CodeChallengeMethod,
+    string Scope,
     DateTimeOffset ExpiresAt);

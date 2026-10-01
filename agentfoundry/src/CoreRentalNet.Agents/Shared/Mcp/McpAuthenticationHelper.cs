@@ -82,7 +82,7 @@ internal static class McpAuthenticationHelper
         };
 
     /// <summary>The handler that attaches the token, over the terminal handler it delegates to.</summary>
-    internal static CallerCatalogueAccessTokenAttachmentHandler BuildTheTokenAttachmentHandler(
+    internal static McpAccessTokenHandler BuildTheTokenAttachmentHandler(
         IMcpAccessTokenService mcpAccessTokenService,
         CatalogueServerRequestPolicy catalogueServerRequestPolicy,
         ILoggerFactory loggerFactory)
@@ -91,7 +91,7 @@ internal static class McpAuthenticationHelper
         => new(
             mcpAccessTokenService,
             catalogueServerRequestPolicy,
-            loggerFactory.CreateLogger<CallerCatalogueAccessTokenAttachmentHandler>())
+            loggerFactory.CreateLogger<McpAccessTokenHandler>())
         {
             InnerHandler = new SocketsHttpHandler
             {

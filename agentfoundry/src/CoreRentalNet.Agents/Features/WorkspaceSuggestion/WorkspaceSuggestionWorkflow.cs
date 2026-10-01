@@ -1,6 +1,6 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 
@@ -11,7 +11,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 /// tools belong to the call and not to the process.
 /// </remarks>
 internal sealed class WorkspaceSuggestionWorkflow(
-    WorkspaceSuggestionWorkflowFactory workspaceSuggestionWorkflowFactory,
+    WorkspaceSuggestionExecutorBuilder workspaceSuggestionExecutorBuilder,
     WorkspaceSuggestionAgentIdentity workspaceSuggestionAgentIdentity) : IWorkspaceSuggestionWorkflow
 {
     /// <summary>The workflow as one agent, its yielded events made visible to the caller.</summary>
@@ -21,11 +21,12 @@ internal sealed class WorkspaceSuggestionWorkflow(
     /// token and catalogue tools are applied one layer down, at each stage's model call.
     /// </remarks>
     public AIAgent AsAIAgent()
-        => workspaceSuggestionWorkflowFactory.BuildWorkspaceSuggestionWorkflow()
+        => WorkspaceSuggestionWorkflowFactory.Create(workspaceSuggestionExecutorBuilder)
             .AsAIAgent(
                 name: workspaceSuggestionAgentIdentity.AgentName,
 
                 // This is what turns each yielded event into one response delta. Without it a workflow event
                 // reaches the caller as an empty update and the stream carries nothing at all.
-                includeWorkflowOutputsInResponse: true);
+                includeWorkflowOutputsInResponse: true
+            );
 }

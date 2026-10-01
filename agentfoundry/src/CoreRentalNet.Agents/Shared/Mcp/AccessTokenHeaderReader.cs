@@ -15,14 +15,14 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// the trust boundary, and log lines travel further than request bodies do.
 /// </para>
 /// </remarks>
-internal sealed class CallerAccessTokenHeaderReader(
+internal sealed class AccessTokenHeaderReader(
     IHttpContextAccessor httpContextAccessor,
-    ILogger<CallerAccessTokenHeaderReader> logger)
+    ILogger<AccessTokenHeaderReader> logger)
 {
     /// <summary>The token this invocation carries, or null when it carried none.</summary>
     public string? ReadTheCallersCatalogueAccessToken()
     {
-        var carriedValue = httpContextAccessor.HttpContext?.Request.Headers[CallerAccessTokenHeader.Name];
+        var carriedValue = httpContextAccessor.HttpContext?.Request.Headers[AccessTokenHeader.Name];
 
         var callerAccessToken = carriedValue is { Count: > 0 } ? carriedValue.ToString() : null;
 

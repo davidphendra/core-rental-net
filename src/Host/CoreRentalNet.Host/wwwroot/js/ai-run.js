@@ -57,6 +57,30 @@ export function stop() {
     }
 }
 
+/// Asks the server whether this session can still produce a catalogue token, and tells the component.
+///
+/// The browser carries the session cookie, so this is a fetch like the run is - the circuit has no HttpContext.
+/// It is advisory: a probe that fails for a reason other than the server's answer says nothing, rather than
+/// reporting a session that has not ended.
+export async function sessionStatus(dotNet) {
+    let response;
+
+    try {
+        response = await fetch('/api/account/session', { method: 'GET' });
+    } catch {
+        return;
+    }
+
+    if (!response.ok) {
+        await dotNet.invokeMethodAsync('SessionChecked', false);
+        return;
+    }
+
+    const status = await response.json();
+
+    await dotNet.invokeMethodAsync('SessionChecked', status.canRunSuggestion === true);
+}
+
 /// Enter sends the request, and Shift+Enter starts a new line.
 ///
 /// A textarea inserts a newline for Enter by itself, and nothing in the markup can tell that key from

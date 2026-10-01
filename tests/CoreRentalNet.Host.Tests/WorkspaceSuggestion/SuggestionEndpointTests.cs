@@ -101,16 +101,23 @@ public sealed class SuggestionEndpointTests(SuggestionEndpointFactory factory, I
     }
 
     /// <summary>Posts a run as the named permissions, with <c>null</c> posted as the JSON literal it is.</summary>
-    [Fact] // a run that cannot read the catalogue is refused before it is paid for
-    public async Task A_sign_in_without_a_token_for_this_api_is_refused_before_the_run_starts()
+    [Fact] // a session that cannot produce a token is refused before the run is paid for
+    public async Task A_session_that_cannot_produce_a_token_is_refused_before_the_run_starts()
     {
+        factory.Logs.Clear();
+
         var response = await PostAsync(Permission, new { query = "a desk and a chair" }, withAccessToken: false);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
         var problem = await response.Content.ReadAsStringAsync();
 
-        problem.Should().Contain("no token", "the refusal names the misconfiguration rather than the customer's mistake");
+        problem.Should().Contain(
+            "session has expired",
+            "the refusal names the session rather than the customer's mistake");
+        factory.Logs.Entries.Should().NotContain(
+            entry => entry.Category == LoggerWorkspaceSuggestionRunRecordWriter.Category,
+            "nothing was streamed, so no run was started or recorded");
     }
 
     private async Task<HttpResponseMessage> PostAsync(string permission, object? body, bool withAccessToken = true)

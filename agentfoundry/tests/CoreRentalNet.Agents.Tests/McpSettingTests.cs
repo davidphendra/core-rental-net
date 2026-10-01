@@ -11,7 +11,7 @@ namespace CoreRentalNet.Agents.Tests;
 /// search happens inside a paid-for run, and a run whose catalogue is unreachable is reported to the customer as
 /// an unavailable suggestion rather than as the misconfiguration it is.
 /// </remarks>
-public sealed class CallerAuthorisedMcpSettingsTests
+public sealed class McpSettingTests
 {
     private const string TheEndpointKey = "CatalogTools:McpEndpoint";
 
@@ -41,8 +41,8 @@ public sealed class CallerAuthorisedMcpSettingsTests
             .WithMessage("*not an absolute http or https endpoint*");
     }
 
-    private static CallerAuthorisedMcpSettings SettingsFor(string configuredEndpoint)
-        => CallerAuthorisedMcpSettings.FromConfiguration(
+    private static McpSetting SettingsFor(string configuredEndpoint)
+        => McpSetting.FromConfiguration(
             new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?> { [TheEndpointKey] = configuredEndpoint })
                 .Build(),

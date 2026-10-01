@@ -55,7 +55,19 @@ internal sealed class CatalogApiTestHandler(
         // because that is where the run endpoint reads it from.
         if (!Request.Headers.ContainsKey(WithoutAccessTokenHeader))
         {
-            properties.StoreTokens([new AuthenticationToken { Name = "access_token", Value = AccessToken }]);
+            properties.StoreTokens(
+            [
+                new AuthenticationToken { Name = "access_token", Value = AccessToken },
+
+                // The identity SDK reads the ticket's recorded expiry before it will hand the token out, so a
+                // sign-in it is asked about has to state one that has not passed. Without it the SDK treats the
+                // token as expired and goes looking for a refresh token this test never provides.
+                new AuthenticationToken
+                {
+                    Name = "expires_at",
+                    Value = DateTimeOffset.Now.AddHours(1).ToString("o"),
+                },
+            ]);
         }
 
         return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, properties, SchemeName)));

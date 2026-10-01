@@ -6,6 +6,7 @@ using CoreRentalNet.Host.Presentation;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 
 namespace CoreRentalNet.Host.Extentions;
 
@@ -87,14 +88,66 @@ internal static class IdentityRegistrationExtentions
                 // Every identity route stays under /account.
                 options.CallbackPath = AccountController.CallbackPath;
             })
-            .WithAccessToken(options =>
-            {
-                // Auth0 writes an account's permissions onto an access token, and writes one only
-                // when the login names an API as the audience. The SDK's own option asks for it; the
-                // token it produces is where the permissions are read from.
-                options.Audience = settings.Audience;
-            });
+            .WithAccessToken(options => ConfigureAccessToken(options, settings));
     }
+
+    /// <summary>How the access token is kept valid: the SDK refreshes it, and its two failure paths end the session.</summary>
+    /// <remarks>
+    /// <b>Nothing here reads `exp` or compares times.</b> The SDK validates the recorded expiry, exchanges the
+    /// refresh token before it lapses, and reports a token or null; this only states the settings and says what
+    /// happens when a session can no longer be renewed. Turning refreshing on is also what adds `offline_access`
+    /// to the authorize request, which is the only reason Auth0 issues a refresh token at all.
+    /// </remarks>
+    private static void ConfigureAccessToken(Auth0WebAppWithAccessTokenOptions options, IdentitySettings settings)
+    {
+        // Auth0 writes an account's permissions onto an access token, and writes one only when the login names an
+        // API as the audience. The SDK's own option asks for it; the token it produces is where they are read from.
+        options.Audience = settings.Audience;
+
+        options.UseRefreshTokens = true;
+
+        // A suggestion run streams for the better part of a minute, so refresh further ahead than the SDK's
+        // 60-second default and never start a run holding a token that lapses mid-run.
+        options.AccessTokenExpirationLeeway = TimeSpan.FromMinutes(2);
+
+        options.Events = new Auth0WebAppWithAccessTokenEvents
+        {
+            OnMissingRefreshToken = SignInAgainAsync,
+            OnAccessTokenRefreshFailed = RefreshFailedAsync,
+        };
+    }
+
+    /// <summary>A session with nothing to refresh with is ended and sent back to sign in.</summary>
+    /// <remarks>
+    /// A session created before refresh tokens were enabled, or an API without offline access, has no refresh
+    /// token - so an expired access token cannot be replaced, and leaving the session looking valid is the
+    /// failure this exists to prevent.
+    /// </remarks>
+    private static async Task SignInAgainAsync(HttpContext httpContext)
+    {
+        await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, SignInProperties());
+    }
+
+    /// <summary>A refresh token the provider rejected is terminal, and means the customer signs in again.</summary>
+    /// <remarks>
+    /// Anything else - a timeout, a rate limit - may succeed on the next attempt, so it is left alone and the
+    /// endpoint answers with its own refusal rather than ending a session over a transient fault.
+    /// </remarks>
+    private static async Task RefreshFailedAsync(AccessTokenRefreshFailedContext context)
+    {
+        if (context.Error != "invalid_grant")
+        {
+            return;
+        }
+
+        await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await context.HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, SignInProperties());
+    }
+
+    /// <summary>Where a challenge sends a customer whose session has ended.</summary>
+    private static AuthenticationProperties SignInProperties()
+        => new LoginAuthenticationPropertiesBuilder().WithRedirectUri("/").Build();
 
     /// <summary>
     /// The SDK keeps that access token in the session. This is what puts it on an outbound request

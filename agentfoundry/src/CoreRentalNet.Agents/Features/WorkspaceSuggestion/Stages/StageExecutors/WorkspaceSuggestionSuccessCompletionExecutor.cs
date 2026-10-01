@@ -14,8 +14,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// setup's arrival never implies a successful run.
 /// </remarks>
 internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
-    AgentRunUsageAccumulator runUsage,
-    IMcpAccessTokenService accessTokens)
+    AgentRunUsageAccumulator agentRunUsageAccumulator,
+    IMcpAccessTokenService accessTokenService)
     : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.SuccessCompletion)
 {
     public override async ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
@@ -26,7 +26,7 @@ internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
         // The run is over, so the credential it borrowed is given up here — before the ending is announced, and
         // long before the call's scope is disposed. A later stage that reached for it would find nothing, which is
         // the point: nothing after an ending is entitled to the caller's authority.
-        accessTokens.Release();
+        accessTokenService.Release();
 
         workspaceSuggestionWorkflowState.RunStatus = WorkspaceSuggestionRunStatus.Success;
 
@@ -41,7 +41,7 @@ internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
 
         await PublishStreamEventAsync(
             workflowContext,
-            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, runUsage.Total),
+            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, agentRunUsageAccumulator.Total),
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;

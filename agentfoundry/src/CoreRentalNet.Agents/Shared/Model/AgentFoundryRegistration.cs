@@ -1,11 +1,9 @@
-using Azure.AI.AgentServer.Core;
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
 using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
 using System.ClientModel.Primitives;
-using CoreRentalNet.Agents.Shared.Model;
 
 namespace CoreRentalNet.Agents.Shared.Model;
 

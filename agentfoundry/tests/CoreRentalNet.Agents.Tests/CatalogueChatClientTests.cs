@@ -72,18 +72,18 @@ public sealed class CatalogueChatClientTests
         inner.Options.Should().ContainSingle().Which.Should().BeNull("no endpoint means no catalogue to offer");
     }
 
-    private static CallerAuthorisedMcpChatClient Build(
+    private static AuthorisedMcpChatClient Build(
         ScriptedChatClient inner,
         McpAccessTokenService tokens,
         bool readsCatalogue,
         string endpoint = "")
     {
-        var mcpSettings = new CallerAuthorisedMcpSettings(endpoint);
-        var catalogue = new CallerAuthorisedMcpConnection(
+        var mcpSettings = new McpSetting(endpoint);
+        var catalogue = new McpAuthorizationConnection(
             mcpSettings,
             tokens,
             NullLoggerFactory.Instance,
-            NullLogger<CallerAuthorisedMcpConnection>.Instance);
+            NullLogger<McpAuthorizationConnection>.Instance);
 
         return new(
             inner,
@@ -91,7 +91,7 @@ public sealed class CatalogueChatClientTests
             catalogue,
             readsCatalogue,
             new McpToolAnswerLedger(),
-            NullLogger<CallerAuthorisedMcpChatClient>.Instance);
+            NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 
     private static string Request(string token)

@@ -2,7 +2,6 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Shared.Mcp;
-
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;

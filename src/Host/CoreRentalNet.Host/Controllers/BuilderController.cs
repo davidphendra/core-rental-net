@@ -1,3 +1,4 @@
+using Auth0.AspNetCore.Authentication;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation.WorkspaceSuggestion;
@@ -59,11 +60,11 @@ internal sealed class BuilderController(
     /// the permission checked before it.
     /// </para>
     /// <para>
-    /// <b>The customer's own token is forwarded, not checked.</b> The gate above answered whether this caller may
-    /// run at all; the catalogue answers for the token itself when the agent presents it, and only the agent can
-    /// tell "no token" from "a token the catalogue refused". The agent reads it off the invocation's own
-    /// `x-client-mcp-catalog-access-token` header one layer down, so what reaches the prompt is the sentence and
-    /// the slot rules and nothing else.
+    /// <b>The customer's own token is read fresh, and refreshed when it has expired, through the identity
+    /// SDK</b>, then forwarded rather than checked; the catalogue answers for the token itself when the agent
+    /// presents it, and only the agent can tell "no token" from "a token the catalogue refused". The agent reads
+    /// it off the invocation's own `x-client-mcp-catalog-access-token` header one layer down, so what reaches the
+    /// prompt is the sentence and the slot rules and nothing else.
     /// </para>
     /// </remarks>
     [HttpPost]
@@ -76,16 +77,18 @@ internal sealed class BuilderController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
     public async Task Suggest([FromBody] WorkspaceSuggestionQueryRequest suggestionQueryRequest)
     {
-        // Read from the sign-in session, on the one request that has one, and forwarded rather than checked: the
-        // catalogue answers for the token itself when the agent presents it.
-        var callerAccessToken = await HttpContext.GetAccessTokenAsync().ConfigureAwait(false);
+        // The identity SDK's own read: it returns the login-time token while the recorded expiry is still ahead of
+        // now (plus a leeway), refreshes it from the session's refresh token when it is not, and returns null when
+        // it cannot. That null is the whole of the expiry detection, and no `exp` is read here.
+        var callerAccessToken = await HttpContext.GetAccessTokenAsync(new AccessTokenRequest())
+            .ConfigureAwait(false);
 
-        // Refused before the stream opens and before a run is paid for. A run without the caller's token cannot
-        // read the catalogue at all, so this is a misconfiguration being reported as one rather than a run being
-        // charged for and quietly failing at the far end.
+        // Refused before the stream opens and before a run is paid for. A session that cannot produce the caller's
+        // token cannot read the catalogue, so this is a session that has ended being reported as one rather than a
+        // run being charged for and quietly failing at the far end.
         if (string.IsNullOrWhiteSpace(callerAccessToken))
         {
-            await RefuseBecauseTheSignInCarriedNoTokenAsync();
+            await RefuseBecauseTheSessionCannotProduceATokenAsync();
 
             return;
         }
@@ -106,23 +109,29 @@ internal sealed class BuilderController(
             HttpContext.RequestAborted);
     }
 
-    /// <summary>Refuses a run the caller's sign-in gave no token for, as a status code and a problem body.</summary>
+    /// <summary>Refuses a run the session can no longer produce a catalogue token for.</summary>
     /// <remarks>
+    /// <para>
     /// <b>Written rather than returned, because this action returns no result.</b> It holds the response open for
     /// the run, and a result that is never executed sets nothing — so <c>Problem(...)</c> here would leave the
     /// response a success and hand the customer an empty stream instead of a refusal.
+    /// </para>
+    /// <para>
+    /// <b>401, not 403.</b> The caller is still signed in to the application; it is the session that can no longer
+    /// produce a token for the catalogue - the identity SDK found the access token expired and had no refresh to
+    /// replace it with. That is a re-login, and the panel words it that way.
+    /// </para>
     /// </remarks>
-    private async Task RefuseBecauseTheSignInCarriedNoTokenAsync()
+    private async Task RefuseBecauseTheSessionCannotProduceATokenAsync()
     {
-        Response.StatusCode = StatusCodes.Status403Forbidden;
+        Response.StatusCode = StatusCodes.Status401Unauthorized;
         Response.ContentType = ProblemJson;
 
         await Response.WriteAsJsonAsync(
             new ProblemDetails
             {
-                Status = StatusCodes.Status403Forbidden,
-                Detail = "This sign-in carried no token for the application's API, so a workspace suggestion " +
-                         "cannot be run.",
+                Status = StatusCodes.Status401Unauthorized,
+                Detail = "Your session has expired. Sign in again to keep building.",
             },
             options: null,
             contentType: ProblemJson,

@@ -135,7 +135,7 @@ public sealed class WorkflowTests
             new ScriptedChatClient(Verification, Expansion, Retrieval, Reranking, Composition, Review),
             loggerFactory,
             accessTokens,
-            TheInvocationARunArrivesIn.Carrying(loggerFactory, CallerAccessTokenHeader.Name, TheCallersCatalogueToken));
+            TheInvocationARunArrivesIn.Carrying(loggerFactory, AccessTokenHeader.Name, TheCallersCatalogueToken));
 
         // The request carries no token at all: everything this run was given came off the invocation.
         var text = (await agent.RunAsync(Request)).Text!;
@@ -150,7 +150,7 @@ public sealed class WorkflowTests
 
     [Fact] // the platform's forwarding rule, on this side of the wire
     public void The_header_the_application_states_carries_the_platforms_client_prefix()
-        => CallerAccessTokenHeader.Name.Should().StartWith(
+        => AccessTokenHeader.Name.Should().StartWith(
             "x-client-",
             "the hosting layer forwards client headers only under this prefix, and a dropped token is silent");
 
@@ -183,7 +183,7 @@ public sealed class WorkflowTests
             loggerFactory,
             accessTokens,
             TheInvocationARunArrivesIn.Carrying(
-                loggerFactory, CallerAccessTokenHeader.Name, TheCallersCatalogueToken));
+                loggerFactory, AccessTokenHeader.Name, TheCallersCatalogueToken));
 
         var text = (await agent.RunAsync(Request)).Text!;
 
@@ -339,13 +339,13 @@ public sealed class WorkflowTests
         ScriptedChatClient client,
         ILoggerFactory loggerFactory,
         IMcpAccessTokenService tokens,
-        CallerAccessTokenHeaderReader? callerAccessTokenHeaderReader = null)
+        AccessTokenHeaderReader? callerAccessTokenHeaderReader = null)
     {
-        var catalogue = new CallerAuthorisedMcpConnection(
-            new CallerAuthorisedMcpSettings(string.Empty),
+        var catalogue = new McpAuthorizationConnection(
+            new McpSetting(string.Empty),
             tokens,
             NullLoggerFactory.Instance,
-            NullLogger<CallerAuthorisedMcpConnection>.Instance);
+            NullLogger<McpAuthorizationConnection>.Instance);
 
         var recordedToolAnswers = new McpToolAnswerLedger();
 
@@ -358,16 +358,18 @@ public sealed class WorkflowTests
             new Dictionary<string, object?> { ["category"] = "desk", ["subCategory"] = null },
             RecordedCatalogueAnswer);
 
+        var runUsage = new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts");
+        var stageAgents = new WorkspaceSuggestionAgentBuilder(
+            client, tokens, catalogue, recordedToolAnswers, runUsage, loggerFactory);
+
         var factory = new WorkspaceSuggestionWorkflowFactory(
-            client,
-            tokens,
-            callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing(),
-            catalogue,
-            new WorkspaceSuggestionWorkflowOptions(),
-            new WorkspaceComponentSearchVocabularyLimitPolicy(),
-            recordedToolAnswers,
-            new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts"),
-            loggerFactory);
+            new WorkspaceSuggestionExecutorBuilder(
+                stageAgents,
+                tokens,
+                callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing(),
+                new WorkspaceSuggestionWorkflowOptions(),
+                recordedToolAnswers,
+                runUsage));
 
         return new WorkspaceSuggestionWorkflow(
             factory,

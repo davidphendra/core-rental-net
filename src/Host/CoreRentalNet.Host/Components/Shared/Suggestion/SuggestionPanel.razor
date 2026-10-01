@@ -10,6 +10,7 @@
    the markup renders whatever `SuggestionPanelState.BuildNotices` yields. *@
 @using CoreRentalNet.Modules.Workspace.Application.Commands.ReplaceComposition
 @using CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions
+@using Microsoft.AspNetCore.Http
 @inject IJSRuntime JavaScript
 @inject MicrosoftFoundryAgentConnectionSettings Agent
 @inject WorkspaceSuggestionAvailability Availability
@@ -176,6 +177,11 @@
         module ??= await JavaScript.InvokeAsync<IJSObjectReference>("import", "./js/ai-run.js");
 
         await module.InvokeVoidAsync("submitOnEnter", queryField, self);
+
+        // Ask the server once whether this session can still produce a catalogue token, so a session that has
+        // ended is said before a run is attempted rather than as a failed run. The probe is advisory: the run
+        // endpoint itself refuses a session that cannot produce one.
+        await module.InvokeVoidAsync("sessionStatus", self);
     }
 
     /// <summary>The customer pressed Enter in the field. Sends, exactly as the button does.</summary>
@@ -212,11 +218,38 @@
         return Task.CompletedTask;
     }
 
-    /// <summary>Refused before anything was streamed: no permission, a run in flight, or an empty request.</summary>
+    /// <summary>The code a refusal the session caused is drawn under, rather than a generic failure.</summary>
+    private const string ExpiredSessionCode = "session-expired";
+
+    /// <summary>Refused before anything was streamed: an expired session, no permission, a run in flight, or an
+    /// empty request.</summary>
     [JSInvokable]
     public Task Refused(int status)
     {
-        panelState.FailWithCode($"refused:{status}");
+        panelState.FailWithCode(status == StatusCodes.Status401Unauthorized
+            ? ExpiredSessionCode
+            : $"refused:{status}");
+
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>The server's answer to whether this session can still produce a catalogue token.</summary>
+    /// <remarks>
+    /// Advisory only: a session that cannot produce one is said here so the customer is told before they type,
+    /// and the run endpoint refuses it anyway. A probe that arrives while a run is in flight is ignored, because
+    /// the run owns the panel's state at that point.
+    /// </remarks>
+    [JSInvokable]
+    public Task SessionChecked(bool canRun)
+    {
+        if (canRun || panelState.IsRunning)
+        {
+            return Task.CompletedTask;
+        }
+
+        panelState.FailWithCode(ExpiredSessionCode);
         StateHasChanged();
 
         return Task.CompletedTask;

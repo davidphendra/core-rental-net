@@ -1,5 +1,5 @@
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
+using Auth0.AspNetCore.Authentication;
 
 namespace CoreRentalNet.Host.Infrastructure;
 
@@ -14,9 +14,9 @@ namespace CoreRentalNet.Host.Infrastructure;
 /// copy of the token.
 /// </para>
 /// <para>
-/// Outside a request, or before sign-in, there is no token to attach; the request is sent without
-/// one rather than with an empty header, so the API answers with its own 401 rather than being
-/// handed a header it has to interpret.
+/// Outside a request, or when the session can no longer produce a token, there is nothing to attach;
+/// the request is sent without one rather than with an expired one, so the API answers with its own 401
+/// rather than being handed a credential it has to interpret.
 /// </para>
 /// </remarks>
 public sealed class TokenHandler(IHttpContextAccessor httpContextAccessor) : DelegatingHandler
@@ -32,7 +32,9 @@ public sealed class TokenHandler(IHttpContextAccessor httpContextAccessor) : Del
 
         if (httpContextAccessor.HttpContext is { } context)
         {
-            var accessToken = await context.GetTokenAsync("access_token").ConfigureAwait(false);
+            // The identity SDK's own read: a still-valid token, a refreshed one when the recorded expiry has
+            // passed, or null when it cannot produce either. No `exp` is read here.
+            var accessToken = await context.GetAccessTokenAsync(new AccessTokenRequest()).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(accessToken))
             {
