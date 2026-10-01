@@ -29,6 +29,7 @@ public sealed class Auth0IdentityFactory : WebApplicationFactory<Program>
         builder.UseSetting("Auth0:ClientId", "client");
         builder.UseSetting("Auth0:ClientSecret", "client-secret");
         builder.UseSetting("Auth0:Audience", "https://corerental/api");
+        builder.UseSetting("Auth0:LeewaySeconds", "180");
     }
 
     protected override void Dispose(bool disposing)

@@ -101,8 +101,9 @@ internal static class IdentityRegistrationExtentions
     /// <remarks>
     /// <b>Nothing here reads `exp` or compares times.</b> The SDK validates the recorded expiry, exchanges the
     /// refresh token before it lapses, and reports a token or null; this only states the settings and says what
-    /// happens when a session can no longer be renewed. Turning refreshing on is also what adds `offline_access`
-    /// to the authorize request, which is the only reason Auth0 issues a refresh token at all.
+    /// happens when a session can no longer be renewed. The margin by which it refreshes ahead of expiry is the
+    /// deployment's, read from <c>Auth0:LeewaySeconds</c>. Turning refreshing on is also what adds
+    /// `offline_access` to the authorize request, which is the only reason Auth0 issues a refresh token at all.
     /// </remarks>
     private static void ConfigureAccessToken(Auth0WebAppWithAccessTokenOptions options, IdentitySettings settings)
     {
@@ -112,9 +113,12 @@ internal static class IdentityRegistrationExtentions
 
         options.UseRefreshTokens = true;
 
-        // A suggestion run streams for the better part of a minute, so refresh further ahead than the SDK's
-        // 60-second default and never start a run holding a token that lapses mid-run.
-        options.AccessTokenExpirationLeeway = TimeSpan.FromMinutes(2);
+        // The shortest remaining token life a run may be handed. A deployment that names no margin keeps the
+        // SDK's default; one that names a larger one is never handed a token that lapses before its run ends.
+        if (settings.AccessTokenExpirationLeeway is { } leeway)
+        {
+            options.AccessTokenExpirationLeeway = leeway;
+        }
 
         options.Events = new Auth0WebAppWithAccessTokenEvents
         {

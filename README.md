@@ -71,7 +71,8 @@ application behaves exactly as described above. To turn it on against your own A
        "ClientId": "…",
        "ClientSecret": "…",
        "Audience": "https://your-api-identifier",
-       "Scope": "openid profile email read:catalog"
+       "Scope": "openid profile email read:catalog",
+       "LeewaySeconds": 180
      }
    }
    ```
@@ -80,6 +81,13 @@ application behaves exactly as described above. To turn it on against your own A
    permission the login asks for — a per-app authorization policy issues a permission only when the
    login requested it. Neither is set in `appsettings.json`, so a deployment with no API signs in
    exactly as it did before.
+
+   `LeewaySeconds` is how far ahead of expiry the identity SDK refreshes the access token. Its shipped
+   value of **180** (three minutes) is declared in `appsettings.json`, beside the audience and scope;
+   naming it here overrides it. It matters because a suggestion run streams, and the agent presents the
+   caller's token to the catalogue on every call for as long as the run lasts — so the margin has to
+   exceed the longest run, or a run can outlive its own token. The identity SDK's own default is 60
+   seconds, and the API's **Maximum Access Token Lifetime** must be longer than whatever is set here.
 
    The same three values drive the development documentation page at `/swagger`, which authorizes
    with the same client and asks for the same scopes. One thing is worth knowing about PKCE: the
@@ -143,7 +151,10 @@ application behaves exactly as described above. To turn it on against your own A
    when the API has **Allow Offline Access** switched on (**APIs → your API → Settings**). Without it the SDK
    finds no refresh token, ends the local session and sends the customer back to sign in; a session that was
    already signed in when the setting was turned on is asked to sign in once. **Refresh Token Rotation** on the
-   same page is worth enabling, and the SDK stores the rotated token it returns.
+   same page is worth enabling, and the SDK stores the rotated token it returns. How far ahead of expiry the
+   SDK refreshes is `Auth0:LeewaySeconds` — **180**, three minutes, by default — because a suggestion run
+   streams and the agent keeps presenting the caller's token to the catalogue while it does; the API's
+   **Maximum Access Token Lifetime** must be longer than that margin.
 
 7. Run the app and use the sign-in link in the header.
 

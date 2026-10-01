@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace CoreRentalNet.Host.Presentation;
 
 /// <summary>
@@ -15,7 +17,7 @@ public sealed record IdentitySettings
     /// <summary>The scopes a deployment that names none gets.</summary>
     public const string DefaultScope = "openid profile email";
 
-    private IdentitySettings(bool enabled, string? domain, string? clientId, string? clientSecret, string? authority, string roleClaimType, string? audience, string scope)
+    private IdentitySettings(bool enabled, string? domain, string? clientId, string? clientSecret, string? authority, string roleClaimType, string? audience, string scope, TimeSpan? accessTokenExpirationLeeway)
     {
         Enabled = enabled;
         Domain = domain;
@@ -25,6 +27,7 @@ public sealed record IdentitySettings
         RoleClaimType = roleClaimType;
         Audience = audience;
         Scope = scope;
+        AccessTokenExpirationLeeway = accessTokenExpirationLeeway;
     }
 
     /// <summary>
@@ -92,6 +95,18 @@ public sealed record IdentitySettings
     /// </remarks>
     public string Scope { get; }
 
+    /// <summary>
+    /// The shortest remaining access-token life a run may be handed, when a deployment names one.
+    /// </summary>
+    /// <remarks>
+    /// Read from <c>Auth0:LeewaySeconds</c> and applied to the identity SDK's own
+    /// <c>AccessTokenExpirationLeeway</c>, which is the margin by which the SDK treats a stored token as
+    /// already expired and exchanges the session's refresh token rather than serving it. A run streams, and
+    /// the agent presents the caller's token to the catalogue on every call for as long as the run lasts, so
+    /// this is what keeps a token from lapsing before the run ends. Absent, the SDK's own default stands.
+    /// </remarks>
+    public TimeSpan? AccessTokenExpirationLeeway { get; }
+
     /// <summary>True only when there is enough configuration to authenticate at all.</summary>
     public bool IsConfigured =>
         Enabled && !string.IsNullOrWhiteSpace(Domain) && !string.IsNullOrWhiteSpace(ClientId);
@@ -116,6 +131,11 @@ public sealed record IdentitySettings
                 : null,
             configuration["Auth0:Scope"]?.Trim() is { Length: > 0 } scope
                 ? scope
-                : DefaultScope);
+                : DefaultScope,
+            configuration["Auth0:LeewaySeconds"]?.Trim() is { Length: > 0 } leewaySeconds
+                && int.TryParse(leewaySeconds, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds)
+                && seconds > 0
+                    ? TimeSpan.FromSeconds(seconds)
+                    : null);
     }
 }

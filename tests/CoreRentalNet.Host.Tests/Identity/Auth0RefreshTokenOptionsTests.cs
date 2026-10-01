@@ -27,8 +27,8 @@ public sealed class Auth0RefreshTokenOptionsTests(Auth0IdentityFactory factory) 
         withAccessToken.UseRefreshTokens.Should().BeTrue(
             "the SDK can only keep the access token valid if it is allowed to exchange the refresh token");
         withAccessToken.AccessTokenExpirationLeeway.Should().Be(
-            TimeSpan.FromMinutes(2),
-            "a suggestion run streams for the better part of a minute, so the default 60 seconds is too tight");
+            TimeSpan.FromMinutes(3),
+            "the deployment names the margin in Auth0:LeewaySeconds, and a run streams for longer than the SDK's 60-second default");
     }
 
     [Fact] // the scope is what makes Auth0 issue a refresh token, and the SDK adds it when refreshing is enabled

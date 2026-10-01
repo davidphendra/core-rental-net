@@ -91,11 +91,36 @@ public sealed class IdentitySettingsTests
     public void Without_a_named_authority_the_domain_decides()
         => Settings("true").Authority.Should().BeNull();
 
+    [Fact] // the margin that keeps a token from lapsing before a run ends
+    public void The_refresh_margin_is_the_deployments_when_it_names_one()
+        => SettingsWith("Auth0:LeewaySeconds", "180").AccessTokenExpirationLeeway.Should().Be(
+            TimeSpan.FromMinutes(3));
+
+    [Fact] // a deployment that says nothing keeps the identity SDK's own margin
+    public void Without_a_named_margin_the_identity_sdks_own_stands()
+        => Settings("true").AccessTokenExpirationLeeway.Should().BeNull();
+
+    [Theory] // a typo must not silently become a margin of zero
+    [InlineData("")]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("not-a-number")]
+    public void A_margin_that_is_not_a_positive_number_is_no_margin_at_all(string configured)
+        => SettingsWith("Auth0:LeewaySeconds", configured).AccessTokenExpirationLeeway.Should().BeNull();
+
     private static IdentitySettings Settings(string? enabled)
         => IdentitySettings.From(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Auth0:Enabled"] = enabled,
             ["Auth0:Domain"] = "tenant.example",
             ["Auth0:ClientId"] = "client",
+        }).Build());
+
+    private static IdentitySettings SettingsWith(string key, string? value)
+        => IdentitySettings.From(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Auth0:Domain"] = "tenant.example",
+            ["Auth0:ClientId"] = "client",
+            [key] = value,
         }).Build());
 }
