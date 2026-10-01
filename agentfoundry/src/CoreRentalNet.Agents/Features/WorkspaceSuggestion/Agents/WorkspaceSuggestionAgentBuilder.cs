@@ -1,0 +1,60 @@
+using CoreRentalNet.Agents.Shared.Agents;
+using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Model;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
+
+/// <summary>Builds the call's stage agents, each with the cross-cutting concerns composed in.</summary>
+/// <remarks>
+/// <para>
+/// <b>This is the one place the decorator order is written down.</b> Outside in: the mcpAuthorizationConnection decorator offers
+/// the tools this call's token entitles; the function loop resolves the tools the model calls; telemetry records
+/// what the call cost; the guardrail stops an answer that repeated the caller's token; and the model client is
+/// last. The order matters - a decorator below the function loop cannot be reached for a tool-calling turn - so
+/// it is stated once, in a type whose only job it is.
+/// </para>
+/// <para>
+/// Scoped like the run: every decorator here holds the run's token service, its mcpAuthorizationConnection connection and its
+/// usage accumulator.
+/// </para>
+/// </remarks>
+internal sealed class WorkspaceSuggestionAgentBuilder(
+    IChatClient chatClient,
+    IMcpAccessTokenService accessTokenService,
+    IMcpAuthorizationConnection mcpAuthorizationConnection,
+    McpToolAnswerLedger recordedToolAnswers,
+    AgentRunUsageAccumulator runUsageAccumulator,
+    ILoggerFactory loggerFactory)
+{
+    /// <summary>The agent for one roster entry, built the same way every stage is.</summary>
+    public AIAgent For(AgentProfile agentProfile)
+        => AgentFactory.Build(
+            agentProfile,
+            agentProfile.UsesCatalogueTools
+                ? StageChatClient(agentProfile)
+                : RegularChatClient(agentProfile)
+        );
+
+    private IChatClient StageChatClient(AgentProfile agentProfile)
+        => new AuthorisedMcpChatClient(
+            RegularChatClient(agentProfile),
+            accessTokenService,
+            mcpAuthorizationConnection,
+            agentProfile.UsesCatalogueTools,
+            recordedToolAnswers,
+            loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
+        );
+
+    private IChatClient RegularChatClient(AgentProfile agentProfile)
+        => new FunctionInvokingChatClient(
+            new ModelCallTelemetryChatClient(
+                new ModelOutputGuardrailChatClient(chatClient, accessTokenService),
+                agentProfile.Name,
+                runUsageAccumulator,
+                loggerFactory.CreateLogger<ModelCallTelemetryChatClient>()
+            ),
+            loggerFactory
+        );
+}
