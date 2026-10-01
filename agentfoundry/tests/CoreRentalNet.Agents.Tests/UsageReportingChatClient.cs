@@ -28,6 +28,13 @@ internal sealed class UsageReportingChatClient(int inputTokens, int outputTokens
         await Task.Yield();
 
         yield return new ChatResponseUpdate(ChatRole.Assistant, "a desk and a chair");
+
+        // What the call cost arrives on the stream, as a provider reports it, and not on the text update.
+        var usage = new ChatResponseUpdate();
+        usage.Contents.Add(new UsageContent(
+            new UsageDetails { InputTokenCount = inputTokens, OutputTokenCount = outputTokens }));
+
+        yield return usage;
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null) => null;

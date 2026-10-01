@@ -88,6 +88,25 @@ public sealed class ModelCallDecoratorTests
     }
 
     [Fact]
+    public async Task Telemetry_records_a_streamed_call_and_its_reported_tokens()
+    {
+        var telemetry = new ModelCallTelemetryChatClient(
+            new UsageReportingChatClient(inputTokens: 11, outputTokens: 5),
+            "gpt-4.1-mini",
+            "test-prompts",
+            NullLogger<ModelCallTelemetryChatClient>.Instance);
+
+        await foreach (var _ in telemetry.GetStreamingResponseAsync(Prompt, OptionsFor("workspace-setup-composer")))
+        {
+            // Draining the stream is what lets the telemetry see the usage update and record the call.
+        }
+
+        telemetry.Total.ModelCalls.Should().Be(1, "a streamed call is still a call");
+        telemetry.Total.InputTokens.Should().Be(11);
+        telemetry.Total.OutputTokens.Should().Be(5);
+    }
+
+    [Fact]
     public async Task Telemetry_names_the_stage_the_call_declared()
     {
         var runLog = new RunLogRecordingLoggerFactory();

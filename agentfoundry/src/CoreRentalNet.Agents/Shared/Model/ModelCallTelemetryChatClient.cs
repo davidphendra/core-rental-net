@@ -62,10 +62,24 @@ internal sealed class ModelCallTelemetryChatClient(
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
 
+        UsageDetails? usage = null;
+
         await foreach (var update in base.GetStreamingResponseAsync(messages, options, cancellationToken))
         {
+            // A stream reports what it cost on one of its updates, not on the call itself, so the figures are
+            // summed off the stream the same way the framework's own aggregation sums them.
+            foreach (var content in update.Contents)
+            {
+                if (content is UsageContent usageContent)
+                {
+                    (usage ??= new UsageDetails()).Add(usageContent.Details);
+                }
+            }
+
             yield return update;
         }
+
+        Record(activity, stageAgentName, usage);
     }
 
     /// <summary>The stage that made the call, from the name its agent put on the call's options.</summary>
