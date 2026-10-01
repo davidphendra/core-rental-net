@@ -18,7 +18,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 /// </para>
 /// <para>
 /// Scoped like the run, because the executors it builds hold the run's token service, its tool-answer ledger and
-/// its usage accumulator.
+/// its model-call telemetry.
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionExecutorBuilder(
@@ -27,7 +27,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
     AccessTokenHeaderReader accessTokenHeaderReader,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
     McpToolAnswerLedger recordedToolAnswers,
-    AgentRunUsageAccumulator runUsage)
+    IModelCallTelemetryChatClient modelCallTelemetryChatClient)
 {
     /// <summary>The graph's nodes, built and bound, ready for the topology to be laid over them.</summary>
     public WorkspaceSuggestionExecutors Build()
@@ -71,7 +71,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
             RetryDecision: new WorkspaceSetupRetryDecisionExecutor(
                 new WorkspaceSetupRetryDecisionPolicy(workflowOptions.MaximumAttemptCount)).BindExecutor(),
 
-            Success: new WorkspaceSuggestionSuccessCompletionExecutor(runUsage, accessTokens).BindExecutor(),
-            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(runUsage, accessTokens).BindExecutor(),
-            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(runUsage, accessTokens).BindExecutor());
+            Success: new WorkspaceSuggestionSuccessCompletionExecutor(modelCallTelemetryChatClient, accessTokens).BindExecutor(),
+            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(modelCallTelemetryChatClient, accessTokens).BindExecutor(),
+            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(modelCallTelemetryChatClient, accessTokens).BindExecutor());
 }

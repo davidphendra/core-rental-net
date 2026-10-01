@@ -358,21 +358,24 @@ public sealed class WorkflowTests
             new Dictionary<string, object?> { ["category"] = "desk", ["subCategory"] = null },
             RecordedCatalogueAnswer);
 
-        var runUsage = new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts");
+        var modelCallTelemetry = new ModelCallTelemetryChatClient(
+            new ModelOutputGuardrailChatClient(client, tokens),
+            "gpt-4.1-mini",
+            "test-prompts",
+            loggerFactory.CreateLogger<ModelCallTelemetryChatClient>());
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            client, tokens, catalogue, recordedToolAnswers, runUsage, loggerFactory);
+            tokens, catalogue, recordedToolAnswers, modelCallTelemetry, loggerFactory);
 
-        var factory = new WorkspaceSuggestionWorkflowFactory(
-            new WorkspaceSuggestionExecutorBuilder(
-                stageAgents,
-                tokens,
-                callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing(),
-                new WorkspaceSuggestionWorkflowOptions(),
-                recordedToolAnswers,
-                runUsage));
+        var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
+            stageAgents,
+            tokens,
+            callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing(),
+            new WorkspaceSuggestionWorkflowOptions(),
+            recordedToolAnswers,
+            modelCallTelemetry);
 
         return new WorkspaceSuggestionWorkflow(
-            factory,
+            executorBuilder,
             new WorkspaceSuggestionAgentIdentity { AgentName = "core-rental-workspace-suggestion-agent" })
             .AsAIAgent();
     }

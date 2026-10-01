@@ -9,23 +9,23 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 /// <summary>Builds the call's stage agents, each with the cross-cutting concerns composed in.</summary>
 /// <remarks>
 /// <para>
-/// <b>This is the one place the decorator order is written down.</b> Outside in: the mcpAuthorizationConnection decorator offers
-/// the tools this call's token entitles; the function loop resolves the tools the model calls; telemetry records
-/// what the call cost; the guardrail stops an answer that repeated the caller's token; and the model client is
-/// last. The order matters - a decorator below the function loop cannot be reached for a tool-calling turn - so
-/// it is stated once, in a type whose only job it is.
+/// <b>This is the one place the per-stage decorator order is written down.</b> Outside in: the mcpAuthorizationConnection
+/// decorator offers the tools this call's token entitles; the function loop resolves the tools the model calls; and
+/// the run-scoped telemetry is last. The order matters - a decorator below the function loop cannot be reached for a
+/// tool-calling turn - so it is stated here. The telemetry's own inner chain - the token-leak guardrail and then the
+/// model client - is composed where that one instance is registered, because it records the whole run and not one
+/// stage of it.
 /// </para>
 /// <para>
 /// Scoped like the run: every decorator here holds the run's token service, its mcpAuthorizationConnection connection and its
-/// usage accumulator.
+/// model-call telemetry.
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionAgentBuilder(
-    IChatClient chatClient,
     IMcpAccessTokenService accessTokenService,
     IMcpAuthorizationConnection mcpAuthorizationConnection,
     McpToolAnswerLedger recordedToolAnswers,
-    AgentRunUsageAccumulator runUsageAccumulator,
+    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
     ILoggerFactory loggerFactory)
 {
     /// <summary>The agent for one roster entry, built the same way every stage is.</summary>
@@ -48,13 +48,5 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
         );
 
     private IChatClient RegularChatClient(AgentProfile agentProfile)
-        => new FunctionInvokingChatClient(
-            new ModelCallTelemetryChatClient(
-                new ModelOutputGuardrailChatClient(chatClient, accessTokenService),
-                agentProfile.Name,
-                runUsageAccumulator,
-                loggerFactory.CreateLogger<ModelCallTelemetryChatClient>()
-            ),
-            loggerFactory
-        );
+        => new FunctionInvokingChatClient(modelCallTelemetryChatClient, loggerFactory);
 }

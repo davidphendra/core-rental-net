@@ -198,8 +198,7 @@ Found by building against the pinned packages, not assumed:
 |---|---|---|
 | The caller's credential | `CallerAccessTokenHeaderReader` → `IMcpAccessTokenService` → `CallerCatalogueAccessTokenAttachmentHandler` | read once off the invocation, held for the call, stamped on each MCP request; never logged |
 | Catalogue tools | the same decorator | offered only to a stage that declares `UsesCatalogueTools` |
-| Run cost | `AgentRunUsageAccumulator` | scoped to the run; counted where the calls are observed, and reported on the `completed` event |
-| Model telemetry | `ModelCallTelemetryChatClient` | one span and one line per call, per stage |
+| Run cost and model telemetry | `ModelCallTelemetryChatClient` | scoped to the run; the innermost decorator, wrapping the guardrail; one span and one line per call, the stage named by the call's options, and the run's total reported on the `completed` event |
 | Token-leak guardrail | `ModelOutputGuardrailChatClient` | fails the run loudly if an answer ever repeats the caller's token |
 | Transport retries | `ModelTransportRetryOptions` | **not** a run's attempt count; the two never share a counter |
 | The `type` discriminator | `StreamingStageExecutor<TState, TEvent>` | the union is a class type parameter, so a stage cannot publish through a concrete type and silently drop `type` |

@@ -2,6 +2,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Model;
@@ -48,10 +49,15 @@ public static class WorkspaceSuggestionRegistration
         // no splitter to register and no member on the request for a splitter to recognise.
         services.AddScoped<AccessTokenHeaderReader>();
 
-        // One run's cost, counted across its stages, and the model and instructions that produced it.
-        services.AddScoped(_ => new AgentRunUsageAccumulator(
+        // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
+        // stage's call, so the totals are the run's, and it names the stage from the options its agent set.
+        services.AddScoped<IModelCallTelemetryChatClient>(provider => new ModelCallTelemetryChatClient(
+            new ModelOutputGuardrailChatClient(
+                modelClient,
+                provider.GetRequiredService<IMcpAccessTokenService>()),
             configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
-            WorkspaceSuggestionAgentRoster.PromptVersions));
+            WorkspaceSuggestionAgentRoster.PromptVersions,
+            provider.GetRequiredService<ILogger<ModelCallTelemetryChatClient>>()));
 
         // Scoped like the run, so the tools a call listed stay callable for as long as its token lives.
         services.AddScoped<IMcpAuthorizationConnection, McpAuthorizationConnection>();
@@ -61,8 +67,8 @@ public static class WorkspaceSuggestionRegistration
         services.AddScoped<McpToolAnswerLedger>();
 
         // The stage agents - the one place the decorators' order is stated - and the executors built from them.
-        // Both are scoped like the run, because the agents hold its token service and its usage accumulator and
-        // the executors hold its ledger.
+        // Both are scoped like the run, because the agents hold its token service and its model-call telemetry
+        // and the executors hold its ledger.
         services.AddScoped<WorkspaceSuggestionAgentBuilder>();
         services.AddScoped<WorkspaceSuggestionExecutorBuilder>();
         services.AddScoped<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();

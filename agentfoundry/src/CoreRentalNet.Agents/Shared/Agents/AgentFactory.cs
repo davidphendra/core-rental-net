@@ -1,5 +1,6 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Shared.Prompts;
 
 namespace CoreRentalNet.Agents.Shared.Agents;
@@ -32,6 +33,13 @@ internal static class AgentFactory
                 {
                     Instructions = instructions.Text,
                     ResponseFormat = profile.Output,
+
+                    // The stage names itself here so the run-scoped telemetry can attribute each model call to
+                    // it. The framework merges these properties into the options of every call the agent makes.
+                    AdditionalProperties = new AdditionalPropertiesDictionary
+                    {
+                        [IModelCallTelemetryChatClient.AgentName] = profile.Name,
+                    },
                 },
             });
     }

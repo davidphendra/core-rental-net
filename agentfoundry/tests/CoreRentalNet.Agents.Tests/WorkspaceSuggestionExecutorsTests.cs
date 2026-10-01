@@ -52,10 +52,13 @@ public sealed class WorkspaceSuggestionExecutorsTests
     {
         var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var recordedToolAnswers = new McpToolAnswerLedger();
-        var runUsage = new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts");
+        var modelCallTelemetry = new ModelCallTelemetryChatClient(
+            new ModelOutputGuardrailChatClient(new ScriptedChatClient("{}"), tokens),
+            "gpt-4.1-mini",
+            "test-prompts",
+            NullLogger<ModelCallTelemetryChatClient>.Instance);
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            new ScriptedChatClient("{}"),
             tokens,
             new McpAuthorizationConnection(
                 new McpSetting(string.Empty),
@@ -63,7 +66,7 @@ public sealed class WorkspaceSuggestionExecutorsTests
                 NullLoggerFactory.Instance,
                 NullLogger<McpAuthorizationConnection>.Instance),
             recordedToolAnswers,
-            runUsage,
+            modelCallTelemetry,
             NullLoggerFactory.Instance);
 
         return new WorkspaceSuggestionExecutorBuilder(
@@ -72,6 +75,6 @@ public sealed class WorkspaceSuggestionExecutorsTests
             TheInvocationARunArrivesIn.CarryingNothing(),
             new WorkspaceSuggestionWorkflowOptions(),
             recordedToolAnswers,
-            runUsage).Build();
+            modelCallTelemetry).Build();
     }
 }

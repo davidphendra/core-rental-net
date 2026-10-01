@@ -14,7 +14,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// setup's arrival never implies a successful run.
 /// </remarks>
 internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
-    AgentRunUsageAccumulator agentRunUsageAccumulator,
+    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
     IMcpAccessTokenService accessTokenService)
     : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.SuccessCompletion)
 {
@@ -41,7 +41,7 @@ internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
 
         await PublishStreamEventAsync(
             workflowContext,
-            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, agentRunUsageAccumulator.Total),
+            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, modelCallTelemetryChatClient.Total),
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;

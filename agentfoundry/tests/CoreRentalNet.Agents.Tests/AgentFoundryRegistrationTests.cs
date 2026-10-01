@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
@@ -75,15 +76,38 @@ public sealed class AgentFoundryRegistrationTests
         agent.Name.Should().Be(SuggestionAgentName);
     }
 
+    [Fact]
+    public void The_run_telemetry_is_resolved_by_its_port()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddScoped<IMcpAccessTokenService>(
+            _ => new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance));
+
+        services.AddWorkspaceSuggestionFeature(
+            Configuration((WorkspaceSuggestionAgentIdentity.ConfigurationKey, SuggestionAgentName)),
+            new ScriptedChatClient("{}"));
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        scope.ServiceProvider.GetRequiredService<IModelCallTelemetryChatClient>()
+            .Should().BeOfType<ModelCallTelemetryChatClient>(
+                "callers depend on the port and DI injects the sealed implementation");
+    }
+
     private static WorkspaceSuggestionWorkflow Workflow()
     {
         var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var catalog = new McpSetting(string.Empty);
         var recordedToolAnswers = new McpToolAnswerLedger();
-        var runUsage = new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts");
+        var modelCallTelemetry = new ModelCallTelemetryChatClient(
+            new ModelOutputGuardrailChatClient(new ScriptedChatClient("{}"), tokens),
+            "gpt-4.1-mini",
+            "test-prompts",
+            NullLogger<ModelCallTelemetryChatClient>.Instance);
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            new ScriptedChatClient("{}"),
             tokens,
             new McpAuthorizationConnection(
                 catalog,
@@ -91,20 +115,19 @@ public sealed class AgentFoundryRegistrationTests
                 NullLoggerFactory.Instance,
                 NullLogger<McpAuthorizationConnection>.Instance),
             recordedToolAnswers,
-            runUsage,
+            modelCallTelemetry,
             NullLoggerFactory.Instance);
 
-        var factory = new WorkspaceSuggestionWorkflowFactory(
-            new WorkspaceSuggestionExecutorBuilder(
-                stageAgents,
-                tokens,
-                TheInvocationARunArrivesIn.CarryingNothing(),
-                new WorkspaceSuggestionWorkflowOptions(),
-                recordedToolAnswers,
-                runUsage));
+        var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
+            stageAgents,
+            tokens,
+            TheInvocationARunArrivesIn.CarryingNothing(),
+            new WorkspaceSuggestionWorkflowOptions(),
+            recordedToolAnswers,
+            modelCallTelemetry);
 
         return new(
-            factory,
+            executorBuilder,
             new WorkspaceSuggestionAgentIdentity { AgentName = SuggestionAgentName });
     }
 

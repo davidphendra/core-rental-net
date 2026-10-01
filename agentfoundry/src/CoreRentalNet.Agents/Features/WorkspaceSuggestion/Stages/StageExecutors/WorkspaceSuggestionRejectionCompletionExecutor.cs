@@ -9,7 +9,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
 internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
-    AgentRunUsageAccumulator runUsage,
+    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
     IMcpAccessTokenService accessTokens)
     : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion)
 {
@@ -27,7 +27,7 @@ internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
 
         await PublishStreamEventAsync(
             workflowContext,
-            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, runUsage.Total),
+            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, modelCallTelemetryChatClient.Total),
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;

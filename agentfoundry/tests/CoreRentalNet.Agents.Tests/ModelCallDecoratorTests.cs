@@ -1,6 +1,10 @@
 using AwesomeAssertions;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
+using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Shared.Mcp;
 using Xunit;
@@ -55,12 +59,78 @@ public sealed class ModelCallDecoratorTests
     {
         var telemetry = new ModelCallTelemetryChatClient(
             new FixedChatClient("A calm, focused setup."),
-            "workspace-setup-composer",
-            new AgentRunUsageAccumulator("gpt-4.1-mini", "test-prompts"),
+            "gpt-4.1-mini",
+            "test-prompts",
             NullLogger<ModelCallTelemetryChatClient>.Instance);
 
         var response = await telemetry.GetResponseAsync(Prompt);
 
         response.Text.Should().Be("A calm, focused setup.");
     }
+
+    [Fact]
+    public async Task Telemetry_adds_up_every_stage_into_the_runs_one_total()
+    {
+        var telemetry = new ModelCallTelemetryChatClient(
+            new UsageReportingChatClient(inputTokens: 10, outputTokens: 4),
+            "gpt-4.1-mini",
+            "test-prompts",
+            NullLogger<ModelCallTelemetryChatClient>.Instance);
+
+        await telemetry.GetResponseAsync(Prompt, OptionsFor("workspace-setup-composer"));
+        await telemetry.GetResponseAsync(Prompt, OptionsFor("workspace-setup-reviewer"));
+
+        telemetry.Total.ModelCalls.Should().Be(2, "a run's cost is the sum of its stages', not one stage's");
+        telemetry.Total.InputTokens.Should().Be(20);
+        telemetry.Total.OutputTokens.Should().Be(8);
+        telemetry.Total.Model.Should().Be("gpt-4.1-mini");
+        telemetry.Total.PromptVersion.Should().Be("test-prompts");
+    }
+
+    [Fact]
+    public async Task Telemetry_names_the_stage_the_call_declared()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var telemetry = new ModelCallTelemetryChatClient(
+            new FixedChatClient("A calm, focused setup."),
+            "gpt-4.1-mini",
+            "test-prompts",
+            runLog.CreateLogger<ModelCallTelemetryChatClient>());
+
+        await telemetry.GetResponseAsync(Prompt, OptionsFor("workspace-setup-composer"));
+
+        runLog.RecordedLines.Should().ContainSingle()
+            .Which.Should().Contain(
+                "workspace-setup-composer",
+                "a call is attributed to the stage whose agent named it on the options");
+    }
+
+    [Fact]
+    public async Task The_agent_naming_itself_puts_that_name_on_the_runs_telemetry()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var telemetry = new ModelCallTelemetryChatClient(
+            new FixedChatClient("A calm, focused setup."),
+            "gpt-4.1-mini",
+            "test-prompts",
+            runLog.CreateLogger<ModelCallTelemetryChatClient>());
+        var agent = AgentFactory.Build(
+            WorkspaceSuggestionAgentRoster.Composer,
+            new FunctionInvokingChatClient(telemetry, runLog));
+
+        await agent.RunAsync("a desk and a chair");
+
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("workspace-setup-composer"),
+            "a stage names itself on its agent's options and the telemetry reads it from the call");
+    }
+
+    private static ChatOptions OptionsFor(string stageAgentName)
+        => new()
+        {
+            AdditionalProperties = new AdditionalPropertiesDictionary
+            {
+                [IModelCallTelemetryChatClient.AgentName] = stageAgentName,
+            },
+        };
 }

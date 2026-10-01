@@ -9,7 +9,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 
 /// <summary>Ends a run whose attempts are exhausted, or whose catalogue could not be searched.</summary>
 internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
-    AgentRunUsageAccumulator runUsage,
+    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
     IMcpAccessTokenService accessTokens)
     : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion)
 {
@@ -27,7 +27,7 @@ internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
 
         await PublishStreamEventAsync(
             workflowContext,
-            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, runUsage.Total),
+            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, modelCallTelemetryChatClient.Total),
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;

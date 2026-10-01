@@ -1,35 +1,54 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Agents.Shared.Model;
 
-/// <summary>Records one span and one line for every model call a stage makes.</summary>
+/// <summary>Records one span and one line per model call, and adds up what the run cost.</summary>
 /// <remarks>
-/// A run is several model calls across several stages, and the workflow's own events say which stage ran but not
-/// what it cost. This is where a stage's tokens are observed, so a run's cost can be attributed to the stage that
-/// spent it rather than to the run as a whole.
+/// <para>
+/// Scoped to the run, because a cost is the run's and not the process's: the stages of one run share this, and a
+/// concurrent run has its own. It is the innermost decorator, wrapping the guardrail and the model client, and it
+/// names the stage from the call's own options — the agent sets <see cref="StageAgentNamePropertyName"/> — so a
+/// call is attributed to the stage that made it.
+/// </para>
+/// <para>
+/// An interrupted call still counts as a call — the transport attempted it — but its tokens are whatever the
+/// response reported, which for a failure is nothing.
+/// </para>
 /// </remarks>
 internal sealed class ModelCallTelemetryChatClient(
     IChatClient innerClient,
-    string stageAgentName,
-    AgentRunUsageAccumulator runUsage,
-    ILogger<ModelCallTelemetryChatClient> logger) : DelegatingChatClient(innerClient)
+    string modelName,
+    string promptVersion,
+    ILogger<ModelCallTelemetryChatClient> logger) : DelegatingChatClient(innerClient), IModelCallTelemetryChatClient
 {
     private static readonly ActivitySource StageModelCallActivitySource = new("CoreRentalNet.Agents.StageAgent");
+
+    private int _modelCalls;
+    private long _inputTokens;
+    private long _outputTokens;
+
+    /// <summary>What the run has cost so far.</summary>
+    public AgentRunUsage Total => new(
+        _modelCalls,
+        (int)Interlocked.Read(ref _inputTokens),
+        (int)Interlocked.Read(ref _outputTokens),
+        modelName,
+        promptVersion);
 
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        var stageAgentName = StageAgentNameOf(options);
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
 
         var response = await base.GetResponseAsync(messages, options, cancellationToken);
 
-        Record(activity, response.Usage);
+        Record(activity, stageAgentName, response.Usage);
 
         return response;
     }
@@ -39,6 +58,7 @@ internal sealed class ModelCallTelemetryChatClient(
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        var stageAgentName = StageAgentNameOf(options);
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
 
@@ -48,10 +68,23 @@ internal sealed class ModelCallTelemetryChatClient(
         }
     }
 
+    /// <summary>The stage that made the call, from the name its agent put on the call's options.</summary>
+    private static string StageAgentNameOf(ChatOptions? options)
+        => options?.AdditionalProperties?.TryGetValue(IModelCallTelemetryChatClient.AgentName, out var value) is true
+            && value is string stageAgentName
+            ? stageAgentName
+            : "(unnamed stage)";
+
     /// <summary>Puts the tokens on the span and in the log, never a prompt and never an answer.</summary>
-    private void Record(Activity? activity, UsageDetails? usage)
+    private void Record(Activity? activity, string stageAgentName, UsageDetails? usage)
     {
-        runUsage.Record(usage);
+        Interlocked.Increment(ref _modelCalls);
+
+        if (usage is not null)
+        {
+            Interlocked.Add(ref _inputTokens, usage.InputTokenCount ?? 0);
+            Interlocked.Add(ref _outputTokens, usage.OutputTokenCount ?? 0);
+        }
 
         var inputTokens = usage?.InputTokenCount ?? 0;
         var outputTokens = usage?.OutputTokenCount ?? 0;
