@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Features.EchoReply.StageClient;
+using CoreRentalNet.Agents.Shared.Model;
 using Xunit;
 
 namespace CoreRentalNet.Agents.Tests;
@@ -18,10 +19,12 @@ public sealed class EchoReplyChatClientTests
     private static readonly ChatMessage[] Messages =
         [new(ChatRole.System, "instructions the client must not echo"), new(ChatRole.User, "hello there")];
 
+    private static EchoReplyChatClient Client() => new(NoOpChatClient.Instance);
+
     [Fact]
     public async Task The_reply_is_the_callers_message_exactly()
     {
-        var response = await new EchoReplyChatClient().GetResponseAsync(Messages);
+        var response = await Client().GetResponseAsync(Messages);
 
         response.Text.Should().Be("hello there", "a pure echo adds nothing, not even a prefix");
     }
@@ -31,7 +34,7 @@ public sealed class EchoReplyChatClientTests
     {
         var fragments = new List<string>();
 
-        await foreach (var update in new EchoReplyChatClient().GetStreamingResponseAsync(Messages))
+        await foreach (var update in Client().GetStreamingResponseAsync(Messages))
         {
             fragments.Add(update.Text ?? string.Empty);
         }
@@ -42,7 +45,7 @@ public sealed class EchoReplyChatClientTests
     [Fact]
     public async Task The_system_prompt_is_not_echoed()
     {
-        var response = await new EchoReplyChatClient().GetResponseAsync(Messages);
+        var response = await Client().GetResponseAsync(Messages);
 
         response.Text.Should().NotContain("instructions", "the echo is the caller's message, not the run's setup");
     }
@@ -50,7 +53,7 @@ public sealed class EchoReplyChatClientTests
     [Fact]
     public async Task A_run_with_no_user_message_answers_empty()
     {
-        var response = await new EchoReplyChatClient()
+        var response = await Client()
             .GetResponseAsync([new(ChatRole.System, "instructions")]);
 
         response.Text.Should().BeEmpty();
@@ -60,7 +63,7 @@ public sealed class EchoReplyChatClientTests
     public async Task The_reply_is_not_a_document()
     {
         // The profile declares ChatResponseFormat.Text on purpose: the reply is the query, not an envelope.
-        var response = await new EchoReplyChatClient().GetResponseAsync(Messages);
+        var response = await Client().GetResponseAsync(Messages);
 
         response.Text.Should().NotStartWith("{").And.NotStartWith("[");
     }

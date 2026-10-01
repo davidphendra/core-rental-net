@@ -3,6 +3,7 @@ using CoreRentalNet.Agents.Features.EchoReply.Agents;
 using CoreRentalNet.Agents.Features.EchoReply.StageClient;
 using CoreRentalNet.Agents.Features.EchoReply.Stages;
 using CoreRentalNet.Agents.Shared.Agents;
+using CoreRentalNet.Agents.Shared.Model;
 
 namespace CoreRentalNet.Agents.Features.EchoReply;
 
@@ -18,7 +19,7 @@ internal sealed class EchoReplyWorkflowFactory
     public Workflow BuildEchoReplyWorkflow()
     {
         var echoReplyStage = new EchoReplyStageExecutor(
-            AgentFactory.Build(EchoReplyAgentRoster.EchoReply, new EchoReplyChatClient())).BindExecutor();
+            AgentFactory.Build(EchoReplyAgentRoster.EchoReply, new EchoReplyChatClient(NoOpChatClient.Instance))).BindExecutor();
 
         return new WorkflowBuilder(echoReplyStage)
             .WithOutputFrom(echoReplyStage)
