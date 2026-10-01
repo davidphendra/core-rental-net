@@ -35,6 +35,12 @@ internal static class IdentityRegistrationExtentions
         builder.Services.AddSingleton(settings);
         builder.Services.AddSingleton(permissionClaim);
 
+        // The run endpoint's own read of the caller's token, registered whether or not identity is configured.
+        // What it reads only exists once the SDK is configured, and a deployment with no identity closes the
+        // builder's permission before the endpoint could reach it - so registering it in one branch alone would
+        // make the endpoint's dependencies depend on which branch ran.
+        builder.Services.AddScoped<ICallerAccessTokenService, CallerAccessTokenService>();
+
         if (!settings.IsConfigured)
         {
             // Not nothing: a permission that is closed when nobody can be checked still has to answer,

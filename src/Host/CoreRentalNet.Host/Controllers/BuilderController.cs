@@ -1,4 +1,3 @@
-using Auth0.AspNetCore.Authentication;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation.WorkspaceSuggestion;
@@ -39,7 +38,8 @@ namespace CoreRentalNet.Host.Controllers;
 [Route(BuilderRoutes.Suggest)]
 internal sealed class BuilderController(
     IWorkspaceSuggestionRequestFactory suggestionRequestFactory,
-    IWorkspaceSuggestionRunService suggestionRunService) : ControllerBase
+    IWorkspaceSuggestionRunService suggestionRunService,
+    ICallerAccessTokenService callerAccessTokenService) : ControllerBase
 {
     /// <summary>The refusal shape every problem on this API arrives as, named rather than left to the formatters.</summary>
     private const string ProblemJson = "application/problem+json";
@@ -60,11 +60,12 @@ internal sealed class BuilderController(
     /// the permission checked before it.
     /// </para>
     /// <para>
-    /// <b>The customer's own token is read fresh, and refreshed when it has expired, through the identity
-    /// SDK</b>, then forwarded rather than checked; the catalogue answers for the token itself when the agent
-    /// presents it, and only the agent can tell "no token" from "a token the catalogue refused". The agent reads
-    /// it off the invocation's own `x-client-mcp-catalog-access-token` header one layer down, so what reaches the
-    /// prompt is the sentence and the slot rules and nothing else.
+    /// <b>The customer's own token is read fresh, and refreshed when it has expired, through the
+    /// caller-token service</b> - which reads the identity SDK, the only place expiry is decided - then
+    /// forwarded rather than checked; the catalogue answers for the token itself when the agent presents it, and
+    /// only the agent can tell "no token" from "a token the catalogue refused". The agent reads it off the
+    /// invocation's own `x-client-mcp-catalog-access-token` header one layer down, so what reaches the prompt is
+    /// the sentence and the slot rules and nothing else.
     /// </para>
     /// </remarks>
     [HttpPost]
@@ -77,17 +78,19 @@ internal sealed class BuilderController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
     public async Task Suggest([FromBody] WorkspaceSuggestionQueryRequest suggestionQueryRequest)
     {
-        // The identity SDK's own read: it returns the login-time token while the recorded expiry is still ahead of
-        // now (plus a leeway), refreshes it from the session's refresh token when it is not, and returns null when
-        // it cannot. That null is the whole of the expiry detection, and no `exp` is read here.
-        var callerAccessToken = await HttpContext.GetAccessTokenAsync(new AccessTokenRequest())
-            .ConfigureAwait(false);
-
-        // Refused before the stream opens and before a run is paid for. A session that cannot produce the caller's
-        // token cannot read the catalogue, so this is a session that has ended being reported as one rather than a
-        // run being charged for and quietly failing at the far end.
-        if (string.IsNullOrWhiteSpace(callerAccessToken))
+        // The identity SDK's own read, through the service: the login-time token while the recorded expiry is
+        // still ahead of now (by the SDK's own margin), a refreshed one from the session's refresh token when it
+        // is not, and a failure when it can produce neither. No `exp` is read here and no refresh is owned here.
+        string accessToken;
+        try
         {
+            accessToken = await callerAccessTokenService.GetForTheRunAsync().ConfigureAwait(false);
+        }
+        catch (CallerAccessTokenUnavailableException)
+        {
+            // Refused before the stream opens and before a run is paid for. A session that cannot produce the
+            // caller's token cannot read the catalogue, so this is a session that has ended being reported as one
+            // rather than a run being charged for and quietly failing at the far end.
             await RefuseBecauseTheSessionCannotProduceATokenAsync();
 
             return;
@@ -103,7 +106,7 @@ internal sealed class BuilderController(
 
         await suggestionRunService.RunSuggestionAsync(
             suggestionRequestPayload,
-            callerAccessToken,
+            accessToken,
             suggestionEventWriter,
             User.HashCustomerIdentity(),
             HttpContext.RequestAborted);
