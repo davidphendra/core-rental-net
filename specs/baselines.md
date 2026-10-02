@@ -10,6 +10,10 @@ Measured on `8783ebf`, the commit before this file.
 
 `dotnet build CoreRentalNet.sln`, Debug and Release: **0 warnings, 7 errors**.
 
+Re-verified on the working tree after the workspace node-trace change: still 0 warnings and the same seven
+errors below. The change is in `agentfoundry/`, and `CoreRentalNet.sln` references no project there, so this
+baseline cannot move with it.
+
 All seven are in `tests/CoreRentalNet.IntegrationTests/AgentInvocationHeaderTests.cs` (`CS0117`, four
 facts). The test calls `RunScopeAccessToken.CarryTheTokenOf` and reads `RunScopeAccessToken.AccessToken`,
 and the type has neither: it was flattened to a settable `Current` over a `RunContext` record. The test
@@ -47,7 +51,12 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **136 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **138 passed, 0 failed**.
+
+Two over the previous recording, and both are the node-trace tests: one pins that every node a run reaches
+writes a started line and a completed line, and that a node the run never reached writes nothing; the other
+pins that a run ending at the gate logs only the nodes it reached. This is the only baseline the change moves,
+because the agent solution is not part of `CoreRentalNet.sln`.
 
 ## BROWSER
 
