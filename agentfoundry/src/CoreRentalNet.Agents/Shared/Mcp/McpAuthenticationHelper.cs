@@ -60,7 +60,10 @@ internal static class McpAuthenticationHelper
                     Name = mcpEndpointUri.ToString(),
                 },
                 BuildTheClientThatPresentsTheCallersToken(
-                    mcpAccessTokenService, catalogueServerRequestPolicy, loggerFactory),
+                    mcpAccessTokenService,
+                    catalogueServerRequestPolicy,
+                    loggerFactory
+                ),
                 loggerFactory,
                 ownsHttpClient: true),
             cancellationToken: cancellationToken);
