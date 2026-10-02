@@ -1,4 +1,5 @@
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Reading;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -37,12 +38,12 @@ public sealed class WorkspaceSuggestionRunState(string workspaceQuery)
     /// candidate true is the workspace refusing to apply one it cannot honour.
     /// </remarks>
     public WorkspaceSuggestionResultFrame? CompleteWithAgentAnswer(
-        WorkspaceSuggestionResultReadyAgentEvent resultReadyAgentEvent)
+        WorkspaceSuggestionResultReadyEvent resultReadyEvent)
     {
-        var suggestionAnswer = resultReadyAgentEvent.SuggestionAnswer;
+        var suggestionAnswer = resultReadyEvent.SuggestionAnswer;
 
         _ledger.RunUsage = suggestionAnswer.RunUsage;
-        _ledger.PayloadHash = resultReadyAgentEvent.PayloadHash;
+        _ledger.PayloadHash = resultReadyEvent.PayloadHash;
         HasEnded = true;
 
         if (suggestionAnswer.Status is WorkspaceSuggestionAnswerStatus.NotWorkspace)

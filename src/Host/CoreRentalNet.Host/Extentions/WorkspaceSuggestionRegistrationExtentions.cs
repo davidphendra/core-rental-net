@@ -29,7 +29,7 @@ internal static class WorkspaceSuggestionRegistrationExtentions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var connectionSettings = new MicrosoftFoundryAgentConnectionSettings(
+        var connectionSettings = new AgentFoundryConnectionSetting(
             Enabled: builder.Configuration.GetValue("AgentFoundry:Enabled", false),
             ProjectEndpoint: builder.Configuration["AgentFoundry:ProjectEndpoint"]?.Trim() ?? string.Empty,
             AgentName: builder.Configuration["AgentFoundry:AgentName"]?.Trim() ?? "core-rental-workspace-suggestion-agent");
@@ -39,7 +39,7 @@ internal static class WorkspaceSuggestionRegistrationExtentions
 
         builder.Services.AddSingleton<IWorkspaceSuggestionAgentAdapter>(_ =>
             connectionSettings.IsConfigured
-                ? new MicrosoftFoundryWorkspaceSuggestionAgentAdapter(connectionSettings)
+                ? new AgentFoundryWorkspaceSuggestionAdapter(connectionSettings)
                 : new UnconfiguredWorkspaceSuggestionAgentAdapter());
 
         builder.Services.AddSingleton<IWorkspaceSuggestionRunRecordWriter, LoggerWorkspaceSuggestionRunRecordWriter>();
@@ -52,7 +52,7 @@ internal static class WorkspaceSuggestionRegistrationExtentions
         builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionUnavailableStreamEventHandler>();
         builder.Services.AddSingleton<IWorkspaceSuggestionStreamProcessor, WorkspaceSuggestionStreamProcessor>();
 
-        builder.Services.AddScoped<IWorkspaceSuggestionRequestFactory, WorkspaceSuggestionRequestFactory>();
+        builder.Services.AddScoped<IWorkspaceSuggestionRequestFactory, WorkspaceSuggestionRequestPayloadFactory>();
         builder.Services.AddScoped<IWorkspaceSuggestionRunService, WorkspaceSuggestionRunService>();
 
         // The panel's own composition: the registry a rendered notice is drawn through. It is registered here

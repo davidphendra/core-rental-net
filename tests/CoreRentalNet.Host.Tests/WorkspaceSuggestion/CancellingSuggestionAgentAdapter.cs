@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 
 namespace CoreRentalNet.Host.Tests.WorkspaceSuggestion;
 

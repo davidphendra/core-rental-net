@@ -1,6 +1,6 @@
 @* The suggestion panel: ask for a suggestion, read the run as it happens, and stop it if it takes too long.
 
-   Gated twice, and the gates answer different questions. `MicrosoftFoundryAgentConnectionSettings` says whether
+   Gated twice, and the gates answer different questions. `AgentFoundryConnectionSetting` says whether
    this deployment has an agent at all, so a deployment without one looks exactly as it did before the feature
    existed. The permission says whether this customer may spend. Neither is authorisation on its own: the
    endpoint checks the permission for itself, because a panel that is not rendered is presentation rather than a
@@ -12,7 +12,7 @@
 @using CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions
 @using Microsoft.AspNetCore.Http
 @inject IJSRuntime JavaScript
-@inject MicrosoftFoundryAgentConnectionSettings Agent
+@inject AgentFoundryConnectionSetting Agent
 @inject WorkspaceSuggestionAvailability Availability
 @inject IWorkspaceSession Session
 @inject IReplaceCompositionHandler Compositions

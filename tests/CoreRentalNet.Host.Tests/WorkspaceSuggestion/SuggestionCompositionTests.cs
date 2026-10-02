@@ -85,7 +85,7 @@ public sealed class SuggestionCompositionTests(SuggestionEndpointFactory factory
         {
             typeof(Program).Assembly,
             typeof(WorkspaceSuggestionAvailability).Assembly,
-            typeof(MicrosoftFoundryAgentConnectionSettings).Assembly,
+            typeof(AgentFoundryConnectionSetting).Assembly,
         };
 
         return assemblies

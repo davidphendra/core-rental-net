@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
 using CoreRentalNet.Modules.Workspace.Domain;
 

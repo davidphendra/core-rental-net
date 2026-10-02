@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Reading;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -72,7 +73,7 @@ public sealed class WorkspaceSuggestionRunStateTests
         state.CreateRunRecord("customer", 0).Verdict.Should().Be(WorkspaceSuggestionVerdict.Unavailable);
     }
 
-    internal static WorkspaceSuggestionResultReadyAgentEvent Ready(
+    internal static WorkspaceSuggestionResultReadyEvent Ready(
         WorkspaceSuggestionAnswerStatus status,
         IReadOnlyList<WorkspaceSuggestionCandidate> candidates)
         => new(new WorkspaceSuggestionAnswer(status, candidates, null), "hash");

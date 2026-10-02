@@ -27,7 +27,7 @@ public sealed class AgentInvocationHeaderTests
 
     [Fact]
     public void The_invocation_header_carries_the_platforms_client_prefix()
-        => MicrosoftFoundryAgentInvocationHeaders.CallerAccessToken.Should().StartWith(
+        => AgentFoundryInvocationHeaders.AccessToken.Should().StartWith(
             "x-client-",
             "the platform forwards client headers only under this prefix, and a dropped token is silent");
 
@@ -35,27 +35,27 @@ public sealed class AgentInvocationHeaderTests
     public void The_token_is_carried_for_the_run_that_started_the_scope()
     {
         using var callerAccessTokenForTheRun =
-            CallerAccessTokenForTheRunScope.CarryTheTokenOf(TheCallersToken);
+            RunScopeAccessToken.CarryTheTokenOf(TheCallersToken);
 
-        CallerAccessTokenForTheRunScope.TokenBeingCarried.Should().Be(TheCallersToken);
+        RunScopeAccessToken.AccessToken.Should().Be(TheCallersToken);
     }
 
     [Fact] // the scope is a scope, not a flag: a nested run gives the enclosing run its token back
     public void An_inner_scope_gives_the_outer_run_its_token_back_when_it_ends()
     {
-        using var outerRun = CallerAccessTokenForTheRunScope.CarryTheTokenOf(TheCallersToken);
+        using var outerRun = RunScopeAccessToken.CarryTheTokenOf(TheCallersToken);
 
-        using (CallerAccessTokenForTheRunScope.CarryTheTokenOf("another-run-s-token"))
+        using (RunScopeAccessToken.CarryTheTokenOf("another-run-s-token"))
         {
-            CallerAccessTokenForTheRunScope.TokenBeingCarried.Should().Be("another-run-s-token");
+            RunScopeAccessToken.AccessToken.Should().Be("another-run-s-token");
         }
 
-        CallerAccessTokenForTheRunScope.TokenBeingCarried.Should().Be(
+        RunScopeAccessToken.AccessToken.Should().Be(
             TheCallersToken,
             "a finished run must not be able to erase the token of the run that encloses it");
     }
 
     [Fact] // and nothing is carried when no run is in progress, so no request can inherit one
     public void No_token_is_carried_when_no_run_is_in_progress()
-        => CallerAccessTokenForTheRunScope.TokenBeingCarried.Should().BeNull();
+        => RunScopeAccessToken.AccessToken.Should().BeNull();
 }

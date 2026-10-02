@@ -1,4 +1,5 @@
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 
 namespace CoreRentalNet.Host.Presentation.WorkspaceSuggestion;
 

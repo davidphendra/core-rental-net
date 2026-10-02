@@ -18,7 +18,7 @@ public sealed class WorkspaceSuggestionBoundaryTests
     public void Every_agent_event_is_handled_by_exactly_one_handler()
     {
         var eventTypes = Directory
-            .GetFiles(Suggestions("Application", "Agent"), "WorkspaceSuggestion*Event.cs")
+            .GetFiles(Suggestions("Application", Path.Combine("Agent", "Events")), "WorkspaceSuggestion*Event.cs")
             .Select(Path.GetFileNameWithoutExtension)
             .Where(name => !string.Equals(name, "WorkspaceSuggestionEvent", StringComparison.Ordinal))
             .ToArray();

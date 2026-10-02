@@ -39,7 +39,7 @@ internal static class IdentityRegistrationExtentions
         // What it reads only exists once the SDK is configured, and a deployment with no identity closes the
         // builder's permission before the endpoint could reach it - so registering it in one branch alone would
         // make the endpoint's dependencies depend on which branch ran.
-        builder.Services.AddScoped<ICallerAccessTokenService, CallerAccessTokenService>();
+        builder.Services.AddScoped<IAccessTokenService, AccessTokenService>();
 
         if (!settings.IsConfigured)
         {

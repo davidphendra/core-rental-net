@@ -40,7 +40,7 @@ public sealed class ProviderIsolationTests
     [Fact] // and the rule above is not vacuous: the adapter still names them
     public void The_adapter_still_names_them()
     {
-        var infrastructure = typeof(MicrosoftFoundryWorkspaceSuggestionAgentAdapter).Assembly;
+        var infrastructure = typeof(AgentFoundryWorkspaceSuggestionAdapter).Assembly;
 
         // The factory is the one type that resolves the provider's client and credential, so it is the right
         // thing to check: if it stopped naming a provider, the port would have nothing real behind it.

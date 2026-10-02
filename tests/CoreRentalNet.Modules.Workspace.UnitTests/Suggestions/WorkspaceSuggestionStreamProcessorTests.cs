@@ -1,5 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 using Xunit;
 

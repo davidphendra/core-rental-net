@@ -4,6 +4,7 @@ using System.Text;
 using AwesomeAssertions;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
@@ -31,10 +32,10 @@ public sealed class SuggestionStreamingFrameTests
     public async Task A_stage_a_retry_an_approved_setup_and_the_ending_are_frames_of_their_own()
     {
         using var factory = new SuggestionEndpointFactory(new ScriptedSuggestionAgentAdapter(
-            new WorkspaceSuggestionStageChangedAgentEvent("verifyingRequest"),
-            new WorkspaceSuggestionRetryAgentEvent(2, 3),
-            new WorkspaceSuggestionCandidateApprovedAgentEvent(ApprovedSetup),
-            new WorkspaceSuggestionResultReadyAgentEvent(
+            new WorkspaceSuggestionChangedEvent("verifyingRequest"),
+            new WorkspaceSuggestionRetryEvent(2, 3),
+            new WorkspaceSuggestionCandidateApprovedEvent(ApprovedSetup),
+            new WorkspaceSuggestionResultReadyEvent(
                 new WorkspaceSuggestionAnswer(WorkspaceSuggestionAnswerStatus.Suggested, [ApprovedSetup], null),
                 "hash-1")));
 
@@ -53,8 +54,8 @@ public sealed class SuggestionStreamingFrameTests
     public async Task The_ending_frame_is_the_last_thing_written()
     {
         using var factory = new SuggestionEndpointFactory(new ScriptedSuggestionAgentAdapter(
-            new WorkspaceSuggestionCandidateApprovedAgentEvent(ApprovedSetup),
-            new WorkspaceSuggestionResultReadyAgentEvent(
+            new WorkspaceSuggestionCandidateApprovedEvent(ApprovedSetup),
+            new WorkspaceSuggestionResultReadyEvent(
                 new WorkspaceSuggestionAnswer(WorkspaceSuggestionAnswerStatus.Suggested, [ApprovedSetup], null),
                 "hash-1")));
 

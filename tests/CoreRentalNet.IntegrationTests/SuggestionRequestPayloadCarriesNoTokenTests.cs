@@ -29,7 +29,7 @@ public sealed class SuggestionRequestPayloadCarriesNoTokenTests
     [Fact]
     public void The_request_body_sent_to_the_agent_carries_no_token()
     {
-        var payload = MicrosoftFoundrySuggestionRequestPayload.From(TheRequestASentenceWouldProduce());
+        var payload = AgentFoundrySuggestionRequestPayload.From(TheRequestASentenceWouldProduce());
 
         payload.Json.Should().NotContain(
             "token",
@@ -40,7 +40,7 @@ public sealed class SuggestionRequestPayloadCarriesNoTokenTests
     [Fact] // and the hash is over the bytes that are sent, not over a second serialization with a field removed
     public void The_hash_is_over_the_bytes_that_are_sent()
     {
-        var payload = MicrosoftFoundrySuggestionRequestPayload.From(TheRequestASentenceWouldProduce());
+        var payload = AgentFoundrySuggestionRequestPayload.From(TheRequestASentenceWouldProduce());
 
         payload.Json.Should().NotContain("mcpAccessToken");
         payload.Hash.Should().MatchRegex("^[0-9a-f]{64}$", "a SHA-256 over the body is still what the record keeps");
