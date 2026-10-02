@@ -2,7 +2,7 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 
-namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
 /// <summary>Reports the agent's stage, in the application's words, as a stage frame.</summary>
 public sealed class WorkspaceSuggestionStageChangedStreamEventHandler : IWorkspaceSuggestionStreamEventHandler

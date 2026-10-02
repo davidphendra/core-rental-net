@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 

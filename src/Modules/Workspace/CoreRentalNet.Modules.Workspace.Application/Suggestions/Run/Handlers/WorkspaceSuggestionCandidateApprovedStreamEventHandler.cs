@@ -2,7 +2,7 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 
-namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
 /// <summary>Reports an approved setup as a frame of its own, so the panel can count it as it arrives.</summary>
 /// <remarks>

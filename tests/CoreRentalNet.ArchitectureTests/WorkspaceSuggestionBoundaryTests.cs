@@ -23,7 +23,8 @@ public sealed class WorkspaceSuggestionBoundaryTests
             .Where(name => !string.Equals(name, "WorkspaceSuggestionEvent", StringComparison.Ordinal))
             .ToArray();
 
-        var handlerFiles = Directory.GetFiles(Suggestions("Application", "Run"), "*StreamEventHandler.cs");
+        var handlerFiles = Directory.GetFiles(
+            Suggestions("Application", Path.Combine("Run", "Handlers")), "*StreamEventHandler.cs");
 
         eventTypes.Should().HaveCountGreaterThanOrEqualTo(3, "the closed hierarchy has three events to route");
         handlerFiles.Should().HaveCountGreaterThanOrEqualTo(3, "the chain has one handler per event");
@@ -68,10 +69,12 @@ public sealed class WorkspaceSuggestionBoundaryTests
         File.ReadAllText(Suggestions("Application", "Run", "WorkspaceSuggestionRunState.cs"))
             .Should().Contain("WorkspaceSuggestionRunLedger").And.Contain("WorkspaceSuggestionNarrativeFieldReader");
 
-        File.ReadAllText(Suggestions("Application", "Run", "IWorkspaceSuggestionStreamEventHandler.cs"))
+        File.ReadAllText(Suggestions(
+                "Application", Path.Combine("Run", "Handlers"), "IWorkspaceSuggestionStreamEventHandler.cs"))
             .Should().Contain("WorkspaceSuggestionEvent");
 
-        File.ReadAllText(Suggestions("Application", "Run", "WorkspaceSuggestionNarrativeDeltaStreamEventHandler.cs"))
+        File.ReadAllText(Suggestions(
+                "Application", Path.Combine("Run", "Handlers"), "WorkspaceSuggestionNarrativeDeltaStreamEventHandler.cs"))
             .Should().Contain("WorkspaceSuggestionOutputHygiene");
     }
 

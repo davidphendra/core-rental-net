@@ -3,6 +3,7 @@ using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 using CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 
 namespace CoreRentalNet.Host.Extentions;

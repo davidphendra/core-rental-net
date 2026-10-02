@@ -2,7 +2,7 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 
-namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
 /// <summary>Reports a retry as a stage-like line, because it is where the run went and not what it produced.</summary>
 public sealed class WorkspaceSuggestionRetryStreamEventHandler : IWorkspaceSuggestionStreamEventHandler

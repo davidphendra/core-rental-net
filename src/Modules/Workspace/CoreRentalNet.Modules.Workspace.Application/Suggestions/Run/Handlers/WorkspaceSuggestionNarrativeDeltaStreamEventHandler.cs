@@ -3,7 +3,7 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Reading;
 
-namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
 /// <summary>Streams the model's own words, a finished field at a time, and never its JSON.</summary>
 public sealed class WorkspaceSuggestionNarrativeDeltaStreamEventHandler : IWorkspaceSuggestionStreamEventHandler

@@ -2,7 +2,7 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 
-namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
 /// <summary>One link in the run's stream chain: it handles the event it owns and passes on the rest.</summary>
 /// <remarks>
