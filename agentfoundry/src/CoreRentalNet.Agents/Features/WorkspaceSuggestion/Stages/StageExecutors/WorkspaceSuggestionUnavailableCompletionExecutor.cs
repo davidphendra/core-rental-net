@@ -1,4 +1,5 @@
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
@@ -9,11 +10,12 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 
 /// <summary>Ends a run whose attempts are exhausted, or whose catalogue could not be searched.</summary>
 internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
-    ITelemetryChatClient modelCallTelemetryChatClient,
-    IMcpAccessTokenService accessTokens)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion)
+    ITelemetryChatClient telemetryChatClient,
+    IMcpAccessTokenService accessTokens,
+    ILogger logger)
+    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
 {
-    public override async ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
+    protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)
@@ -27,7 +29,7 @@ internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
 
         await PublishStreamEventAsync(
             workflowContext,
-            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, modelCallTelemetryChatClient.Total),
+            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, telemetryChatClient.Total),
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;

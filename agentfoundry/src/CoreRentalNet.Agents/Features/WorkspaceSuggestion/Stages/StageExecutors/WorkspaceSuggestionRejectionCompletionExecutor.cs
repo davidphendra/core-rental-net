@@ -1,4 +1,5 @@
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
@@ -9,11 +10,12 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
 internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
-    ITelemetryChatClient modelCallTelemetryChatClient,
-    IMcpAccessTokenService accessTokens)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion)
+    ITelemetryChatClient telemetryChatClient,
+    IMcpAccessTokenService accessTokens,
+    ILogger logger)
+    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
 {
-    public override async ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
+    protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)
@@ -27,7 +29,7 @@ internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
 
         await PublishStreamEventAsync(
             workflowContext,
-            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, modelCallTelemetryChatClient.Total),
+            WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, telemetryChatClient.Total),
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;

@@ -1,4 +1,5 @@
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Shared.Mcp;
@@ -15,10 +16,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 internal sealed class WorkspaceComponentProductPoolExecutor(
     WorkspaceComponentProductPoolBuilder poolBuilder,
     WorkspaceComponentProductPoolPolicy poolPolicy,
-    McpToolAnswerLedger recordedToolAnswers)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.ProductPool)
+    McpToolAnswerLedger recordedToolAnswers,
+    ILogger logger)
+    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.ProductPool, logger)
 {
-    public override ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
+    protected override ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)

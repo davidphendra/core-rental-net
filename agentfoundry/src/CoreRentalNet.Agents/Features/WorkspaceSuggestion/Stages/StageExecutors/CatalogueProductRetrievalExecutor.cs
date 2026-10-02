@@ -1,5 +1,6 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
@@ -9,10 +10,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// <summary>Searches the catalogue with the caller's own entitlement, and chooses nothing.</summary>
 internal sealed class CatalogueProductRetrievalExecutor(
     AIAgent stageAgent,
-    McpToolAnswerLedger recordedToolAnswers)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Retriever)
+    McpToolAnswerLedger recordedToolAnswers,
+    ILogger logger)
+    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger)
 {
-    public override async ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
+    protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)

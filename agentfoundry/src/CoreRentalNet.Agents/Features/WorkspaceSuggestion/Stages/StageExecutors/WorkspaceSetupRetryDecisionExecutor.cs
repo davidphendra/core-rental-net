@@ -1,4 +1,5 @@
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
@@ -12,10 +13,12 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// than on the reviewer. The attempt count is the reviewer's, because a review is what finishes an attempt;
 /// this reads it, so the third review is the one that ends an unavailable run.
 /// </remarks>
-internal sealed class WorkspaceSetupRetryDecisionExecutor(WorkspaceSetupRetryDecisionPolicy retryDecisionPolicy)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RetryDecision)
+internal sealed class WorkspaceSetupRetryDecisionExecutor(
+    WorkspaceSetupRetryDecisionPolicy retryDecisionPolicy,
+    ILogger logger)
+    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
 {
-    public override async ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
+    protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)

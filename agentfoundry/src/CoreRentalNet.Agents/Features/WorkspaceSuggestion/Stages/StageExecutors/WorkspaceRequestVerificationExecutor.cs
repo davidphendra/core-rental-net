@@ -1,15 +1,16 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
 
 /// <summary>Decides whether the sentence is a workspace request at all, and ends the run when it is not.</summary>
-internal sealed class WorkspaceRequestVerificationExecutor(AIAgent stageAgent)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Verifier)
+internal sealed class WorkspaceRequestVerificationExecutor(AIAgent stageAgent, ILogger logger)
+    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Verifier, logger)
 {
-    public override async ValueTask<WorkspaceSuggestionWorkflowState> HandleAsync(
+    protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)

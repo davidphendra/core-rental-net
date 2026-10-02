@@ -223,6 +223,61 @@ public sealed class WorkflowTests
             .Should().Equal("catalogue-product-retriever");
     }
 
+    [Fact] // every node a run reaches writes one started line and one completed line, and only those nodes
+    public async Task The_console_trace_names_every_node_a_run_reached()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var agent = Build(
+            new ScriptedChatClient(Verification, Expansion, Retrieval, Reranking, Composition, Review),
+            runLog);
+
+        _ = await agent.RunAsync(Request);
+
+        string[] reachedNodes =
+        [
+            "verify-workspace-request", "rephrase-workspace-requirement", "retrieve-catalogue-products",
+            "build-candidate-product-pool", "rerank-workspace-candidates", "compose-workspace-setups",
+            "validate-workspace-setup-structure", "review-workspace-setups",
+            "complete-workspace-suggestion-success",
+        ];
+
+        foreach (var node in reachedNodes)
+        {
+            runLog.RecordedLines.Should().Contain(
+                line => line.Contains($"Node {node} started.", StringComparison.Ordinal),
+                $"the run reached {node} and its start is written down");
+            runLog.RecordedLines.Should().Contain(
+                line => line.Contains($"Node {node} completed.", StringComparison.Ordinal),
+                $"the run reached {node} and its completion is written down");
+        }
+
+        runLog.RecordedLines.Should().NotContain(
+            line => line.Contains("read-workspace-suggestion-request", StringComparison.Ordinal),
+            "the entry node speaks the chat protocol through its own base and is deliberately silent");
+        runLog.RecordedLines.Should().NotContain(
+            line => line.Contains("decide-workspace-setup-retry", StringComparison.Ordinal),
+            "a node the run never reached writes nothing");
+    }
+
+    [Fact] // a run that ends at the gate logs the two nodes it reached and none of the ones it skipped
+    public async Task A_run_that_ends_at_the_gate_logs_only_the_nodes_it_reached()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var agent = Build(
+            new ScriptedChatClient("""{ "isWorkspaceRequest": false, "refusalReason": "not about furnishing a workspace" }"""),
+            runLog);
+
+        _ = await agent.RunAsync(Request);
+
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("Node verify-workspace-request completed.", StringComparison.Ordinal));
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("Node complete-workspace-suggestion-rejection completed.", StringComparison.Ordinal));
+        runLog.RecordedLines.Should().NotContain(
+            line => line.Contains("Node rephrase-workspace-requirement", StringComparison.Ordinal),
+            "the run ended at the gate, so the retryable half of the graph never ran");
+    }
+
 
     [Fact]
     public async Task A_rejected_review_returns_to_rephrasing_and_the_third_rejection_ends_unavailable()
@@ -372,7 +427,8 @@ public sealed class WorkflowTests
             callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing(),
             new WorkspaceSuggestionWorkflowOptions(),
             recordedToolAnswers,
-            modelCallTelemetry);
+            modelCallTelemetry,
+            loggerFactory);
 
         return new WorkspaceSuggestionWorkflow(
             executorBuilder,

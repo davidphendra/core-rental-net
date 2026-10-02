@@ -75,6 +75,7 @@ public sealed class WorkspaceSuggestionExecutorsTests
             TheInvocationARunArrivesIn.CarryingNothing(),
             new WorkspaceSuggestionWorkflowOptions(),
             recordedToolAnswers,
-            modelCallTelemetry).Build();
+            modelCallTelemetry,
+            NullLoggerFactory.Instance).Build();
     }
 }

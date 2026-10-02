@@ -125,7 +125,8 @@ public sealed class AgentFoundryRegistrationTests
             TheInvocationARunArrivesIn.CarryingNothing(),
             new WorkspaceSuggestionWorkflowOptions(),
             recordedToolAnswers,
-            modelCallTelemetry);
+            modelCallTelemetry,
+            NullLoggerFactory.Instance);
 
         return new(
             executorBuilder,
