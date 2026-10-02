@@ -2,24 +2,21 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 
-/// <summary>Writes a retry as a stage-like line, because it is where the run went and not what it produced.</summary>
+/// <summary>Reports a retry as a stage-like line, because it is where the run went and not what it produced.</summary>
 public sealed class WorkspaceSuggestionRetryStreamEventHandler : IWorkspaceSuggestionStreamEventHandler
 {
-    public async Task<bool> TryHandleAgentEventAsync(
-        WorkspaceSuggestionAgentEvent suggestionAgentEvent,
+    public bool TryHandleAgentEvent(
+        WorkspaceSuggestionEvent suggestionEvent,
         WorkspaceSuggestionRunState suggestionRunState,
-        IWorkspaceSuggestionEventWriter suggestionEventWriter,
-        CancellationToken cancellationToken)
+        ICollection<WorkspaceSuggestionStreamEvent> frames)
     {
-        if (suggestionAgentEvent is not WorkspaceSuggestionRetryAgentEvent retryAgentEvent)
+        if (suggestionEvent is not WorkspaceSuggestionRetryEvent retryAgentEvent)
         {
             return false;
         }
 
-        await suggestionEventWriter.WriteAsync(
-            new WorkspaceSuggestionRetryStreamEvent(
-                $"Reconsidering your request (attempt {retryAgentEvent.NextAttemptNumber} of {retryAgentEvent.MaximumAttemptCount})"),
-            cancellationToken);
+        frames.Add(new WorkspaceSuggestionRetryStreamEvent(
+            $"Reconsidering your request (attempt {retryAgentEvent.NextAttemptNumber} of {retryAgentEvent.MaximumAttemptCount})"));
 
         return true;
     }

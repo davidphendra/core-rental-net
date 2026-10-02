@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -7,21 +8,26 @@ namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 
 /// <summary>The one place a suggestion run is executed: the service the endpoint delegates to.</summary>
 /// <remarks>
-/// It owns the run's boundary: the stages it writes, the pipeline it drives, the one cancellation it maps to
-/// an ending, and the record it writes whichever way the run ended. It holds no state of its own - the state
-/// is created per run - so it is safe to register per request.
+/// <para>
+/// It owns the run's boundary: the pipeline it drives, the one cancellation it maps to an ending, and the record
+/// it writes whichever way the run ended. It holds no state of its own - the state is created per run - so it is
+/// safe to register per request.
+/// </para>
+/// <para>
+/// <b>The ending is decided in a <c>finally</c> because a <c>yield</c> cannot sit inside a <c>try</c> that
+/// catches.</b> The record is written when the enumeration ends or is disposed, which covers all four ways a run
+/// stops: the agent answered, the agent failed, the customer cancelled, and the caller walked away.
+/// </para>
 /// </remarks>
 public sealed class WorkspaceSuggestionRunService(
     IWorkspaceSuggestionAgentAdapter suggestionAgentAdapter,
     IWorkspaceSuggestionStreamProcessor suggestionStreamProcessor,
     IWorkspaceSuggestionRunRecordWriter suggestionRunRecordWriter) : IWorkspaceSuggestionRunService
 {
-    public async Task RunSuggestionAsync(
+    public async IAsyncEnumerable<WorkspaceSuggestionStreamEvent> StreamAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
-        string callerAccessToken,
-        IWorkspaceSuggestionEventWriter suggestionEventWriter,
         string hashedCustomerIdentity,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var startedTimestamp = Stopwatch.GetTimestamp();
         var suggestionRunState = new WorkspaceSuggestionRunState(suggestionRequestPayload.Query);
@@ -30,24 +36,23 @@ public sealed class WorkspaceSuggestionRunService(
         {
             // The stages are the agent's to announce: it knows where a run went, including a retry the
             // application cannot predict. The application only supplies the words.
-            await suggestionStreamProcessor.ProcessAgentEventStreamAsync(
-                suggestionAgentAdapter.StreamSuggestionAsync(
-                    suggestionRequestPayload,
-                    callerAccessToken,
-                    cancellationToken),
+            await foreach (var suggestionStreamEvent in suggestionStreamProcessor.ProcessAsync(
+                suggestionAgentAdapter.StreamAsync(suggestionRequestPayload, cancellationToken),
                 suggestionRunState,
-                suggestionEventWriter,
-                cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // One cancellation, two meanings, decided by whose token was signalled.
-            suggestionRunState.MarkEnded(cancellationToken.IsCancellationRequested
-                ? WorkspaceSuggestionVerdict.Stopped
-                : WorkspaceSuggestionVerdict.Unavailable);
+                cancellationToken))
+            {
+                yield return suggestionStreamEvent;
+            }
         }
         finally
         {
+            // One cancellation, two meanings, decided by whose token was signalled. A run that reached no verdict
+            // of its own is already recorded as unavailable, which is the ledger's own default.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                suggestionRunState.MarkEnded(WorkspaceSuggestionVerdict.Stopped);
+            }
+
             suggestionRunRecordWriter.WriteRunRecord(
                 suggestionRunState.CreateRunRecord(hashedCustomerIdentity, startedTimestamp));
         }

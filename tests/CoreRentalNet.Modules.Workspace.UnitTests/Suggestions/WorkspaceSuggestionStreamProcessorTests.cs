@@ -11,19 +11,17 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
     public async Task Every_event_is_applied_by_its_own_handler()
     {
         var state = new WorkspaceSuggestionRunState("a desk");
-        var writer = new RecordingWorkspaceSuggestionEventWriter();
 
-        await Processor().ProcessAgentEventStreamAsync(
-            Events(
-                new WorkspaceSuggestionNarrativeDeltaAgentEvent("{\"rationale\":\"A tidy setup\"}"),
-                WorkspaceSuggestionRunStateTests.Ready(WorkspaceSuggestionAnswerStatus.Suggested, [WorkspaceSuggestionRunStateTests.Candidate()])),
+        var frames = await FramesOfAsync(
             state,
-            writer,
-            CancellationToken.None);
+            new WorkspaceSuggestionNarrativeDeltaEvent("{\"rationale\":\"A tidy setup\"}"),
+            WorkspaceSuggestionRunStateTests.Ready(
+                WorkspaceSuggestionAnswerStatus.Suggested,
+                [WorkspaceSuggestionRunStateTests.Candidate()]));
 
-        writer.Events.Should().HaveCount(2);
-        writer.Events[0].Should().BeOfType<WorkspaceSuggestionTextStreamEvent>();
-        writer.Events[1].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        frames.Should().HaveCount(2);
+        frames[0].Should().BeOfType<WorkspaceSuggestionTextStreamEvent>();
+        frames[1].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
         state.HasEnded.Should().BeTrue();
     }
 
@@ -31,34 +29,41 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
     public async Task The_processor_stops_once_the_run_has_ended()
     {
         var state = new WorkspaceSuggestionRunState("a desk");
-        var writer = new RecordingWorkspaceSuggestionEventWriter();
 
-        await Processor().ProcessAgentEventStreamAsync(
-            Events(
-                WorkspaceSuggestionRunStateTests.Ready(WorkspaceSuggestionAnswerStatus.Suggested, [WorkspaceSuggestionRunStateTests.Candidate()]),
-                new WorkspaceSuggestionNarrativeDeltaAgentEvent("{\"rationale\":\"never read\"}")),
+        var frames = await FramesOfAsync(
             state,
-            writer,
-            CancellationToken.None);
+            WorkspaceSuggestionRunStateTests.Ready(
+                WorkspaceSuggestionAnswerStatus.Suggested,
+                [WorkspaceSuggestionRunStateTests.Candidate()]),
+            new WorkspaceSuggestionNarrativeDeltaEvent("{\"rationale\":\"never read\"}"));
 
-        writer.Events.Should().ContainSingle().Which.Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        frames.Should().ContainSingle().Which.Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
     }
 
     [Fact]
-    public async Task An_unavailable_agent_writes_the_unavailable_code()
+    public async Task An_unavailable_agent_yields_the_unavailable_code()
     {
         var state = new WorkspaceSuggestionRunState("a desk");
-        var writer = new RecordingWorkspaceSuggestionEventWriter();
 
-        await Processor().ProcessAgentEventStreamAsync(
-            Events(new WorkspaceSuggestionUnavailableAgentEvent("no agent")),
-            state,
-            writer,
-            CancellationToken.None);
+        var frames = await FramesOfAsync(state, new WorkspaceSuggestionUnavailableEvent("no agent"));
 
-        writer.Events.Should().ContainSingle()
+        frames.Should().ContainSingle()
             .Which.Should().BeOfType<WorkspaceSuggestionFailedStreamEvent>()
             .Which.FailureCode.Should().Be(WorkspaceSuggestionFailureCode.Unavailable);
+    }
+
+    private static async Task<List<WorkspaceSuggestionStreamEvent>> FramesOfAsync(
+        WorkspaceSuggestionRunState state,
+        params WorkspaceSuggestionEvent[] agentEvents)
+    {
+        var frames = new List<WorkspaceSuggestionStreamEvent>();
+
+        await foreach (var frame in Processor().ProcessAsync(Events(agentEvents), state, CancellationToken.None))
+        {
+            frames.Add(frame);
+        }
+
+        return frames;
     }
 
     private static WorkspaceSuggestionStreamProcessor Processor()
@@ -69,7 +74,7 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
             new WorkspaceSuggestionUnavailableStreamEventHandler(),
         ]);
 
-    private static async IAsyncEnumerable<WorkspaceSuggestionAgentEvent> Events(params WorkspaceSuggestionAgentEvent[] events)
+    private static async IAsyncEnumerable<WorkspaceSuggestionEvent> Events(params WorkspaceSuggestionEvent[] events)
     {
         foreach (var raised in events)
         {

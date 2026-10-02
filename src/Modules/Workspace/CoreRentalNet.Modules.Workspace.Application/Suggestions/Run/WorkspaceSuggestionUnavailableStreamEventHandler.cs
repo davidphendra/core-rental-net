@@ -5,22 +5,19 @@ namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 /// <summary>Reports a run that could not be made, and nothing derived from the agent's own reason.</summary>
 public sealed class WorkspaceSuggestionUnavailableStreamEventHandler : IWorkspaceSuggestionStreamEventHandler
 {
-    public async Task<bool> TryHandleAgentEventAsync(
-        WorkspaceSuggestionAgentEvent suggestionAgentEvent,
+    public bool TryHandleAgentEvent(
+        WorkspaceSuggestionEvent suggestionEvent,
         WorkspaceSuggestionRunState suggestionRunState,
-        IWorkspaceSuggestionEventWriter suggestionEventWriter,
-        CancellationToken cancellationToken)
+        ICollection<WorkspaceSuggestionStreamEvent> frames)
     {
-        if (suggestionAgentEvent is not WorkspaceSuggestionUnavailableAgentEvent)
+        if (suggestionEvent is not WorkspaceSuggestionUnavailableEvent)
         {
             return false;
         }
 
         suggestionRunState.MarkUnavailable();
 
-        await suggestionEventWriter.WriteAsync(
-            new WorkspaceSuggestionFailedStreamEvent(WorkspaceSuggestionFailureCode.Unavailable),
-            cancellationToken);
+        frames.Add(new WorkspaceSuggestionFailedStreamEvent(WorkspaceSuggestionFailureCode.Unavailable));
 
         return true;
     }

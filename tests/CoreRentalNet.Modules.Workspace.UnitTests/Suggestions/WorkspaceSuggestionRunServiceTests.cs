@@ -8,24 +8,20 @@ namespace CoreRentalNet.Modules.Workspace.UnitTests.Suggestions;
 
 public sealed class WorkspaceSuggestionRunServiceTests
 {
-    /// <summary>The caller's own token, which the run states on the invocation.</summary>
-    private const string TheCallersToken = "header.eyJzdWIiOiJjdXN0b21lci0xIn0.signature";
-
     [Fact] // the answer, and one record, whichever way it ended
-    public async Task A_run_writes_its_stages_then_its_answer_and_one_record()
+    public async Task A_run_streams_its_answer_and_writes_one_record()
     {
-        var writer = new RecordingWorkspaceSuggestionEventWriter();
         var records = new RecordingWorkspaceSuggestionRunRecordWriter();
         var service = Service(records, WorkspaceSuggestionRunStateTests.Ready(
             WorkspaceSuggestionAnswerStatus.Suggested,
             [WorkspaceSuggestionRunStateTests.Candidate()]));
 
-        await service.RunSuggestionAsync(Payload(), TheCallersToken, writer, "CUSTOMER", CancellationToken.None);
+        var frames = await FramesOfAsync(service);
 
-        // The run writes the answer and nothing else: the stages are the agent's to announce, because only the
+        // The run sends the answer and nothing else: the stages are the agent's to announce, because only the
         // agent knows how many attempts a run took.
-        writer.Events.Should().ContainSingle();
-        writer.Events[0].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        frames.Should().ContainSingle();
+        frames[0].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
 
         records.Records.Should().ContainSingle();
         records.Records[0].Verdict.Should().Be(WorkspaceSuggestionVerdict.Suggested);
@@ -36,7 +32,6 @@ public sealed class WorkspaceSuggestionRunServiceTests
     [Fact] // the customer's cancellation is an ending, not a failure
     public async Task A_cancelled_run_records_a_stopped_verdict()
     {
-        var writer = new RecordingWorkspaceSuggestionEventWriter();
         var records = new RecordingWorkspaceSuggestionRunRecordWriter();
         var service = Service(records, WorkspaceSuggestionRunStateTests.Ready(
             WorkspaceSuggestionAnswerStatus.Suggested,
@@ -45,15 +40,59 @@ public sealed class WorkspaceSuggestionRunServiceTests
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
 
-        await service.RunSuggestionAsync(Payload(), TheCallersToken, writer, "CUSTOMER", cancellation.Token);
+        var readTheRun = async () =>
+        {
+            await foreach (var _ in service.StreamAsync(Payload(), "CUSTOMER", cancellation.Token))
+            {
+            }
+        };
+
+        // The cancellation leaves the run as the cancellation it is; what the endpoint does with it is the
+        // endpoint's business, and the record it left behind is the run's.
+        await readTheRun.Should().ThrowAsync<OperationCanceledException>();
 
         records.Records.Should().ContainSingle();
         records.Records[0].Verdict.Should().Be(WorkspaceSuggestionVerdict.Stopped);
     }
 
+    [Fact] // a run a consumer walked away from is still a run that has to be explained
+    public async Task A_run_the_consumer_stops_reading_still_writes_its_record()
+    {
+        var records = new RecordingWorkspaceSuggestionRunRecordWriter();
+        var service = Service(records, new WorkspaceSuggestionNarrativeDeltaEvent("{\"rationale\":\"A tidy setup\"}"));
+
+        // One completed field, so the run has produced a frame and has not ended: abandoning the enumeration now
+        // is walking away mid-run rather than reading to the end.
+        var frames = service.StreamAsync(Payload(), "CUSTOMER", CancellationToken.None).GetAsyncEnumerator();
+
+        try
+        {
+            (await frames.MoveNextAsync()).Should().BeTrue("the run produced a frame before the consumer left it");
+        }
+        finally
+        {
+            await frames.DisposeAsync();
+        }
+
+        records.Records.Should().ContainSingle("a run that was started is a run that has to be explained");
+    }
+
+    private static async Task<List<WorkspaceSuggestionStreamEvent>> FramesOfAsync(
+        WorkspaceSuggestionRunService service)
+    {
+        var frames = new List<WorkspaceSuggestionStreamEvent>();
+
+        await foreach (var frame in service.StreamAsync(Payload(), "CUSTOMER", CancellationToken.None))
+        {
+            frames.Add(frame);
+        }
+
+        return frames;
+    }
+
     private static WorkspaceSuggestionRunService Service(
         RecordingWorkspaceSuggestionRunRecordWriter records,
-        params WorkspaceSuggestionAgentEvent[] events)
+        params WorkspaceSuggestionEvent[] events)
         => new(
             new ScriptedWorkspaceSuggestionAgentAdapter(events),
             new WorkspaceSuggestionStreamProcessor(

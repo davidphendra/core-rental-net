@@ -6,23 +6,22 @@ namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 /// <summary>Streams the model's own words, a finished field at a time, and never its JSON.</summary>
 public sealed class WorkspaceSuggestionNarrativeDeltaStreamEventHandler : IWorkspaceSuggestionStreamEventHandler
 {
-    public async Task<bool> TryHandleAgentEventAsync(
-        WorkspaceSuggestionAgentEvent suggestionAgentEvent,
+    public bool TryHandleAgentEvent(
+        WorkspaceSuggestionEvent suggestionEvent,
         WorkspaceSuggestionRunState suggestionRunState,
-        IWorkspaceSuggestionEventWriter suggestionEventWriter,
-        CancellationToken cancellationToken)
+        ICollection<WorkspaceSuggestionStreamEvent> frames)
     {
-        if (suggestionAgentEvent is not WorkspaceSuggestionNarrativeDeltaAgentEvent narrativeDeltaAgentEvent)
+        if (suggestionEvent is not WorkspaceSuggestionNarrativeDeltaEvent narrativeDeltaAgentEvent)
         {
             return false;
         }
 
+        // A delta closes no field until one is complete, so the frames this reports are often none at all - and
+        // that is an answer rather than a pass, which is why the return below is outside the loop.
         foreach (var narrativeField in suggestionRunState.AppendNarrativeText(narrativeDeltaAgentEvent.NarrativeText))
         {
-            await suggestionEventWriter.WriteAsync(
-                new WorkspaceSuggestionTextStreamEvent(
-                    WorkspaceSuggestionOutputHygiene.Apply(narrativeField.Kind, narrativeField.Text)),
-                cancellationToken);
+            frames.Add(new WorkspaceSuggestionTextStreamEvent(
+                WorkspaceSuggestionOutputHygiene.Apply(narrativeField.Kind, narrativeField.Text)));
         }
 
         return true;
