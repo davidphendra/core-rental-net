@@ -51,12 +51,12 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **139 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **143 passed, 0 failed**.
 
-Three over the previous recording: the two node-trace tests (every node a run reaches writes a started line and
-a completed line, and a node the run never reached writes nothing; a run ending at the gate logs only the nodes
-it reached), and the result test (each node's completion line carries the field that node produced). This is the
-only baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
+Four over the previous recording, from the catalogue-failure fix: the retriever's own `isAvailable: false` ends
+the run before the pool, an empty catalogue ends it before the reranker, a refused tools/list ends it Unavailable
+instead of failing, and a run whose setups never validate ends after the attempts run out rather than looping.
+This is the only baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
 
 ## BROWSER
 
