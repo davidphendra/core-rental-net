@@ -7,7 +7,7 @@ using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Serialization;
 using CoreRentalNet.Agents.Shared.Workflows;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Turns what the caller sent into the run's state, lifting the token out of it first.</summary>
 /// <remarks>

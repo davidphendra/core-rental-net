@@ -5,14 +5,14 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Searches the catalogue with the caller's own entitlement, and chooses nothing.</summary>
 internal sealed class CatalogueProductRetrievalExecutor(
     AIAgent stageAgent,
     McpToolAnswerLedger recordedToolAnswers,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

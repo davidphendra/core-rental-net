@@ -6,14 +6,14 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
-internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
+internal sealed class BaseWorkspaceSuggestionRejectionCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
     IMcpAccessTokenService accessTokens,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

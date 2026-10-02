@@ -4,11 +4,11 @@ using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Decides whether the composed setups satisfy the request. Validity only; no orchestration.</summary>
-internal sealed class WorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Reviewer, logger)
+internal sealed class BaseWorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogger logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reviewer, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

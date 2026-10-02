@@ -4,7 +4,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.StreamingEvents;
 using CoreRentalNet.Agents.Shared.Workflows;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>One stage of the workspace pipeline, announcing itself around its work.</summary>
 /// <remarks>
@@ -18,7 +18,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// speaks the chat protocol through its own base - so it is the one node a run does not announce.
 /// </para>
 /// </remarks>
-internal abstract class WorkspaceSuggestionStreamingStageExecutor(string executorName, ILogger logger)
+internal abstract class BaseWorkspaceSuggestionStreamingExecutor(string executorName, ILogger logger)
     : StreamingStageExecutor<WorkspaceSuggestionWorkflowState, WorkspaceSuggestionStreamEvent>(executorName)
 {
     /// <summary>Announces a node, runs its work, and announces that it finished.</summary>

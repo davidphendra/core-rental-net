@@ -5,7 +5,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPoli
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Counts the attempt, decides what happens next, and tells the caller a retry is beginning.</summary>
 /// <remarks>
@@ -13,10 +13,10 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// than on the reviewer. The attempt count is the reviewer's, because a review is what finishes an attempt;
 /// this reads it, so the third review is the one that ends an unavailable run.
 /// </remarks>
-internal sealed class WorkspaceSetupRetryDecisionExecutor(
+internal sealed class BaseWorkspaceSetupRetryDecisionExecutor(
     WorkspaceSetupRetryDecisionPolicy retryDecisionPolicy,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

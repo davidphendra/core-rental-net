@@ -1,7 +1,7 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using Microsoft.Agents.AI.Workflows;
@@ -36,18 +36,18 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
     {
         // One category for every node: a node's own id is the structured property on its two lines, so a
         // category per node would be a second way to say what the line already says.
-        var logger = loggerFactory.CreateLogger<WorkspaceSuggestionStreamingStageExecutor>();
+        var logger = loggerFactory.CreateLogger<BaseWorkspaceSuggestionStreamingExecutor>();
 
         return new(
             Input: new WorkspaceInputExecutor(
                 accessTokens, accessTokenHeaderReader, workflowOptions).BindExecutor(),
 
-            Verifier: new WorkspaceRequestVerificationExecutor(
+            Verifier: new BaseWorkspaceRequestVerificationExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Verifier),
                 logger
             ).BindExecutor(),
 
-            Rephraser: new WorkspaceRequirementRephrasingExecutor(
+            Rephraser: new BaseWorkspaceRequirementRephrasingExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Rephraser),
                 new WorkspaceComponentSearchVocabularyLimitPolicy(
                     workflowOptions.MaximumSearchTermCountPerComponent,
@@ -60,42 +60,42 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
                 recordedToolAnswers, logger
             ).BindExecutor(),
 
-            ProductPool: new WorkspaceComponentProductPoolExecutor(
+            ProductPool: new BaseWorkspaceComponentProductPoolExecutor(
                 new WorkspaceComponentProductPoolBuilder(CatalogueSearchToolNames.All),
                 new WorkspaceComponentProductPoolPolicy(
                     workflowOptions.MaximumRetrievedProductsPerComponentForReranking),
                 recordedToolAnswers, logger
             ).BindExecutor(),
 
-            Reranker: new WorkspaceComponentProductRerankingExecutor(
+            Reranker: new BaseWorkspaceComponentProductRerankingExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Reranker),
                 new WorkspaceComponentProductSelectionPolicy(
                     workflowOptions.MaximumSelectedProductsPerComponent),
                 logger
             ).BindExecutor(),
 
-            Composer: new WorkspaceSetupCompositionExecutor(
+            Composer: new BaseWorkspaceSetupCompositionExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Composer),
                 logger
             ).BindExecutor(),
 
-            Validator: new WorkspaceSetupCandidateValidationExecutor(
+            Validator: new BaseWorkspaceSetupCandidateValidationExecutor(
                 new WorkspaceSetupCandidateStructureValidator(),
                 logger
             ).BindExecutor(),
 
-            Reviewer: new WorkspaceSetupReviewExecutor(
+            Reviewer: new BaseWorkspaceSetupReviewExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Reviewer),
                 logger
             ).BindExecutor(),
 
-            RetryDecision: new WorkspaceSetupRetryDecisionExecutor(
+            RetryDecision: new BaseWorkspaceSetupRetryDecisionExecutor(
                 new WorkspaceSetupRetryDecisionPolicy(workflowOptions.MaximumAttemptCount),
                 logger
             ).BindExecutor(),
 
-            Success: new WorkspaceSuggestionSuccessCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor(),
-            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor(),
-            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor());
+            Success: new BaseWorkspaceSuggestionSuccessCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor(),
+            Rejected: new BaseWorkspaceSuggestionRejectionCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor(),
+            Unavailable: new BaseWorkspaceSuggestionUnavailableCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor());
     }
 }

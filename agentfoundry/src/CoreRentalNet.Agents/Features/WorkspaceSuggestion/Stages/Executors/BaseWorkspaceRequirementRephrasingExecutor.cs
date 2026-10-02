@@ -5,7 +5,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Reads the sentence again, using only the previous attempt's issues when there were any.</summary>
 /// <remarks>
@@ -14,11 +14,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// the refusal's sentence does not cross back to say so. The policy is the reason that path is unreachable from
 /// this pipeline rather than a hope that the prompt was obeyed.
 /// </remarks>
-internal sealed class WorkspaceRequirementRephrasingExecutor(
+internal sealed class BaseWorkspaceRequirementRephrasingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentSearchVocabularyLimitPolicy vocabularyLimitPolicy,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

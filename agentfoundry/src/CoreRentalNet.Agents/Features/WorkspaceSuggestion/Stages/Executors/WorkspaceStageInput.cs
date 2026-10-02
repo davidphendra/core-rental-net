@@ -1,7 +1,7 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Shared.Serialization;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>What each stage is shown, in the stage's own terms and nothing more.</summary>
 /// <remarks>

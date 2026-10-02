@@ -4,11 +4,11 @@ using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Decides whether the sentence is a workspace request at all, and ends the run when it is not.</summary>
-internal sealed class WorkspaceRequestVerificationExecutor(AIAgent stageAgent, ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Verifier, logger)
+internal sealed class BaseWorkspaceRequestVerificationExecutor(AIAgent stageAgent, ILogger logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Verifier, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

@@ -5,7 +5,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Orders each component's retrieved products, so the composer chooses from a short good list.</summary>
 /// <remarks>
@@ -13,11 +13,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// what came back through the selection policy, which is where the two guarantees live — a product cannot be
 /// introduced, and a component cannot be lost to a stronger sibling.
 /// </remarks>
-internal sealed class WorkspaceComponentProductRerankingExecutor(
+internal sealed class BaseWorkspaceComponentProductRerankingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentProductSelectionPolicy selectionPolicy,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

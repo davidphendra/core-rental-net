@@ -6,14 +6,14 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Ends a run whose attempts are exhausted, or whose catalogue could not be searched.</summary>
-internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
+internal sealed class BaseWorkspaceSuggestionUnavailableCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
     IMcpAccessTokenService accessTokens,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,

@@ -6,7 +6,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Streams the approved setups, one event each, and then ends the run.</summary>
 /// <remarks>
@@ -14,11 +14,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutor
 /// lets a caller render the first before the last has crossed the wire, and the ending is a separate event so a
 /// setup's arrival never implies a successful run.
 /// </remarks>
-internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
+internal sealed class BaseWorkspaceSuggestionSuccessCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
     IMcpAccessTokenService accessTokenService,
     ILogger logger)
-    : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.SuccessCompletion, logger)
+    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.SuccessCompletion, logger)
 {
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
