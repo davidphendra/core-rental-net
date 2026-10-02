@@ -10,7 +10,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPoli
 using Xunit;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 
 namespace CoreRentalNet.Agents.Tests;
 
@@ -358,11 +358,11 @@ public sealed class WorkflowTests
             new Dictionary<string, object?> { ["category"] = "desk", ["subCategory"] = null },
             RecordedCatalogueAnswer);
 
-        var modelCallTelemetry = new ModelCallTelemetryChatClient(
-            new ModelOutputGuardrailChatClient(client, tokens),
+        var modelCallTelemetry = new TelemetryChatClient(
+            new GuardrailChatClient(client, tokens),
             "gpt-4.1-mini",
             "test-prompts",
-            loggerFactory.CreateLogger<ModelCallTelemetryChatClient>());
+            loggerFactory.CreateLogger<TelemetryChatClient>());
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
             tokens, catalogue, recordedToolAnswers, modelCallTelemetry, loggerFactory);
 

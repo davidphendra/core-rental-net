@@ -4,7 +4,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -52,11 +52,11 @@ public sealed class WorkspaceSuggestionExecutorsTests
     {
         var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var recordedToolAnswers = new McpToolAnswerLedger();
-        var modelCallTelemetry = new ModelCallTelemetryChatClient(
-            new ModelOutputGuardrailChatClient(new ScriptedChatClient("{}"), tokens),
+        var modelCallTelemetry = new TelemetryChatClient(
+            new GuardrailChatClient(new ScriptedChatClient("{}"), tokens),
             "gpt-4.1-mini",
             "test-prompts",
-            NullLogger<ModelCallTelemetryChatClient>.Instance);
+            NullLogger<TelemetryChatClient>.Instance);
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
             tokens,

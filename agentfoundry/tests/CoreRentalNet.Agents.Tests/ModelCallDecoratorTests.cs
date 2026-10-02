@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Shared.Agents;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Mcp;
 using Xunit;
 
@@ -23,7 +23,7 @@ public sealed class ModelCallDecoratorTests
     public async Task The_guardrail_stops_an_answer_that_repeats_the_callers_token()
     {
         var accessTokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance) { Token = "the-callers-own-token" };
-        var guardrail = new ModelOutputGuardrailChatClient(
+        var guardrail = new GuardrailChatClient(
             new FixedChatClient("Of course, the token is the-callers-own-token."), accessTokens);
 
         var act = async () => await guardrail.GetResponseAsync(Prompt);
@@ -36,7 +36,7 @@ public sealed class ModelCallDecoratorTests
     public async Task The_guardrail_passes_an_answer_that_does_not_carry_the_token()
     {
         var accessTokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance) { Token = "the-callers-own-token" };
-        var guardrail = new ModelOutputGuardrailChatClient(new FixedChatClient("A calm, focused setup."), accessTokens);
+        var guardrail = new GuardrailChatClient(new FixedChatClient("A calm, focused setup."), accessTokens);
 
         var response = await guardrail.GetResponseAsync(Prompt);
 
@@ -46,7 +46,7 @@ public sealed class ModelCallDecoratorTests
     [Fact]
     public async Task The_guardrail_passes_when_this_call_holds_no_token_at_all()
     {
-        var guardrail = new ModelOutputGuardrailChatClient(
+        var guardrail = new GuardrailChatClient(
             new FixedChatClient("Nothing to leak here."), new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance));
 
         var response = await guardrail.GetResponseAsync(Prompt);
@@ -57,11 +57,11 @@ public sealed class ModelCallDecoratorTests
     [Fact]
     public async Task Telemetry_records_the_call_and_leaves_the_answer_untouched()
     {
-        var telemetry = new ModelCallTelemetryChatClient(
+        var telemetry = new TelemetryChatClient(
             new FixedChatClient("A calm, focused setup."),
             "gpt-4.1-mini",
             "test-prompts",
-            NullLogger<ModelCallTelemetryChatClient>.Instance);
+            NullLogger<TelemetryChatClient>.Instance);
 
         var response = await telemetry.GetResponseAsync(Prompt);
 
@@ -71,11 +71,11 @@ public sealed class ModelCallDecoratorTests
     [Fact]
     public async Task Telemetry_adds_up_every_stage_into_the_runs_one_total()
     {
-        var telemetry = new ModelCallTelemetryChatClient(
+        var telemetry = new TelemetryChatClient(
             new UsageReportingChatClient(inputTokens: 10, outputTokens: 4),
             "gpt-4.1-mini",
             "test-prompts",
-            NullLogger<ModelCallTelemetryChatClient>.Instance);
+            NullLogger<TelemetryChatClient>.Instance);
 
         await telemetry.GetResponseAsync(Prompt, OptionsFor("workspace-setup-composer"));
         await telemetry.GetResponseAsync(Prompt, OptionsFor("workspace-setup-reviewer"));
@@ -90,11 +90,11 @@ public sealed class ModelCallDecoratorTests
     [Fact]
     public async Task Telemetry_records_a_streamed_call_and_its_reported_tokens()
     {
-        var telemetry = new ModelCallTelemetryChatClient(
+        var telemetry = new TelemetryChatClient(
             new UsageReportingChatClient(inputTokens: 11, outputTokens: 5),
             "gpt-4.1-mini",
             "test-prompts",
-            NullLogger<ModelCallTelemetryChatClient>.Instance);
+            NullLogger<TelemetryChatClient>.Instance);
 
         await foreach (var _ in telemetry.GetStreamingResponseAsync(Prompt, OptionsFor("workspace-setup-composer")))
         {
@@ -110,11 +110,11 @@ public sealed class ModelCallDecoratorTests
     public async Task Telemetry_names_the_stage_the_call_declared()
     {
         var runLog = new RunLogRecordingLoggerFactory();
-        var telemetry = new ModelCallTelemetryChatClient(
+        var telemetry = new TelemetryChatClient(
             new FixedChatClient("A calm, focused setup."),
             "gpt-4.1-mini",
             "test-prompts",
-            runLog.CreateLogger<ModelCallTelemetryChatClient>());
+            runLog.CreateLogger<TelemetryChatClient>());
 
         await telemetry.GetResponseAsync(Prompt, OptionsFor("workspace-setup-composer"));
 
@@ -128,11 +128,11 @@ public sealed class ModelCallDecoratorTests
     public async Task The_agent_naming_itself_puts_that_name_on_the_runs_telemetry()
     {
         var runLog = new RunLogRecordingLoggerFactory();
-        var telemetry = new ModelCallTelemetryChatClient(
+        var telemetry = new TelemetryChatClient(
             new FixedChatClient("A calm, focused setup."),
             "gpt-4.1-mini",
             "test-prompts",
-            runLog.CreateLogger<ModelCallTelemetryChatClient>());
+            runLog.CreateLogger<TelemetryChatClient>());
         var agent = AgentFactory.Build(
             WorkspaceSuggestionAgentRoster.Composer,
             new FunctionInvokingChatClient(telemetry, runLog));
@@ -149,7 +149,7 @@ public sealed class ModelCallDecoratorTests
         {
             AdditionalProperties = new AdditionalPropertiesDictionary
             {
-                [IModelCallTelemetryChatClient.AgentName] = stageAgentName,
+                [ITelemetryChatClient.AgentName] = stageAgentName,
             },
         };
 }

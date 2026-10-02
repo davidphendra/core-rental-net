@@ -3,7 +3,7 @@ using CoreRentalNet.Agents.Features.EchoReply.Agents;
 using CoreRentalNet.Agents.Features.EchoReply.StageClient;
 using CoreRentalNet.Agents.Features.EchoReply.Stages;
 using CoreRentalNet.Agents.Shared.Agents;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 
 namespace CoreRentalNet.Agents.Features.EchoReply;
 

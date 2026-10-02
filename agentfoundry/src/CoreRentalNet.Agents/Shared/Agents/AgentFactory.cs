@@ -1,6 +1,6 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Prompts;
 
 namespace CoreRentalNet.Agents.Shared.Agents;
@@ -12,7 +12,7 @@ namespace CoreRentalNet.Agents.Shared.Agents;
 /// contract taken from the profile. The chat client is a parameter rather than something built here, which is
 /// what lets the tests run the same code against a fake — no network, no model, no credential. The catalogue
 /// tools are not set here either: they are the call's, and
-/// <see cref="CoreRentalNet.Agents.Shared.Mcp.AuthorisedMcpChatClient"/> offers them at the model call.
+/// <see cref="CoreRentalNet.Agents.Shared.ChatClients.AuthorisedMcpChatClient"/> offers them at the model call.
 /// </remarks>
 internal static class AgentFactory
 {
@@ -38,7 +38,7 @@ internal static class AgentFactory
                     // it. The framework merges these properties into the options of every call the agent makes.
                     AdditionalProperties = new AdditionalPropertiesDictionary
                     {
-                        [IModelCallTelemetryChatClient.AgentName] = profile.Name,
+                        [ITelemetryChatClient.AgentName] = profile.Name,
                     },
                 },
             });

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
@@ -51,13 +52,13 @@ public static class WorkspaceSuggestionRegistration
 
         // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
         // stage's call, so the totals are the run's, and it names the stage from the options its agent set.
-        services.AddScoped<IModelCallTelemetryChatClient>(provider => new ModelCallTelemetryChatClient(
-            new ModelOutputGuardrailChatClient(
+        services.AddScoped<ITelemetryChatClient>(provider => new TelemetryChatClient(
+            new GuardrailChatClient(
                 modelClient,
                 provider.GetRequiredService<IMcpAccessTokenService>()),
             configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
             WorkspaceSuggestionAgentRoster.PromptVersions,
-            provider.GetRequiredService<ILogger<ModelCallTelemetryChatClient>>()));
+            provider.GetRequiredService<ILogger<TelemetryChatClient>>()));
 
         // Scoped like the run, so the tools a call listed stay callable for as long as its token lives.
         services.AddScoped<IMcpAuthorizationConnection, McpAuthorizationConnection>();

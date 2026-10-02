@@ -3,13 +3,13 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEventPublishing;
 using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
 internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
-    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
+    ITelemetryChatClient modelCallTelemetryChatClient,
     IMcpAccessTokenService accessTokens)
     : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion)
 {

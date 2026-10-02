@@ -1,8 +1,9 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
+using CoreRentalNet.Agents.Shared.Model;
 
-namespace CoreRentalNet.Agents.Shared.Model;
+namespace CoreRentalNet.Agents.Shared.ChatClients;
 
 /// <summary>Records one span and one line per model call, and adds up what the run cost.</summary>
 /// <remarks>
@@ -17,11 +18,11 @@ namespace CoreRentalNet.Agents.Shared.Model;
 /// response reported, which for a failure is nothing.
 /// </para>
 /// </remarks>
-internal sealed class ModelCallTelemetryChatClient(
+internal sealed class TelemetryChatClient(
     IChatClient innerClient,
     string modelName,
     string promptVersion,
-    ILogger<ModelCallTelemetryChatClient> logger) : DelegatingChatClient(innerClient), IModelCallTelemetryChatClient
+    ILogger<TelemetryChatClient> logger) : DelegatingChatClient(innerClient), ITelemetryChatClient
 {
     private static readonly ActivitySource StageModelCallActivitySource = new("CoreRentalNet.Agents.StageAgent");
 
@@ -84,7 +85,7 @@ internal sealed class ModelCallTelemetryChatClient(
 
     /// <summary>The stage that made the call, from the name its agent put on the call's options.</summary>
     private static string StageAgentNameOf(ChatOptions? options)
-        => options?.AdditionalProperties?.TryGetValue(IModelCallTelemetryChatClient.AgentName, out var value) is true
+        => options?.AdditionalProperties?.TryGetValue(ITelemetryChatClient.AgentName, out var value) is true
             && value is string stageAgentName
             ? stageAgentName
             : "(unnamed stage)";

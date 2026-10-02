@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Features.EchoReply.StageClient;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using Xunit;
 
 namespace CoreRentalNet.Agents.Tests;

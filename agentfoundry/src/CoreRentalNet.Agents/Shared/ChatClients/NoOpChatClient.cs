@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
-namespace CoreRentalNet.Agents.Shared.Model;
+namespace CoreRentalNet.Agents.Shared.ChatClients;
 
 /// <summary>A chat client that answers nothing, for a client whose reply does not come from a model.</summary>
 /// <remarks>

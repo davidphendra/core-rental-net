@@ -3,13 +3,13 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEventPublishing;
 using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
 
 /// <summary>Ends a run whose attempts are exhausted, or whose catalogue could not be searched.</summary>
 internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
-    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
+    ITelemetryChatClient modelCallTelemetryChatClient,
     IMcpAccessTokenService accessTokens)
     : WorkspaceSuggestionStreamingStageExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion)
 {

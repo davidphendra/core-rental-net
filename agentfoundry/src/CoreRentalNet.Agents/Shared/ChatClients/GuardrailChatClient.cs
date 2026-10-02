@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Shared.Mcp;
 
-namespace CoreRentalNet.Agents.Shared.Model;
+namespace CoreRentalNet.Agents.Shared.ChatClients;
 
 /// <summary>Fails a stage's model call whose answer repeats the caller's catalogue token.</summary>
 /// <remarks>
@@ -16,7 +16,7 @@ namespace CoreRentalNet.Agents.Shared.Model;
 /// already the customer's to see or the application's to hygienize.
 /// </para>
 /// </remarks>
-internal sealed class ModelOutputGuardrailChatClient(
+internal sealed class GuardrailChatClient(
     IChatClient innerClient,
     IMcpAccessTokenService accessTokens) : DelegatingChatClient(innerClient)
 {

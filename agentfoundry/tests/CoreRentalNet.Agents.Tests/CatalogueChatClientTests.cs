@@ -3,7 +3,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using Xunit;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
 

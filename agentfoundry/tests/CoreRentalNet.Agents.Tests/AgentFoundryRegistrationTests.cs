@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
@@ -91,8 +92,8 @@ public sealed class AgentFoundryRegistrationTests
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
 
-        scope.ServiceProvider.GetRequiredService<IModelCallTelemetryChatClient>()
-            .Should().BeOfType<ModelCallTelemetryChatClient>(
+        scope.ServiceProvider.GetRequiredService<ITelemetryChatClient>()
+            .Should().BeOfType<TelemetryChatClient>(
                 "callers depend on the port and DI injects the sealed implementation");
     }
 
@@ -101,11 +102,11 @@ public sealed class AgentFoundryRegistrationTests
         var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var catalog = new McpSetting(string.Empty);
         var recordedToolAnswers = new McpToolAnswerLedger();
-        var modelCallTelemetry = new ModelCallTelemetryChatClient(
-            new ModelOutputGuardrailChatClient(new ScriptedChatClient("{}"), tokens),
+        var modelCallTelemetry = new TelemetryChatClient(
+            new GuardrailChatClient(new ScriptedChatClient("{}"), tokens),
             "gpt-4.1-mini",
             "test-prompts",
-            NullLogger<ModelCallTelemetryChatClient>.Instance);
+            NullLogger<TelemetryChatClient>.Instance);
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
             tokens,

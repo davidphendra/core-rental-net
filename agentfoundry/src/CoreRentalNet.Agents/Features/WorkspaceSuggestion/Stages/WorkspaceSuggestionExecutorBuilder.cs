@@ -3,7 +3,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
 using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using Microsoft.Agents.AI.Workflows;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
@@ -27,7 +27,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
     AccessTokenHeaderReader accessTokenHeaderReader,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
     McpToolAnswerLedger recordedToolAnswers,
-    IModelCallTelemetryChatClient modelCallTelemetryChatClient)
+    ITelemetryChatClient modelCallTelemetryChatClient)
 {
     /// <summary>The graph's nodes, built and bound, ready for the topology to be laid over them.</summary>
     public WorkspaceSuggestionExecutors Build()

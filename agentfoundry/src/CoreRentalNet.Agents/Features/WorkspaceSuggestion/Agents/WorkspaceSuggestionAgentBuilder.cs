@@ -1,6 +1,6 @@
 using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
@@ -25,7 +25,7 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
     IMcpAccessTokenService accessTokenService,
     IMcpAuthorizationConnection mcpAuthorizationConnection,
     McpToolAnswerLedger recordedToolAnswers,
-    IModelCallTelemetryChatClient modelCallTelemetryChatClient,
+    ITelemetryChatClient telemetryChatClient,
     ILoggerFactory loggerFactory)
 {
     /// <summary>The agent for one roster entry, built the same way every stage is.</summary>
@@ -48,5 +48,5 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
         );
 
     private IChatClient RegularChatClient(AgentProfile agentProfile)
-        => new FunctionInvokingChatClient(modelCallTelemetryChatClient, loggerFactory);
+        => new FunctionInvokingChatClient(telemetryChatClient, loggerFactory);
 }

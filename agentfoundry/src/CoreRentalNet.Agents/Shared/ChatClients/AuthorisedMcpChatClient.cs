@@ -1,7 +1,8 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
+using CoreRentalNet.Agents.Shared.Mcp;
 
-namespace CoreRentalNet.Agents.Shared.Mcp;
+namespace CoreRentalNet.Agents.Shared.ChatClients;
 
 /// <summary>Applies the call's own credential, and the tools it entitles, at the model call.</summary>
 /// <remarks>
