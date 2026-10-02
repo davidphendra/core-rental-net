@@ -44,6 +44,10 @@ internal sealed class BaseWorkspaceSetupCandidateValidationExecutor(
 
                 workspaceSuggestionWorkflowState.IsWorkspaceSetupStructureValid = isStructurallyValid;
 
+                // An attempt finishes here, on every path: a set that fails the structure check never reaches the
+                // reviewer, and a count that moved only on review would let this path retry forever.
+                workspaceSuggestionWorkflowState.CompletedAttemptCount++;
+
                 return ValueTask.CompletedTask;
             },
             cancellationToken);

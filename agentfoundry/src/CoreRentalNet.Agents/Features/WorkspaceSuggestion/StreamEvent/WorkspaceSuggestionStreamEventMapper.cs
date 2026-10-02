@@ -49,9 +49,17 @@ internal static class WorkspaceSuggestionStreamEventMapper
             WorkspaceSuggestionRunStatus.Rejected
                 => workspaceSuggestionWorkflowState.RequestVerification?.RefusalReason,
             WorkspaceSuggestionRunStatus.Unavailable
-                => workspaceSuggestionWorkflowState.CatalogueRetrieval is { IsAvailable: false } unavailableRetrieval
-                    ? unavailableRetrieval.UnavailableReason
-                    : "No workspace setup satisfying the request could be composed.",
+                => UnavailableReasonFor(workspaceSuggestionWorkflowState),
             _ => null,
+        };
+
+    /// <summary>Why the catalogue could not answer, or why no setup could be composed from it.</summary>
+    private static string? UnavailableReasonFor(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
+        => workspaceSuggestionWorkflowState.CatalogueRetrieval switch
+        {
+            { IsAvailable: false } unavailableRetrieval => unavailableRetrieval.UnavailableReason,
+            _ when workspaceSuggestionWorkflowState.CandidatePool.Count == 0
+                => "The catalogue returned no products.",
+            _ => "No workspace setup satisfying the request could be composed.",
         };
 }

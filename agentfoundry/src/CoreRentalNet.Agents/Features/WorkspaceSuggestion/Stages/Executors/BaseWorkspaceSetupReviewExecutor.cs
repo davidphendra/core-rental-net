@@ -29,11 +29,6 @@ internal sealed class BaseWorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogg
                     cancellationToken: stageCancellationToken);
 
                 workspaceSuggestionWorkflowState.WorkspaceSetupReview = agentResponse.Result;
-
-                // A review is what finishes an attempt, so the count moves here and not in the retry
-                // decision: an accepted second attempt completed two attempts, and a count that moved only
-                // on a rejection would report one.
-                workspaceSuggestionWorkflowState.CompletedAttemptCount++;
             },
             cancellationToken);
 

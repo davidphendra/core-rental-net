@@ -283,6 +283,88 @@ public sealed class WorkflowTests
             line => line.Contains("Node complete-workspace-suggestion-success completed. Result: \"success\"", StringComparison.Ordinal));
     }
 
+    [Fact] // the retriever's own verdict ends the run: nothing downstream can search a catalogue it could not
+    public async Task A_retriever_that_reports_the_catalogue_unavailable_ends_the_run_before_the_pool()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var client = new ScriptedChatClient(
+            Verification,
+            Expansion,
+            """{ "isAvailable": false, "unavailableReason": "the catalogue is unreachable", "searches": [] }""");
+        var agent = Build(client, runLog);
+
+        var text = (await agent.RunAsync(Request)).Text!;
+
+        text.Should().Contain("\"runStatus\":\"unavailable\"");
+        text.Should().Contain("the catalogue is unreachable");
+        client.Requests.Should().HaveCount(3, "the verifier, the rephraser and the retriever, and no retry");
+        runLog.RecordedLines.Should().NotContain(
+            line => line.Contains("Node build-candidate-product-pool", StringComparison.Ordinal),
+            "the pool is never built from a catalogue that could not be searched");
+    }
+
+    [Fact] // a catalogue that returned nothing ends the run rather than composing from an empty pool
+    public async Task An_empty_catalogue_ends_the_run_before_the_reranker()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var client = new ScriptedChatClient(Verification, Expansion, Retrieval)
+        {
+            // No tool answered, so the pool the tools' answers build is empty.
+            AfterEachReply = () => { },
+        };
+        var agent = Build(client, runLog);
+
+        var text = (await agent.RunAsync(Request)).Text!;
+
+        text.Should().Contain("\"runStatus\":\"unavailable\"");
+        text.Should().Contain("The catalogue returned no products.");
+        client.Requests.Should().HaveCount(3, "the verifier, the rephraser and the retriever, and no retry");
+        runLog.RecordedLines.Should().NotContain(
+            line => line.Contains("Node rerank-workspace-candidates", StringComparison.Ordinal),
+            "the reranker is never reached with nothing to rank");
+    }
+
+    [Fact] // a refused tools/list is a run ending Unavailable, not a failed run
+    public async Task A_catalogue_that_refuses_the_call_ends_the_run_unavailable()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance)
+        {
+            Token = "the-callers-token",
+        };
+        var client = new ScriptedChatClient(Verification, Expansion);
+        var agent = Build(client, runLog, tokens, catalogue: new RefusingMcpAuthorizationConnection());
+
+        var text = (await agent.RunAsync(Request)).Text!;
+
+        text.Should().Contain("\"runStatus\":\"unavailable\"");
+        text.Should().Contain("The catalogue could not be reached.");
+        client.Requests.Should().HaveCount(
+            2, "the verifier and the rephraser; the retriever never reached a model");
+    }
+
+    [Fact] // the loop is bounded: an attempt that fails the structure check still counts
+    public async Task A_run_whose_setups_never_validate_ends_unavailable_after_the_attempts_run_out()
+    {
+        const string NoSetups = """{ "setups": [] }""";
+
+        string[] replies =
+        [
+            Verification,
+            Expansion, Retrieval, Reranking, NoSetups,
+            Expansion, Retrieval, Reranking, NoSetups,
+            Expansion, Retrieval, Reranking, NoSetups,
+        ];
+        var client = new ScriptedChatClient(replies);
+
+        var text = (await Build(client).RunAsync(Request)).Text!;
+
+        text.Should().Contain("\"runStatus\":\"unavailable\"");
+        text.Should().Contain("\"completedAttemptCount\":3");
+        client.Requests.Should().HaveCount(
+            13, "the verifier once, then three attempts of rephraser, retriever, reranker and composer");
+    }
+
     [Fact] // a run that ends at the gate logs the two nodes it reached and none of the ones it skipped
     public async Task A_run_that_ends_at_the_gate_logs_only_the_nodes_it_reached()
     {
@@ -418,9 +500,10 @@ public sealed class WorkflowTests
         ScriptedChatClient client,
         ILoggerFactory loggerFactory,
         IMcpAccessTokenService tokens,
-        AccessTokenHeaderReader? callerAccessTokenHeaderReader = null)
+        AccessTokenHeaderReader? callerAccessTokenHeaderReader = null,
+        IMcpAuthorizationConnection? catalogue = null)
     {
-        var catalogue = new McpAuthorizationConnection(
+        catalogue ??= new McpAuthorizationConnection(
             new McpSetting(string.Empty),
             tokens,
             NullLoggerFactory.Instance,

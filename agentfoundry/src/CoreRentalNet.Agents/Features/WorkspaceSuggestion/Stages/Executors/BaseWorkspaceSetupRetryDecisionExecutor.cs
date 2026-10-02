@@ -10,8 +10,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// <summary>Counts the attempt, decides what happens next, and tells the caller a retry is beginning.</summary>
 /// <remarks>
 /// Whether a run tries again is the workflow's business and not a model's, so the decision lives here rather
-/// than on the reviewer. The attempt count is the reviewer's, because a review is what finishes an attempt;
-/// this reads it, so the third review is the one that ends an unavailable run.
+/// than on the reviewer. The attempt count is the validator's, because every attempt passes through it once
+/// whether or not it is reviewed; this reads it, so the third attempt is the one that ends an unavailable run.
 /// </remarks>
 internal sealed class BaseWorkspaceSetupRetryDecisionExecutor(
     WorkspaceSetupRetryDecisionPolicy retryDecisionPolicy,

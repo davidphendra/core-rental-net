@@ -79,7 +79,9 @@ internal sealed class McpAuthorizationConnection(
                 "The MCP server at {Endpoint} refused this call's tools.",
                 mcpSetting.McpEndpoint);
 
-            throw;
+            // Typed rather than raw: the feature ends the run Unavailable when the catalogue refuses it, and a
+            // transport exception would escape the workflow as a failed run instead.
+            throw new CatalogueUnavailableException(mcpSetting.McpEndpoint, exception);
         }
 
         return _tools;

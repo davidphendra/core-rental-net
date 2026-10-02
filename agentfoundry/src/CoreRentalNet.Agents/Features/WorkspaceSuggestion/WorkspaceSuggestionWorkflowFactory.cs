@@ -34,8 +34,14 @@ internal sealed class WorkspaceSuggestionWorkflowFactory()
                     state => state?.RequestVerification?.IsWorkspaceRequest is true, [executors.Rephraser])
                 .WithDefault([executors.Rejected]))
             .AddEdge(executors.Rephraser, executors.Retriever)
-            .AddEdge(executors.Retriever, executors.ProductPool)
-            .AddEdge(executors.ProductPool, executors.Reranker)
+            .AddSwitch(executors.Retriever, retrievalSwitch => retrievalSwitch
+                .AddCase<WorkspaceSuggestionWorkflowState>(
+                    state => state?.CatalogueRetrieval?.IsAvailable is false, [executors.Unavailable])
+                .WithDefault([executors.ProductPool]))
+            .AddSwitch(executors.ProductPool, poolSwitch => poolSwitch
+                .AddCase<WorkspaceSuggestionWorkflowState>(
+                    state => state?.CandidatePool.Count is 0, [executors.Unavailable])
+                .WithDefault([executors.Reranker]))
             .AddEdge(executors.Reranker, executors.Composer)
             .AddEdge(executors.Composer, executors.Validator)
             .AddSwitch(executors.Validator, validationSwitch => validationSwitch

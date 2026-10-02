@@ -32,11 +32,23 @@ internal sealed class CatalogueProductRetrievalExecutor(
             WorkspaceProcessingStage.RetrievingCatalogueProducts,
             async stageCancellationToken =>
             {
-                var agentResponse = await stageAgent.RunAsync<CatalogueProductRetrievalResult>(
-                    WorkspaceStageInput.Retrieval(workspaceSuggestionWorkflowState),
-                    cancellationToken: stageCancellationToken);
+                try
+                {
+                    var agentResponse = await stageAgent.RunAsync<CatalogueProductRetrievalResult>(
+                        WorkspaceStageInput.Retrieval(workspaceSuggestionWorkflowState),
+                        cancellationToken: stageCancellationToken);
 
-                workspaceSuggestionWorkflowState.CatalogueRetrieval = agentResponse.Result;
+                    workspaceSuggestionWorkflowState.CatalogueRetrieval = agentResponse.Result;
+                }
+                catch (CatalogueUnavailableException)
+                {
+                    // The catalogue refused the call before a model saw a tool, so there is nothing to search and
+                    // nothing to retry: the run ends Unavailable, and the graph's own edge carries it there.
+                    workspaceSuggestionWorkflowState.CatalogueRetrieval = new CatalogueProductRetrievalResult(
+                        IsAvailable: false,
+                        UnavailableReason: "The catalogue could not be reached.",
+                        ComponentSearchOutcomes: []);
+                }
             },
             cancellationToken);
 
