@@ -11,10 +11,10 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// Every setup in the set is checked, and the set passes only when all of them do: a run whose second setup names
 /// a product no search returned is not a run whose first setup may be shown as if the set were sound.
 /// </remarks>
-internal sealed class BaseWorkspaceSetupCandidateValidationExecutor(
+internal sealed class WorkspaceSetupCandidateValidationExecutor(
     WorkspaceSetupCandidateStructureValidator structureValidator,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Validator, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Validator, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.IsWorkspaceSetupStructureValid;

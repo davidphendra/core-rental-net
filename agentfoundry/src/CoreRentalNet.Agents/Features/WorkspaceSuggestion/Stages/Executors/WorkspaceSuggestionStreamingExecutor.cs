@@ -20,7 +20,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// its own line.
 /// </para>
 /// </remarks>
-internal abstract class BaseWorkspaceSuggestionStreamingExecutor(string executorName, ILogger logger)
+internal abstract class WorkspaceSuggestionStreamingExecutor(string executorName, ILogger logger)
     : StreamingStageExecutor<WorkspaceSuggestionWorkflowState, WorkspaceSuggestionStreamEvent>(executorName)
 {
     /// <summary>Announces a node, runs its work, and announces that it finished.</summary>

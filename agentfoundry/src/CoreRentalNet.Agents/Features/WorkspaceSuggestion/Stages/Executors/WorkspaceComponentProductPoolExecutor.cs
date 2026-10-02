@@ -13,12 +13,12 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// It reads the recorded answers rather than the retriever's own account of them, so the pool holds the tool's
 /// bytes — and it bounds per component, so no component is squeezed out by a sibling whose terms matched more.
 /// </remarks>
-internal sealed class BaseWorkspaceComponentProductPoolExecutor(
+internal sealed class WorkspaceComponentProductPoolExecutor(
     WorkspaceComponentProductPoolBuilder poolBuilder,
     WorkspaceComponentProductPoolPolicy poolPolicy,
     McpToolAnswerLedger recordedToolAnswers,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.ProductPool, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.ProductPool, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.CandidatePool;

@@ -13,10 +13,10 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// than on the reviewer. The attempt count is the validator's, because every attempt passes through it once
 /// whether or not it is reviewed; this reads it, so the third attempt is the one that ends an unavailable run.
 /// </remarks>
-internal sealed class BaseWorkspaceSetupRetryDecisionExecutor(
+internal sealed class WorkspaceSetupRetryDecisionExecutor(
     WorkspaceSetupRetryDecisionPolicy retryDecisionPolicy,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => new

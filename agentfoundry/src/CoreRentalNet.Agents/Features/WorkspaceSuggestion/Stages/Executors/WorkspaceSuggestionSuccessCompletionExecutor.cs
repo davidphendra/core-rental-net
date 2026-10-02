@@ -14,11 +14,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// lets a caller render the first before the last has crossed the wire, and the ending is a separate event so a
 /// setup's arrival never implies a successful run.
 /// </remarks>
-internal sealed class BaseWorkspaceSuggestionSuccessCompletionExecutor(
+internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
     IMcpAccessTokenService accessTokenService,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.SuccessCompletion, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.SuccessCompletion, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.RunStatus;

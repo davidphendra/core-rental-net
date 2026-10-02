@@ -9,11 +9,11 @@ using CoreRentalNet.Agents.Shared.ChatClients;
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
-internal sealed class BaseWorkspaceSuggestionRejectionCompletionExecutor(
+internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
     IMcpAccessTokenService accessTokens,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.RunStatus;

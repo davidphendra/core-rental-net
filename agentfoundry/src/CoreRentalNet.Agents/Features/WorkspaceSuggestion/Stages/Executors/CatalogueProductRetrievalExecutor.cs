@@ -12,7 +12,7 @@ internal sealed class CatalogueProductRetrievalExecutor(
     AIAgent stageAgent,
     McpToolAnswerLedger recordedToolAnswers,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.CatalogueRetrieval;

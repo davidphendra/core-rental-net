@@ -13,11 +13,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// what came back through the selection policy, which is where the two guarantees live — a product cannot be
 /// introduced, and a component cannot be lost to a stronger sibling.
 /// </remarks>
-internal sealed class BaseWorkspaceComponentProductRerankingExecutor(
+internal sealed class WorkspaceComponentProductRerankingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentProductSelectionPolicy selectionPolicy,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates;

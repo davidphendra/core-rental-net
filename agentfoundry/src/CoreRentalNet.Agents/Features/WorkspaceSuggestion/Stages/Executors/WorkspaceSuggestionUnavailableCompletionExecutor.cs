@@ -9,11 +9,11 @@ using CoreRentalNet.Agents.Shared.ChatClients;
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Ends a run whose attempts are exhausted, or whose catalogue could not be searched.</summary>
-internal sealed class BaseWorkspaceSuggestionUnavailableCompletionExecutor(
+internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
     IMcpAccessTokenService accessTokens,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.RunStatus;

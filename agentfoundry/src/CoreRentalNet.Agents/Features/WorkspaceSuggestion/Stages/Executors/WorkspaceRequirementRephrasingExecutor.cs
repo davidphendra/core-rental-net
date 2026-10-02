@@ -14,11 +14,11 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// the refusal's sentence does not cross back to say so. The policy is the reason that path is unreachable from
 /// this pipeline rather than a hope that the prompt was obeyed.
 /// </remarks>
-internal sealed class BaseWorkspaceRequirementRephrasingExecutor(
+internal sealed class WorkspaceRequirementRephrasingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentSearchVocabularyLimitPolicy vocabularyLimitPolicy,
     ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.RequirementExpansion;

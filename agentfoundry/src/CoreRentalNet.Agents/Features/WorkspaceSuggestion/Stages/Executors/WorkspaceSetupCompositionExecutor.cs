@@ -6,12 +6,12 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
-/// <summary>Decides whether the composed setups satisfy the request. Validity only; no orchestration.</summary>
-internal sealed class BaseWorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogger logger)
-    : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reviewer, logger)
+/// <summary>Composes setups from the retrieved products and the specification, with no tools of its own.</summary>
+internal sealed class WorkspaceSetupCompositionExecutor(AIAgent stageAgent, ILogger logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Composer, logger)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
-        => workspaceSuggestionWorkflowState.WorkspaceSetupReview;
+        => workspaceSuggestionWorkflowState.ProposedWorkspaceSetups;
 
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
@@ -21,14 +21,14 @@ internal sealed class BaseWorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogg
         await RunProcessingStageAsync(
             workspaceSuggestionWorkflowState,
             workflowContext,
-            WorkspaceProcessingStage.ReviewingWorkspaceSetups,
+            WorkspaceProcessingStage.ComposingWorkspaceSetups,
             async stageCancellationToken =>
             {
-                var agentResponse = await stageAgent.RunAsync<WorkspaceSetupReviewResult>(
-                    WorkspaceStageInput.Review(workspaceSuggestionWorkflowState),
+                var agentResponse = await stageAgent.RunAsync<WorkspaceSetupCandidateSet>(
+                    WorkspaceStageInput.Composition(workspaceSuggestionWorkflowState),
                     cancellationToken: stageCancellationToken);
 
-                workspaceSuggestionWorkflowState.WorkspaceSetupReview = agentResponse.Result;
+                workspaceSuggestionWorkflowState.ProposedWorkspaceSetups = agentResponse.Result.Setups;
             },
             cancellationToken);
 
