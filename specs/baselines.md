@@ -51,12 +51,12 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **138 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **139 passed, 0 failed**.
 
-Two over the previous recording, and both are the node-trace tests: one pins that every node a run reaches
-writes a started line and a completed line, and that a node the run never reached writes nothing; the other
-pins that a run ending at the gate logs only the nodes it reached. This is the only baseline the change moves,
-because the agent solution is not part of `CoreRentalNet.sln`.
+Three over the previous recording: the two node-trace tests (every node a run reaches writes a started line and
+a completed line, and a node the run never reached writes nothing; a run ending at the gate logs only the nodes
+it reached), and the result test (each node's completion line carries the field that node produced). This is the
+only baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
 
 ## BROWSER
 
