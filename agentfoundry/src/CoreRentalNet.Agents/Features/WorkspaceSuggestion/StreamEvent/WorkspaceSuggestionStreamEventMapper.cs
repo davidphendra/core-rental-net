@@ -2,7 +2,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.StreamingEvents;
 using CoreRentalNet.Agents.Shared.Model;
 
-namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEventPublishing;
+namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 
 /// <summary>Turns the run's own state into the events a caller reads, in one place.</summary>
 /// <remarks>

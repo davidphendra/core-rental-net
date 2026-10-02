@@ -2,7 +2,7 @@ using Microsoft.Agents.AI.Workflows;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEventPublishing;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.StageExecutors;
 
