@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
-namespace CoreRentalNet.Agents.Features.EchoReply.StageClient;
+namespace CoreRentalNet.Agents.Features.EchoReply.ChatClient;
 
 /// <summary>The echo stage's client: it answers with the caller's own message.</summary>
 /// <remarks>

@@ -1,6 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.AI;
-using CoreRentalNet.Agents.Features.EchoReply.StageClient;
+using CoreRentalNet.Agents.Features.EchoReply.ChatClient;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using Xunit;
 

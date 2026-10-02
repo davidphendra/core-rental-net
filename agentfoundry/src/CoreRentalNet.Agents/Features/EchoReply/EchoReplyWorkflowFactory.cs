@@ -1,6 +1,6 @@
 using Microsoft.Agents.AI.Workflows;
 using CoreRentalNet.Agents.Features.EchoReply.Agents;
-using CoreRentalNet.Agents.Features.EchoReply.StageClient;
+using CoreRentalNet.Agents.Features.EchoReply.ChatClient;
 using CoreRentalNet.Agents.Features.EchoReply.Stages;
 using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Shared.ChatClients;
