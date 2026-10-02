@@ -20,6 +20,9 @@ internal sealed class BaseWorkspaceComponentProductPoolExecutor(
     ILogger logger)
     : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.ProductPool, logger)
 {
+    protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
+        => workspaceSuggestionWorkflowState.CandidatePool;
+
     protected override ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,

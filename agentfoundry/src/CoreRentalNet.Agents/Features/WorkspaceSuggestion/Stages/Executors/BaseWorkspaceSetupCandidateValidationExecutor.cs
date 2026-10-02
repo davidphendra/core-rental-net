@@ -16,6 +16,9 @@ internal sealed class BaseWorkspaceSetupCandidateValidationExecutor(
     ILogger logger)
     : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Validator, logger)
 {
+    protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
+        => workspaceSuggestionWorkflowState.IsWorkspaceSetupStructureValid;
+
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,

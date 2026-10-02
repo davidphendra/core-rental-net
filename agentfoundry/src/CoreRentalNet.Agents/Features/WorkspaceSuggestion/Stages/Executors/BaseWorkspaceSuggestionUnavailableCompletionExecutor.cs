@@ -15,6 +15,9 @@ internal sealed class BaseWorkspaceSuggestionUnavailableCompletionExecutor(
     ILogger logger)
     : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
 {
+    protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
+        => workspaceSuggestionWorkflowState.RunStatus;
+
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,

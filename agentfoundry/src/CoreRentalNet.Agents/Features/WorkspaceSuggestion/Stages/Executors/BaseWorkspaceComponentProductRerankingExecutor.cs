@@ -19,6 +19,9 @@ internal sealed class BaseWorkspaceComponentProductRerankingExecutor(
     ILogger logger)
     : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger)
 {
+    protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
+        => workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates;
+
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,

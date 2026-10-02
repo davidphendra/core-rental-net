@@ -18,6 +18,13 @@ internal sealed class BaseWorkspaceSetupRetryDecisionExecutor(
     ILogger logger)
     : BaseWorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
 {
+    protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
+        => new
+        {
+            workspaceSuggestionWorkflowState.RetryDecision,
+            workspaceSuggestionWorkflowState.PreviousAttemptIssues,
+        };
+
     protected override async ValueTask<WorkspaceSuggestionWorkflowState> ProcessAsync(
         WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState,
         IWorkflowContext workflowContext,

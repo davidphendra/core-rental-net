@@ -1,5 +1,6 @@
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
@@ -24,7 +25,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 internal sealed class WorkspaceInputExecutor(
     IMcpAccessTokenService accessTokens,
     AccessTokenHeaderReader accessTokenHeaderReader,
-    WorkspaceSuggestionWorkflowOptions workflowOptions)
+    WorkspaceSuggestionWorkflowOptions workflowOptions,
+    ILogger logger)
     : ChatEntryStageExecutor(WorkspaceWorkflowExecutorNames.Input)
 {
     /// <summary>The currency a console sentence is composed in, which is the one the catalogue is priced in.</summary>
@@ -45,6 +47,13 @@ internal sealed class WorkspaceInputExecutor(
         accessTokens.Token ??= accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
 
         var suggestionRequest = Read(messages) ?? FromSentence(messages);
+
+        // The entry node writes its own line, because it speaks the chat protocol through its own base rather
+        // than the workspace one. Its result is the request it read: never the token, which was lifted above.
+        logger.LogInformation(
+            "Node {Node} completed. Result: {Result}",
+            Id,
+            ContractJson.Serialize(suggestionRequest));
 
         var workspaceSuggestionWorkflowState = new WorkspaceSuggestionWorkflowState
         {

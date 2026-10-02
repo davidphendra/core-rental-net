@@ -40,7 +40,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
         return new(
             Input: new WorkspaceInputExecutor(
-                accessTokens, accessTokenHeaderReader, workflowOptions).BindExecutor(),
+                accessTokens, accessTokenHeaderReader, workflowOptions, logger).BindExecutor(),
 
             Verifier: new BaseWorkspaceRequestVerificationExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Verifier),

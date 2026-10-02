@@ -251,12 +251,36 @@ public sealed class WorkflowTests
                 $"the run reached {node} and its completion is written down");
         }
 
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("Node read-workspace-suggestion-request completed. Result:", StringComparison.Ordinal),
+            "the entry node reports the request it read");
         runLog.RecordedLines.Should().NotContain(
-            line => line.Contains("read-workspace-suggestion-request", StringComparison.Ordinal),
-            "the entry node speaks the chat protocol through its own base and is deliberately silent");
+            line => line.Contains("Node read-workspace-suggestion-request started.", StringComparison.Ordinal),
+            "the entry node speaks the chat protocol through its own base, so it has no start line of its own");
         runLog.RecordedLines.Should().NotContain(
             line => line.Contains("decide-workspace-setup-retry", StringComparison.Ordinal),
             "a node the run never reached writes nothing");
+    }
+
+    [Fact] // each node's completion line carries the result it produced
+    public async Task The_console_trace_carries_each_node_result()
+    {
+        var runLog = new RunLogRecordingLoggerFactory();
+        var agent = Build(
+            new ScriptedChatClient(Verification, Expansion, Retrieval, Reranking, Composition, Review),
+            runLog);
+
+        _ = await agent.RunAsync(Request);
+
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("Node verify-workspace-request completed. Result:", StringComparison.Ordinal));
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("\"isWorkspaceRequest\":true", StringComparison.Ordinal),
+            "the verifier's own verdict is what its line reports");
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("Node validate-workspace-setup-structure completed. Result: true", StringComparison.Ordinal));
+        runLog.RecordedLines.Should().Contain(
+            line => line.Contains("Node complete-workspace-suggestion-success completed. Result: \"success\"", StringComparison.Ordinal));
     }
 
     [Fact] // a run that ends at the gate logs the two nodes it reached and none of the ones it skipped
