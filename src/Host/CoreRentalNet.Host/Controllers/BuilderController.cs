@@ -108,17 +108,7 @@ internal sealed class BuilderController(
                 )
             );
 
-            var suggestionEventWriter = new ServerSentWorkspaceSuggestionEventWriter(Response);
-
-            await suggestionEventWriter.BeginAsync(cancellationToken);
-
-            await foreach (var streamEvent in suggestionRunService.StreamAsync(
-                                                suggestionRequestPayload,
-                                                User.HashCustomerIdentity(),
-                                                cancellationToken))
-            {
-                await suggestionEventWriter.WriteAsync(streamEvent, cancellationToken);
-            }
+            await RelayTheRunAsync(suggestionRequestPayload, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -131,6 +121,30 @@ internal sealed class BuilderController(
         finally
         {
             RunScopeAccessToken.Current = previousRunContext;
+        }
+    }
+
+    /// <summary>Opens the stream and writes each frame the run produces, until the run ends.</summary>
+    /// <remarks>
+    /// <b>The stream is the endpoint's to open, and it cannot be opened any earlier than this.</b> Starting the
+    /// response commits the headers, so a failure after it is no longer a status code - which is why the gate,
+    /// the permission, the token and the payload all come first. Nothing here names an agent event: the run
+    /// yields frames in the application's own vocabulary and this puts each one on the wire as it arrives.
+    /// </remarks>
+    private async Task RelayTheRunAsync(
+        WorkspaceSuggestionRequestPayload suggestionRequestPayload,
+        CancellationToken cancellationToken)
+    {
+        var suggestionEventWriter = new ServerSentWorkspaceSuggestionEventWriter(Response);
+
+        await suggestionEventWriter.BeginAsync(cancellationToken);
+
+        await foreach (var streamEvent in suggestionRunService.StreamAsync(
+            suggestionRequestPayload,
+            User.HashCustomerIdentity(),
+            cancellationToken))
+        {
+            await suggestionEventWriter.WriteAsync(streamEvent, cancellationToken);
         }
     }
 
