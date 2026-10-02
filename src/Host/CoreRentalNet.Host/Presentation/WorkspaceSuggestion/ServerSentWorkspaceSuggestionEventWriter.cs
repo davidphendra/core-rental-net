@@ -1,5 +1,4 @@
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
-using Microsoft.AspNetCore.Http;
 
 namespace CoreRentalNet.Host.Presentation.WorkspaceSuggestion;
 
@@ -11,12 +10,19 @@ namespace CoreRentalNet.Host.Presentation.WorkspaceSuggestion;
 /// is said; this decides how it is put on the wire.
 /// </para>
 /// <para>
+/// <b>Two operations, because the stream has two ends the endpoint has to drive.</b> Opening it is not the same
+/// as writing to it - the headers commit the response and turn buffering off, which is what makes the difference
+/// between streaming and pretending to - and it has to happen after the gate, the permission and the payload, so
+/// that a refusal can still be a status code. Closing it is not an operation at all: every frame is flushed as it
+/// is written, and the response ends when the endpoint returns.
+/// </para>
+/// <para>
 /// Nothing derived from the model reaches these methods. Every value written here is a constant the
 /// application wrote or a value it has already checked, because a newline anywhere in the data would end the
 /// frame early and deliver the rest of a sentence as a field.
 /// </para>
 /// </remarks>
-internal sealed class ServerSentWorkspaceSuggestionEventWriter(HttpResponse httpResponse) : IWorkspaceSuggestionEventWriter
+internal sealed class ServerSentWorkspaceSuggestionEventWriter(HttpResponse httpResponse)
 {
     /// <summary>The content type a browser reads as an event stream, and nothing else.</summary>
     public const string MediaType = "text/event-stream";
@@ -27,21 +33,16 @@ internal sealed class ServerSentWorkspaceSuggestionEventWriter(HttpResponse http
     /// and hand it over at the end, and a proxy in front of the application buffers by default, so a frame that
     /// is written is still a frame the customer is not reading.
     /// </remarks>
-    public static async Task<ServerSentWorkspaceSuggestionEventWriter> BeginAsync(
-        HttpResponse httpResponse,
-        CancellationToken cancellationToken)
+    public async Task BeginAsync(CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(httpResponse);
-
         httpResponse.Headers["Cache-Control"] = "no-cache";
         httpResponse.Headers["X-Accel-Buffering"] = "no";
-        httpResponse.ContentType = MediaType;
 
         // Commits the headers and starts the response, so that a failure after this point can no longer be
         // answered with a status code - which is why the gate and the permission are checked before.
-        await httpResponse.StartAsync(cancellationToken);
+        httpResponse.ContentType = MediaType;
 
-        return new ServerSentWorkspaceSuggestionEventWriter(httpResponse);
+        await httpResponse.StartAsync(cancellationToken);
     }
 
     /// <summary>Writes one frame for one event, and says nothing about the event itself.</summary>
