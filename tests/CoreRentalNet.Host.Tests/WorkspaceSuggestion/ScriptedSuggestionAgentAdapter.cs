@@ -4,12 +4,11 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 namespace CoreRentalNet.Host.Tests.WorkspaceSuggestion;
 
 /// <summary>An agent that says exactly what a test scripted, so the endpoint's framing can be asserted.</summary>
-internal sealed class ScriptedSuggestionAgentAdapter(params WorkspaceSuggestionAgentEvent[] agentEvents)
+internal sealed class ScriptedSuggestionAgentAdapter(params WorkspaceSuggestionEvent[] agentEvents)
     : IWorkspaceSuggestionAgentAdapter
 {
-    public async IAsyncEnumerable<WorkspaceSuggestionAgentEvent> StreamSuggestionAsync(
+    public async IAsyncEnumerable<WorkspaceSuggestionEvent> StreamAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
-        string callerAccessToken,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         foreach (var agentEvent in agentEvents)

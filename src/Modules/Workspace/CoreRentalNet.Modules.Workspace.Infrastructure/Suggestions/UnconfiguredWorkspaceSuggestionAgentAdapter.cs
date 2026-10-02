@@ -11,13 +11,12 @@ namespace CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 /// </remarks>
 public sealed class UnconfiguredWorkspaceSuggestionAgentAdapter : IWorkspaceSuggestionAgentAdapter
 {
-    public async IAsyncEnumerable<WorkspaceSuggestionAgentEvent> StreamSuggestionAsync(
+    public async IAsyncEnumerable<WorkspaceSuggestionEvent> StreamAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
-        string callerAccessToken,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
 
-        yield return new WorkspaceSuggestionUnavailableAgentEvent("No suggestion agent is configured.");
+        yield return new WorkspaceSuggestionUnavailableEvent("No suggestion agent is configured.");
     }
 }

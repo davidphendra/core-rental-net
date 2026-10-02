@@ -5,11 +5,10 @@ namespace CoreRentalNet.Modules.Workspace.UnitTests.Suggestions;
 
 /// <summary>A hand-written agent: it yields exactly the events a test scripted, in order.</summary>
 internal sealed class ScriptedWorkspaceSuggestionAgentAdapter(
-    IReadOnlyList<WorkspaceSuggestionAgentEvent> scriptedEvents) : IWorkspaceSuggestionAgentAdapter
+    IReadOnlyList<WorkspaceSuggestionEvent> scriptedEvents) : IWorkspaceSuggestionAgentAdapter
 {
-    public async IAsyncEnumerable<WorkspaceSuggestionAgentEvent> StreamSuggestionAsync(
+    public async IAsyncEnumerable<WorkspaceSuggestionEvent> StreamAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
-        string callerAccessToken,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
