@@ -51,8 +51,10 @@ public sealed class WorkspaceWorkflowContractSchemaTests
             UnavailableReason: null,
             ComponentSearchOutcomes:
             [
-                new WorkspaceComponentSearchOutcome(WorkspaceComponentCategory.Desk, 1, null),
                 new WorkspaceComponentSearchOutcome(
+                    "search_catalogue", WorkspaceComponentCategory.Desk, 1, null),
+                new WorkspaceComponentSearchOutcome(
+                    "search_similarity_catalogue",
                     WorkspaceComponentCategory.Chair,
                     0,
                     "nothing at or below 250000; the cheapest matching chair is 279000"),
@@ -66,8 +68,39 @@ public sealed class WorkspaceWorkflowContractSchemaTests
     {
         Schemas.EvaluateRaw("catalogue-retrieval.schema.json", """
             { "isAvailable": true, "unavailableReason": null,
-              "searches": [ { "category": "sofa", "found": 1 } ] }
-            """).IsValid.Should().BeFalse();
+              "searches": [ { "tool": "search_catalogue", "category": "sofa", "found": 1 } ] }
+            """).IsValid.Should().BeFalse(
+                "a category outside the seven is not a component this pipeline can compose for");
+    }
+
+    [Fact]
+    public void A_search_outcome_that_does_not_name_its_tool_is_rejected()
+    {
+        Schemas.EvaluateRaw("catalogue-retrieval.schema.json", """
+            { "isAvailable": true, "unavailableReason": null,
+              "searches": [ { "category": "desk", "found": 1 } ] }
+            """).IsValid.Should().BeFalse(
+                "a component is searched once per tool, so an outcome that does not say which tool it was cannot be read");
+    }
+
+    [Fact]
+    public void A_search_outcome_naming_a_tool_outside_the_vocabulary_is_rejected()
+    {
+        Schemas.EvaluateRaw("catalogue-retrieval.schema.json", """
+            { "isAvailable": true, "unavailableReason": null,
+              "searches": [ { "tool": "search_the_internet", "category": "desk", "found": 1 } ] }
+            """).IsValid.Should().BeFalse("only the catalogue's own tools may be reported");
+    }
+
+    [Fact] // a component is searched once per tool, so a category legitimately has two entries
+    public void A_retrieval_with_both_searches_for_a_component_is_accepted()
+    {
+        Schemas.EvaluateRaw("catalogue-retrieval.schema.json", """
+            { "isAvailable": true, "unavailableReason": null,
+              "searches": [
+                { "tool": "search_catalogue",            "category": "desk", "found": 4, "reason": null },
+                { "tool": "search_similarity_catalogue", "category": "desk", "found": 1, "reason": null } ] }
+            """).IsValid.Should().BeTrue();
     }
 
     [Fact] // the retriever no longer restates catalogue data, which is what the recorded answers replaced

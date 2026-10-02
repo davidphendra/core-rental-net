@@ -24,7 +24,7 @@
     },
     "searches": {
       "type": "array",
-      "description": "One entry per search the retriever made, including the ones that found nothing.",
+      "description": "One entry per component per tool the retriever searched with, including the ones that found nothing.",
       "items": {
         "$ref": "#/$defs/componentSearchOutcome"
       }
@@ -35,10 +35,18 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
+        "tool",
         "category",
         "found"
       ],
       "properties": {
+        "tool": {
+          "enum": [
+            "search_catalogue",
+            "search_similarity_catalogue"
+          ],
+          "description": "Which catalogue tool the outcome is from. A component is searched once per tool, so a category has one entry per tool."
+        },
         "category": {
           "enum": [
             "desk",

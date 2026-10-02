@@ -124,15 +124,20 @@ You are given the customer's original sentence again, with **one** thing the pre
   asked for.
 
 A set of setups that could not be composed at all never reaches the reviewer, so the previous attempt is also
-reported as what its searches came back with:
+reported as what its searches came back with — one entry per component per search tool:
 
-    Previous searches: [ { "category": "desk", "found": 0,
-                           "reason": "nothing at or below 200000; the cheapest matching desk is 240000" } ]
+    Previous searches: [
+      { "tool": "search_catalogue",            "category": "desk", "found": 0,
+        "reason": "nothing at or below 200000; the cheapest matching desk is 240000" },
+      { "tool": "search_similarity_catalogue", "category": "desk", "found": 0,
+        "reason": "nothing at or below 200000; the cheapest matching desk is 240000" } ]
 
-- **A search that found nothing and named a figure is a budget correction**, exactly as an issue that names one
-  is: raise that component's allocation.
-- **A search that found nothing and named no figure is a catalogue problem.** Reallocating will not fix it — read
-  the requirement differently, or say less about that component, rather than inventing a budget for it.
+- **A component is a problem only when every search for it found nothing.** A component that either of its
+  searches found a product for is answered, and is not what this attempt needs to correct.
+- **An empty search that named a figure is a budget correction**, exactly as an issue that names one is: raise
+  that component's allocation.
+- **An empty search that named no figure is a catalogue problem.** Reallocating will not fix it — read the
+  requirement differently, or say less about that component, rather than inventing a budget for it.
 - **The feedback is only ever the previous attempt's.** You are not shown a history and are not expected to
   remember one.
 - **Never widen the request to pass.** Keep the customer's ceiling, their categories and their requirements

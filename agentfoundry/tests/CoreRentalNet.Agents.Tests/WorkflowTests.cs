@@ -38,7 +38,7 @@ public sealed class WorkflowTests
     private const string Retrieval =
         """
         { "isAvailable": true, "unavailableReason": null,
-          "searches": [ { "category": "desk", "found": 1, "reason": null } ] }
+          "searches": [ { "tool": "search_catalogue", "category": "desk", "found": 1, "reason": null } ] }
         """;
 
     /// <summary>What the reranker answers: the desk, and nothing for the components nobody asked for.</summary>
@@ -436,7 +436,7 @@ public sealed class WorkflowTests
         const string NothingAffordable =
             """
             { "isAvailable": true, "unavailableReason": null,
-              "searches": [ { "category": "desk", "found": 0,
+              "searches": [ { "tool": "search_catalogue", "category": "desk", "found": 0,
                               "reason": "nothing at or below 200000; the cheapest matching desk is 240000" } ],
               "products": [] }
             """;
