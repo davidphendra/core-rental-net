@@ -1,5 +1,6 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.StreamingEvents;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Events;
 using CoreRentalNet.Agents.Shared.Model;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;

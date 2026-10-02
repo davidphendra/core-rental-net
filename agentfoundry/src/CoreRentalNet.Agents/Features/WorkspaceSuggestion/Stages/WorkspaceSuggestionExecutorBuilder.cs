@@ -1,5 +1,6 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 using CoreRentalNet.Agents.Shared.Mcp;

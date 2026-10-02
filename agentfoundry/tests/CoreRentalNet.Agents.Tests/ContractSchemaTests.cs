@@ -1,7 +1,9 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using Xunit;
 
 namespace CoreRentalNet.Agents.Tests;

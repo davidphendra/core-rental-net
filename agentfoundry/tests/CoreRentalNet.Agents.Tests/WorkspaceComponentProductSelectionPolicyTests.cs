@@ -1,6 +1,8 @@
 using AwesomeAssertions;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using Xunit;
 

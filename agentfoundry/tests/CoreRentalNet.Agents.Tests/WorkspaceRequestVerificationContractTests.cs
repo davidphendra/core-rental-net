@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Microsoft.Agents.AI;
 using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 using Xunit;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 

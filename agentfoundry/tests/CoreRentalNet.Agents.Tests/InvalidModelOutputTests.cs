@@ -3,6 +3,7 @@ using AwesomeAssertions;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 using Xunit;
 
 namespace CoreRentalNet.Agents.Tests;

@@ -1,4 +1,5 @@
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 

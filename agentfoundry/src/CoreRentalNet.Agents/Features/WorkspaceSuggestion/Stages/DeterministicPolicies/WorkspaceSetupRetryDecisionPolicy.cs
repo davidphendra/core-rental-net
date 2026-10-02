@@ -1,4 +1,5 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 

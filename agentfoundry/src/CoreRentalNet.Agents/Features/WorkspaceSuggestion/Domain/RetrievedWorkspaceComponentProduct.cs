@@ -1,6 +1,7 @@
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Wire;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 
 /// <summary>One product a catalogue search returned for one component of the workspace.</summary>
 /// <remarks>

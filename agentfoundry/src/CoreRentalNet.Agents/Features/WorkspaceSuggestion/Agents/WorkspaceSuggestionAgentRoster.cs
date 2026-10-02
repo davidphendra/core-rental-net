@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 using CoreRentalNet.Agents.Shared.Agents;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;

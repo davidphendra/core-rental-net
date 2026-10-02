@@ -1,3 +1,5 @@
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
+
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 
 /// <summary>A product the reranker kept, resolved back to the pool's own row.</summary>

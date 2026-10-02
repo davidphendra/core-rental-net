@@ -1,4 +1,5 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 
@@ -63,6 +64,6 @@ public sealed class WorkspaceComponentProductSelectionPolicy(int maximumSelected
     /// <summary>The pool's products for one component.</summary>
     private static IReadOnlyList<RetrievedWorkspaceComponentProduct> ProductsRetrievedFor(
         IReadOnlyList<RetrievedWorkspaceComponentProduct> retrievedProductPool,
-        Domain.Wire.WorkspaceSlot slot)
+        Domain.WorkspaceSlot slot)
         => [.. retrievedProductPool.Where(product => product.Slot == slot)];
 }

@@ -1,6 +1,7 @@
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 
 /// <summary>Bounds what one requirement expansion may ask a catalogue search to look for.</summary>
 /// <remarks>

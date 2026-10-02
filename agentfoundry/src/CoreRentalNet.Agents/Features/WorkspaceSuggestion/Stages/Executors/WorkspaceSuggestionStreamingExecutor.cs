@@ -1,7 +1,7 @@
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.StreamingEvents;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Events;
 using CoreRentalNet.Agents.Shared.Serialization;
 using CoreRentalNet.Agents.Shared.Workflows;
 
