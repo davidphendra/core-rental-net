@@ -51,12 +51,12 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **143 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **146 passed, 0 failed**.
 
-Four over the previous recording, from the catalogue-failure fix: the retriever's own `isAvailable: false` ends
-the run before the pool, an empty catalogue ends it before the reranker, a refused tools/list ends it Unavailable
-instead of failing, and a run whose setups never validate ends after the attempts run out rather than looping.
-This is the only baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
+Three over the previous recording, from the two-searches-per-component change: a search outcome that does not
+name its tool is rejected, one naming a tool outside the vocabulary is rejected, and a component's two searches
+are accepted. This is the only baseline the change moves, because the agent solution is not part of
+`CoreRentalNet.sln`.
 
 ## BROWSER
 
