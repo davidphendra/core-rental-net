@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Xunit;
 
@@ -17,9 +18,9 @@ public sealed class WorkspaceSuggestionBoundaryTests
     public void Every_agent_event_is_handled_by_exactly_one_handler()
     {
         var eventTypes = Directory
-            .GetFiles(Suggestions("Application", "Agent"), "WorkspaceSuggestion*AgentEvent.cs")
+            .GetFiles(Suggestions("Application", "Agent"), "WorkspaceSuggestion*Event.cs")
             .Select(Path.GetFileNameWithoutExtension)
-            .Where(name => !string.Equals(name, "WorkspaceSuggestionAgentEvent", StringComparison.Ordinal))
+            .Where(name => !string.Equals(name, "WorkspaceSuggestionEvent", StringComparison.Ordinal))
             .ToArray();
 
         var handlerFiles = Directory.GetFiles(Suggestions("Application", "Run"), "*StreamEventHandler.cs");
@@ -42,7 +43,7 @@ public sealed class WorkspaceSuggestionBoundaryTests
     {
         string[] forbidden =
         [
-            "WorkspaceSuggestionAgentEvent",
+            "WorkspaceSuggestionEvent",
             "WorkspaceSuggestionRunLedger",
             "WorkspaceSuggestionNarrativeFieldReader",
             "WorkspaceSuggestionOutputHygiene",
@@ -53,7 +54,11 @@ public sealed class WorkspaceSuggestionBoundaryTests
 
         foreach (var name in forbidden)
         {
-            controller.Should().NotContain(name, "the run's interpretation belongs to the module, not the endpoint");
+            // <b>Matched as a name and not as a substring.</b> The controller legitimately names
+            // <c>ServerSentWorkspaceSuggestionEventWriter</c>, which contains this name's letters without naming
+            // the type the rule is about - so the check is where the name stands alone.
+            Regex.IsMatch(controller, $@"\b{name}\b")
+                .Should().BeFalse($"the run's interpretation belongs to the module, not the endpoint: {name}");
         }
     }
 
@@ -64,7 +69,7 @@ public sealed class WorkspaceSuggestionBoundaryTests
             .Should().Contain("WorkspaceSuggestionRunLedger").And.Contain("WorkspaceSuggestionNarrativeFieldReader");
 
         File.ReadAllText(Suggestions("Application", "Run", "IWorkspaceSuggestionStreamEventHandler.cs"))
-            .Should().Contain("WorkspaceSuggestionAgentEvent");
+            .Should().Contain("WorkspaceSuggestionEvent");
 
         File.ReadAllText(Suggestions("Application", "Run", "WorkspaceSuggestionNarrativeDeltaStreamEventHandler.cs"))
             .Should().Contain("WorkspaceSuggestionOutputHygiene");

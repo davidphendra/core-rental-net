@@ -3,6 +3,7 @@ using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation.WorkspaceSuggestion;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
+using CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,20 +30,24 @@ namespace CoreRentalNet.Host.Controllers;
 /// where a run is paid for, so this endpoint is where the permission is checked.
 /// </para>
 /// <para>
-/// <b>The endpoint composes and delegates; it interprets nothing.</b> The request is built by the module's
-/// factory, and the run - its stages, its stream, its ending and its record - is the module's run service. What
-/// is left here is the transport: read the token, build the payload, open the stream, hand over.
+/// <b>The endpoint composes, relays and delegates; it interprets nothing.</b> The request is built by the
+/// module's factory, and the run - its stages, its frames, its ending and its record - is the module's run
+/// service. What is left here is the transport: read the token, build the payload, open the stream, write each
+/// frame the run produces, and let the response end.
 /// </para>
 /// </remarks>
 [ApiController]
 [Route(BuilderRoutes.Suggest)]
 internal sealed class BuilderController(
-    IWorkspaceSuggestionRequestFactory suggestionRequestFactory,
+    IWorkspaceSuggestionRequestFactory requestPayloadFactory,
     IWorkspaceSuggestionRunService suggestionRunService,
-    ICallerAccessTokenService callerAccessTokenService) : ControllerBase
+    IAccessTokenService accessTokenService,
+    ILoggerFactory loggerFactory) : ControllerBase
 {
     /// <summary>The refusal shape every problem on this API arrives as, named rather than left to the formatters.</summary>
     private const string ProblemJson = "application/problem+json";
+
+    private readonly ILogger _logger = loggerFactory.CreateLogger<BuilderController>();
 
     /// <summary>Runs one suggestion for this customer, and streams what happens while it runs.</summary>
     /// <remarks>
@@ -56,16 +61,22 @@ internal sealed class BuilderController(
     /// <b>The action writes its answer rather than returning one, and that is what a run needs.</b> The response
     /// is held open and written to for as long as the agent takes, in frames the browser reads as they arrive;
     /// an action that returns no result is how MVC expresses that. Opening the stream commits the headers, so a
-    /// failure from that point on cannot be answered with a status code - which is why the payload is built and
-    /// the permission checked before it.
+    /// failure from that point on cannot be answered with a status code - which is why the payload is built, the
+    /// permission checked and the token read before it.
+    /// </para>
+    /// <para>
+    /// <b>The run is a sequence, and this is where it reaches the wire.</b> The module yields the frames a run
+    /// produces and names no transport at all; this action opens the stream and writes each frame as it arrives,
+    /// so a frame the customer is reading is a frame that has already been flushed. A cancellation - the customer
+    /// stopping, or the agent's own call giving up - is an ending rather than an error: it is not logged, and the
+    /// stream ends cleanly, because a response that aborts mid-stream reads to the browser as a broken run rather
+    /// than a stopped one.
     /// </para>
     /// <para>
     /// <b>The customer's own token is read fresh, and refreshed when it has expired, through the
-    /// caller-token service</b> - which reads the identity SDK, the only place expiry is decided - then
-    /// forwarded rather than checked; the catalogue answers for the token itself when the agent presents it, and
-    /// only the agent can tell "no token" from "a token the catalogue refused". The agent reads it off the
-    /// invocation's own `x-client-mcp-catalog-access-token` header one layer down, so what reaches the prompt is
-    /// the sentence and the slot rules and nothing else.
+    /// caller-token service</b> - which reads the identity SDK, the only place expiry is decided - then placed in
+    /// the run's own scope rather than passed along; the catalogue answers for the token itself when the agent
+    /// presents it, and only the agent can tell "no token" from "a token the catalogue refused".
     /// </para>
     /// </remarks>
     [HttpPost]
@@ -78,38 +89,81 @@ internal sealed class BuilderController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
     public async Task Suggest([FromBody] WorkspaceSuggestionQueryRequest suggestionQueryRequest)
     {
-        // The identity SDK's own read, through the service: the login-time token while the recorded expiry is
-        // still ahead of now (by the SDK's own margin), a refreshed one from the session's refresh token when it
-        // is not, and a failure when it can produce neither. No `exp` is read here and no refresh is owned here.
-        string accessToken;
+        var previousRunContext = RunScopeAccessToken.Current;
+        var cancellationToken = HttpContext.RequestAborted;
+
         try
         {
-            accessToken = await callerAccessTokenService.GetForTheRunAsync().ConfigureAwait(false);
+            if (await ReadTheRunContextAsync() is not { } runContext)
+            {
+                return;                              // refused before the stream opened, as a status code
+            }
+
+            RunScopeAccessToken.Current = runContext;
+
+            var suggestionRequestPayload = requestPayloadFactory.Create(
+                new WorkspaceSuggestionQuery(
+                    suggestionQueryRequest.Query!,
+                    suggestionQueryRequest.CeilingMonthly
+                )
+            );
+
+            var suggestionEventWriter = new ServerSentWorkspaceSuggestionEventWriter(Response);
+
+            await suggestionEventWriter.BeginAsync(cancellationToken);
+
+            await foreach (var streamEvent in suggestionRunService.StreamAsync(
+                                                suggestionRequestPayload,
+                                                User.HashCustomerIdentity(),
+                                                cancellationToken))
+            {
+                await suggestionEventWriter.WriteAsync(streamEvent, cancellationToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // The customer stopped, or the run did: the stream ends, and the run's record says how it ended.
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error when running workspace suggestion");
+        }
+        finally
+        {
+            RunScopeAccessToken.Current = previousRunContext;
+        }
+    }
+
+    /// <summary>Reads the caller's own token for the run, and refuses the run when the session can produce none.</summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The context is returned rather than placed in the scope here, and that is load-bearing.</b> An
+    /// <c>AsyncLocal</c> is written into the execution context of whichever flow does the writing, and a write
+    /// made after an <c>await</c> inside a called async method does not travel back out to its caller - so the
+    /// endpoint has to open the run's scope in its own flow, or the pipeline reads nothing at all.
+    /// </para>
+    /// <para>
+    /// <b>The refusal is written here rather than returned, because this action returns no result</b> - and it
+    /// happens before the stream opens, because a status code is only still possible while the headers are
+    /// uncommitted.
+    /// </para>
+    /// </remarks>
+    private async Task<RunContext?> ReadTheRunContextAsync()
+    {
+        string accessToken;
+
+        try
+        {
+            accessToken = await accessTokenService.GetAsync();
         }
         catch (CallerAccessTokenUnavailableException)
         {
-            // Refused before the stream opens and before a run is paid for. A session that cannot produce the
-            // caller's token cannot read the catalogue, so this is a session that has ended being reported as one
-            // rather than a run being charged for and quietly failing at the far end.
             await RefuseBecauseTheSessionCannotProduceATokenAsync();
 
-            return;
+            return null;
         }
 
-        // Built before the stream opens, so a payload that cannot be built is still a status code.
-        var suggestionRequestPayload = suggestionRequestFactory.Create(
-            new WorkspaceSuggestionQuery(suggestionQueryRequest.Query!, suggestionQueryRequest.CeilingMonthly));
-
-        var suggestionEventWriter = await ServerSentWorkspaceSuggestionEventWriter.BeginAsync(
-            Response,
-            HttpContext.RequestAborted);
-
-        await suggestionRunService.RunSuggestionAsync(
-            suggestionRequestPayload,
-            accessToken,
-            suggestionEventWriter,
-            User.HashCustomerIdentity(),
-            HttpContext.RequestAborted);
+        return new RunContext(accessToken);
     }
 
     /// <summary>Refuses a run the session can no longer produce a catalogue token for.</summary>
