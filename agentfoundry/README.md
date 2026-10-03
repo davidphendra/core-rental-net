@@ -62,7 +62,7 @@ Three rules the graph enforces, and the reason it is a graph rather than a promp
 - **No model decides the lifecycle.** The verifier and the reviewer return validity. Whether another attempt
   runs is deterministic code — `WorkspaceSetupRetryDecisionPolicy` — reading the verdict and the attempt count.
 
-**The stages.** Five stage agents, each one prompt and one profile:
+**The stages.** Six stage agents, each one prompt and one profile:
 
 | Stage | Decides | Given | Tools |
 |---|---|---|---|
@@ -199,8 +199,8 @@ Found by building against the pinned packages, not assumed:
 |---|---|---|
 | The caller's credential | `AccessTokenHeaderReader` → `IMcpAccessTokenService` → `McpAccessTokenHandler` | read once off the invocation, held for the call, stamped on each MCP request; never logged |
 | Catalogue tools | the same decorator | offered only to a stage that declares `UsesCatalogueTools` |
-| Run cost and model telemetry | `TelemetryChatClient` | scoped to the run; the innermost decorator, wrapping the guardrail; one span and one line per call, the stage named by the call's options, and the run's total reported on the `completed` event |
-| Token-leak guardrail | `ModelOutputGuardrailChatClient` | fails the run loudly if an answer ever repeats the caller's token |
+| Run cost, run span and model telemetry | `TelemetryChatClient` | scoped to the run; the innermost decorator, wrapping the guardrail. It owns the run's span, records one line and the token counts per call, names the stage from the call's options, and reports the run's total on the `completed` event. The run's outcome metrics are read once from the workflow state by `WorkspaceWorkflowTelemetry`, and every node's span by `WorkspaceSuggestionStreamingExecutor` |
+| Token-leak guardrail | `GuardrailChatClient` | fails the run loudly if an answer ever repeats the caller's token, and marks the span so `TokenLeakRedactionProcessor` scrubs it before export |
 | Transport retries | `ModelTransportRetryOptions` | **not** a run's attempt count; the two never share a counter |
 | The `type` discriminator | `StreamingStageExecutor<TState, TEvent>` | the union is a class type parameter, so a stage cannot publish through a concrete type and silently drop `type` |
 

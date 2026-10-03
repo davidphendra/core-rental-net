@@ -51,12 +51,12 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **146 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **150 passed, 0 failed**.
 
-Three over the previous recording, from the two-searches-per-component change: a search outcome that does not
-name its tool is rejected, one naming a tool outside the vocabulary is rejected, and a component's two searches
-are accepted. This is the only baseline the change moves, because the agent solution is not part of
-`CoreRentalNet.sln`.
+Four over the previous recording, from the observability change (`specs/observability.md`): every instrument is
+named under one prefix and only once, the source and the meter share one name, one run is one span counted by
+outcome, and the guardrail marks the span it stops. This is the only baseline the change moves, because the
+agent solution is not part of `CoreRentalNet.sln`.
 
 ## BROWSER
 
