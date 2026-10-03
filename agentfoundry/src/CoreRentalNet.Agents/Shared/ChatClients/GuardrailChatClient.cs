@@ -64,7 +64,7 @@ internal sealed class GuardrailChatClient(
             Activity.Current?.SetTag(WorkspaceTelemetry.TokenLeakDetected, true);
             WorkspaceTelemetry.GuardrailTokenLeak.Add(1);
 
-            throw new InvalidOperationException(
+            throw new CallerTokenLeakException(
                 "A stage agent's answer carried the caller's catalogue token, so the run was stopped before the " +
                 "answer could reach the customer.");
         }

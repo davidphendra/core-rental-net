@@ -48,10 +48,19 @@ internal static class WorkspaceStageInput
 
     /// <summary>One entry per relevant component: its words, and the tool arguments that carry them.</summary>
     /// <remarks>
+    /// <para>
     /// The mapping between a component category and a catalogue tool's own words is stated in code and handed
     /// over, so the retriever calls the tool with what it was told rather than translating the category itself.
     /// A component the customer did not ask for is not offered at all, which is the same rule the structure
     /// validator applies to a composed line.
+    /// </para>
+    /// <para>
+    /// <b>The argument names are the tool's own, and the component is named separately.</b> The tool's
+    /// <c>category</c> is the catalogue's category - <c>desk</c>, <c>chair</c> or <c>accessory</c> - and never the
+    /// component the search is for, which is why the component travels as <c>component</c>. It was once handed over
+    /// as <c>category</c>, beside a <c>catalogCategory</c> that the tool does not name, and a model asked to
+    /// choose passed the component: a monitor reached the catalogue as <c>category: monitor</c> and was refused.
+    /// </para>
     /// </remarks>
     public static string Retrieval(WorkspaceSuggestionWorkflowState state)
         => ContractJson.Serialize(new
@@ -62,10 +71,10 @@ internal static class WorkspaceStageInput
                     .Where(component => component.Expansion.IsRelevant)
                     .Select(component => new
                     {
-                        category = component.ComponentCategory,
-                        catalogCategory = WorkspaceComponentVocabularyMapping
+                        component = component.ComponentCategory,
+                        category = WorkspaceComponentVocabularyMapping
                             .CatalogueCategoryArgumentFor(component.ComponentCategory),
-                        catalogSubCategory = WorkspaceComponentVocabularyMapping
+                        subCategory = WorkspaceComponentVocabularyMapping
                             .CatalogueSubCategoryArgumentFor(component.ComponentCategory),
                         maximumMonthlyAmount = component.Expansion.MonthlyBudget.MaximumAmount,
                         component.Expansion.SearchTerms,

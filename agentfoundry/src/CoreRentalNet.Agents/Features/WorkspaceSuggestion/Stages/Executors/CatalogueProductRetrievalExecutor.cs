@@ -3,6 +3,7 @@ using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
@@ -41,6 +42,17 @@ internal sealed class CatalogueProductRetrievalExecutor(
 
                     workspaceSuggestionWorkflowState.CatalogueRetrieval = agentResponse.Result;
                 }
+                catch (CallerTokenLeakException)
+                {
+                    // The one failure that must not be softened: the guardrail stopped an answer that repeated the
+                    // caller's token, and reporting it as "the catalogue was unavailable" would hide it.
+                    throw;
+                }
+                catch (OperationCanceledException)
+                {
+                    // A cancelled run is the caller's, not the catalogue's.
+                    throw;
+                }
                 catch (CatalogueUnavailableException)
                 {
                     // The catalogue refused the call before a model saw a tool, so there is nothing to search and
@@ -48,6 +60,16 @@ internal sealed class CatalogueProductRetrievalExecutor(
                     workspaceSuggestionWorkflowState.CatalogueRetrieval = new CatalogueProductRetrievalResult(
                         IsAvailable: false,
                         UnavailableReason: "The catalogue could not be reached.",
+                        ComponentSearchOutcomes: []);
+                }
+                catch (Exception)
+                {
+                    // Any other failure - a tool refusing an argument, the meaning search failing - is the same
+                    // outcome to this run as an unreachable catalogue: nothing could be searched, and nothing is
+                    // ever composed from memory.
+                    workspaceSuggestionWorkflowState.CatalogueRetrieval = new CatalogueProductRetrievalResult(
+                        IsAvailable: false,
+                        UnavailableReason: "The catalogue could not be searched.",
                         ComponentSearchOutcomes: []);
                 }
             },

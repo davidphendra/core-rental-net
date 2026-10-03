@@ -35,7 +35,7 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Retriever { get; } = new(
         Name: "catalogue-product-retriever",
-        PromptFileName: "catalogue-product-retrieval.v1.md",
+        PromptFileName: "catalogue-product-retrieval.v2.md",
         Description: "Finds the catalogue products that could satisfy the expansion, and composes nothing.",
         Output: ChatResponseFormat.ForJsonSchema<CatalogueProductRetrievalResult>(),
         UsesCatalogueTools: true);

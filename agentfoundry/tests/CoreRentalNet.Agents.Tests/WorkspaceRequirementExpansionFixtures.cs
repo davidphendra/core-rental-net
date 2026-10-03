@@ -30,8 +30,24 @@ internal static class WorkspaceRequirementExpansionFixtures
           "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
         """;
 
-    /// <summary>The whole document, with the desk requirement replaced when one is supplied.</summary>
-    public static string Json(string? deskExpansion = null) => $$"""
+    /// <summary>A monitor requirement, for the one test that needs a category reached through a subcategory.</summary>
+    public const string MonitorExpansion =
+        """
+        { "relevant": true, "retrieval_query": "a screen for a small desk",
+          "search_terms": ["monitor"], "synonyms": ["display"],
+          "semantic_concepts": ["a screen for one person"],
+          "budget": { "max_amount": 150000, "currency": "IDR", "is_explicit": false, "is_derived": true } }
+        """;
+
+    private const string MonitorNotRequested =
+        """
+        { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
+          "semantic_concepts": [],
+          "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
+        """;
+
+    /// <summary>The whole document, with the desk or monitor requirement replaced when one is supplied.</summary>
+    public static string Json(string? deskExpansion = null, string? monitorExpansion = null) => $$"""
         {
           "original_query": "a desk and a chair under 500000",
           "workspace_intent": {
@@ -47,9 +63,7 @@ internal static class WorkspaceRequirementExpansionFixtures
                        "search_terms": ["office chair"], "synonyms": ["task seating"],
                        "semantic_concepts": ["support through a long session"],
                        "budget": { "max_amount": 200000, "currency": "IDR", "is_explicit": false, "is_derived": true } },
-            "monitor": { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-                         "semantic_concepts": [],
-                         "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } },
+            "monitor": {{monitorExpansion ?? MonitorNotRequested}},
             "lamp": { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
                       "semantic_concepts": [],
                       "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } },
