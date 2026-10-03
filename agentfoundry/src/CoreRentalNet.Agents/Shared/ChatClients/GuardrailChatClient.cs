@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Telemetry;
 
 namespace CoreRentalNet.Agents.Shared.ChatClients;
 
@@ -57,6 +59,11 @@ internal sealed class GuardrailChatClient(
 
         if (modelOutputText.Contains(callerCatalogueToken, StringComparison.Ordinal))
         {
+            // Mark the span being recorded before the throw, because content capture means the answer may already
+            // be on it and a throw cannot unsend an attribute. The redaction processor reads the mark at export.
+            Activity.Current?.SetTag(WorkspaceTelemetry.TokenLeakDetected, true);
+            WorkspaceTelemetry.GuardrailTokenLeak.Add(1);
+
             throw new InvalidOperationException(
                 "A stage agent's answer carried the caller's catalogue token, so the run was stopped before the " +
                 "answer could reach the customer.");

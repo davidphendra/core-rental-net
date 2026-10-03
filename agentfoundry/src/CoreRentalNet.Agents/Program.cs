@@ -14,10 +14,13 @@ using DotNetEnv;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using CoreRentalNet.Agents.Features.EchoReply;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.Telemetry;
 
 // Local development only: a .env file is ignored if absent, and nothing is ever injected in a hosted
 // container. A platform that maps a setting from an unset azd variable injects it empty, and NoClobber keeps
@@ -34,6 +37,16 @@ foreach (var (key, value) in localDefaults)
 }
 
 var builder = AgentHost.CreateBuilder(args);
+
+// The application's own source, meter and redaction processor. The hosting platform builds the providers and
+// chooses the exporters; this only tells them what our code emits and what must be scrubbed before it leaves.
+// The source and the meter are added here because the distro cannot know about an application's own vocabulary.
+builder.ConfigureTracing(tracing => tracing
+    .AddSource(WorkspaceTelemetry.Name)
+    .AddProcessor(new TokenLeakRedactionProcessor()));
+
+builder.Services.ConfigureOpenTelemetryMeterProvider(metrics =>
+    metrics.AddMeter(WorkspaceTelemetry.Name));
 
 // The names hosting resolves requests by. Read from configuration — the platform's environment variable when it
 // set one, appsettings.json otherwise — so the keyed registrations hosting looks agents up under are the names

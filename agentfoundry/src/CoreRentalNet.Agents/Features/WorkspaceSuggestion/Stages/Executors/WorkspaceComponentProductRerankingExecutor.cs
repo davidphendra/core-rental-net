@@ -18,7 +18,7 @@ internal sealed class WorkspaceComponentProductRerankingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentProductSelectionPolicy selectionPolicy,
     ILogger logger)
-    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates;

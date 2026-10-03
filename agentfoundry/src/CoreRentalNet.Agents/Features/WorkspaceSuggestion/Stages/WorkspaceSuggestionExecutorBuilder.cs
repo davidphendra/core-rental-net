@@ -25,7 +25,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 /// </remarks>
 internal sealed class WorkspaceSuggestionExecutorBuilder(
     WorkspaceSuggestionAgentBuilder agentBuilder,
-    IMcpAccessTokenService accessTokens,
+    IMcpAccessTokenService accessTokenService,
     AccessTokenHeaderReader accessTokenHeaderReader,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
     McpToolAnswerLedger recordedToolAnswers,
@@ -41,7 +41,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
         return new(
             Input: new WorkspaceInputExecutor(
-                accessTokens, accessTokenHeaderReader, workflowOptions, logger).BindExecutor(),
+                accessTokenService, accessTokenHeaderReader, workflowOptions, telemetryChatClient, logger).BindExecutor(),
 
             Verifier: new WorkspaceRequestVerificationExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Verifier),
@@ -95,8 +95,8 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
                 logger
             ).BindExecutor(),
 
-            Success: new WorkspaceSuggestionSuccessCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor(),
-            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor(),
-            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(telemetryChatClient, accessTokens, logger).BindExecutor());
+            Success: new WorkspaceSuggestionSuccessCompletionExecutor(telemetryChatClient, accessTokenService, logger).BindExecutor(),
+            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(telemetryChatClient, accessTokenService, logger).BindExecutor(),
+            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(telemetryChatClient, accessTokenService, logger).BindExecutor());
     }
 }

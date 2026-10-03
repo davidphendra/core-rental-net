@@ -9,7 +9,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Decides whether the sentence is a workspace request at all, and ends the run when it is not.</summary>
 internal sealed class WorkspaceRequestVerificationExecutor(AIAgent stageAgent, ILogger logger)
-    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Verifier, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Verifier, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.RequestVerification;

@@ -1,8 +1,10 @@
 using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Telemetry;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Configuration;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 
@@ -26,15 +28,19 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
     IMcpAuthorizationConnection mcpAuthorizationConnection,
     McpToolAnswerLedger recordedToolAnswers,
     ITelemetryChatClient telemetryChatClient,
+    IConfiguration configuration,
     ILoggerFactory loggerFactory)
 {
+    private readonly bool _captureContent = configuration.GetValue(WorkspaceTelemetry.CaptureContentConfigurationKey, true);
+
     /// <summary>The agent for one roster entry, built the same way every stage is.</summary>
     public AIAgent For(AgentProfile agentProfile)
         => AgentFactory.Build(
             agentProfile,
             agentProfile.UsesCatalogueTools
                 ? StageChatClient(agentProfile)
-                : RegularChatClient(agentProfile)
+                : RegularChatClient(agentProfile),
+            _captureContent
         );
 
     private IChatClient StageChatClient(AgentProfile agentProfile)
@@ -48,5 +54,11 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
         );
 
     private IChatClient RegularChatClient(AgentProfile agentProfile)
-        => new FunctionInvokingChatClient(telemetryChatClient, loggerFactory);
+        => new FunctionInvokingChatClient(telemetryChatClient, loggerFactory)
+            .AsBuilder()
+            .UseOpenTelemetry(
+                loggerFactory,
+                WorkspaceTelemetry.Name,
+                configure: client => client.EnableSensitiveData = _captureContent)
+            .Build();
 }

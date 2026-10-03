@@ -31,6 +31,7 @@ internal sealed class WorkspaceSetupCandidateValidationExecutor(
             stageCancellationToken =>
             {
                 var isStructurallyValid = workspaceSuggestionWorkflowState.ProposedWorkspaceSetups.Count > 0;
+                var violations = new List<string>();
 
                 foreach (var workspaceSetupCandidate in workspaceSuggestionWorkflowState.ProposedWorkspaceSetups)
                 {
@@ -39,8 +40,14 @@ internal sealed class WorkspaceSetupCandidateValidationExecutor(
                         workspaceSuggestionWorkflowState.RequirementExpansion!,
                         workspaceSuggestionWorkflowState.SlotCapacityRules,
                         workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates,
-                        out _);
+                        out var setupViolations);
+
+                    violations.AddRange(setupViolations);
                 }
+
+                // The reasons are recorded here because they exist only here: the state keeps the verdict, not the
+                // violations, and a violation names a SKU that must never become a series.
+                WorkspaceWorkflowTelemetry.RecordValidatorViolations(violations);
 
                 workspaceSuggestionWorkflowState.IsWorkspaceSetupStructureValid = isStructurallyValid;
 

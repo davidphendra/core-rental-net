@@ -118,6 +118,7 @@ public sealed class AgentFoundryRegistrationTests
                 NullLogger<McpAuthorizationConnection>.Instance),
             recordedToolAnswers,
             modelCallTelemetry,
+            new ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(

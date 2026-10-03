@@ -5,6 +5,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
+using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Serialization;
 using CoreRentalNet.Agents.Shared.Workflows;
@@ -27,6 +28,7 @@ internal sealed class WorkspaceInputExecutor(
     IMcpAccessTokenService accessTokens,
     AccessTokenHeaderReader accessTokenHeaderReader,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
+    ITelemetryChatClient telemetryChatClient,
     ILogger logger)
     : ChatEntryStageExecutor(WorkspaceWorkflowExecutorNames.Input)
 {
@@ -48,6 +50,10 @@ internal sealed class WorkspaceInputExecutor(
         accessTokens.Token ??= accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
 
         var suggestionRequest = Read(messages) ?? FromSentence(messages);
+
+        // The run's span opens here, in the one stage still inside the HTTP request, so it is parented to the
+        // platform's server span and covers every node that follows.
+        telemetryChatClient.StartRun(suggestionRequest.RunId);
 
         // The entry node writes its own line, because it speaks the chat protocol through its own base rather
         // than the workspace one. Its result is the request it read: never the token, which was lifted above.

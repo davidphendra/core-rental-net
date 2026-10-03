@@ -13,7 +13,7 @@ internal sealed class CatalogueProductRetrievalExecutor(
     AIAgent stageAgent,
     McpToolAnswerLedger recordedToolAnswers,
     ILogger logger)
-    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.CatalogueRetrieval;
@@ -52,6 +52,10 @@ internal sealed class CatalogueProductRetrievalExecutor(
                 }
             },
             cancellationToken);
+
+        // Recorded per attempt, because the state keeps only the attempt in flight and a retry would otherwise
+        // hide the first attempt's empty searches, which are the ones a correction is built from.
+        WorkspaceWorkflowTelemetry.RecordCatalogue(workspaceSuggestionWorkflowState.CatalogueRetrieval);
 
         return workspaceSuggestionWorkflowState;
     }

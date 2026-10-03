@@ -9,7 +9,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Composes setups from the retrieved products and the specification, with no tools of its own.</summary>
 internal sealed class WorkspaceSetupCompositionExecutor(AIAgent stageAgent, ILogger logger)
-    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Composer, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Composer, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.ProposedWorkspaceSetups;

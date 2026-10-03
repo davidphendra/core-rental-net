@@ -49,6 +49,8 @@ internal sealed class WorkspaceSuggestionSuccessCompletionExecutor(
             WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, telemetryChatClient.Total),
             cancellationToken);
 
+        telemetryChatClient.CompleteRun("success");
+
         return workspaceSuggestionWorkflowState;
     }
 }

@@ -67,6 +67,7 @@ public sealed class WorkspaceSuggestionExecutorsTests
                 NullLogger<McpAuthorizationConnection>.Instance),
             recordedToolAnswers,
             modelCallTelemetry,
+            new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 
         return new WorkspaceSuggestionExecutorBuilder(

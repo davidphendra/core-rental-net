@@ -11,7 +11,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// <summary>Ends a run whose attempts are exhausted, or whose catalogue could not be searched.</summary>
 internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
-    IMcpAccessTokenService accessTokens,
+    IMcpAccessTokenService accessTokenService,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.UnavailableCompletion, logger)
 {
@@ -26,7 +26,7 @@ internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
         // The run is over, so the credential it borrowed is given up here — before the ending is announced, and
         // long before the call's scope is disposed. A later stage that reached for it would find nothing, which is
         // the point: nothing after an ending is entitled to the caller's authority.
-        accessTokens.Release();
+        accessTokenService.Release();
 
         workspaceSuggestionWorkflowState.RunStatus = WorkspaceSuggestionRunStatus.Unavailable;
 
@@ -34,6 +34,8 @@ internal sealed class WorkspaceSuggestionUnavailableCompletionExecutor(
             workflowContext,
             WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, telemetryChatClient.Total),
             cancellationToken);
+
+        telemetryChatClient.CompleteRun("unavailable");
 
         return workspaceSuggestionWorkflowState;
     }

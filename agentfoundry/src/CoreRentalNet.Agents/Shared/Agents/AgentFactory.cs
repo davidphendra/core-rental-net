@@ -2,6 +2,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Prompts;
+using CoreRentalNet.Agents.Shared.Telemetry;
 
 namespace CoreRentalNet.Agents.Shared.Agents;
 
@@ -16,7 +17,12 @@ namespace CoreRentalNet.Agents.Shared.Agents;
 /// </remarks>
 internal static class AgentFactory
 {
-    public static AIAgent Build(AgentProfile profile, IChatClient client)
+    /// <summary>
+    /// Builds a stage agent, instrumented with the framework's own OpenTelemetry so its run is a standard
+    /// <c>invoke_agent</c> span. The served agent is never built here - it is the workflow agent, and hosting can
+    /// only checkpoint an agent that is not wrapped.
+    /// </summary>
+    public static AIAgent Build(AgentProfile profile, IChatClient client, bool captureContent = false)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(client);
@@ -41,6 +47,11 @@ internal static class AgentFactory
                         [ITelemetryChatClient.AgentName] = profile.Name,
                     },
                 },
-            });
+            })
+            .AsBuilder()
+            .UseOpenTelemetry(
+                WorkspaceTelemetry.Name,
+                configure: stageAgent => stageAgent.EnableSensitiveData = captureContent)
+            .Build();
     }
 }

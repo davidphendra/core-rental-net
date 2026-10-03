@@ -9,7 +9,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Decides whether the composed setups satisfy the request. Validity only; no orchestration.</summary>
 internal sealed class WorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogger logger)
-    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reviewer, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reviewer, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.WorkspaceSetupReview;

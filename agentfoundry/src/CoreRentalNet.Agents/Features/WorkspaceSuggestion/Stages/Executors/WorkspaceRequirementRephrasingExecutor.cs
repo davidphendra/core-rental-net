@@ -19,7 +19,7 @@ internal sealed class WorkspaceRequirementRephrasingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentSearchVocabularyLimitPolicy vocabularyLimitPolicy,
     ILogger logger)
-    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger)
+    : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.RequirementExpansion;

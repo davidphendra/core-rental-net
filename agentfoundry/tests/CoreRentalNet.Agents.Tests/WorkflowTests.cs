@@ -527,7 +527,7 @@ public sealed class WorkflowTests
             "test-prompts",
             loggerFactory.CreateLogger<TelemetryChatClient>());
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            tokens, catalogue, recordedToolAnswers, modelCallTelemetry, loggerFactory);
+            tokens, catalogue, recordedToolAnswers, modelCallTelemetry, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
             stageAgents,

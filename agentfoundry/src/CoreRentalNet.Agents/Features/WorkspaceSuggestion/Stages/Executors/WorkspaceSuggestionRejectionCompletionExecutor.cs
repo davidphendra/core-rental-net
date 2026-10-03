@@ -11,7 +11,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
 internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
     ITelemetryChatClient telemetryChatClient,
-    IMcpAccessTokenService accessTokens,
+    IMcpAccessTokenService accessTokenService,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
 {
@@ -26,7 +26,7 @@ internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
         // The run is over, so the credential it borrowed is given up here — before the ending is announced, and
         // long before the call's scope is disposed. A later stage that reached for it would find nothing, which is
         // the point: nothing after an ending is entitled to the caller's authority.
-        accessTokens.Release();
+        accessTokenService.Release();
 
         workspaceSuggestionWorkflowState.RunStatus = WorkspaceSuggestionRunStatus.Rejected;
 
@@ -34,6 +34,8 @@ internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
             workflowContext,
             WorkspaceSuggestionStreamEventMapper.RunCompleted(workspaceSuggestionWorkflowState, telemetryChatClient.Total),
             cancellationToken);
+
+        telemetryChatClient.CompleteRun("rejected");
 
         return workspaceSuggestionWorkflowState;
     }
