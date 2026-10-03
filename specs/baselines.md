@@ -51,12 +51,13 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **150 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **154 passed, 0 failed**.
 
-Four over the previous recording, from the observability change (`specs/observability.md`): every instrument is
-named under one prefix and only once, the source and the meter share one name, one run is one span counted by
-outcome, and the guardrail marks the span it stops. This is the only baseline the change moves, because the
-agent solution is not part of `CoreRentalNet.sln`.
+Four over the previous recording, from the catalogue-argument fix: a monitor search carries the catalogue's
+`accessory` category and its `monitor` subcategory, a desk search carries no subcategory, the component is named
+separately from the tool's category, and the guardrail throws a dedicated type a tool failure cannot be mistaken
+for. The four before those were the observability change described in `specs/observability.md`. This is the only
+baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
 
 ## BROWSER
 
