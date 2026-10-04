@@ -37,6 +37,22 @@ internal static class CatalogAnswer
     public static IReadOnlyList<ProductView> Cap(IReadOnlyList<ProductView> matched, int limit)
         => matched.Count <= limit ? matched : [.. matched.Take(limit)];
 
+    /// <summary>The compact envelope the tools publish, which carries less prose than the API's.</summary>
+    /// <remarks>
+    /// One place, so the name search and the meaning search cannot come to trim differently - the same reason
+    /// <see cref="Compact"/> is here rather than copied into each tool.
+    /// </remarks>
+    public static CompactCatalogCollection CompactForTools(
+        IReadOnlyList<ProductView> matched,
+        int limit,
+        IReadOnlyList<ProductView> catalogue,
+        int maximumDescriptionCharacterCount)
+        => CompactCatalogProjection.ForTools(
+            Cap(matched, limit),
+            matched.Count,
+            CompactCatalogProjection.CurrencyOf(catalogue),
+            maximumDescriptionCharacterCount);
+
     /// <summary>The compact envelope both the catalogue API and the tools publish.</summary>
     public static CompactCatalogCollection Compact(
         IReadOnlyList<ProductView> matched,

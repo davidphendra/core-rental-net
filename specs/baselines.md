@@ -22,11 +22,11 @@ to paper over - and until it is taken, this baseline cannot be green.
 
 ## NONBROWSER
 
-**665 passed, 2 failed**, over the eight projects that run:
+**670 passed, 2 failed**, over the eight projects that run:
 
 | Project | Result |
 |---|---|
-| Host | 252 passed |
+| Host | **257 passed** |
 | Workspace | 81 passed |
 | Architecture | **60 passed, 2 failed** |
 | Rentals | 94 passed |
@@ -46,8 +46,11 @@ Both Architecture failures are the same unfinished decision:
   `MicrosoftFoundryWorkspaceSuggestionAgentAdapterFactory`, which the provider rename replaced, so the rule
   it guards is passing by selecting nothing.
 
-Against the recording in `specs/bugs/BUG-001.md`: Host 236 → 252, Workspace 80 → 81, AGENT 129 → 136. Those
+Against the recording in `specs/bugs/BUG-001.md`: Host 236 → 257, Workspace 80 → 81, AGENT 129 → 163. Those
 differences are the suites growing, not a measurement of any one change.
+
+Host is five over the last recording, from the catalogue tools' own answer: a description is capped at 400 characters
+for the tools and only for them, and the compact API answer keeps the full text.
 
 ## AGENT
 

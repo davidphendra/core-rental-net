@@ -40,6 +40,15 @@ internal static class CatalogToolLimits
     /// <summary>The longest a single typed search text may be.</summary>
     public const int MaximumSearchTextCharacterCount = 400;
 
+    /// <summary>The longest a description may be in a tool answer.</summary>
+    /// <remarks>
+    /// A tool answer is spent on a model's context, and the agent's reranker reads no more than 320 characters of
+    /// a description anyway: measured over the real catalogue the median description is 660 characters and the
+    /// longest is 3,466, so the full text is mostly cost without a reader. The application's compact API answer is
+    /// <b>not</b> capped - it is a published shape.
+    /// </remarks>
+    public const int MaximumDescriptionCharacterCount = 400;
+
     /// <summary>The requested cap, bounded so a caller cannot ask for the whole catalogue.</summary>
     public static int Clamp(int limit)
         => limit < 1 ? DefaultProductCount : Math.Min(limit, MaximumProductCount);

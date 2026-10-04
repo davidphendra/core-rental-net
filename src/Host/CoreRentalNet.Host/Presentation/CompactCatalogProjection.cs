@@ -40,6 +40,51 @@ internal static class CompactCatalogProjection
             product.MonthlyPrice.Currency);
     }
 
+    /// <summary>The compact envelope the catalogue's <b>tools</b> publish: the API's, with descriptions trimmed.</summary>
+    /// <remarks>
+    /// It exists because a tool answer is spent on a model's context rather than shown to a page. The API's own
+    /// compact answer is deliberately <b>not</b> capped: it is a published shape, asserted field by field, and a
+    /// cap added for the tools would change the answer a page is written against.
+    /// </remarks>
+    /// <param name="page">The rows this answer carries.</param>
+    /// <param name="total">How many rows matched, which is more than the page when it was capped.</param>
+    /// <param name="currency">The ISO 4217 code every price on the page is stated in.</param>
+    /// <param name="maximumDescriptionCharacterCount">How long a description may be in this answer.</param>
+    public static CompactCatalogCollection ForTools(
+        IReadOnlyList<ProductView> page,
+        int total,
+        string currency,
+        int maximumDescriptionCharacterCount)
+        => new(
+            [.. page.Select(product => Item(product) with
+            {
+                Description = Trimmed(product.Description, maximumDescriptionCharacterCount),
+            })],
+            page.Count,
+            total,
+            currency);
+
+    /// <summary>A description cut to a length, at a word boundary, so a trimmed one does not read as a typo.</summary>
+    /// <remarks>
+    /// The cut is made at a word boundary for the same reason the agent's reranker input is: a description cut
+    /// mid-word reads as a typo, and this text is what a reading of a product is made from.
+    /// </remarks>
+    public static string Trimmed(string description, int maximumDescriptionCharacterCount)
+    {
+        ArgumentNullException.ThrowIfNull(description);
+
+        if (description.Length <= maximumDescriptionCharacterCount)
+        {
+            return description;
+        }
+
+        var lastWordBoundary = description.LastIndexOf(' ', maximumDescriptionCharacterCount);
+
+        return lastWordBoundary <= 0
+            ? description[..maximumDescriptionCharacterCount]
+            : description[..lastWordBoundary];
+    }
+
     /// <summary>The currency a catalogue's prices are stated in, which an envelope states once.</summary>
     /// <remarks>
     /// Read from the catalogue rather than written here, and from the whole of it rather than from the rows

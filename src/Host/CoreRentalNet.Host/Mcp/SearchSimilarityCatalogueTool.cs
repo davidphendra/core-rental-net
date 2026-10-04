@@ -62,7 +62,11 @@ public sealed class SearchSimilarityCatalogueTool(
                 cancellationToken).ConfigureAwait(false);
 
             return new CatalogueSearchToolAnswer(
-                CatalogAnswer.Compact(matched, CatalogToolLimits.Clamp(limit), catalogue.All),
+                CatalogAnswer.CompactForTools(
+                    matched,
+                    CatalogToolLimits.Clamp(limit),
+                    catalogue.All,
+                    CatalogToolLimits.MaximumDescriptionCharacterCount),
                 CheapestProductExcludedByTheCeiling(matched, parsedCategory, parsedSubCategory, maximumMonthlyAmount));
         }
         catch (ProductSimilarityUnavailableException exception)
