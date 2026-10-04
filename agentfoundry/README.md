@@ -404,7 +404,7 @@ A run streams one typed event per line, in order:
 {"type":"stageStarted","customerWorkflowIdentifier":"r1","processingStage":"verifyingRequest"}
 …
 {"type":"retry",   "nextAttemptNumber":2,"maximumAttemptCount":3}
-{"type":"candidate","approvedWorkspaceSetup":{"lines":[…],"rationale":"…"}}
+{"type":"candidate","approvedWorkspaceSetup":{"lines":[…]}}
 {"type":"completed","runStatus":"success","completedAttemptCount":2,
  "runUsage":{"modelCalls":11,"inputTokens":9541,"outputTokens":844,"model":"gpt-4.1-mini","promptVersion":"…"}}
 ```

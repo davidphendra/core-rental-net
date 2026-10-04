@@ -30,7 +30,7 @@ public sealed class HostResponsesTests
     /// <summary>What a stage publishes, as the event stream spells it.</summary>
     private const string PublishedEvent =
         """
-        {"type":"candidate","customerWorkflowIdentifier":"run-1","approvedWorkspaceSetup":{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","name":"Sit-Stand Desk","quantity":1,"amount":4200000,"why":"a stable surface"}],"rationale":"A calm, focused setup."}}
+        {"type":"candidate","customerWorkflowIdentifier":"run-1","approvedWorkspaceSetup":{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","name":"Sit-Stand Desk","quantity":1,"amount":4200000}]}}
         """;
 
     [Fact]

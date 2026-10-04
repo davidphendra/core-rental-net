@@ -62,8 +62,7 @@ public sealed class WorkflowTests
     private const string Composition =
         """
         { "setups": [ { "lines": [ { "slot": "Desk", "sku": "DSKB08XN4JDR", "name": "Sit-Stand Desk",
-                                      "quantity": 1, "amount": 420000, "why": "a stable surface" } ],
-                        "rationale": "A calm, focused setup." } ] }
+                                      "quantity": 1, "amount": 420000 } ] } ] }
         """;
 
     private const string Review = """{ "isAcceptable": true, "issues": [], "summary": null }""";

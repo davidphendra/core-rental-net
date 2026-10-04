@@ -160,8 +160,7 @@ public sealed class WorkspaceWorkflowContractSchemaTests
     {
         const string workflow = "run-1";
         var setup = new WorkspaceSetupCandidate(
-            [new WorkspaceSetupLine(WorkspaceSlot.Desk, "DSKB08XN4JDR", "Sit-Stand Desk", 1, 4_200_000m, "a stable surface")],
-            "A calm, focused setup.");
+            [new WorkspaceSetupLine(WorkspaceSlot.Desk, "DSKB08XN4JDR", "Sit-Stand Desk", 1, 4_200_000m)]);
 
         yield return new WorkspaceProcessingStageStartedEvent(workflow, WorkspaceProcessingStage.VerifyingRequest);
         yield return new WorkspaceProcessingStageCompletedEvent(workflow, WorkspaceProcessingStage.ReviewingWorkspaceSetups);

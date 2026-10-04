@@ -40,8 +40,7 @@ public sealed class WorkspaceSetupCandidateStructureValidatorTests
     private static bool Validate(decimal? monthlyCeiling, out IReadOnlyList<string> violations)
     {
         var candidate = new WorkspaceSetupCandidate(
-            [new WorkspaceSetupLine(WorkspaceSlot.Desk, "DSK1", "Desk", Quantity: 1, Amount: 600_000m, "why")],
-            "rationale");
+            [new WorkspaceSetupLine(WorkspaceSlot.Desk, "DSK1", "Desk", Quantity: 1, Amount: 600_000m)]);
 
         return new WorkspaceSetupCandidateStructureValidator().IsStructurallyValid(
             candidate,
