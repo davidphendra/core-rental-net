@@ -1,6 +1,7 @@
 using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Telemetry;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -26,8 +27,9 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 internal sealed class WorkspaceSuggestionAgentBuilder(
     IMcpAccessTokenService accessTokenService,
     IMcpAuthorizationConnection mcpAuthorizationConnection,
-    McpToolAnswerLedger recordedToolAnswers,
     ITelemetryChatClient telemetryChatClient,
+    IGuardrailFunctionMiddleware guardrailMiddleware,
+    IToolAllowList toolAllowList,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
 {
@@ -40,7 +42,8 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
             agentProfile.UsesCatalogueTools
                 ? StageChatClient(agentProfile)
                 : RegularChatClient(agentProfile),
-            _captureContent
+            _captureContent,
+            guardrailMiddleware
         );
 
     private IChatClient StageChatClient(AgentProfile agentProfile)
@@ -49,7 +52,7 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
             accessTokenService,
             mcpAuthorizationConnection,
             agentProfile.UsesCatalogueTools,
-            recordedToolAnswers,
+            toolAllowList,
             loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
         );
 

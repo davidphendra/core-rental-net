@@ -33,6 +33,11 @@ internal sealed class WorkspaceSetupCandidateValidationExecutor(
                 var isStructurallyValid = workspaceSuggestionWorkflowState.ProposedWorkspaceSetups.Count > 0;
                 var violations = new List<string>();
 
+                // The ceiling the customer or the application stated, the same source the run's outcome telemetry
+                // reads, so the check and the metric cannot disagree about which budget was in force.
+                var monthlyCeiling = workspaceSuggestionWorkflowState.CustomerStatedCeilingMonthly
+                    ?? workspaceSuggestionWorkflowState.RequirementExpansion?.TotalMonthlyBudget.Amount;
+
                 foreach (var workspaceSetupCandidate in workspaceSuggestionWorkflowState.ProposedWorkspaceSetups)
                 {
                     isStructurallyValid &= structureValidator.IsStructurallyValid(
@@ -40,6 +45,7 @@ internal sealed class WorkspaceSetupCandidateValidationExecutor(
                         workspaceSuggestionWorkflowState.RequirementExpansion!,
                         workspaceSuggestionWorkflowState.SlotCapacityRules,
                         workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates,
+                        monthlyCeiling,
                         out var setupViolations);
 
                     violations.AddRange(setupViolations);

@@ -1,6 +1,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Prompts;
 using CoreRentalNet.Agents.Shared.Telemetry;
 
@@ -18,18 +19,25 @@ namespace CoreRentalNet.Agents.Shared.Agents;
 internal static class AgentFactory
 {
     /// <summary>
-    /// Builds a stage agent, instrumented with the framework's own OpenTelemetry so its run is a standard
-    /// <c>invoke_agent</c> span. The served agent is never built here - it is the workflow agent, and hosting can
+    /// Builds a stage agent. The served agent is never built here - it is the workflow agent, and hosting can
     /// only checkpoint an agent that is not wrapped.
     /// </summary>
-    public static AIAgent Build(AgentProfile profile, IChatClient client, bool captureContent = false)
+    /// <remarks>
+    /// The guardrail middleware is optional because a stage with no tools has nothing for it to guard; the echo
+    /// stage therefore stays uncoupled from the guardrail layer rather than carrying a policy it never reaches.
+    /// </remarks>
+    public static AIAgent Build(
+        AgentProfile profile,
+        IChatClient client,
+        bool captureContent = false,
+        IGuardrailFunctionMiddleware? guardrailMiddleware = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(client);
 
         var instructions = new EmbeddedInstructionSource(profile.PromptFileName);
 
-        return new ChatClientAgent(
+        var builder = new ChatClientAgent(
             client,
             new ChatClientAgentOptions
             {
@@ -51,7 +59,13 @@ internal static class AgentFactory
             .AsBuilder()
             .UseOpenTelemetry(
                 WorkspaceTelemetry.Name,
-                configure: stageAgent => stageAgent.EnableSensitiveData = captureContent)
-            .Build();
+                configure: stageAgent => stageAgent.EnableSensitiveData = captureContent);
+
+        if (guardrailMiddleware is not null)
+        {
+            builder = builder.Use(guardrailMiddleware.InvokeAsync);
+        }
+
+        return builder.Build();
     }
 }

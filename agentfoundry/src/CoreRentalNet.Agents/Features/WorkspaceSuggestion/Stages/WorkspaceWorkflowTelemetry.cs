@@ -111,6 +111,7 @@ internal static class WorkspaceWorkflowTelemetry
             _ when violation.StartsWith("SLOT_NOT_REQUESTED", StringComparison.Ordinal) => "slot_not_requested",
             _ when violation.StartsWith("SKU_NOT_RETRIEVED", StringComparison.Ordinal) => "sku_not_retrieved",
             _ when violation.StartsWith("QUANTITY_ABOVE_CAPACITY", StringComparison.Ordinal) => "quantity_above_capacity",
+            _ when violation.StartsWith("MONTHLY_CEILING_EXCEEDED", StringComparison.Ordinal) => "monthly_ceiling_exceeded",
             _ => "other",
         };
 

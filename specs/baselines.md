@@ -51,13 +51,13 @@ differences are the suites growing, not a measurement of any one change.
 
 ## AGENT
 
-`dotnet test agentfoundry/AgentFoundry.sln`: **154 passed, 0 failed**.
+`dotnet test agentfoundry/AgentFoundry.sln`: **163 passed, 0 failed**.
 
-Four over the previous recording, from the catalogue-argument fix: a monitor search carries the catalogue's
-`accessory` category and its `monitor` subcategory, a desk search carries no subcategory, the component is named
-separately from the tool's category, and the guardrail throws a dedicated type a tool failure cannot be mistaken
-for. The four before those were the observability change described in `specs/observability.md`. This is the only
-baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
+Nine over the previous recording, from the guardrail layer (`specs/archive/spikes/SPIKE-guardrails.md`): six
+policy tests (the allow-list, the argument ceiling, the catalogue vocabulary, untrusted-data redaction, the
+recorder, and that a denied guard stops the chain) and three for the validator's new budget ceiling. The four
+before those were the catalogue-argument fix; the four before those were the observability change. This is the
+only baseline the change moves, because the agent solution is not part of `CoreRentalNet.sln`.
 
 ## BROWSER
 

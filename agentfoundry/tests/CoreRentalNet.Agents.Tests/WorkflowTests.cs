@@ -55,14 +55,14 @@ public sealed class WorkflowTests
         """
         { "matches": { "value": [ { "sku": "DSKB08XN4JDR", "category": "desk", "name": "Sit-Stand Desk",
                                     "subCategory": null, "description": "A height-adjustable sitting or standing desk.",
-                                    "pricePerMonth": 4200000 } ] },
+                                    "pricePerMonth": 420000 } ] },
           "cheapestProductIgnoringTheCeiling": null }
         """;
 
     private const string Composition =
         """
         { "setups": [ { "lines": [ { "slot": "Desk", "sku": "DSKB08XN4JDR", "name": "Sit-Stand Desk",
-                                      "quantity": 1, "amount": 4200000, "why": "a stable surface" } ],
+                                      "quantity": 1, "amount": 420000, "why": "a stable surface" } ],
                         "rationale": "A calm, focused setup." } ] }
         """;
 
@@ -527,7 +527,7 @@ public sealed class WorkflowTests
             "test-prompts",
             loggerFactory.CreateLogger<TelemetryChatClient>());
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            tokens, catalogue, recordedToolAnswers, modelCallTelemetry, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
+            tokens, catalogue, modelCallTelemetry, TestGuardrails.Middleware, TestGuardrails.AllowList, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
             stageAgents,

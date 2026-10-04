@@ -116,8 +116,9 @@ public sealed class AgentFoundryRegistrationTests
                 tokens,
                 NullLoggerFactory.Instance,
                 NullLogger<McpAuthorizationConnection>.Instance),
-            recordedToolAnswers,
             modelCallTelemetry,
+            TestGuardrails.Middleware,
+            TestGuardrails.AllowList,
             new ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 

@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Mcp;
 
 namespace CoreRentalNet.Agents.Shared.ChatClients;
@@ -28,7 +29,7 @@ internal sealed class AuthorisedMcpChatClient(
     IMcpAccessTokenService accessTokens,
     IMcpAuthorizationConnection mcpAuthorizationConnection,
     bool offersMcpTools,
-    McpToolAnswerLedger recordedToolAnswers,
+    IToolAllowList toolAllowList,
     ILogger<AuthorisedMcpChatClient> logger) : DelegatingChatClient(innerClient)
 {
     /// <inheritdoc />
@@ -73,24 +74,22 @@ internal sealed class AuthorisedMcpChatClient(
             return (messages, options);
         }
 
-        var tools = await mcpAuthorizationConnection.ToolsAsync(cancellationToken);
-
-        logger.LogInformation("Chat call prepared: {Count} MCP tool(s); caller token present.", tools.Count);
-
-        // Every tool is offered through a recorder, so what a tool answered reaches the run's ledger as the
-        // tool's own bytes. A stage that later needs to reason over a product's description reads it there
-        // instead of asking a model to have copied it.
-        var recordedTools = tools
-            .Select(tool => tool is AIFunction toolFunction
-                ? (AITool)new RecordingMcpToolFunction(toolFunction, recordedToolAnswers)
-                : tool)
+        // The allow-list filters what the model is offered, not only what may run: a tool the deployment does not
+        // permit should never reach the prompt, where its name and description are untrusted input (§12).
+        var tools = (await mcpAuthorizationConnection.ToolsAsync(cancellationToken))
+            .Where(tool => toolAllowList.Contains(tool.Name))
             .ToArray();
 
+        logger.LogInformation("Chat call prepared: {Count} MCP tool(s); caller token present.", tools.Length);
+
+        // The tools go on as the server offered them. Recording and guarding happen one layer down, in the
+        // guardrail pipeline, so a tool is wrapped once rather than twice and its answer is recorded there — after
+        // the untrusted-data guard, so the ledger and every later stage read the same vetted text the model saw.
         // The options the stage was handed may be shared with another stage, so the tools go on a copy rather
         // than on the caller's instance.
         var optionsWithTools = options?.Clone() ?? new ChatOptions();
         var allTools = optionsWithTools.Tools is { } existingTools ? new List<AITool>(existingTools) : [];
-        allTools.AddRange(recordedTools);
+        allTools.AddRange(tools);
         optionsWithTools.Tools = allTools;
 
         return (messages, optionsWithTools);

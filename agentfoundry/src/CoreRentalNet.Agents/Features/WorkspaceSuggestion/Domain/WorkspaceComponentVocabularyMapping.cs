@@ -71,6 +71,19 @@ public static class WorkspaceComponentVocabularyMapping
         };
     }
 
+    /// <summary>Whether a pair of catalogue arguments names a component a search may be made for.</summary>
+    /// <remarks>
+    /// The non-throwing twin of <see cref="ComponentCategorySearchedBy"/>: a guardrail wants the answer, and a
+    /// refused call is a reason returned to the model rather than an exception that ends the stage.
+    /// </remarks>
+    public static bool CanBeSearchedBy(string? catalogueCategory, string? catalogueSubCategory)
+        => (catalogueCategory, catalogueSubCategory) switch
+        {
+            ("desk", _) or ("chair", _) => true,
+            ("accessory", "monitor" or "lamp" or "plant" or "beanbag" or "coffee") => true,
+            _ => false,
+        };
+
     /// <summary>The accessory subcategory a search is narrowed to, or null when the category stands alone.</summary>
     public static string? CatalogueSubCategoryArgumentFor(WorkspaceComponentCategory componentCategory)
         => componentCategory switch

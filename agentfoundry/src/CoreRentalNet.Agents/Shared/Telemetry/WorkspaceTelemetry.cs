@@ -116,6 +116,8 @@ internal static class WorkspaceTelemetry
         Meter.CreateCounter<long>("workspace.catalogue.tool.timeout.count", "{timeout}", "Catalogue tool calls that timed out");
     public static readonly Counter<long> CatalogueAuthFailure =
         Meter.CreateCounter<long>("workspace.catalogue.auth_failure.count", "{failure}", "Catalogue refusals of the caller's token");
+    public static readonly Counter<long> CatalogueUntrustedData =
+        Meter.CreateCounter<long>("workspace.catalogue.untrusted_data.count", "{incident}", "Tool answers with instruction-like text removed");
 
     // Composition, review and budget.
     public static readonly Counter<long> RerankRelevance =

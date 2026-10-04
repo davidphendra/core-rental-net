@@ -91,7 +91,7 @@ public sealed class CatalogueChatClientTests
             tokens,
             catalogue,
             readsCatalogue,
-            new McpToolAnswerLedger(),
+            TestGuardrails.AllowList,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 

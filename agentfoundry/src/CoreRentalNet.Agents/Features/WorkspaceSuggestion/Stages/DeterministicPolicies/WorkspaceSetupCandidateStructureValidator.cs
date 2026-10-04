@@ -19,6 +19,7 @@ public sealed class WorkspaceSetupCandidateStructureValidator
         WorkspaceRequirementExpansion requirementExpansion,
         IReadOnlyList<SlotRule> slotCapacityRules,
         IReadOnlyList<SelectedWorkspaceComponentProduct> selectedWorkspaceCandidates,
+        decimal? monthlyCeiling,
         out IReadOnlyList<string> violations)
     {
         ArgumentNullException.ThrowIfNull(workspaceSetupCandidate);
@@ -61,6 +62,14 @@ public sealed class WorkspaceSetupCandidateStructureValidator
             {
                 foundViolations.Add($"QUANTITY_ABOVE_CAPACITY:{workspaceSetupLine.Slot}");
             }
+        }
+
+        // The one invariant nothing else enforces deterministically: the catalogue narrows a search and the
+        // reviewer judges a set, but a quantity can push a set's total past the ceiling and no code checked it.
+        if (monthlyCeiling is { } ceiling
+            && workspaceSetupCandidate.Lines.Sum(line => line.Amount * line.Quantity) > ceiling)
+        {
+            foundViolations.Add("MONTHLY_CEILING_EXCEEDED");
         }
 
         violations = foundViolations;

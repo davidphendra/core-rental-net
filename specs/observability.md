@@ -217,6 +217,7 @@ metric mean "how the run ended".
 | `workspace.catalogue.tool.timeout.count` | Counter | `{timeout}` | `tool.name` | 2 | ours |
 | `workspace.catalogue.tool_available` | Gauge | `1` | `tool.name` | 2 | ours |
 | `workspace.catalogue.auth_failure.count` | Counter | `{failure}` | `reason` = missing/expired | 2 | ours |
+| `workspace.catalogue.untrusted_data.count` | Counter | `{incident}` | `tool.name` | 2 | ours (guardrail) |
 
 Retrieval effectiveness is measured at **search level** (decision D7), because `CatalogueSearchToolAnswer`
 carries product rows and `cheapestProductIgnoringTheCeiling` but no per-term attribution. The headline
