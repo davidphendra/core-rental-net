@@ -16,14 +16,14 @@ public sealed class WorkspaceSuggestionStreamProcessor(
     IEnumerable<IWorkspaceSuggestionStreamEventHandler> suggestionStreamEventHandlers)
     : IWorkspaceSuggestionStreamProcessor
 {
-    public async IAsyncEnumerable<WorkspaceSuggestionStreamEvent> ProcessAsync(
+    public async IAsyncEnumerable<WorkspaceSuggestionStreamEventBase> ProcessAsync(
         IAsyncEnumerable<WorkspaceSuggestionEvent> suggestionAgentEvents,
         WorkspaceSuggestionRunState suggestionRunState,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         await foreach (var suggestionAgentEvent in suggestionAgentEvents.WithCancellation(cancellationToken))
         {
-            var frames = new List<WorkspaceSuggestionStreamEvent>();
+            var frames = new List<WorkspaceSuggestionStreamEventBase>();
 
             foreach (var suggestionStreamEventHandler in suggestionStreamEventHandlers)
             {

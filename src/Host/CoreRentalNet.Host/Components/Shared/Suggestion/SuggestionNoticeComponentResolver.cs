@@ -7,7 +7,6 @@ internal sealed class SuggestionNoticeComponentResolver : ISuggestionNoticeCompo
         new Dictionary<SuggestionNoticeKind, Type>
         {
             [SuggestionNoticeKind.Stage] = typeof(SuggestionStageNoticeView),
-            [SuggestionNoticeKind.Narrative] = typeof(SuggestionNarrativeNoticeView),
             [SuggestionNoticeKind.Outcome] = typeof(SuggestionOutcomeNoticeView),
             [SuggestionNoticeKind.Failure] = typeof(SuggestionFailureNoticeView),
             [SuggestionNoticeKind.Stopped] = typeof(SuggestionStoppedNoticeView),

@@ -1,12 +1,5 @@
 @inject NavigationManager Navigation
 
-@if (Model.NotApplied)
-{
-    <p class="ai__not-applied mt-stack-sm text-label-md font-label-md text-on-surface-variant" data-testid="suggestion-not-applied">
-        Not applied to your workspace.
-    </p>
-}
-
 @if (Model.FailureCode == ExpiredSessionCode)
 {
     @* A session that ended is not a failed run, and "try again" would fail the same way: the one useful thing is

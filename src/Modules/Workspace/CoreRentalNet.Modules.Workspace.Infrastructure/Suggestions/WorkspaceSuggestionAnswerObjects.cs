@@ -6,16 +6,15 @@ namespace CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 /// <summary>Every complete top-level JSON object in a streamed answer, in the order they arrived.</summary>
 /// <remarks>
 /// <para>
-/// The answer is a <b>sequence of values, not one document</b>: the rephraser's specification, the
-/// suggestor's result, and the run's cost. So this reads all of them and the caller picks by what it is
-/// looking for - the result is the object with a <c>status</c>, the cost is the object with a
-/// <c>runUsage</c>.
+/// The answer is a <b>sequence of values, not one document</b>: one typed event per line. So this reads all of
+/// them and the caller picks by what it is looking for, because an incomplete tail must be ignored rather than
+/// treated as a value.
 /// </para>
 /// <para>
-/// <b>Picking by property, not by position and not by "does it deserialize".</b> "The last object" stopped
-/// being true the moment the cost was appended after the result. Deserializing each object and keeping the
-/// one that succeeds is worse than either: an enum with a missing value deserializes to its <em>first</em>
-/// member, so an object with no <c>status</c> at all would quietly be read as a valid suggestion.
+/// <b>An incomplete object stops the scan rather than throwing.</b> <c>isFinalBlock: false</c> is what makes a
+/// half-arrived value a stop, and <c>AllowMultipleValues</c> is what makes the second top-level object parse at
+/// all. Everything collected before the stop stands, so a reader can run this on every fragment and only ever see
+/// whole objects.
 /// </para>
 /// </remarks>
 internal static class WorkspaceSuggestionAnswerObjects
@@ -57,15 +56,12 @@ internal static class WorkspaceSuggestionAnswerObjects
         return found;
     }
 
-    public static bool Has(JsonElement element, string property)
-        => element.ValueKind is JsonValueKind.Object && element.TryGetProperty(property, out _);
-
     public static T? Read<T>(JsonElement element)
         where T : class
     {
         try
         {
-            return element.Deserialize<T>(MicrosoftFoundrySuggestionAgentJson.Options);
+            return element.Deserialize<T>(WorkspaceSuggestionAgentJson.Options);
         }
         catch (JsonException)
         {

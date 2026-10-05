@@ -14,15 +14,14 @@ public sealed class WorkspaceSuggestionCandidateApprovedStreamEventHandler : IWo
     public bool TryHandleAgentEvent(
         WorkspaceSuggestionEvent suggestionEvent,
         WorkspaceSuggestionRunState suggestionRunState,
-        ICollection<WorkspaceSuggestionStreamEvent> frames)
+        ICollection<WorkspaceSuggestionStreamEventBase> frames)
     {
         if (suggestionEvent is not WorkspaceSuggestionCandidateApprovedEvent approvedCandidateAgentEvent)
         {
             return false;
         }
 
-        frames.Add(new WorkspaceSuggestionCandidateStreamEvent(
-            $"Workspace setup found: {approvedCandidateAgentEvent.Candidate.Rationale}"));
+        frames.Add(new WorkspaceSuggestionCandidateStreamEvent("Workspace setup found"));
 
         return true;
     }

@@ -100,7 +100,7 @@ public sealed class SuggestionPanelTests : AuthenticatedE2ETest
     }
 
     [Fact] // AIWB-52
-    public async Task The_prose_is_not_a_live_region_and_the_progress_and_outcome_are()
+    public async Task The_progress_and_the_outcome_are_announced_and_nothing_else_is()
     {
         await BeginAsync("suggested");
 
@@ -117,25 +117,15 @@ public sealed class SuggestionPanelTests : AuthenticatedE2ETest
 
         await Expect(Page.Locator("[data-testid='suggestion-candidates']")).ToBeVisibleAsync();
 
-        // Progress and the outcome, and never the model's prose: the stage lines are the application's own
-        // short sentences, and the candidates arriving is the terminal outcome a screen reader hears.
+        // The application's own progress lines and the outcome are what a screen reader hears, and never the
+        // model's words, which are not rendered at all.
         var announced = await announcer.InnerTextAsync();
 
         output.WriteLine($"announced: {announced}");
         announced.Should().Contain("ready", "the outcome of a successful run is announced");
 
-        // And the prose is outside any live region, so a run does not narrate itself field by field.
-        var prose = Page.Locator("[data-testid='suggestion-stream']");
-
-        await Expect(prose).ToBeVisibleAsync();
-        await Expect(prose).Not.ToHaveAttributeAsync("role", "status");
-        await Expect(prose).Not.ToHaveAttributeAsync("aria-live", "polite");
-        await Expect(prose).Not.ToHaveAttributeAsync("aria-live", "assertive");
-
-        // Nothing inside it is a live region either, which is the version of this mistake that is easy to make
-        // by adding a role to the piece that changes.
-        await Expect(Page.Locator("[data-testid='suggestion-stream'] [aria-live]")).ToHaveCountAsync(0);
-        await Expect(Page.Locator("[data-testid='suggestion-stream'] [role='status']")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("[data-testid='suggestion-stream']")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("[data-testid='suggestion-narrative']")).ToHaveCountAsync(0);
     }
 
     [Fact] // task 5's browser half of AIWB-20 and AIWB-21, whose policy is asserted at unit level

@@ -15,5 +15,4 @@ namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 /// </remarks>
 public sealed record WorkspaceSuggestionCandidate(
     decimal MonthlyTotal,
-    string Rationale,
     IReadOnlyList<WorkspaceSuggestionCandidateLine> Lines);

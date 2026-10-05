@@ -18,7 +18,7 @@ public sealed class SuggestionNoticeComponentResolverTests
         var resolver = new SuggestionNoticeComponentResolver();
         var noticeKinds = Enum.GetValues<SuggestionNoticeKind>();
 
-        noticeKinds.Should().HaveCountGreaterThanOrEqualTo(5, "the panel has five kinds of notice");
+        noticeKinds.Should().HaveCountGreaterThanOrEqualTo(4, "the panel has four kinds of notice");
 
         foreach (var noticeKind in noticeKinds)
         {

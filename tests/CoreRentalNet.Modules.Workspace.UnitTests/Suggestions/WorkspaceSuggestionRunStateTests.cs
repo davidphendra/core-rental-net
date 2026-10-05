@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
-using CoreRentalNet.Modules.Workspace.Application.Suggestions.Reading;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 using CoreRentalNet.Modules.Workspace.Domain;
 using Xunit;
@@ -10,21 +9,14 @@ namespace CoreRentalNet.Modules.Workspace.UnitTests.Suggestions;
 
 public sealed class WorkspaceSuggestionRunStateTests
 {
-    [Fact] // a narrative field is emitted once, and only once it has closed
-    public void A_narrative_field_is_emitted_exactly_once()
+    [Fact] // the model's own words are kept for the record and never interpreted
+    public void The_raw_output_is_kept_whole()
     {
         var state = new WorkspaceSuggestionRunState("a desk");
 
-        state.AppendNarrativeText("{\"rationale\":\"A tidy setup").Should().BeEmpty("a partial value is never shown");
+        state.AppendRawOutput("{\"type\":\"stageStarted\",");
 
-        var closed = state.AppendNarrativeText(" for one person\"}");
-
-        closed.Should().ContainSingle();
-        closed[0].Kind.Should().Be(WorkspaceSuggestionNarrativeFieldKind.Rationale);
-        closed[0].Text.Should().Be("A tidy setup for one person");
-
-        state.AppendNarrativeText("{\"why\":\"For work\"}").Should().ContainSingle()
-            .Which.Kind.Should().Be(WorkspaceSuggestionNarrativeFieldKind.Why);
+        state.CreateRunRecord("customer", 0).RawOutput.Should().Be("{\"type\":\"stageStarted\",");
     }
 
     [Fact]
@@ -79,5 +71,5 @@ public sealed class WorkspaceSuggestionRunStateTests
         => new(new WorkspaceSuggestionAnswer(status, candidates, null), "hash");
 
     internal static WorkspaceSuggestionCandidate Candidate()
-        => new(100_000m, "A tidy setup.", [new WorkspaceSuggestionCandidateLine(SlotId.Desk, "DSK0001", "Desk", 1, 100_000m)]);
+        => new(100_000m, [new WorkspaceSuggestionCandidateLine(SlotId.Desk, "DSK0001", "Desk", 1, 100_000m)]);
 }

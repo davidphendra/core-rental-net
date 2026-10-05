@@ -25,7 +25,7 @@ public sealed class WorkspaceSuggestionRunService(
     IWorkspaceSuggestionStreamProcessor suggestionStreamProcessor,
     IWorkspaceSuggestionRunRecordWriter suggestionRunRecordWriter) : IWorkspaceSuggestionRunService
 {
-    public async IAsyncEnumerable<WorkspaceSuggestionStreamEvent> StreamAsync(
+    public async IAsyncEnumerable<WorkspaceSuggestionStreamEventBase> StreamAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
         string hashedCustomerIdentity,
         [EnumeratorCancellation] CancellationToken cancellationToken)

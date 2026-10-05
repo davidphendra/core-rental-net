@@ -62,10 +62,10 @@ public sealed class WorkspaceSuggestionRunServiceTests
     public async Task A_run_the_consumer_stops_reading_still_writes_its_record()
     {
         var records = new RecordingWorkspaceSuggestionRunRecordWriter();
-        var service = Service(records, new WorkspaceSuggestionNarrativeDeltaEvent("{\"rationale\":\"A tidy setup\"}"));
+        var service = Service(records, new WorkspaceSuggestionStageStartedEvent("verifyingRequest"));
 
-        // One completed field, so the run has produced a frame and has not ended: abandoning the enumeration now
-        // is walking away mid-run rather than reading to the end.
+        // A stage frame, so the run has produced a frame and has not ended: abandoning the enumeration now is
+        // walking away mid-run rather than reading to the end.
         var frames = service.StreamAsync(Payload(), "CUSTOMER", CancellationToken.None).GetAsyncEnumerator();
 
         try
@@ -80,10 +80,10 @@ public sealed class WorkspaceSuggestionRunServiceTests
         records.Records.Should().ContainSingle("a run that was started is a run that has to be explained");
     }
 
-    private static async Task<List<WorkspaceSuggestionStreamEvent>> FramesOfAsync(
+    private static async Task<List<WorkspaceSuggestionStreamEventBase>> FramesOfAsync(
         WorkspaceSuggestionRunService service)
     {
-        var frames = new List<WorkspaceSuggestionStreamEvent>();
+        var frames = new List<WorkspaceSuggestionStreamEventBase>();
 
         await foreach (var frame in service.StreamAsync(Payload(), "CUSTOMER", CancellationToken.None))
         {
@@ -100,7 +100,8 @@ public sealed class WorkspaceSuggestionRunServiceTests
             new ScriptedWorkspaceSuggestionAgentAdapter(events),
             new WorkspaceSuggestionStreamProcessor(
             [
-                new WorkspaceSuggestionNarrativeDeltaStreamEventHandler(),
+                new WorkspaceSuggestionStageStartedStreamEventHandler(),
+                new WorkspaceSuggestionRawOutputStreamEventHandler(),
                 new WorkspaceSuggestionResultReadyStreamEventHandler(),
                 new WorkspaceSuggestionUnavailableStreamEventHandler(),
             ]),

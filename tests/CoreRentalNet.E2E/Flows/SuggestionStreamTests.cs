@@ -7,8 +7,8 @@ using Xunit.Abstractions;
 namespace CoreRentalNet.E2E.Flows;
 
 /// <summary>
-/// The run as a customer watches it: the model's words shown as prose, the answer after them, and what is left
-/// on screen when a run fails.
+/// The run as a customer watches it: the application's own progress lines going active and complete, then the
+/// answer.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -23,29 +23,28 @@ namespace CoreRentalNet.E2E.Flows;
 /// really an assertion about the wait.
 /// </para>
 /// <para>
+/// <b>The model's own words are never on the page.</b> The application shows its own words and its own checked
+/// values, so a leaky stand-in cannot put a price, a link or a product name in front of a customer.
+/// </para>
+/// <para>
 /// <b>What that costs, stated rather than hidden.</b> Three scenarios in the matrix - AIWB-27 and AIWB-28
-/// (cancelling is reported as stopped, and leaves the text in place) and AIWB-49 (reloading mid-run cancels
-/// it) - need a run that is still going when the browser acts. Against an immediate run the UI cannot be
-/// driven into that state at all: Stop is offered only while a run is in flight, and the run is over before a
-/// click can land. They are therefore NOT covered at this level, and this file does not pretend otherwise.
-/// The frame-level behaviour they rest on - that the application writes its stages, then the model's words,
-/// then the answer, and that a cancelled request ends the run without a failure - is asserted in
-/// SuggestionEndpointTests and in the application's own unit tests, where a cancellation can be raised
-/// deterministically instead of raced.
+/// (cancelling is reported as stopped) and AIWB-49 (reloading mid-run cancels it) - need a run that is still
+/// going when the browser acts. Against an immediate run the UI cannot be driven into that state at all: Stop
+/// is offered only while a run is in flight, and the run is over before a click can land. They are therefore
+/// NOT covered at this level, and this file does not pretend otherwise. The frame-level behaviour they rest on
+/// is asserted in SuggestionEndpointTests and in the application's own unit tests, where a cancellation can be
+/// raised deterministically instead of raced.
 /// </para>
 /// </remarks>
 public sealed class SuggestionStreamTests : AuthenticatedE2ETest
 {
-    private readonly ITestOutputHelper output;
-
     public SuggestionStreamTests(HostFixture host, ITestOutputHelper output)
         : base(host, output)
     {
-        this.output = output;
     }
 
     [Fact] // AIWB-25
-    public async Task The_model_s_words_are_shown_as_prose_and_the_candidates_come_after_them()
+    public async Task The_answer_is_shown_and_the_model_s_own_words_are_not()
     {
         await BeginAsync("suggested");
 
@@ -53,79 +52,49 @@ public sealed class SuggestionStreamTests : AuthenticatedE2ETest
 
         await Expect(Page.Locator("[data-testid='suggestion-candidates']")).ToBeVisibleAsync();
 
-        var streamed = await Page.Locator("[data-testid='suggestion-stream']").InnerTextAsync();
-
-        // The model's words as prose. A customer reads a description of an idea, never the document it
-        // arrived in.
-        streamed.Should().Contain("An uncluttered setup for one person");
-        streamed.Should().NotContain("{");
-        streamed.Should().NotContain("\"");
-        streamed.Should().NotContain("sku");
-
-        // And the words stay where they are once the answer arrives: a run is a sequence, not a replacement.
-        var words = await Page.Locator("[data-testid='suggestion-stream']").BoundingBoxAsync();
-        var candidates = await Page.Locator("[data-testid='suggestion-candidates']").BoundingBoxAsync();
-
-        words.Should().NotBeNull();
-        candidates.Should().NotBeNull();
-        words!.Y.Should().BeLessThan(candidates!.Y, "the model's words come first, then the candidates");
+        // The model's own words are never rendered: a customer reads the application's checked values, never the
+        // document the model answered in.
+        await Expect(Page.Locator("[data-testid='suggestion-narrative']")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("[data-testid='suggestion-stream']")).ToHaveCountAsync(0);
 
         await Expect(Page.Locator("[data-testid='suggestion-option']")).ToHaveCountAsync(3);
 
-        // And a candidate says what it is: a label the application assigned by rank and an amount it recomputed
-        // from the catalogue. Both arrive in the frame, so a shape that failed to deserialize would leave the
-        // block empty - but a field rendered wrong would leave it blank, which this catches.
-        await Expect(Page.Locator("[data-testid='suggestion-option']").First).ToContainTextAsync("Budget");
+        // And a candidate says what it is: an amount the application recomputed from the catalogue, so a shape
+        // that failed to deserialize would leave the block empty and a field rendered wrong would leave it blank.
         await Expect(Page.Locator("[data-testid='suggestion-option']").First).ToContainTextAsync("/mo");
     }
 
     [Fact] // AIWB-26
-    public async Task Streamed_text_carries_no_price_and_no_product_name()
+    public async Task A_leaky_model_answer_is_never_shown()
     {
         await BeginAsync("leaky");
         await AskAsync("a desk and a chair");
 
         await Expect(Page.Locator("[data-testid='suggestion-candidates']")).ToBeVisibleAsync();
 
-        var streamed = await Page.Locator("[data-testid='suggestion-stream']").InnerTextAsync();
+        var panel = await Page.Locator("[data-testid='suggestion-panel']").InnerTextAsync();
 
-        output.WriteLine(streamed);
-
-        // The stand-in was told to leak both, so this is not a fixture that happens to be clean: the amount
-        // is what the application's strip removes before the customer reads it.
-        streamed.Should().NotContain("Rp", "a price in streamed text would make the run an offer");
-        streamed.Should().NotContain("1.206.000");
-        streamed.Should().NotContain("example.invalid", "nor a link out of the page");
-
-        // And the two assertions above only mean something because the text arrived with the leak removed
-        // FROM THE MIDDLE OF A SENTENCE - not because the sentence never mentioned either.
-        streamed.Should().Contain("An uncluttered setup for", "the rationale arrived");
-        streamed.Should().Contain("see for how it is billed", "the link was taken out of the sentence, not the sentence out of the page");
-
-        // Not asserted here, and it cannot be: no product name appears because the PROMPTS forbid one, and
-        // nothing can strip an arbitrary name. A fixture that leaked one would be a fixture failing, not the
-        // application, so the obligation is e05s02's and is checked there.
-        streamed.Should().NotContain("Desk Shell");
+        // The stand-in was told to leak a price, a link and a rationale; none of it can reach the page because
+        // the model's words are not rendered at all.
+        panel.Should().NotContain("Rp", "a price on the page would make the run an offer");
+        panel.Should().NotContain("1.206.000");
+        panel.Should().NotContain("example.invalid", "nor a link out of the page");
+        panel.Should().NotContain("An uncluttered setup", "nor the model's rationale");
     }
 
     [Fact] // AIWB-29
-    public async Task A_failed_run_keeps_its_text_and_offers_another_go()
+    public async Task A_failed_run_offers_another_go()
     {
-        // The scenario that stops mid-answer: the lines are readable and the result never closes. A run that
-        // failed before saying anything would leave no text to keep, so this is the only way to reach the
-        // state the scenario is about.
+        // The scenario that stops mid-answer: the result never closes, so the run ends as a failure.
         await BeginAsync("truncated");
         await AskAsync("a desk and a chair");
 
         await Expect(Page.Locator("[data-testid='suggestion-failed']")).ToBeVisibleAsync();
-
-        await Expect(Page.Locator("[data-testid='suggestion-stream']")).ToContainTextAsync("a wide, stable surface");
-        await Expect(Page.Locator("[data-testid='suggestion-not-applied']")).ToBeVisibleAsync();
         await Expect(Page.Locator("[data-testid='suggestion-retry']")).ToBeVisibleAsync();
     }
 
     [Fact] // AIWB-30
-    public async Task The_stage_list_is_kept_after_a_run_and_collapsed()
+    public async Task The_stage_list_is_kept_after_a_run_and_collapsed_with_every_node_done()
     {
         await BeginAsync("suggested");
         await AskAsync("a desk and a chair");
@@ -140,8 +109,11 @@ public sealed class SuggestionStreamTests : AuthenticatedE2ETest
         await Page.Locator("[data-testid='suggestion-stages-toggle']").ClickAsync();
 
         await Expect(Page.Locator("[data-testid='suggestion-stages']")).ToBeVisibleAsync();
-        await Expect(Page.Locator("[data-testid='suggestion-stages'] li")).ToHaveCountAsync(3);
         await Expect(Page.Locator("[data-testid='suggestion-stages']")).ToContainTextAsync("Reading your request");
+
+        // Every stage the run began was also finished, so no node is left active once the run is over.
+        await Expect(Page.Locator("[data-testid='suggestion-stages'] li[data-stage-state='active']"))
+            .ToHaveCountAsync(0);
     }
 
     private async Task BeginAsync(string scenario)

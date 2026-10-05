@@ -5,5 +5,5 @@ namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 /// The agent names the stage and the application words it: the two are different languages, and keeping the
 /// agent's name out of the panel is what lets the copy change without changing the workflow.
 /// </remarks>
-public sealed record WorkspaceSuggestionChangedEvent(string AgentProcessingStage)
+public sealed record WorkspaceSuggestionStageStartedEvent(string AgentProcessingStage)
     : WorkspaceSuggestionEvent;

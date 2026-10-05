@@ -22,42 +22,30 @@ public sealed class WorkspaceSuggestionFragmentReaderTests
         {"type":"stageStarted","customerWorkflowIdentifier":"run-1","processingStage":"verifyingRequest"}
         {"type":"stageStarted","customerWorkflowIdentifier":"run-1","processingStage":"composingWorkspaceSetups"}
         {"type":"retry","customerWorkflowIdentifier":"run-1","nextAttemptNumber":2,"maximumAttemptCount":3}
-        {"type":"candidate","customerWorkflowIdentifier":"run-1","approvedWorkspaceSetup":{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","name":"Sit-Stand Desk","quantity":1,"amount":4200000,"why":"a stable surface"}],"rationale":"A calm, focused setup."}}
+        {"type":"candidate","customerWorkflowIdentifier":"run-1","approvedWorkspaceSetup":{"lines":[{"slot":"Desk","sku":"DSKB08XN4JDR","name":"Sit-Stand Desk","quantity":1,"amount":4200000}]}}
         {"type":"completed","customerWorkflowIdentifier":"run-1","runStatus":"success","outcomeReason":null,"completedAttemptCount":2}
         """;
 
     [Fact]
     public void The_answer_is_read_out_of_the_event_stream()
     {
-        var streamedAnswer = WorkspaceSuggestionFragmentReader.Parse(StreamedAnswer);
+        var streamedAnswer = WorkspaceSuggestionFragmentReader.ReadAnswer(StreamedAnswer);
 
         streamedAnswer.Should().NotBeNull();
-        streamedAnswer!.Answer.Status.Should().Be(WorkspaceSuggestionAnswerStatus.Suggested);
-        streamedAnswer.Answer.Candidates.Should().ContainSingle();
-        streamedAnswer.Answer.Candidates[0].MonthlyTotal.Should().Be(4_200_000m);
-        streamedAnswer.Answer.Candidates[0].Rationale.Should().Be("A calm, focused setup.");
+        streamedAnswer!.Status.Should().Be(WorkspaceSuggestionAnswerStatus.Suggested);
+        streamedAnswer.Candidates.Should().ContainSingle();
+        streamedAnswer.Candidates[0].MonthlyTotal.Should().Be(4_200_000m);
     }
 
     [Fact]
     public void A_slot_is_read_in_the_contracts_own_words()
     {
-        var streamedAnswer = WorkspaceSuggestionFragmentReader.Parse(StreamedAnswer);
+        var streamedAnswer = WorkspaceSuggestionFragmentReader.ReadAnswer(StreamedAnswer);
 
         // "Desk", not "desk": the contract's vocabulary is PascalCase, and a reader that only accepted one
         // spelling would fail on the other without anything else noticing.
-        streamedAnswer!.Answer.Candidates[0].Lines[0].Slot.Should().Be(SlotId.Desk);
-        streamedAnswer.Answer.Candidates[0].Lines[0].Sku.Should().Be("DSKB08XN4JDR");
-    }
-
-    [Fact]
-    public void The_stages_and_the_retries_are_kept_beside_the_answer()
-    {
-        var streamedAnswer = WorkspaceSuggestionFragmentReader.Parse(StreamedAnswer);
-
-        streamedAnswer!.ProcessingStages.Should().Equal("verifyingRequest", "composingWorkspaceSetups");
-        streamedAnswer.RetryAttempts.Should().ContainSingle();
-        streamedAnswer.RetryAttempts[0].NextAttemptNumber.Should().Be(2);
-        streamedAnswer.RetryAttempts[0].MaximumAttemptCount.Should().Be(3);
+        streamedAnswer!.Candidates[0].Lines[0].Slot.Should().Be(SlotId.Desk);
+        streamedAnswer.Candidates[0].Lines[0].Sku.Should().Be("DSKB08XN4JDR");
     }
 
     [Fact]
@@ -68,10 +56,10 @@ public sealed class WorkspaceSuggestionFragmentReaderTests
             {"type":"completed","customerWorkflowIdentifier":"run-1","runStatus":"rejected","outcomeReason":"not about a workspace","completedAttemptCount":0}
             """;
 
-        var streamedAnswer = WorkspaceSuggestionFragmentReader.Parse(rejected);
+        var streamedAnswer = WorkspaceSuggestionFragmentReader.ReadAnswer(rejected);
 
-        streamedAnswer!.Answer.Status.Should().Be(WorkspaceSuggestionAnswerStatus.NotWorkspace);
-        streamedAnswer.Answer.Candidates.Should().BeEmpty();
+        streamedAnswer!.Status.Should().Be(WorkspaceSuggestionAnswerStatus.NotWorkspace);
+        streamedAnswer.Candidates.Should().BeEmpty();
     }
 
     [Fact]
@@ -82,9 +70,9 @@ public sealed class WorkspaceSuggestionFragmentReaderTests
             {"type":"completed","customerWorkflowIdentifier":"run-1","runStatus":"unavailable","outcomeReason":"none fitted","completedAttemptCount":3}
             """;
 
-        var streamedAnswer = WorkspaceSuggestionFragmentReader.Parse(unavailable);
+        var streamedAnswer = WorkspaceSuggestionFragmentReader.ReadAnswer(unavailable);
 
-        streamedAnswer!.Answer.Status.Should().Be(WorkspaceSuggestionAnswerStatus.CatalogueUnavailable);
+        streamedAnswer!.Status.Should().Be(WorkspaceSuggestionAnswerStatus.CatalogueUnavailable);
     }
 
     [Fact]
@@ -97,6 +85,6 @@ public sealed class WorkspaceSuggestionFragmentReaderTests
             {"type":"stageStarted","customerWorkflowIdentifier":"run-1","processingStage":"verifyingRequest"}
             """;
 
-        WorkspaceSuggestionFragmentReader.Parse(noEnding).Should().BeNull();
+        WorkspaceSuggestionFragmentReader.ReadAnswer(noEnding).Should().BeNull();
     }
 }

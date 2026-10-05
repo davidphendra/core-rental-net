@@ -17,14 +17,15 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
 
         var frames = await FramesOfAsync(
             state,
-            new WorkspaceSuggestionNarrativeDeltaEvent("{\"rationale\":\"A tidy setup\"}"),
+            new WorkspaceSuggestionRawOutputEvent("{\"rationale\":\"A tidy setup\"}"),
             WorkspaceSuggestionRunStateTests.Ready(
                 WorkspaceSuggestionAnswerStatus.Suggested,
                 [WorkspaceSuggestionRunStateTests.Candidate()]));
 
-        frames.Should().HaveCount(2);
-        frames[0].Should().BeOfType<WorkspaceSuggestionTextStreamEvent>();
-        frames[1].Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        // The raw output produces no frame - it is the run's evidence, and the customer never reads the model's
+        // words - so the answer is the only frame. The record proves the raw handler still ran.
+        frames.Should().ContainSingle().Which.Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        state.CreateRunRecord("customer", 0).RawOutput.Should().Be("{\"rationale\":\"A tidy setup\"}");
         state.HasEnded.Should().BeTrue();
     }
 
@@ -38,9 +39,10 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
             WorkspaceSuggestionRunStateTests.Ready(
                 WorkspaceSuggestionAnswerStatus.Suggested,
                 [WorkspaceSuggestionRunStateTests.Candidate()]),
-            new WorkspaceSuggestionNarrativeDeltaEvent("{\"rationale\":\"never read\"}"));
+            new WorkspaceSuggestionRawOutputEvent("{\"rationale\":\"never read\"}"));
 
         frames.Should().ContainSingle().Which.Should().BeOfType<WorkspaceSuggestionResultStreamEvent>();
+        state.CreateRunRecord("customer", 0).RawOutput.Should().BeEmpty("the run was over before the fragment arrived");
     }
 
     [Fact]
@@ -55,11 +57,11 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
             .Which.FailureCode.Should().Be(WorkspaceSuggestionFailureCode.Unavailable);
     }
 
-    private static async Task<List<WorkspaceSuggestionStreamEvent>> FramesOfAsync(
+    private static async Task<List<WorkspaceSuggestionStreamEventBase>> FramesOfAsync(
         WorkspaceSuggestionRunState state,
         params WorkspaceSuggestionEvent[] agentEvents)
     {
-        var frames = new List<WorkspaceSuggestionStreamEvent>();
+        var frames = new List<WorkspaceSuggestionStreamEventBase>();
 
         await foreach (var frame in Processor().ProcessAsync(Events(agentEvents), state, CancellationToken.None))
         {
@@ -72,7 +74,7 @@ public sealed class WorkspaceSuggestionStreamProcessorTests
     private static WorkspaceSuggestionStreamProcessor Processor()
         => new(
         [
-            new WorkspaceSuggestionNarrativeDeltaStreamEventHandler(),
+            new WorkspaceSuggestionRawOutputStreamEventHandler(),
             new WorkspaceSuggestionResultReadyStreamEventHandler(),
             new WorkspaceSuggestionUnavailableStreamEventHandler(),
         ]);

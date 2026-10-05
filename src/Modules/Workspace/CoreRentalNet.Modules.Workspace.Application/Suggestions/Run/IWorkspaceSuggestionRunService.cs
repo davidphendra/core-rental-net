@@ -12,7 +12,7 @@ public interface IWorkspaceSuggestionRunService
     /// what lets the endpoint open the stream before the first token is spent - and it is what makes abandoning
     /// the enumeration an ending: the run is written whichever way the caller stopped reading.
     /// </remarks>
-    IAsyncEnumerable<WorkspaceSuggestionStreamEvent> StreamAsync(
+    IAsyncEnumerable<WorkspaceSuggestionStreamEventBase> StreamAsync(
         WorkspaceSuggestionRequestPayload suggestionRequestPayload,
         string hashedCustomerIdentity,
         CancellationToken cancellationToken);

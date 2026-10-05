@@ -20,8 +20,9 @@ namespace CoreRentalNet.Host.Extentions;
 /// configuration guard can see them and the module names no configuration key of its own.
 /// </para>
 /// <para>
-/// The handlers are stateless, so they are singletons; the run is created per request because an HTTP request
-/// has its own scope and nothing is shared between two runs.
+/// The handlers are stateless, so they are singletons; the run is created per request because an HTTP request has
+/// its own scope and nothing is shared between two runs. <b>The progress reader and the adapter are the
+/// exception:</b> the reader keeps a per-run cursor, so both are scoped and one reader exists per run.
 /// </para>
 /// </remarks>
 internal static class WorkspaceSuggestionRegistrationExtentions
@@ -38,19 +39,16 @@ internal static class WorkspaceSuggestionRegistrationExtentions
         builder.Services.AddSingleton(connectionSettings);
         builder.Services.AddSingleton<WorkspaceSuggestionAvailability>();
 
-        builder.Services.AddSingleton<IWorkspaceSuggestionAgentAdapter>(_ =>
+        builder.Services.AddScoped<IWorkspaceSuggestionProgressReader, WorkspaceSuggestionProgressReader>();
+        builder.Services.AddScoped<IWorkspaceSuggestionAgentAdapter>(serviceProvider =>
             connectionSettings.IsConfigured
-                ? new AgentFoundryWorkspaceSuggestionAdapter(connectionSettings)
-                : new UnconfiguredWorkspaceSuggestionAgentAdapter());
+                ? new AgentFoundryWorkspaceSuggestionAdapter(
+                    connectionSettings,
+                    serviceProvider.GetRequiredService<IWorkspaceSuggestionProgressReader>())
+                : new NotConfiguredWorkspaceSuggestionAgentAdapter());
 
         builder.Services.AddSingleton<IWorkspaceSuggestionRunRecordWriter, LoggerWorkspaceSuggestionRunRecordWriter>();
-
-        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionStageChangedStreamEventHandler>();
-        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionRetryStreamEventHandler>();
-        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionCandidateApprovedStreamEventHandler>();
-        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionNarrativeDeltaStreamEventHandler>();
-        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionResultReadyStreamEventHandler>();
-        builder.Services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionUnavailableStreamEventHandler>();
+        AddStreamHandlers(builder.Services);
         builder.Services.AddSingleton<IWorkspaceSuggestionStreamProcessor, WorkspaceSuggestionStreamProcessor>();
 
         builder.Services.AddScoped<IWorkspaceSuggestionRequestFactory, WorkspaceSuggestionRequestPayloadFactory>();
@@ -58,8 +56,19 @@ internal static class WorkspaceSuggestionRegistrationExtentions
 
         // The panel's own composition: the registry a rendered notice is drawn through. It is registered here
         // rather than with the run because it is the panel's, and a component that injects a service the
-        // container does not hold throws the moment the panel renders - which is the failure this line exists
-        // to prevent.
+        // container does not hold throws the moment the panel renders.
         builder.Services.AddSingleton<ISuggestionNoticeComponentResolver, SuggestionNoticeComponentResolver>();
+    }
+
+    /// <summary>One handler per agent event, in the order the chain is asked.</summary>
+    private static void AddStreamHandlers(IServiceCollection services)
+    {
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionStageStartedStreamEventHandler>();
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionStageCompletedStreamEventHandler>();
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionRetryStreamEventHandler>();
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionCandidateApprovedStreamEventHandler>();
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionRawOutputStreamEventHandler>();
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionResultReadyStreamEventHandler>();
+        services.AddSingleton<IWorkspaceSuggestionStreamEventHandler, WorkspaceSuggestionUnavailableStreamEventHandler>();
     }
 }

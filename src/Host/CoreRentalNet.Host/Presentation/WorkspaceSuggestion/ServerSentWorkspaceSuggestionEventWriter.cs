@@ -47,13 +47,13 @@ internal sealed class ServerSentWorkspaceSuggestionEventWriter(HttpResponse http
     }
 
     /// <summary>Writes one frame for one event, and says nothing about the event itself.</summary>
-    public Task WriteAsync(WorkspaceSuggestionStreamEvent suggestionStreamEvent, CancellationToken cancellationToken)
+    public Task WriteAsync(WorkspaceSuggestionStreamEventBase suggestionStreamEvent, CancellationToken cancellationToken)
         => suggestionStreamEvent switch
         {
-            WorkspaceSuggestionStageStreamEvent stageStreamEvent
-                => WriteFrameAsync("stage", stageStreamEvent.StageWords, cancellationToken),
-            WorkspaceSuggestionTextStreamEvent textStreamEvent
-                => WriteFrameAsync("text", textStreamEvent.NarrativeWords, cancellationToken),
+            WorkspaceSuggestionStageStartedStreamEvent stageStartedStreamEvent
+                => WriteFrameAsync("stage", stageStartedStreamEvent.StageWords, cancellationToken),
+            WorkspaceSuggestionStageCompletedStreamEvent stageCompletedStreamEvent
+                => WriteFrameAsync("stageCompleted", stageCompletedStreamEvent.StageWords, cancellationToken),
             WorkspaceSuggestionResultStreamEvent resultStreamEvent
                 => WriteFrameAsync("result", WorkspaceSuggestionResultJson.Serialize(resultStreamEvent.ResultFrame), cancellationToken),
             WorkspaceSuggestionRetryStreamEvent retryStreamEvent

@@ -12,8 +12,8 @@ using Xunit;
 namespace CoreRentalNet.Host.Tests.WorkspaceSuggestion;
 
 /// <summary>
-/// The frames a run produces when the agent has something to say: a stage, a retry, an approved setup and the
-/// ending, each as its own server-sent event.
+/// The frames a run produces when the agent has something to say: a stage begun and finished, a retry, an approved
+/// setup and the ending, each as its own server-sent event.
 /// </summary>
 /// <remarks>
 /// A stand-in agent is supplied, so the run does not end unavailable and the framing of every frame kind the
@@ -25,14 +25,14 @@ public sealed class SuggestionStreamingFrameTests
 
     private static readonly WorkspaceSuggestionCandidate ApprovedSetup = new(
         MonthlyTotal: 4_200_000m,
-        Rationale: "A calm, focused setup.",
         Lines: [new WorkspaceSuggestionCandidateLine(SlotId.Desk, "DSKB08XN4JDR", "Sit-Stand Desk", 1, 4_200_000m)]);
 
     [Fact]
     public async Task A_stage_a_retry_an_approved_setup_and_the_ending_are_frames_of_their_own()
     {
         using var factory = new SuggestionEndpointFactory(new ScriptedSuggestionAgentAdapter(
-            new WorkspaceSuggestionChangedEvent("verifyingRequest"),
+            new WorkspaceSuggestionStageStartedEvent("verifyingRequest"),
+            new WorkspaceSuggestionStageCompletedEvent("verifyingRequest"),
             new WorkspaceSuggestionRetryEvent(2, 3),
             new WorkspaceSuggestionCandidateApprovedEvent(ApprovedSetup),
             new WorkspaceSuggestionResultReadyEvent(
@@ -43,6 +43,7 @@ public sealed class SuggestionStreamingFrameTests
 
         frames.Should().Contain("event: stage");
         frames.Should().Contain(WorkspaceSuggestionStage.Reading, "the agent's stage name is worded by the application");
+        frames.Should().Contain("event: stageCompleted", "a finished stage is its own frame, so the panel can close it");
         frames.Should().Contain("event: retry");
         frames.Should().Contain("attempt 2 of 3");
         frames.Should().Contain("event: candidate");

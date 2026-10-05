@@ -4,7 +4,6 @@ namespace CoreRentalNet.Host.Components.Shared.Suggestion;
 internal enum SuggestionNoticeKind
 {
     Stage,
-    Narrative,
     Outcome,
     Failure,
     Stopped,

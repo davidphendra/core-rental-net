@@ -17,7 +17,7 @@ internal sealed class CancellingSuggestionAgentAdapter : IWorkspaceSuggestionAge
     {
         await Task.Yield();
 
-        yield return new WorkspaceSuggestionChangedEvent("verifyingRequest");
+        yield return new WorkspaceSuggestionStageStartedEvent("verifyingRequest");
 
         throw new OperationCanceledException("The agent's call was cancelled.");
     }

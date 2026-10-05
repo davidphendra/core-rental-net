@@ -4,21 +4,21 @@ using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 
 namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Handlers;
 
-/// <summary>Reports a retry as a stage-like line, because it is where the run went and not what it produced.</summary>
-public sealed class WorkspaceSuggestionRetryStreamEventHandler : IWorkspaceSuggestionStreamEventHandler
+/// <summary>Reports the agent's stage as finished, in the application's words, so the panel can close it.</summary>
+public sealed class WorkspaceSuggestionStageCompletedStreamEventHandler : IWorkspaceSuggestionStreamEventHandler
 {
     public bool TryHandleAgentEvent(
         WorkspaceSuggestionEvent suggestionEvent,
         WorkspaceSuggestionRunState suggestionRunState,
         ICollection<WorkspaceSuggestionStreamEventBase> frames)
     {
-        if (suggestionEvent is not WorkspaceSuggestionRetryEvent retryAgentEvent)
+        if (suggestionEvent is not WorkspaceSuggestionStageCompletedEvent stageCompletedAgentEvent)
         {
             return false;
         }
 
-        frames.Add(new WorkspaceSuggestionRetryStreamEvent(
-            $"Reconsidering your request (attempt {retryAgentEvent.NextAttemptNumber} of {retryAgentEvent.MaximumAttemptCount})"));
+        frames.Add(new WorkspaceSuggestionStageCompletedStreamEvent(
+            WorkspaceSuggestionStage.WordsFor(stageCompletedAgentEvent.AgentProcessingStage)));
 
         return true;
     }

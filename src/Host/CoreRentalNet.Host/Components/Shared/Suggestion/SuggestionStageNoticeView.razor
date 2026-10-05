@@ -1,5 +1,5 @@
 @* The application's own stage lines. Retained and collapsed once a run ends, so where a run went is worth
-   being able to see afterwards and worth not having to look at. *@
+   being able to see afterwards and worth not having to look at. The last active line is where the run is now. *@
 @if (Model.Collapsed)
 {
     <button type="button"
@@ -14,9 +14,11 @@ else
 {
     <ol class="ai__stages mt-stack-sm text-label-md font-label-md text-on-surface-variant"
         data-testid="suggestion-stages">
-        @foreach (var stage in Model.StageWords)
+        @foreach (var line in Model.Lines)
         {
-            <li class="ai__stage" data-stage="@stage">@stage</li>
+            <li class="ai__stage"
+                data-stage="@line.Words"
+                data-stage-state="@(line.IsComplete ? "complete" : "active")">@line.Words</li>
         }
     </ol>
 }

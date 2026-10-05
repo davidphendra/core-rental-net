@@ -12,7 +12,7 @@ public interface IWorkspaceSuggestionStreamProcessor
     /// An enumeration rather than a callback, so the run is a sequence the caller pulls from: the endpoint relays
     /// it to the response, and a test reads it as the frames it is. Nothing here knows a transport exists.
     /// </remarks>
-    IAsyncEnumerable<WorkspaceSuggestionStreamEvent> ProcessAsync(
+    IAsyncEnumerable<WorkspaceSuggestionStreamEventBase> ProcessAsync(
         IAsyncEnumerable<WorkspaceSuggestionEvent> suggestionAgentEvents,
         WorkspaceSuggestionRunState suggestionRunState,
         CancellationToken cancellationToken);

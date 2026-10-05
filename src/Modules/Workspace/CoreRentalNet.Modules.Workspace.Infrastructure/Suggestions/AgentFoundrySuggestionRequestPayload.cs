@@ -17,7 +17,7 @@ internal sealed record AgentFoundrySuggestionRequestPayload(string Json, string 
     {
         ArgumentNullException.ThrowIfNull(suggestionRequestPayload);
 
-        var json = JsonSerializer.Serialize(suggestionRequestPayload, MicrosoftFoundrySuggestionAgentJson.Options);
+        var json = JsonSerializer.Serialize(suggestionRequestPayload, WorkspaceSuggestionAgentJson.Options);
 
         // The bytes that are sent, hashed as they are: nothing in this payload is a per-run secret any more, so
         // there is no field to take out first and no second serialization to keep in step with the first.

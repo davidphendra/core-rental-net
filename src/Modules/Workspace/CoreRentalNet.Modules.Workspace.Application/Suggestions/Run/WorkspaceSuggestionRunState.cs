@@ -1,6 +1,5 @@
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
-using CoreRentalNet.Modules.Workspace.Application.Suggestions.Reading;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
 using CoreRentalNet.Modules.Workspace.Domain;
 
@@ -14,7 +13,6 @@ namespace CoreRentalNet.Modules.Workspace.Application.Suggestions.Run;
 public sealed class WorkspaceSuggestionRunState(string workspaceQuery)
 {
     private readonly WorkspaceSuggestionRunLedger _ledger = new() { Query = workspaceQuery };
-    private readonly WorkspaceSuggestionNarrativeFieldReader _reader = new();
 
     /// <summary>True once the run has reached an ending, so the processor stops reading.</summary>
     public bool HasEnded { get; private set; }
@@ -22,13 +20,8 @@ public sealed class WorkspaceSuggestionRunState(string workspaceQuery)
     /// <summary>How the run has ended, or is heading to end. Read to word a run that produced no frame.</summary>
     public WorkspaceSuggestionVerdict Verdict => _ledger.Verdict;
 
-    /// <summary>Keeps the raw text and returns whatever narrative fields have closed since the last fragment.</summary>
-    public IReadOnlyList<WorkspaceSuggestionNarrativeField> AppendNarrativeText(string narrativeText)
-    {
-        _ledger.RawOutput.Append(narrativeText);
-
-        return _reader.Parse(narrativeText);
-    }
+    /// <summary>Keeps the agent's own words for the record. The run's output is evidence, not presentation.</summary>
+    public void AppendRawOutput(string rawText) => _ledger.RawOutput.Append(rawText);
 
     /// <summary>The answer, or <c>null</c> when there is nothing in it to show.</summary>
     /// <remarks>

@@ -11,8 +11,7 @@ namespace CoreRentalNet.Host.Components.Shared.Suggestion;
 /// </remarks>
 internal sealed class SuggestionPanelState
 {
-    private readonly List<string> _stageWords = [];
-    private readonly List<string> _narrativeLines = [];
+    private readonly List<SuggestionStageLine> _stageLines = [];
     private WorkspaceSuggestionResultFrame? _outcome;
     private string? _failureCode;
     private bool _hasStopped;
@@ -24,16 +23,14 @@ internal sealed class SuggestionPanelState
     /// <summary>Whether there is anything to show beyond the field: a run in flight, or a result of one.</summary>
     public bool IsExpanded
         => IsRunning
-            || _stageWords.Count > 0
-            || _narrativeLines.Count > 0
+            || _stageLines.Count > 0
             || _outcome is not null
             || _failureCode is not null
             || _hasStopped;
 
     public void BeginSuggestionRun()
     {
-        _stageWords.Clear();
-        _narrativeLines.Clear();
+        _stageLines.Clear();
         _outcome = null;
         _failureCode = null;
         _hasStopped = false;
@@ -41,9 +38,28 @@ internal sealed class SuggestionPanelState
         IsRunning = true;
     }
 
-    public void AppendStage(string stageWords) => _stageWords.Add(stageWords);
+    /// <summary>A stage began: a line that is not done yet, so the last line is where the run is.</summary>
+    public void BeginStage(string stageWords)
+        => _stageLines.Add(new SuggestionStageLine(stageWords, IsComplete: false));
 
-    public void AppendNarrative(string narrativeWords) => _narrativeLines.Add(narrativeWords);
+    /// <summary>A stage finished: the line with those words is done.</summary>
+    /// <remarks>
+    /// Matched by the words the application gave the stage, which are unique to a stage, so no id travels to the
+    /// browser. A completion with no matching line is ignored rather than guessed at.
+    /// </remarks>
+    public void CompleteStage(string stageWords)
+    {
+        var index = _stageLines.FindLastIndex(line => line.Words == stageWords);
+
+        if (index >= 0)
+        {
+            _stageLines[index] = _stageLines[index] with { IsComplete = true };
+        }
+    }
+
+    /// <summary>A retry or a found setup: over the moment it arrives, so it is born complete.</summary>
+    public void AppendCompletedLine(string words)
+        => _stageLines.Add(new SuggestionStageLine(words, IsComplete: true));
 
     public void CompleteWithOutcome(WorkspaceSuggestionResultFrame resultFrame)
     {
@@ -67,33 +83,26 @@ internal sealed class SuggestionPanelState
 
     /// <summary>The timeline, in the order the customer read it.</summary>
     /// <remarks>
-    /// Kept and marked not applied rather than retracted mid-read: the text carries no price and no product
-    /// name, so leaving it on screen cannot mislead, and a customer who watched a run end needs to know whether
-    /// their workspace moved. It did not.
+    /// Retained after a run and collapsed rather than retracted mid-read: where a run went is worth being able to
+    /// see afterwards, and worth not having to look at once it is over.
     /// </remarks>
     public IReadOnlyList<SuggestionNotice> BuildNotices()
     {
         var notices = new List<SuggestionNotice>();
-        var notApplied = _narrativeLines.Count > 0;
 
-        if (_stageWords.Count > 0)
+        if (_stageLines.Count > 0)
         {
-            notices.Add(new SuggestionStageNotice([.. _stageWords], AreStagesCollapsed && !IsRunning));
-        }
-
-        if (_narrativeLines.Count > 0)
-        {
-            notices.Add(new SuggestionNarrativeNotice([.. _narrativeLines]));
+            notices.Add(new SuggestionStageNotice([.. _stageLines], AreStagesCollapsed && !IsRunning));
         }
 
         if (_failureCode is not null)
         {
-            notices.Add(new SuggestionFailureNotice(_failureCode, notApplied));
+            notices.Add(new SuggestionFailureNotice(_failureCode));
         }
 
         if (_hasStopped)
         {
-            notices.Add(new SuggestionStoppedNotice(notApplied));
+            notices.Add(new SuggestionStoppedNotice());
         }
 
         if (_outcome is not null)

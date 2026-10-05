@@ -9,7 +9,7 @@ namespace CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 /// <c>"notWorkspace"</c>. The exception is the slot vocabulary, which the contract declares PascalCase; that
 /// converter is attached to the two properties that carry a slot rather than added here.
 /// </remarks>
-internal static class MicrosoftFoundrySuggestionAgentJson
+internal static class WorkspaceSuggestionAgentJson
 {
     public static JsonSerializerOptions Options { get; } = Create();
 

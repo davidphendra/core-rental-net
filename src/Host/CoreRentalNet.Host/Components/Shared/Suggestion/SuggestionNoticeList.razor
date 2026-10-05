@@ -28,7 +28,6 @@
     private static SuggestionNoticeKind KindOf(SuggestionNotice suggestionNotice) => suggestionNotice switch
     {
         SuggestionStageNotice => SuggestionNoticeKind.Stage,
-        SuggestionNarrativeNotice => SuggestionNoticeKind.Narrative,
         SuggestionOutcomeNotice => SuggestionNoticeKind.Outcome,
         SuggestionFailureNotice => SuggestionNoticeKind.Failure,
         SuggestionStoppedNotice => SuggestionNoticeKind.Stopped,

@@ -5,8 +5,9 @@ namespace CoreRentalNet.Host.Components.Shared.Suggestion;
 
 /// <summary>Applies one server-sent frame to the panel state, so the component accumulates nothing.</summary>
 /// <remarks>
-/// The browser-side processor: the component hands it each frame and renders whatever state it leaves, which is
-/// what keeps a run's state out of the markup and in one testable place.
+/// The browser-side processor: the component hands it each frame and renders whatever state it leaves, which is what
+/// keeps a run's state out of the markup and in one testable place. Nothing the model wrote reaches this type: the
+/// frames are the application's own words and its checked values.
 /// </remarks>
 internal sealed class SuggestionFrameProcessor(SuggestionPanelState suggestionPanelState)
 {
@@ -16,14 +17,14 @@ internal sealed class SuggestionFrameProcessor(SuggestionPanelState suggestionPa
         switch (serverSentEventName)
         {
             case "stage":
-                // The stage lines are what a screen reader hears while a run is going, because they are short
-                // and the application wrote them. The prose never goes through here.
-                suggestionPanelState.AppendStage(serverSentEventData);
+                // The stage lines are what a screen reader hears while a run is going, because they are short and
+                // the application wrote them. A stage that has begun is announced; its completion is not.
+                suggestionPanelState.BeginStage(serverSentEventData);
 
                 return serverSentEventData;
 
-            case "text":
-                suggestionPanelState.AppendNarrative(serverSentEventData);
+            case "stageCompleted":
+                suggestionPanelState.CompleteStage(serverSentEventData);
 
                 return null;
 
@@ -49,7 +50,7 @@ internal sealed class SuggestionFrameProcessor(SuggestionPanelState suggestionPa
     /// stage, because a customer reads the setups themselves from the outcome frame.</summary>
     private string? AppendProgress(string frameName, string frameData)
     {
-        suggestionPanelState.AppendStage(frameData);
+        suggestionPanelState.AppendCompletedLine(frameData);
 
         return frameName is "candidate" ? null : frameData;
     }

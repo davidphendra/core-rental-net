@@ -46,8 +46,6 @@ public sealed class WorkspaceSuggestionBoundaryTests
         [
             "WorkspaceSuggestionEvent",
             "WorkspaceSuggestionRunLedger",
-            "WorkspaceSuggestionNarrativeFieldReader",
-            "WorkspaceSuggestionOutputHygiene",
         ];
 
         var controller = File.ReadAllText(
@@ -67,15 +65,15 @@ public sealed class WorkspaceSuggestionBoundaryTests
     public void The_run_and_its_pipeline_still_name_them()
     {
         File.ReadAllText(Suggestions("Application", "Run", "WorkspaceSuggestionRunState.cs"))
-            .Should().Contain("WorkspaceSuggestionRunLedger").And.Contain("WorkspaceSuggestionNarrativeFieldReader");
+            .Should().Contain("WorkspaceSuggestionRunLedger");
 
         File.ReadAllText(Suggestions(
                 "Application", Path.Combine("Run", "Handlers"), "IWorkspaceSuggestionStreamEventHandler.cs"))
             .Should().Contain("WorkspaceSuggestionEvent");
 
         File.ReadAllText(Suggestions(
-                "Application", Path.Combine("Run", "Handlers"), "WorkspaceSuggestionNarrativeDeltaStreamEventHandler.cs"))
-            .Should().Contain("WorkspaceSuggestionOutputHygiene");
+                "Application", Path.Combine("Run", "Handlers"), "WorkspaceSuggestionRawOutputStreamEventHandler.cs"))
+            .Should().Contain("WorkspaceSuggestionRawOutputEvent");
     }
 
     private static string Suggestions(string layer, string scope, string? file = null)

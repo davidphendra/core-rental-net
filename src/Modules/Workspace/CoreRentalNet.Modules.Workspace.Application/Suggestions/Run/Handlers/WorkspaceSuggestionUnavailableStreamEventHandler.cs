@@ -10,7 +10,7 @@ public sealed class WorkspaceSuggestionUnavailableStreamEventHandler : IWorkspac
     public bool TryHandleAgentEvent(
         WorkspaceSuggestionEvent suggestionEvent,
         WorkspaceSuggestionRunState suggestionRunState,
-        ICollection<WorkspaceSuggestionStreamEvent> frames)
+        ICollection<WorkspaceSuggestionStreamEventBase> frames)
     {
         if (suggestionEvent is not WorkspaceSuggestionUnavailableEvent)
         {
