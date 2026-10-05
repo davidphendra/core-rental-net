@@ -516,7 +516,9 @@ public sealed class WorkflowTests
         // A scripted client calls no tool, so the answer a tool would have given is recorded for it: without one
         // the pool would be empty and the composer would be handed no products at all. It is recorded through the
         // arguments a retriever would have sent, so the pool's own mapping decides which component the products
-        // belong to — the path a real run takes, with the catalogue's answer supplied by the test.
+        // belong to — the path a real run takes, with the catalogue's answer supplied by the test. The recording
+        // seam itself is driven for real by CatalogueToolGuardrailTests, so this double stands in for the model
+        // rather than for the pipeline.
         client.AfterEachReply ??= () => recordedToolAnswers.Record(
             "search_catalogue",
             new Dictionary<string, object?> { ["category"] = "desk", ["subCategory"] = null },
@@ -528,7 +530,7 @@ public sealed class WorkflowTests
             "test-prompts",
             loggerFactory.CreateLogger<TelemetryChatClient>());
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            tokens, catalogue, modelCallTelemetry, TestGuardrails.Middleware, TestGuardrails.AllowList, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
+            tokens, catalogue, modelCallTelemetry, TestGuardrails.Pipeline, TestGuardrails.AllowList, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
             stageAgents,

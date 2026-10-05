@@ -16,6 +16,12 @@ namespace CoreRentalNet.Agents.Tests;
 /// from now come from the recorded tool answers rather than from the retriever's own reply, so a test that needs a
 /// non-empty pool records an answer here — at the moment the answer would have come back from a tool.
 /// </para>
+/// <para>
+/// It is a <b>model</b> double, not coverage of the recording seam. That seam — a tool offered by the client,
+/// invoked by the function loop, and run through the guardrail pipeline into the ledger — is driven for real by
+/// <c>CatalogueToolGuardrailTests</c>, so a stage test can keep scripting its model without hiding the path a
+/// tool actually takes.
+/// </para>
 /// </remarks>
 internal sealed class ScriptedChatClient(params string[] replies) : IChatClient
 {

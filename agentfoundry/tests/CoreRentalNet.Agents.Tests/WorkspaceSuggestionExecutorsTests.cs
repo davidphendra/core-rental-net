@@ -66,7 +66,7 @@ public sealed class WorkspaceSuggestionExecutorsTests
                 NullLoggerFactory.Instance,
                 NullLogger<McpAuthorizationConnection>.Instance),
             modelCallTelemetry,
-            TestGuardrails.Middleware,
+            TestGuardrails.Pipeline,
             TestGuardrails.AllowList,
             new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);

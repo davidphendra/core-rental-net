@@ -1,7 +1,6 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Shared.ChatClients;
-using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Prompts;
 using CoreRentalNet.Agents.Shared.Telemetry;
 
@@ -23,14 +22,15 @@ internal static class AgentFactory
     /// only checkpoint an agent that is not wrapped.
     /// </summary>
     /// <remarks>
-    /// The guardrail middleware is optional because a stage with no tools has nothing for it to guard; the echo
-    /// stage therefore stays uncoupled from the guardrail layer rather than carrying a policy it never reaches.
+    /// No function middleware is attached here. The catalogue's tools are added inside the chat-client chain, and
+    /// the framework's middleware only wraps the tools it can see at the top of that chain, so guarding lives with
+    /// the client that attaches them instead — see
+    /// <see cref="CoreRentalNet.Agents.Shared.ChatClients.AuthorisedMcpChatClient"/>.
     /// </remarks>
     public static AIAgent Build(
         AgentProfile profile,
         IChatClient client,
-        bool captureContent = false,
-        IGuardrailFunctionMiddleware? guardrailMiddleware = null)
+        bool captureContent = false)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(client);
@@ -60,11 +60,6 @@ internal static class AgentFactory
             .UseOpenTelemetry(
                 WorkspaceTelemetry.Name,
                 configure: stageAgent => stageAgent.EnableSensitiveData = captureContent);
-
-        if (guardrailMiddleware is not null)
-        {
-            builder = builder.Use(guardrailMiddleware.InvokeAsync);
-        }
 
         return builder.Build();
     }

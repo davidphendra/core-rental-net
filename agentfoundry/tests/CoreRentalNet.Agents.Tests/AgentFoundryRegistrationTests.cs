@@ -117,7 +117,7 @@ public sealed class AgentFoundryRegistrationTests
                 NullLoggerFactory.Instance,
                 NullLogger<McpAuthorizationConnection>.Instance),
             modelCallTelemetry,
-            TestGuardrails.Middleware,
+            TestGuardrails.Pipeline,
             TestGuardrails.AllowList,
             new ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);

@@ -57,7 +57,8 @@ public sealed class CatalogueChatClientTests
                 endpoint: "https://catalogue.example/mcp")
             .GetResponseAsync([new ChatMessage(ChatRole.User, Request("no token here"))]);
 
-        inner.Options.Should().ContainSingle().Which.Should().BeNull(
+        inner.Options.Should().ContainSingle();
+        inner.Options[0]!.Tools.Should().BeNullOrEmpty(
             "a run without the caller's authority must not be offered the catalogue, and must not discover it "
             + "by being refused at the far end");
     }
@@ -70,7 +71,8 @@ public sealed class CatalogueChatClientTests
         await Build(inner, new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance), readsCatalogue: true, endpoint: string.Empty)
             .GetResponseAsync([new ChatMessage(ChatRole.User, Request("a-callers-token"))]);
 
-        inner.Options.Should().ContainSingle().Which.Should().BeNull("no endpoint means no catalogue to offer");
+        inner.Options.Should().ContainSingle();
+        inner.Options[0]!.Tools.Should().BeNullOrEmpty("no endpoint means no catalogue to offer");
     }
 
     private static AuthorisedMcpChatClient Build(
@@ -92,6 +94,7 @@ public sealed class CatalogueChatClientTests
             catalogue,
             readsCatalogue,
             TestGuardrails.AllowList,
+            TestGuardrails.Pipeline,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 

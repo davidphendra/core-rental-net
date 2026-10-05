@@ -28,7 +28,7 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
     IMcpAccessTokenService accessTokenService,
     IMcpAuthorizationConnection mcpAuthorizationConnection,
     ITelemetryChatClient telemetryChatClient,
-    IGuardrailFunctionMiddleware guardrailMiddleware,
+    IToolGuardPipeline toolGuardPipeline,
     IToolAllowList toolAllowList,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
@@ -42,8 +42,7 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
             agentProfile.UsesCatalogueTools
                 ? StageChatClient(agentProfile)
                 : RegularChatClient(agentProfile),
-            _captureContent,
-            guardrailMiddleware
+            _captureContent
         );
 
     private IChatClient StageChatClient(AgentProfile agentProfile)
@@ -53,6 +52,7 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
             mcpAuthorizationConnection,
             agentProfile.UsesCatalogueTools,
             toolAllowList,
+            toolGuardPipeline,
             loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
         );
 

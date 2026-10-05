@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
-using CoreRentalNet.Agents.Shared.Guardrails.MAF;
 using CoreRentalNet.Agents.Shared.Guardrails.Pipeline;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Model;
@@ -106,9 +105,6 @@ public static class WorkspaceSuggestionRegistration
         services.AddScoped<IToolGuardPipeline>(provider => new ToolGuardPipeline(
             [.. provider.GetServices<IToolGuard>()],
             [.. provider.GetServices<IToolResultGuard>()]));
-
-        // The one MAF-aware component: the adapter that runs the pipeline around every tool call.
-        services.AddScoped<IGuardrailFunctionMiddleware, GuardrailFunctionMiddleware>();
 
         // The stage agents - the one place the decorators' order is stated - and the executors built from them.
         // Both are scoped like the run, because the agents hold its token service and its model-call telemetry
