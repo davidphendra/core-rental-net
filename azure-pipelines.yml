@@ -1,0 +1,155 @@
+# Azure DevOps pipeline for CoreRentalNet.
+#
+# Two stages, deliberately separated:
+#   CI     - restore, build (warnings are errors), run the non-browser suite, publish the host.
+#            Runs on every pull request and every push to `main`.
+#   Deploy - publishes the CI artifact to Azure App Service, gated by a manual approval on the
+#            ADO Environment below. Skipped entirely for pull requests, so an approval is only
+#            ever asked for on `main`.
+#
+# Configuration (secrets, connection strings, Auth0 values, database paths) is NOT applied here.
+# It lives in App Service configuration, set out of band. The pipeline ships code only, so no
+# secret ever enters this repository (CLAUDE.md: "No secrets in the repository").
+#
+# The database is disposable: this is a demonstration application and the content root is allowed
+# to be ephemeral. The application recreates App_Data on cold start; nothing needs to persist.
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+# ---------------------------------------------------------------------------------------------
+# Edit these when the App Service exists. Service connection, app name and resource group come
+# from the Azure portal / Azure DevOps project settings. `appType` defaults to Linux, the usual
+# choice for .NET on App Service; switch to `webAppWindows` for a Windows plan.
+# ---------------------------------------------------------------------------------------------
+variables:
+  # Build
+  buildConfiguration: 'Release'
+  dotnetVersion: '10.0.400'
+  solution: 'CoreRentalNet.sln'
+  hostProject: 'src/Host/CoreRentalNet.Host/CoreRentalNet.Host.csproj'
+  # Directory.Build.props expects a release pipeline to pass the version. The build number is a
+  # valid version (e.g. 20251005.1); pass a tag instead if you prefer a semantic version.
+  version: '$(Build.BuildNumber)'
+
+  # Deployment target — replace the placeholders before enabling deployment.
+  azureServiceConnection: '<azure-service-connection>'   # ARM service connection in Azure DevOps
+  webAppName: '<web-app-name>'
+  resourceGroup: '<resource-group>'
+  appType: 'webAppLinux'                                 # webAppLinux | webAppWindows
+
+# The agent tree is a separate deployable with its own pipeline (agentfoundry/azure-pipelines.yml),
+# so an agent-only change does not rebuild or redeploy this application.
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - agentfoundry/**
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - agentfoundry/**
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: CI
+  displayName: 'Build & Test'
+  jobs:
+  - job: BuildTest
+    displayName: 'Restore, build, test, publish'
+    steps:
+    - checkout: self
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET SDK $(dotnetVersion)'
+      inputs:
+        packageType: 'sdk'
+        version: '$(dotnetVersion)'
+        # .NET 10 is new; the preview flag lets the task find the pinned SDK if it is not yet on
+        # the default feed. Remove it once 10.0.400 is generally available.
+        includePreviewVersions: true
+
+    - script: dotnet restore $(solution)
+      displayName: 'Restore'
+
+    # Warnings are errors (Directory.Build.props), so a style or analyser regression fails the
+    # build here rather than being noticed later.
+    - script: >-
+        dotnet build $(solution)
+        --configuration $(buildConfiguration)
+        --no-restore
+        -p:Version=$(version)
+      displayName: 'Build (Release)'
+
+    # The gate: unit, architecture and integration tests. The browser suite (CoreRentalNet.E2E)
+    # is excluded on purpose — it needs Chromium and stays a local check.
+    - script: >-
+        dotnet test $(solution)
+        --configuration $(buildConfiguration)
+        --no-build
+        --filter "FullyQualifiedName!~CoreRentalNet.E2E"
+        --logger "trx;LogFileName=test-results.trx"
+        --resultsDirectory $(Agent.TempDirectory)
+      displayName: 'Unit, architecture and integration tests'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '**/*.trx'
+        searchFolder: '$(Agent.TempDirectory)'
+
+    - script: >-
+        dotnet publish $(hostProject)
+        --configuration $(buildConfiguration)
+        --no-restore
+        -p:Version=$(version)
+        --output $(Build.ArtifactStagingDirectory)/app
+      displayName: 'Publish host'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish artifact'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/app'
+        artifact: 'app'
+
+# ---------------------------------------------------------------------------------------------
+# Deployment. The Environment below carries a manual approval check, configured once in the ADO
+# UI (Pipelines -> Environments -> core-rental-production -> Approvals and checks). The stage is
+# created on a `main` push, pauses, and proceeds only when an approver releases it. Pull requests
+# skip the stage entirely.
+# ---------------------------------------------------------------------------------------------
+- stage: Deploy
+  displayName: 'Deploy to Azure App Service'
+  dependsOn: CI
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - deployment: DeployWeb
+    displayName: 'Deploy'
+    environment: 'core-rental-production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: 'app'
+
+          # Code only. App settings and secrets are expected to be present in App Service.
+          # For a Windows app (`appType: webAppWindows`), replace `packageForLinux` with `package`.
+          - task: AzureRmWebAppDeployment@4
+            displayName: 'Deploy to App Service'
+            inputs:
+              ConnectionType: 'AzureRM'
+              azureSubscription: '$(azureServiceConnection)'
+              appType: '$(appType)'
+              WebAppName: '$(webAppName)'
+              ResourceGroupName: '$(resourceGroup)'
+              packageForLinux: '$(Pipeline.Workspace)/app'

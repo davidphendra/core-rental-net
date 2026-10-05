@@ -1,0 +1,182 @@
+# Azure DevOps pipeline for the CoreRentalNet Foundry hosted agents.
+#
+# This is a SEPARATE pipeline from the application's (../azure-pipelines.yml). The two trees build
+# and deploy differently — this one ships agents to Microsoft Foundry with `azd`, the application
+# ships to App Service with a web-app deployment task — so they are separate entries with their own
+# triggers, approvals and run history. Register this file as its own pipeline in Azure DevOps; the
+# path filter below keeps it to the agent tree.
+#
+# Two stages:
+#   CI     - restore, build and test agentfoundry/AgentFoundry.sln.
+#   Deploy - `azd deploy` after a manual approval on the ADO Environment below.
+#
+# Decisions this file encodes:
+#   - Deploy only. The Foundry project and the model deployment already exist and are pinned in
+#     azure.yaml, so the pipeline registers new agent versions and never provisions.
+#   - Secretless. azd signs in with a workload identity federated token from the ARM service
+#     connection; no client secret is stored anywhere.
+#   - Configuration comes from the `core-rental-foundry` variable group, which must exist (with
+#     the values listed below) before the first run.
+#   - Both agents deploy. `azd deploy` with no service name ships workspace-suggestions and
+#     echo-agent, the two services in azure.yaml.
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - agentfoundry/**
+      # The agent projects import the repository's Directory.Build.props and pin the SDK in
+      # global.json, so a change to either can change the agent build.
+      - Directory.Build.props
+      - global.json
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - agentfoundry/**
+      - Directory.Build.props
+      - global.json
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Create this group under Pipelines -> Library with:
+  #   AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_AI_MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_ENDPOINT
+  # None of them is a secret.
+  - group: 'core-rental-foundry'
+  - name: buildConfiguration
+    value: 'Release'
+  - name: dotnetVersion
+    value: '10.0.400'
+  - name: solution
+    value: 'agentfoundry/AgentFoundry.sln'
+  - name: azdVersion
+    value: '1.27.1'                                        # azure.yaml requires azd >= 1.27.1
+  - name: azdEnvironmentName
+    value: 'core-rental-foundry'
+  - name: azureServiceConnection
+    value: '<azure-service-connection>'                    # ARM service connection with a federated credential
+
+stages:
+- stage: CI
+  displayName: 'Build & Test'
+  jobs:
+  - job: BuildTest
+    displayName: 'Restore, build, test'
+    steps:
+    - checkout: self
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET SDK $(dotnetVersion)'
+      inputs:
+        packageType: 'sdk'
+        version: '$(dotnetVersion)'
+        includePreviewVersions: true
+
+    - script: dotnet restore $(solution)
+      displayName: 'Restore'
+
+    - script: dotnet build $(solution) --configuration $(buildConfiguration) --no-restore
+      displayName: 'Build (Release)'
+
+    # The gate: every agent test must pass. There is no browser suite in this tree.
+    - script: >-
+        dotnet test $(solution)
+        --configuration $(buildConfiguration)
+        --no-build
+        --logger "trx;LogFileName=agent-tests.trx"
+        --resultsDirectory $(Agent.TempDirectory)
+      displayName: 'Agent tests'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish test results'
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '**/*.trx'
+        searchFolder: '$(Agent.TempDirectory)'
+
+# ---------------------------------------------------------------------------------------------
+# Deployment. The Environment below carries a manual approval check, configured once in the ADO
+# UI (Pipelines -> Environments -> core-rental-foundry-production -> Approvals and checks). The
+# stage is created on a `main` push, pauses, and proceeds only when an approver releases it.
+# Pull requests skip the stage entirely.
+# ---------------------------------------------------------------------------------------------
+- stage: Deploy
+  displayName: 'Deploy agents to Foundry'
+  dependsOn: CI
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  jobs:
+  - deployment: DeployAgents
+    displayName: 'Deploy'
+    environment: 'core-rental-foundry-production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          # azd resolves the services in azure.yaml, which needs the Foundry extensions. Versions
+          # are resolved from the extension feed the same way a developer's machine resolves them.
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://aka.ms/install-azd.sh | bash -s -- --version $(azdVersion)
+              export PATH="$HOME/.azd/bin:$PATH"
+              azd extension install azure.ai.agents --no-prompt
+              azd extension install azure.ai.projects --no-prompt
+              azd extension install microsoft.foundry --no-prompt
+            displayName: 'Install azd and the Foundry extensions'
+
+          # Workload identity federation: the task supplies a short-lived federated token and azd
+          # signs in with it. With a secret-based service connection instead, replace the
+          # `--federated-token` line with `--client-secret "$servicePrincipalKey"`.
+          - task: AzureCLI@2
+            displayName: 'Authenticate azd and deploy'
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              addSpnToEnvironment: true
+              workingDirectory: '$(Build.SourcesDirectory)/agentfoundry'
+              inlineScript: |
+                set -euo pipefail
+                export PATH="$HOME/.azd/bin:$PATH"
+
+                azd auth login \
+                  --client-id "$servicePrincipalId" \
+                  --federated-token "$idToken" \
+                  --tenant-id "$tenantId"
+
+                # Fail fast with a clear message rather than letting azd read an empty value. These
+                # come from the `core-rental-foundry` variable group.
+                for name in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_MODEL_DEPLOYMENT_NAME AZURE_AI_PROJECT_ENDPOINT; do
+                  if [ -z "${!name:-}" ]; then
+                    echo "##vso[task.logissue type=error]Variable group 'core-rental-foundry' is missing $name"
+                    exit 1
+                  fi
+                done
+
+                # .azure/ is not committed, so every run builds a fresh azd environment. The project
+                # itself is not provisioned here — azure.yaml pins the existing endpoint.
+                azd env new "$AZD_ENVIRONMENT" --no-prompt
+                azd env set AZURE_SUBSCRIPTION_ID "$AZURE_SUBSCRIPTION_ID"
+                azd env set AZURE_LOCATION "$AZURE_LOCATION"
+                azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME "$AZURE_AI_MODEL_DEPLOYMENT_NAME"
+                azd env set AZURE_AI_PROJECT_ENDPOINT "$AZURE_AI_PROJECT_ENDPOINT"
+
+                # No service name: azure.yaml's workspace-suggestions and echo-agent both deploy.
+                azd deploy --no-prompt
+            env:
+              AZD_ENVIRONMENT: '$(azdEnvironmentName)'
+              AZURE_SUBSCRIPTION_ID: '$(AZURE_SUBSCRIPTION_ID)'
+              AZURE_LOCATION: '$(AZURE_LOCATION)'
+              AZURE_AI_MODEL_DEPLOYMENT_NAME: '$(AZURE_AI_MODEL_DEPLOYMENT_NAME)'
+              AZURE_AI_PROJECT_ENDPOINT: '$(AZURE_AI_PROJECT_ENDPOINT)'
