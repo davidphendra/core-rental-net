@@ -116,6 +116,26 @@ public sealed class WorkspaceWorkflowContractSchemaTests
     }
 
     [Fact]
+    public void A_reranking_serializes_to_something_its_schema_accepts()
+    {
+        var ranking = new WorkspaceComponentProductRankingResult(new WorkspaceComponentProductAssessments(
+            Desk: [new WorkspaceComponentProductAssessment("DSKB08XN4JDR", ProductRelevanceLevel.High)],
+            Chair: [], Monitor: [], Lamp: [], Plant: [], BeanBag: [], CoffeeMachine: []));
+
+        Schemas.Evaluate("workspace-candidate-reranking.schema.json", ranking).IsValid.Should().BeTrue();
+    }
+
+    [Fact] // the ranking is a SKU and a level; a model's prose has no field to arrive in
+    public void A_reranking_that_states_a_reason_is_rejected()
+    {
+        Schemas.EvaluateRaw("workspace-candidate-reranking.schema.json", """
+            { "categories": {
+                "desk": [ { "sku": "DSKB08XN4JDR", "relevance": "high", "reason": "a surface" } ],
+                "chair": [], "monitor": [], "lamp": [], "plant": [], "bean_bag": [], "coffee_machine": [] } }
+            """).IsValid.Should().BeFalse();
+    }
+
+    [Fact]
     public void A_review_serializes_to_something_the_review_schema_accepts()
     {
         var review = new WorkspaceSetupReviewResult(

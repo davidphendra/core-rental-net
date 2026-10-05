@@ -15,8 +15,7 @@ its own description does not state.
 {
   "categories": {
     "desk": [
-      { "sku": "DSKB08XN4JDR", "relevance": "high",
-        "reason": "A height-adjustable surface wide enough for two screens." }
+      { "sku": "DSKB08XN4JDR", "relevance": "high" }
     ],
     "chair": [],
     "monitor": [],
@@ -45,7 +44,5 @@ component whose products none of which answer its need.
   component, and spending less on a chair does not buy a better desk.
 - **Up to three per component, and fewer is better than padding.** Never add a product to reach a count; three
   near-identical chairs answer one need between them, so prefer a variety of strong candidates over repeats.
-- **`reason` is one clause about the need, not a description.** Say what makes it answer the need, in words the
-  composer can build on. Never a price, never a product name, never the customer's sentence again.
 - **The `sku` must be one you were given, exactly as it was written.** You are ordering a set, not naming a
   product — a SKU you were not given is dropped, and the slot of everything you keep is the search's, not yours.

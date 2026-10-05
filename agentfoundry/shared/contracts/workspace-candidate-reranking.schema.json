@@ -39,7 +39,7 @@
     "productAssessment": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sku", "relevance", "reason"],
+      "required": ["sku", "relevance"],
       "properties": {
         "sku": {
           "type": "string",
@@ -49,11 +49,6 @@
         "relevance": {
           "enum": ["high", "medium", "low"],
           "description": "How directly the product answers this component's need."
-        },
-        "reason": {
-          "type": "string",
-          "minLength": 1,
-          "description": "One clause about the need, in the composer's terms. Never a price, a product name or the customer's sentence."
         }
       }
     }

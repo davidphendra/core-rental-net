@@ -134,7 +134,6 @@ internal static class WorkspaceStageInput
                 selection.RetrievedProduct.Name,
                 amount = selection.RetrievedProduct.Amount,
                 selection.Relevance,
-                selection.Reason,
             }),
         });
 

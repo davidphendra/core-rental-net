@@ -22,16 +22,15 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
     private static readonly WorkspaceComponentProductSelectionPolicy SelectionPolicy = new();
 
     [Fact]
-    public void A_product_the_reranker_was_given_is_kept_with_its_reason_and_its_level()
+    public void A_product_the_reranker_was_given_is_kept_with_its_level()
     {
         var selected = SelectionPolicy.SelectFromPool(
             [Desk("DSK-1", "Sit-Stand Desk")],
-            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High, "a surface that rises")]));
+            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High)]));
 
         selected.Should().ContainSingle();
         selected[0].RetrievedProduct.Sku.Should().Be("DSK-1");
         selected[0].Relevance.Should().Be(ProductRelevanceLevel.High);
-        selected[0].Reason.Should().Be("a surface that rises");
     }
 
     [Fact] // the guard that stops a model inventing a product
@@ -39,7 +38,7 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
     {
         var selected = SelectionPolicy.SelectFromPool(
             [Desk("DSK-1", "Sit-Stand Desk")],
-            Ranking(desk: [("DSK-INVENTED", ProductRelevanceLevel.High, "a lovely desk")]));
+            Ranking(desk: [("DSK-INVENTED", ProductRelevanceLevel.High)]));
 
         selected.Should().BeEmpty("a product a search did not return cannot be composed from");
     }
@@ -51,7 +50,7 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
 
         var selected = SelectionPolicy.SelectFromPool(
             [pool],
-            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High, "a surface that rises")]));
+            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High)]));
 
         selected[0].RetrievedProduct.Should().Be(pool);
     }
@@ -61,7 +60,7 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
     {
         var selected = SelectionPolicy.SelectFromPool(
             [Desk("DSK-1", "Sit-Stand Desk"), Desk("DSK-2", "Plain Desk")],
-            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High, "a surface that rises")]));
+            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High)]));
 
         selected.Should().ContainSingle();
         selected[0].RetrievedProduct.Sku.Should().Be("DSK-1");
@@ -71,7 +70,7 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
     public void At_most_the_bound_is_kept_for_each_component()
     {
         var pool = Enumerable.Range(1, 6).Select(position => Desk($"DSK-{position}", $"Desk {position}")).ToList();
-        var ranking = Ranking(desk: [.. pool.Select(product => (product.Sku, ProductRelevanceLevel.High, "a desk"))]);
+        var ranking = Ranking(desk: [.. pool.Select(product => (product.Sku, ProductRelevanceLevel.High))]);
 
         SelectionPolicy.SelectFromPool(pool, ranking).Should().HaveCount(3);
     }
@@ -83,8 +82,8 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
             [Desk("DSK-1", "First"), Desk("DSK-2", "Second")],
             Ranking(desk:
             [
-                ("DSK-2", ProductRelevanceLevel.High, "best"),
-                ("DSK-1", ProductRelevanceLevel.Medium, "second best"),
+                ("DSK-2", ProductRelevanceLevel.High),
+                ("DSK-1", ProductRelevanceLevel.Medium),
             ]));
 
         selected.Select(selection => selection.RetrievedProduct.Sku).Should().Equal("DSK-2", "DSK-1");
@@ -102,12 +101,12 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
 
     /// <summary>A reranker's answer with one component filled in and the other six empty.</summary>
     private static WorkspaceComponentProductRankingResult Ranking(
-        IReadOnlyList<(string Sku, ProductRelevanceLevel Relevance, string Reason)> desk)
+        IReadOnlyList<(string Sku, ProductRelevanceLevel Relevance)> desk)
     {
         static IReadOnlyList<WorkspaceComponentProductAssessment> Assessed(
-            IReadOnlyList<(string Sku, ProductRelevanceLevel Relevance, string Reason)> assessments)
+            IReadOnlyList<(string Sku, ProductRelevanceLevel Relevance)> assessments)
             => [.. assessments.Select(assessment =>
-                new WorkspaceComponentProductAssessment(assessment.Sku, assessment.Relevance, assessment.Reason))];
+                new WorkspaceComponentProductAssessment(assessment.Sku, assessment.Relevance))];
 
         return new WorkspaceComponentProductRankingResult(new WorkspaceComponentProductAssessments(
             Desk: Assessed(desk),

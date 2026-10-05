@@ -46,7 +46,7 @@ public sealed class WorkflowTests
     private const string Reranking =
         """
         { "categories": {
-            "desk": [ { "sku": "DSKB08XN4JDR", "relevance": "high", "reason": "a stable, adjustable surface" } ],
+            "desk": [ { "sku": "DSKB08XN4JDR", "relevance": "high" } ],
             "chair": [], "monitor": [], "lamp": [], "plant": [], "bean_bag": [], "coffee_machine": [] } }
         """;
 

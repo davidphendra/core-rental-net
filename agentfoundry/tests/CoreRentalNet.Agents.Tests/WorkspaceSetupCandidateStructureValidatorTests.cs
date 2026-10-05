@@ -48,8 +48,7 @@ public sealed class WorkspaceSetupCandidateStructureValidatorTests
             [new SlotRule(WorkspaceSlot.Desk, 1), new SlotRule(WorkspaceSlot.Chair, 1)],
             [new SelectedWorkspaceComponentProduct(
                 new RetrievedWorkspaceComponentProduct(WorkspaceSlot.Desk, "DSK1", "Desk", "description", 600_000m),
-                ProductRelevanceLevel.High,
-                "why")],
+                ProductRelevanceLevel.High)],
             monthlyCeiling,
             out violations);
     }

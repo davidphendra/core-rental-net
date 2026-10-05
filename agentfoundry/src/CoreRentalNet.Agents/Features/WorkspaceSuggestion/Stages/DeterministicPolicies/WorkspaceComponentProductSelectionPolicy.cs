@@ -58,7 +58,7 @@ public sealed class WorkspaceComponentProductSelectionPolicy(int maximumSelected
         => productsRetrievedFor
             .FirstOrDefault(product => string.Equals(product.Sku, assessment.Sku, StringComparison.OrdinalIgnoreCase))
             is { } pooledProduct
-                ? new SelectedWorkspaceComponentProduct(pooledProduct, assessment.Relevance, assessment.Reason)
+                ? new SelectedWorkspaceComponentProduct(pooledProduct, assessment.Relevance)
                 : null;
 
     /// <summary>The pool's products for one component.</summary>

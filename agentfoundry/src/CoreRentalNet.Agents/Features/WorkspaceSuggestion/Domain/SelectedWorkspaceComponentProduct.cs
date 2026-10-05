@@ -10,5 +10,4 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 /// </remarks>
 public sealed record SelectedWorkspaceComponentProduct(
     RetrievedWorkspaceComponentProduct RetrievedProduct,
-    ProductRelevanceLevel Relevance,
-    string Reason);
+    ProductRelevanceLevel Relevance);
