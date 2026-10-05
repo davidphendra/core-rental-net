@@ -6,7 +6,7 @@ namespace CoreRentalNet.IntegrationTests;
 
 /// <summary>
 /// The two facts the application side of the carrier depends on: the header's name is one the platform forwards,
-/// and the token is carried for exactly as long as the run that owns it.
+/// and the token is carried only for the run that states it.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -32,30 +32,54 @@ public sealed class AgentInvocationHeaderTests
             "the platform forwards client headers only under this prefix, and a dropped token is silent");
 
     [Fact]
-    public void The_token_is_carried_for_the_run_that_started_the_scope()
+    public void The_token_is_carried_for_the_run_that_states_it()
     {
-        using var callerAccessTokenForTheRun =
-            RunScopeAccessToken.CarryTheTokenOf(TheCallersToken);
+        var previous = RunScopeAccessToken.Current;
 
-        RunScopeAccessToken.AccessToken.Should().Be(TheCallersToken);
+        try
+        {
+            RunScopeAccessToken.Current = new RunContext(TheCallersToken);
+
+            RunScopeAccessToken.Current!.AccessToken.Should().Be(TheCallersToken);
+        }
+        finally
+        {
+            RunScopeAccessToken.Current = previous;
+        }
     }
 
-    [Fact] // the scope is a scope, not a flag: a nested run gives the enclosing run its token back
-    public void An_inner_scope_gives_the_outer_run_its_token_back_when_it_ends()
+    [Fact] // the endpoint's save/restore: a finished run must not erase the enclosing run's token
+    public void A_finished_run_gives_the_enclosing_run_its_token_back()
     {
-        using var outerRun = RunScopeAccessToken.CarryTheTokenOf(TheCallersToken);
+        var enclosing = RunScopeAccessToken.Current;
 
-        using (RunScopeAccessToken.CarryTheTokenOf("another-run-s-token"))
+        try
         {
-            RunScopeAccessToken.AccessToken.Should().Be("another-run-s-token");
-        }
+            RunScopeAccessToken.Current = new RunContext(TheCallersToken);
+            var outerRun = RunScopeAccessToken.Current;
 
-        RunScopeAccessToken.AccessToken.Should().Be(
-            TheCallersToken,
-            "a finished run must not be able to erase the token of the run that encloses it");
+            try
+            {
+                RunScopeAccessToken.Current = new RunContext("another-run-s-token");
+
+                RunScopeAccessToken.Current!.AccessToken.Should().Be("another-run-s-token");
+            }
+            finally
+            {
+                RunScopeAccessToken.Current = outerRun;
+            }
+
+            RunScopeAccessToken.Current!.AccessToken.Should().Be(
+                TheCallersToken,
+                "a finished run must not be able to erase the token of the run that encloses it");
+        }
+        finally
+        {
+            RunScopeAccessToken.Current = enclosing;
+        }
     }
 
     [Fact] // and nothing is carried when no run is in progress, so no request can inherit one
     public void No_token_is_carried_when_no_run_is_in_progress()
-        => RunScopeAccessToken.AccessToken.Should().BeNull();
+        => RunScopeAccessToken.Current.Should().BeNull();
 }

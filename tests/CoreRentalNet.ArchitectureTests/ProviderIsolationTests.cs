@@ -45,12 +45,12 @@ public sealed class ProviderIsolationTests
         // The factory is the one type that resolves the provider's client and credential, so it is the right
         // thing to check: if it stopped naming a provider, the port would have nothing real behind it.
         Types.InAssembly(infrastructure)
-            .That().HaveName("MicrosoftFoundryWorkspaceSuggestionAgentAdapterFactory")
+            .That().HaveName("AgentFoundryWorkspaceSuggestionAdapterFactory")
             .GetTypes()
             .Should().NotBeEmpty("otherwise the rule below passes because it selected nothing");
 
         var result = Types.InAssembly(infrastructure)
-            .That().HaveName("MicrosoftFoundryWorkspaceSuggestionAgentAdapterFactory")
+            .That().HaveName("AgentFoundryWorkspaceSuggestionAdapterFactory")
             .Should().HaveDependencyOnAny(ProviderNamespaces)
             .GetResult();
 
