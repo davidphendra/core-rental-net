@@ -235,9 +235,11 @@ public sealed class WorkflowTests
 
         string[] reachedNodes =
         [
-            "verify-workspace-request", "rephrase-workspace-requirement", "retrieve-catalogue-products",
-            "build-candidate-product-pool", "rerank-workspace-candidates", "compose-workspace-setups",
-            "validate-workspace-setup-structure", "review-workspace-setups",
+            WorkspaceSuggestionAgentRoster.Verifier.Name, WorkspaceSuggestionAgentRoster.Rephraser.Name,
+            WorkspaceSuggestionAgentRoster.Retriever.Name,
+            "build-candidate-product-pool", WorkspaceSuggestionAgentRoster.Reranker.Name,
+            WorkspaceSuggestionAgentRoster.Composer.Name,
+            "validate-workspace-setup-structure", WorkspaceSuggestionAgentRoster.Reviewer.Name,
             "complete-workspace-suggestion-success",
         ];
 
@@ -273,7 +275,7 @@ public sealed class WorkflowTests
         _ = await agent.RunAsync(Request);
 
         runLog.RecordedLines.Should().Contain(
-            line => line.Contains("Node verify-workspace-request completed. Result:", StringComparison.Ordinal));
+            line => line.Contains($"Node {WorkspaceSuggestionAgentRoster.Verifier.Name} completed. Result:", StringComparison.Ordinal));
         runLog.RecordedLines.Should().Contain(
             line => line.Contains("\"isWorkspaceRequest\":true", StringComparison.Ordinal),
             "the verifier's own verdict is what its line reports");
@@ -320,7 +322,7 @@ public sealed class WorkflowTests
         text.Should().Contain("The catalogue returned no products.");
         client.Requests.Should().HaveCount(3, "the verifier, the rephraser and the retriever, and no retry");
         runLog.RecordedLines.Should().NotContain(
-            line => line.Contains("Node rerank-workspace-candidates", StringComparison.Ordinal),
+            line => line.Contains($"Node {WorkspaceSuggestionAgentRoster.Reranker.Name}", StringComparison.Ordinal),
             "the reranker is never reached with nothing to rank");
     }
 
@@ -376,11 +378,11 @@ public sealed class WorkflowTests
         _ = await agent.RunAsync(Request);
 
         runLog.RecordedLines.Should().Contain(
-            line => line.Contains("Node verify-workspace-request completed.", StringComparison.Ordinal));
+            line => line.Contains($"Node {WorkspaceSuggestionAgentRoster.Verifier.Name} completed.", StringComparison.Ordinal));
         runLog.RecordedLines.Should().Contain(
             line => line.Contains("Node complete-workspace-suggestion-rejection completed.", StringComparison.Ordinal));
         runLog.RecordedLines.Should().NotContain(
-            line => line.Contains("Node rephrase-workspace-requirement", StringComparison.Ordinal),
+            line => line.Contains($"Node {WorkspaceSuggestionAgentRoster.Rephraser.Name}", StringComparison.Ordinal),
             "the run ended at the gate, so the retryable half of the graph never ran");
     }
 
