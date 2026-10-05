@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
+using System.Text.RegularExpressions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -59,9 +60,36 @@ public sealed class SuggestionStreamTests : AuthenticatedE2ETest
 
         await Expect(Page.Locator("[data-testid='suggestion-option']")).ToHaveCountAsync(3);
 
+        // Each candidate is drawn as its products - cards, not a list of names - so a candidate can be
+        // judged at a glance rather than read line by line.
+        await Expect(Page.Locator("[data-testid='suggestion-option']").First
+            .Locator("[data-testid='suggestion-line']").First).ToBeVisibleAsync();
+
+        // And the choice is a real primary button, one per candidate, not an underlined link.
+        var apply = Page.Locator("button[data-testid='suggestion-apply']");
+        await Expect(apply).ToHaveCountAsync(3);
+        await Expect(apply.First).ToHaveClassAsync(new Regex("button--primary"));
+
         // And a candidate says what it is: an amount the application recomputed from the catalogue, so a shape
         // that failed to deserialize would leave the block empty and a field rendered wrong would leave it blank.
         await Expect(Page.Locator("[data-testid='suggestion-option']").First).ToContainTextAsync("/mo");
+    }
+
+    [Fact] // a second and third candidate sit beside the first rather than under it
+    public async Task More_than_one_candidate_is_shown_side_by_side()
+    {
+        await BeginAsync("suggested");
+        await AskAsync("a desk and a chair");
+
+        await Expect(Page.Locator("[data-testid='suggestion-candidates']")).ToBeVisibleAsync();
+
+        var first = await Page.Locator("[data-testid='suggestion-option']").Nth(0).BoundingBoxAsync();
+        var second = await Page.Locator("[data-testid='suggestion-option']").Nth(1).BoundingBoxAsync();
+
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        second!.X.Should().BeGreaterThan(first!.X, "a second candidate sits beside the first, not under it");
+        Math.Abs(second.Y - first.Y).Should().BeLessThan(2f, "and on the same row");
     }
 
     [Fact] // AIWB-26

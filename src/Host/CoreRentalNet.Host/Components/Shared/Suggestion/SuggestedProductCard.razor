@@ -1,0 +1,37 @@
+@* A product in a suggested setup: shown, not chosen.
+
+   Modelled on the selection panel's card so a suggested product reads the same as one being browsed, with
+   two deliberate differences. The root is a div, not a button, because there is nothing to pick here - the
+   whole setup is the choice, and a button that does nothing is a lie to a keyboard. And a quantity badge
+   appears when the line carries more than one, which a browsed card never needs: a card is one item, while a
+   suggestion line can be three monitors.
+
+   It is a component of its own rather than a flag on BuilderProductCard, following the one-card-per-surface
+   convention the store and the panel already keep. *@
+<div class="product-card text-left bg-surface-container-lowest rounded-xl p-3 border border-surface-variant relative"
+     data-testid="suggestion-line"
+     data-sku="@Product.Sku">
+    @if (Quantity > 1)
+    {
+        <span class="absolute -top-2 -right-2 bg-secondary-container text-on-secondary-container text-label-sm font-label-sm px-2 py-1 rounded-full shadow-sm"
+              data-testid="suggestion-line-quantity"
+              aria-label="@($"{Quantity} included")">&times;@Quantity</span>
+    }
+
+    <div class="h-24 w-full bg-surface-container rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+        <ProductVisual AltText="@Product.Name" ImagePath="@Product.ImagePath" ImageAvailable="@Product.ImageAvailable"
+                      Glyph="@ProductGlyph.ForProduct(Product.Category, Product.SubCategory)"
+                      ImageClass="object-cover w-full h-full"
+                      GlyphClass="w-1/2 h-1/2 text-primary-container" />
+    </div>
+
+    <h4 class="text-label-sm font-label-sm text-on-surface font-bold">@Product.Name</h4>
+    <p class="text-[10px] text-on-surface-variant mt-1">+@(Product.MonthlyPrice.Amount.ToString("C"))/mo</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public ProductView Product { get; set; } = default!;
+
+    /// <summary>How many of this product the setup line carries. The card shows one; the badge says how many.</summary>
+    [Parameter] public int Quantity { get; set; } = 1;
+}

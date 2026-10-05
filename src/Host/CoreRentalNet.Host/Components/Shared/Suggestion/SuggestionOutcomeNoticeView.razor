@@ -1,5 +1,13 @@
+@inject IProductCatalogService Catalog
 @* Everything shown here was checked against the catalogue before it was rendered. The application does not
-   order or label the candidates - they are shown in the order the agent returned them. *@
+   order or label the candidates - they are shown in the order the agent returned them.
+
+   Each setup is drawn as its products rather than as a list of names, so a candidate can be judged at a
+   glance - the panel card the customer already browses by. The card carries the unit price and a badge for a
+   line of more than one; the candidate's own header carries the setup's total, which is the sum of the line
+   totals. A line whose SKU the catalogue does not have is drawn as words: the agent stated something it was
+   not given, and hiding it would leave the candidate's items and its total disagreeing with nothing to
+   explain the gap. Applying such a candidate is refused by the workspace, which is where that is enforced. *@
 <div class="ai__outcome mt-stack-sm" data-testid="suggestion-outcome" data-status="@Model.ResultFrame.Status">
     @if (Model.ResultFrame.Status is WorkspaceSuggestionResultFrame.NotWorkspace)
     {
@@ -11,29 +19,42 @@
     }
     else
     {
-        <div class="ai__candidates" data-testid="suggestion-candidates">
+        @* One candidate takes the column; two and three share it from md and xl, and more wrap. The class is
+           chosen rather than computed so the Tailwind scanner still sees each one written down. *@
+        <div class="ai__candidates grid grid-cols-1 gap-stack-md @ColumnClasses" data-testid="suggestion-candidates">
             @foreach (var candidate in Model.ResultFrame.Candidates)
             {
-                <article class="ai__option mb-stack-sm rounded-xl bg-surface-container-low p-stack-md"
+                <article class="ai__option flex flex-col rounded-xl bg-surface-container-low p-stack-md"
                          data-testid="suggestion-option">
-                    <header class="flex items-baseline justify-between gap-2">
-                        <span class="ai__total text-label-md font-label-md" data-testid="suggestion-total">
-                            @candidate.MonthlyTotal.ToString("C")<span class="text-on-surface-variant">/mo</span>
+                    <header class="mb-stack-sm">
+                        <span class="text-headline-md font-headline-md text-primary" data-testid="suggestion-total">
+                            @candidate.MonthlyTotal.ToString("C")<span class="text-label-sm font-label-sm text-on-surface-variant">/mo</span>
                         </span>
+                        <p class="text-label-sm font-label-sm text-on-surface-variant">Total for this setup</p>
                     </header>
 
-                    <ul class="ai__lines text-label-md font-label-md text-on-surface-variant">
+                    @* The setup's own products, two up: the same grid the selection panel browses in. *@
+                    <div class="grid grid-cols-2 gap-3 flex-1 content-start" data-testid="suggestion-lines">
                         @foreach (var line in candidate.Lines)
                         {
-                            <li class="ai__line" data-sku="@line.Sku">
-                                @line.Quantity &times; @line.Name
-                                <span class="ai__line-total">@line.LineTotal.ToString("C")</span>
-                            </li>
+                            if (Catalog.Find(line.Sku) is { } product)
+                            {
+                                <SuggestedProductCard Product="product" Quantity="line.Quantity" />
+                            }
+                            else
+                            {
+                                <div class="product-card text-left bg-surface-container-lowest rounded-xl p-3 border border-error"
+                                     data-testid="suggestion-line-unknown"
+                                     data-sku="@line.Sku">
+                                    <h4 class="text-label-sm font-label-sm text-on-surface font-bold">@line.Name</h4>
+                                    <p class="text-[10px] text-on-surface-variant mt-1">@line.LineTotal.ToString("C")</p>
+                                </div>
+                            }
                         }
-                    </ul>
+                    </div>
 
                     <button type="button"
-                            class="ai__apply mt-stack-sm underline"
+                            class="button button--primary button--small w-full mt-stack-md"
                             data-testid="suggestion-apply"
                             @onclick="() => OnCandidateChosen.InvokeAsync(candidate)">
                         Use this setup
@@ -54,4 +75,12 @@
     [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
 
     private SuggestionOutcomeNotice Model => (SuggestionOutcomeNotice)Notice;
+
+    /// <summary>One candidate takes the column; two and three share it, and a fourth wraps under the third.</summary>
+    private string ColumnClasses => Model.ResultFrame.Candidates.Count switch
+    {
+        <= 1 => string.Empty,
+        2 => "md:grid-cols-2",
+        _ => "md:grid-cols-2 xl:grid-cols-3",
+    };
 }
