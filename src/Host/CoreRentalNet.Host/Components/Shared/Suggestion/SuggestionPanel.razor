@@ -92,7 +92,7 @@
                 </form>
 
                 <SuggestionNoticeList Notices="@panelState.BuildNotices()"
-                                      OnExpandStages="panelState.ExpandStages"
+                                      OnToggleStages="panelState.ToggleStages"
                                       OnRetry="SubmitAsync"
                                       OnCandidateChosen="ChooseAsync" />
 

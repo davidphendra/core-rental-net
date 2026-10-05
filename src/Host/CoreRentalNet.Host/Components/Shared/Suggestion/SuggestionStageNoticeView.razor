@@ -1,24 +1,66 @@
 @* The application's own stage lines. Retained and collapsed once a run ends, so where a run went is worth
-   being able to see afterwards and worth not having to look at. The last active line is where the run is now. *@
-@if (Model.Collapsed)
+   being able to see afterwards and worth not having to look at.
+
+   The toggle is drawn in both states, so the list it opened can be closed again. It is not drawn while a run
+   is going: there the list is the progress, and folding it away would hide where the run is.
+
+   Each line carries its state as an icon and as words a screen reader can read: a finished stage is a check,
+   the stage in flight is a spinner, and a stage the run stopped in is neither - the run is over, so nothing is
+   in progress, and a spinner there would say otherwise. *@
+@if (!Model.IsRunning)
 {
     <button type="button"
-            class="ai__toggle mt-stack-sm underline"
+            class="ai__toggle mt-stack-sm underline inline-flex items-center gap-1"
             data-testid="suggestion-stages-toggle"
-            aria-expanded="false"
-            @onclick="OnExpandStages">
+            aria-expanded="@((!Model.Collapsed).ToString().ToLowerInvariant())"
+            aria-controls="suggestion-stages"
+            @onclick="OnToggleStages">
+        <svg class="h-3 w-3 shrink-0 transition-transform @(Model.Collapsed ? string.Empty : "rotate-90")"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m9 6 6 6-6 6" />
+        </svg>
         What took so long?
     </button>
 }
-else
+
+@if (Model.IsRunning || !Model.Collapsed)
 {
-    <ol class="ai__stages mt-stack-sm text-label-md font-label-md text-on-surface-variant"
+    <ol id="suggestion-stages"
+        class="ai__stages mt-stack-sm text-label-md font-label-md text-on-surface-variant"
         data-testid="suggestion-stages">
         @foreach (var line in Model.Lines)
         {
-            <li class="ai__stage"
+            <li class="ai__stage flex items-center gap-2"
                 data-stage="@line.Words"
-                data-stage-state="@(line.IsComplete ? "complete" : "active")">@line.Words</li>
+                data-stage-state="@StateOf(line)">
+                @if (line.IsComplete)
+                {
+                    <svg class="h-4 w-4 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                         data-testid="suggestion-stage-done" aria-hidden="true">
+                        <path d="m5 13 4 4 10-10" />
+                    </svg>
+                    <span class="sr-only">Completed:</span>
+                }
+                else if (Model.IsRunning)
+                {
+                    <svg class="h-4 w-4 shrink-0 animate-spin text-primary" viewBox="0 0 24 24" fill="none"
+                         data-testid="suggestion-stage-spinner" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity="0.25" />
+                        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    <span class="sr-only">In progress:</span>
+                }
+                else
+                {
+                    <span class="h-4 w-4 shrink-0 rounded-full border-2 border-outline-variant"
+                          data-testid="suggestion-stage-unfinished" aria-hidden="true"></span>
+                    <span class="sr-only">Not completed:</span>
+                }
+
+                <span>@line.Words</span>
+            </li>
         }
     </ol>
 }
@@ -26,11 +68,16 @@ else
 @code {
     [Parameter, EditorRequired] public required SuggestionNotice Notice { get; set; }
 
-    [Parameter] public EventCallback OnExpandStages { get; set; }
+    [Parameter] public EventCallback OnToggleStages { get; set; }
 
     [Parameter] public EventCallback OnRetry { get; set; }
 
     [Parameter] public EventCallback<WorkspaceSuggestionCandidate> OnCandidateChosen { get; set; }
 
     private SuggestionStageNotice Model => (SuggestionStageNotice)Notice;
+
+    /// <summary>Complete, in flight while the run goes, or left unfinished when the run stopped.</summary>
+    private string StateOf(SuggestionStageLine line) => line.IsComplete
+        ? "complete"
+        : Model.IsRunning ? "active" : "not-completed";
 }

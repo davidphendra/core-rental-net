@@ -122,26 +122,36 @@ public sealed class SuggestionStreamTests : AuthenticatedE2ETest
     }
 
     [Fact] // AIWB-30
-    public async Task The_stage_list_is_kept_after_a_run_and_collapsed_with_every_node_done()
+    public async Task The_stage_list_folds_away_and_back_and_every_finished_node_is_checked()
     {
         await BeginAsync("suggested");
         await AskAsync("a desk and a chair");
 
         await Expect(Page.Locator("[data-testid='suggestion-candidates']")).ToBeVisibleAsync();
 
-        // Retained, so a customer or a support engineer can see where a run went - and collapsed, so it is not
-        // what they have to look at once it is over.
+        // Retained and collapsed once the run is over: the one-liner is there, the list is not.
         await Expect(Page.Locator("[data-testid='suggestion-stages']")).ToHaveCountAsync(0);
-        await Expect(Page.Locator("[data-testid='suggestion-stages-toggle']")).ToBeVisibleAsync();
+        var toggle = Page.Locator("[data-testid='suggestion-stages-toggle']");
+        await Expect(toggle).ToBeVisibleAsync();
+        await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "false");
 
-        await Page.Locator("[data-testid='suggestion-stages-toggle']").ClickAsync();
-
+        // Opening it keeps the toggle, so the list it opened can be folded away again.
+        await toggle.ClickAsync();
+        await Expect(toggle).ToBeVisibleAsync();
+        await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(Page.Locator("[data-testid='suggestion-stages']")).ToBeVisibleAsync();
         await Expect(Page.Locator("[data-testid='suggestion-stages']")).ToContainTextAsync("Reading your request");
 
-        // Every stage the run began was also finished, so no node is left active once the run is over.
+        // Every stage the run finished is checked, and none is left spinning once the run is over.
+        await Expect(Page.Locator("[data-testid='suggestion-stage-done']").First).ToBeVisibleAsync();
+        await Expect(Page.Locator("[data-testid='suggestion-stage-spinner']")).ToHaveCountAsync(0);
         await Expect(Page.Locator("[data-testid='suggestion-stages'] li[data-stage-state='active']"))
             .ToHaveCountAsync(0);
+
+        // And clicking it again folds the list away, with the toggle still there to open it once more.
+        await toggle.ClickAsync();
+        await Expect(Page.Locator("[data-testid='suggestion-stages']")).ToHaveCountAsync(0);
+        await Expect(toggle).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
     private async Task BeginAsync(string scenario)

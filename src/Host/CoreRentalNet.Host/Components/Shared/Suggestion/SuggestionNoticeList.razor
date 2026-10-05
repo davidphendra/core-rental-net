@@ -10,7 +10,7 @@
                       Parameters="@(new Dictionary<string, object?>
                       {
                           ["Notice"] = suggestionNotice,
-                          ["OnExpandStages"] = OnExpandStages,
+                          ["OnToggleStages"] = OnToggleStages,
                           ["OnRetry"] = OnRetry,
                           ["OnCandidateChosen"] = OnCandidateChosen,
                       })" />
@@ -19,7 +19,7 @@
 @code {
     [Parameter, EditorRequired] public required IReadOnlyList<SuggestionNotice> Notices { get; set; }
 
-    [Parameter] public EventCallback OnExpandStages { get; set; }
+    [Parameter] public EventCallback OnToggleStages { get; set; }
 
     [Parameter] public EventCallback OnRetry { get; set; }
 

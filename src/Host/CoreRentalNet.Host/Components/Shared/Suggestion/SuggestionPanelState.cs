@@ -79,7 +79,7 @@ internal sealed class SuggestionPanelState
         FinishSuggestionRun();
     }
 
-    public void ExpandStages() => AreStagesCollapsed = false;
+    public void ToggleStages() => AreStagesCollapsed = !AreStagesCollapsed;
 
     /// <summary>The timeline, in the order the customer read it.</summary>
     /// <remarks>
@@ -92,7 +92,7 @@ internal sealed class SuggestionPanelState
 
         if (_stageLines.Count > 0)
         {
-            notices.Add(new SuggestionStageNotice([.. _stageLines], AreStagesCollapsed && !IsRunning));
+            notices.Add(new SuggestionStageNotice([.. _stageLines], AreStagesCollapsed && !IsRunning, IsRunning));
         }
 
         if (_failureCode is not null)
