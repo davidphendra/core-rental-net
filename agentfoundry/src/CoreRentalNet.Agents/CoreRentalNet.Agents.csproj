@@ -33,6 +33,28 @@
     <NoWarn>$(NoWarn);NU1903;NU1605</NoWarn>
   </PropertyGroup>
 
+  <!-- The release version. Foundry zips this project folder and builds it server-side, so the repository
+       root's Directory.Build.props is not in that zip: the pipeline writes Version.g.props here instead,
+       and this project carries its own copy of the mapping. On a developer's machine the generated file
+       is absent and the floor applies. AssemblyVersion is stabilized at MAJOR.MINOR.0.0; FileVersion is
+       the release MAJOR.MINOR.PATCH.0; the informational version is the release plus the commit. These
+       are set unconditionally so the mapping is authoritative for this project whichever props file
+       happens to be above it. -->
+  <PropertyGroup>
+    <VersionPrefix Condition="'$(VersionPrefix)' == ''">0.1.0</VersionPrefix>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <Import Project="Version.g.props" Condition="Exists('Version.g.props')" />
+
+  <PropertyGroup>
+    <_EffectiveVersion Condition="'$(Version)' != ''">$(Version)</_EffectiveVersion>
+    <_EffectiveVersion Condition="'$(_EffectiveVersion)' == ''">$(VersionPrefix)</_EffectiveVersion>
+    <_NumericVersion>$([System.String]::Copy('$(_EffectiveVersion)').Split('-')[0])</_NumericVersion>
+    <AssemblyVersion>$([System.Version]::Parse('$(_NumericVersion)').Major).$([System.Version]::Parse('$(_NumericVersion)').Minor).0.0</AssemblyVersion>
+    <FileVersion>$([System.Version]::Parse('$(_NumericVersion)').Major).$([System.Version]::Parse('$(_NumericVersion)').Minor).$([System.Version]::Parse('$(_NumericVersion)').Build).0</FileVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Agent Framework hosting: AgentHost, AddFoundryResponses, MapFoundryResponses -->
     <PackageReference Include="Microsoft.Agents.AI.Foundry.Hosting" Version="1.20.0-preview.260831.1" />

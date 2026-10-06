@@ -1,5 +1,11 @@
 name: CI
 
+# This workflow is NOT the release authority. The Azure DevOps pipeline
+# (`azure-pipelines.yml`) resolves the tag, stamps the version and publishes the deployable artifact.
+# This one exists so a pull request runs the browser suite, which needs Chromium and is easier to run
+# here than in ADO. It deliberately does not pass -p:Version, publish an artifact or deploy: a second
+# place that decides a version is how two deployables come to disagree about which release they are.
+#
 # Dormant until this repository has a remote. Everything below runs from a clean
 # checkout, so the first push is the first time it executes.
 on:

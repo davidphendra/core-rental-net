@@ -20,28 +20,78 @@ public sealed class AppVersionTests
     [InlineData("1.4.2", "1.4.2")]
     [InlineData("v1.4.2", "1.4.2")] // a pipeline passing the tag straight through
     [InlineData("1.4.2-rc.1", "1.4.2-rc.1")] // a pre-release label is part of a semantic version
-    [InlineData("1.4.2+729b11c", "1.4.2")] // the SDK's commit hash is not part of the version
+    [InlineData("1.4.2+729b11c", "1.4.2")] // the commit is not part of the version
     [InlineData("1.4.2-rc.1+729b11c", "1.4.2-rc.1")]
     [InlineData("  1.4.2  ", "1.4.2")]
-    [InlineData("", "0.0.1")]
-    [InlineData("   ", "0.0.1")]
-    [InlineData(null, "0.0.1")]
-    [InlineData("release-7", "0.0.1")] // refused rather than shown
-    [InlineData("1.4", "0.0.1")]
-    [InlineData("1.4.2.0", "0.0.1")]
+    [InlineData("", "0.1.0")]
+    [InlineData("   ", "0.1.0")]
+    [InlineData(null, "0.1.0")]
+    [InlineData("release-7", "0.1.0")] // refused rather than shown
+    [InlineData("1.4", "0.1.0")]
+    [InlineData("1.4.2.0", "0.1.0")]
     public void A_version_is_shown_only_when_it_is_a_semantic_version(string? stamped, string shown)
         => AppVersion.Parse(stamped).Should().Be(shown);
 
     [Fact] // VER-02
-    public void The_application_is_stamped_with_a_version_and_not_a_build_fingerprint()
+    public void The_assembly_is_stamped_with_a_version_and_the_footer_shows_it()
     {
         var stamped = typeof(AppVersion).Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
-        // Turning this off is what keeps the suffix out of the assembly in the first place, rather
-        // than relying on the display to trim it back off. Removing it from Directory.Build.props
-        // fails here.
-        stamped.Should().NotBeNull().And.NotContain("+", "the commit hash is not part of a version");
-        AppVersion.Current.Should().MatchRegex(@"^\d+\.\d+\.\d+$");
+        stamped.Should().NotBeNull();
+
+        // The footer is a version, not a fingerprint: whether or not the pipeline stamped a commit
+        // after "+", what the footer shows is the semantic version alone, read from the assembly.
+        AppVersion.Current.Should().MatchRegex(@"^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$");
+        AppVersion.Current.Should().Be(AppVersion.Parse(stamped));
+    }
+
+    [Fact] // VER-04
+    public void The_assembly_properties_follow_the_stabilized_mapping()
+    {
+        var assembly = typeof(AppVersion).Assembly;
+        var release = Version.Parse(AppVersion.Current.Split('-')[0]);
+
+        var assemblyVersion = assembly.GetName().Version!;
+        assemblyVersion.Major.Should().Be(release.Major);
+        assemblyVersion.Minor.Should().Be(release.Minor);
+        assemblyVersion.Build.Should().Be(0, "the binding version is stabilized at MAJOR.MINOR.0.0");
+        assemblyVersion.Revision.Should().Be(0);
+
+        var fileVersion = Version.Parse(assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
+        fileVersion.Major.Should().Be(release.Major);
+        fileVersion.Minor.Should().Be(release.Minor);
+        fileVersion.Build.Should().Be(release.Build);
+        fileVersion.Revision.Should().Be(0, "the file version is the release MAJOR.MINOR.PATCH.0");
+    }
+
+    [Fact] // VER-06
+    public void The_fallback_is_the_floor_the_build_declares()
+    {
+        // Two floors that drift apart is a silent lie: a refused stamp would show one number while an
+        // untagged build stamps the other. The build declares its floor in Directory.Build.props.
+        FloorFile().Should().Contain(
+            $"<VersionPrefix>{AppVersion.Fallback}</VersionPrefix>",
+            "the fallback the footer shows and the floor the build stamps have to be the same number");
+    }
+
+    /// <summary>The first Directory.Build.props above the test output, which is the repository's own.</summary>
+    private static string FloorFile()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "Directory.Build.props");
+
+            if (File.Exists(candidate))
+            {
+                return File.ReadAllText(candidate);
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new InvalidOperationException("Could not locate Directory.Build.props above the test output.");
     }
 }

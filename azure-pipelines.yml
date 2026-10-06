@@ -27,9 +27,9 @@ variables:
   dotnetVersion: '10.0.400'
   solution: 'CoreRentalNet.sln'
   hostProject: 'src/Host/CoreRentalNet.Host/CoreRentalNet.Host.csproj'
-  # Directory.Build.props expects a release pipeline to pass the version. The build number is a
-  # valid version (e.g. 20251005.1); pass a tag instead if you prefer a semantic version.
-  version: '$(Build.BuildNumber)'
+  # Directory.Build.props expects a release pipeline to pass the version, and scripts/resolve-version.sh
+  # resolves it from the tag being built. versionFloor is the version an untagged build keeps.
+  versionFloor: '0.1.0'
 
   # Deployment target — replace the placeholders before enabling deployment.
   azureServiceConnection: '<azure-service-connection>'   # ARM service connection in Azure DevOps
@@ -76,6 +76,11 @@ stages:
         # the default feed. Remove it once 10.0.400 is generally available.
         includePreviewVersions: true
 
+    # The release identity is the tag. The build never reads Git: this resolves the tag the pipeline
+    # is building and passes the result to every later step, so the artifact and the runtime agree.
+    - script: bash scripts/resolve-version.sh
+      displayName: 'Resolve version from the tag'
+
     - script: dotnet restore $(solution)
       displayName: 'Restore'
 
@@ -86,6 +91,7 @@ stages:
         --configuration $(buildConfiguration)
         --no-restore
         -p:Version=$(version)
+        -p:InformationalVersion=$(informationalVersion)
       displayName: 'Build (Release)'
 
     # The gate: unit, architecture and integration tests. The browser suite (CoreRentalNet.E2E)
@@ -112,6 +118,7 @@ stages:
         --configuration $(buildConfiguration)
         --no-restore
         -p:Version=$(version)
+        -p:InformationalVersion=$(informationalVersion)
         --output $(Build.ArtifactStagingDirectory)/app
       displayName: 'Publish host'
 
@@ -119,7 +126,9 @@ stages:
       displayName: 'Publish artifact'
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)/app'
-        artifact: 'app'
+        # Named with the release and the commit, so two artifacts of one release are told apart by
+        # the name. The build ID remains the immutable identity: a given version is never rebuilt.
+        artifact: 'app-$(version)-$(shortSha)'
 
 # ---------------------------------------------------------------------------------------------
 # Deployment. The Environment below carries a manual approval check, configured once in the ADO
@@ -139,8 +148,15 @@ stages:
       runOnce:
         deploy:
           steps:
+          # The version is a pure function of the tag and the commit, so resolving it again here names
+          # the artifact this run published. No cross-stage variable plumbing is needed.
+          - checkout: self
+
+          - script: bash scripts/resolve-version.sh
+            displayName: 'Resolve version from the tag'
+
           - download: current
-            artifact: 'app'
+            artifact: 'app-$(version)-$(shortSha)'
 
           # Code only. App settings and secrets are expected to be present in App Service.
           # For a Windows app (`appType: webAppWindows`), replace `packageForLinux` with `package`.
@@ -152,4 +168,4 @@ stages:
               appType: '$(appType)'
               WebAppName: '$(webAppName)'
               ResourceGroupName: '$(resourceGroup)'
-              packageForLinux: '$(Pipeline.Workspace)/app'
+              packageForLinux: '$(Pipeline.Workspace)/app-$(version)-$(shortSha)'

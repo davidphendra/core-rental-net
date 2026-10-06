@@ -55,6 +55,8 @@ gap pointed at a sixth file that was gone as well. One list, in one place.
 ## Specs and process
 
 - Output documents are written under `specs/`.
+- The baselines — `BUILD`, `NONBROWSER`, `BROWSER`, `AGENT` — are defined once in `specs/baselines.md`,
+  and a step is done only when all four are green.
 - One revertible commit per step; update the architecture test and its non-vacuity guard in the same
   commit as the code it guards.
 - Never deploy or provision without explicit product-owner consent.

@@ -281,6 +281,20 @@ services:
 `FOUNDRY_AGENT_NAME` is deliberately **not** mapped in `env:` — the platform injects it, and mapping it from an
 azd variable nobody set once injected it empty.
 
+### 3.6 Version
+
+The deployed agent is built by Foundry from a zip of this project folder, so the repository root's
+`Directory.Build.props` is not present in that build. The Azure DevOps pipeline resolves the release from the
+tag with `scripts/resolve-version.sh` and writes `Version.g.props` into `src/CoreRentalNet.Agents/` before
+`azd deploy`; the csproj imports it when present and carries its own copy of the version mapping. The file is
+gitignored, so a developer's build keeps the floor `0.1.0`.
+
+Every startup prints the release and the commit it was built from, beside the settings it reports:
+
+```text
+[startup]   version                             : 1.4.1+abc1234
+```
+
 ---
 
 ## 4. Testing

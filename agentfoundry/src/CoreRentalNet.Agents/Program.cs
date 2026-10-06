@@ -18,6 +18,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using CoreRentalNet.Agents.Features.EchoReply;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
+using CoreRentalNet.Agents.Shared.Diagnostics;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Shared.Telemetry;
@@ -82,6 +83,7 @@ var modelTransportRetryOptions =
 // here with only whether it is present — except the agent names, which are not secrets.
 Console.WriteLine(string.Join("\n",
     "[startup] hosted agent deployable",
+    $"[startup]   version                             : {AgentVersion.Current}{(AgentVersion.Build is { } commit ? $"+{commit}" : string.Empty)}",
     $"[startup]   hosted                              : {(string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT")) ? "no" : "yes")}",
     $"[startup]   FOUNDRY_PROJECT_ENDPOINT            : {Present(builder.Configuration["FOUNDRY_PROJECT_ENDPOINT"])}",
     $"[startup]   {AgentFoundryRegistration.ModelKey,-34}: {Present(builder.Configuration[AgentFoundryRegistration.ModelKey])}",

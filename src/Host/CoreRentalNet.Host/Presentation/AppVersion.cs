@@ -15,15 +15,15 @@ namespace CoreRentalNet.Host.Presentation;
 /// it means an untagged build shows a floor rather than a guess.
 /// </para>
 /// <para>
-/// Nothing here is a build fingerprint. The SDK appends the commit hash to the informational version
-/// unless it is told not to, which it is in Directory.Build.props; the trim below keeps the footer a
-/// version even if a project turns that suffix back on.
+/// The version is read from the artifact's own <c>AssemblyInformationalVersionAttribute</c>. The
+/// pipeline may stamp a commit after "+" (<c>1.4.1+abc1234</c>) as build metadata; the footer is a
+/// version, so that is trimmed away and what remains is validated as a semantic version.
 /// </para>
 /// </remarks>
 public static partial class AppVersion
 {
     /// <summary>What an unreleased build shows.</summary>
-    public const string Fallback = "0.0.1";
+    public const string Fallback = "0.1.0";
 
     /// <summary>The running application's version.</summary>
     public static string Current => Of(typeof(AppVersion).Assembly);

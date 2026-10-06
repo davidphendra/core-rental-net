@@ -19,12 +19,30 @@
   </PropertyGroup>
 
   <!-- The version the footer displays. A release pipeline passes the tag it is building, e.g.
-       dotnet build -p:Version=${TAG#v}; a build with no such argument keeps this floor, which is
-       what an unreleased build shows. The SDK would otherwise append the commit hash to the
-       informational version, and the footer is a version rather than a build fingerprint. -->
+       dotnet build -p:Version=1.4.1; a build with no such argument keeps this floor, which is what
+       an unreleased build shows. The pipeline also passes the informational version, so the commit
+       travels after "+" (1.4.1+abc1234) as build metadata and the SDK is told not to append one of
+       its own. -->
   <PropertyGroup>
-    <VersionPrefix>0.0.2</VersionPrefix>
+    <VersionPrefix>0.1.0</VersionPrefix>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <!-- One tag, three .NET properties. AssemblyVersion is stabilized at MAJOR.MINOR.0.0 so it moves
+       only on major/minor; FileVersion is the release MAJOR.MINOR.PATCH.0; the informational version
+       carries the release and, from the pipeline, the commit. A pre-release label is part of the
+       informational version only: the numeric properties cannot hold one, so it is dropped before
+       parsing. Derived here rather than in each pipeline, so a local build and a tagged build follow
+       the same rule. -->
+  <PropertyGroup>
+    <_EffectiveVersion Condition="'$(Version)' != ''">$(Version)</_EffectiveVersion>
+    <_EffectiveVersion Condition="'$(_EffectiveVersion)' == ''">$(VersionPrefix)</_EffectiveVersion>
+    <_NumericVersion>$([System.String]::Copy('$(_EffectiveVersion)').Split('-')[0])</_NumericVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$([System.Version]::Parse('$(_NumericVersion)').Major).$([System.Version]::Parse('$(_NumericVersion)').Minor).0.0</AssemblyVersion>
+    <FileVersion Condition="'$(FileVersion)' == ''">$([System.Version]::Parse('$(_NumericVersion)').Major).$([System.Version]::Parse('$(_NumericVersion)').Minor).$([System.Version]::Parse('$(_NumericVersion)').Build).0</FileVersion>
   </PropertyGroup>
 
 </Project>

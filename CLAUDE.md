@@ -8,18 +8,18 @@ assumption in a prompt.
 1. `CONVENTIONS.md` — the conventions: **persistence-record Domain + Application services**, the
    coding budgets, and the test rules. Each rule names the architecture test that enforces it.
 2. `README.md` — the module map, the trust model and the SQLite constraints.
-3. `specs/catalog-ingestion.md` — the requirement in flight: the ingestion change, its decisions, its
-   guarantees and the prerequisites it is waiting on.
+3. `specs/baselines.md` — what `BUILD`, `NONBROWSER`, `BROWSER` and `AGENT` mean, and where each is
+   measured.
 4. `specs/adr/` — the decisions, with the alternatives that were rejected and why.
 
 The plan documents this chain once named — a release plan, epic capsules and a test matrix — were
-removed deliberately and are not coming back, so `specs/catalog-ingestion.md` is the requirement now.
-The chain is stated here and nowhere else, because it was once stated twice and the copies drifted:
-three documents went on naming five files after `specs/` had stopped holding them.
+removed deliberately and are not coming back, so `specs/baselines.md` and `specs/adr/` are the record
+now. The chain is stated here and nowhere else, because it was once stated twice and the copies
+drifted: three documents went on naming five files after `specs/` had stopped holding them.
 
 ## Hard rules
 
-- **A step is done only when the baselines are green.** `specs/catalog-ingestion.md` defines them —
+- **A step is done only when the baselines are green.** `specs/baselines.md` defines them —
   `BUILD`, `NONBROWSER`, `BROWSER`, `AGENT` — and where each is measured. Record the numbers where
   the work is described.
 - **Domain is records. Application is services.** A persisted type is a plain record with no

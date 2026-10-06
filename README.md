@@ -225,19 +225,18 @@ src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quot
 src/Modules/Rentals/    Orders, invoices, periods, the schedule
 src/Host/               The Blazor application, its components and its design tokens
 src/shared/data/        products.json, the single source of truth for every price
-specs/                  the requirement in flight, its decisions, and the design prototypes
+specs/                  the baselines, the decisions, and the design prototypes
 ```
 
 `specs/` is the record of why, not just what:
 
-- `specs/catalog-ingestion.md` — the requirement in flight: the ingestion change, its scope, its
-  guarantees and the prerequisites it is waiting on
+- `specs/baselines.md` — what `BUILD`, `NONBROWSER`, `BROWSER` and `AGENT` mean, and where each is
+  measured
 - `specs/adr/` — the decisions, with the alternatives that were rejected and why
 - `specs/design/` — design prototypes, kept as references
 
 The plan documents this file once listed — a release plan, epic capsules and a commit plan — were
-removed deliberately and are not coming back. The requirement is `specs/catalog-ingestion.md`;
-`CONVENTIONS.md`, the ADRs and this file carry the rest.
+removed deliberately and are not coming back. `CONVENTIONS.md`, the ADRs and this file carry the rest.
 
 ## Decisions worth knowing before you read the code
 
@@ -268,6 +267,29 @@ removed deliberately and are not coming back. The requirement is `specs/catalog-
   deliberate decision that has not been made yet, and it would need the database path and journal
   mode pointed at persistent storage.
 
+## Versioning
+
+The release identity is the Git tag, and the pipeline is where it is resolved. The build never reads
+Git: `scripts/resolve-version.sh` turns the tag being built into a semantic version plus the short
+commit, and the pipelines pass that to `dotnet build` and `dotnet publish`. `Directory.Build.props`
+turns the one value into the three .NET properties:
+
+| Property | Value | Example |
+|---|---|---|
+| `AssemblyVersion` | stabilized `MAJOR.MINOR.0.0` | `1.4.0.0` |
+| `FileVersion` | the release `MAJOR.MINOR.PATCH.0` | `1.4.1.0` |
+| `InformationalVersion` | the release plus the commit as build metadata | `1.4.1+abc1234` |
+
+The footer shows that version, read from the artifact's own assembly information; the commit is trimmed
+away, so the footer is a version rather than a fingerprint. A build with no tag keeps the floor `0.1.0`.
+
+The agent tree is versioned the same way, with one difference: Foundry builds the deployed agent
+remotely from a zipped project folder, so the repository's props files are not there. The pipeline
+writes `Version.g.props` inside `agentfoundry/src/CoreRentalNet.Agents/` instead, and that project
+carries its own copy of the mapping and prints the version in its startup diagnostics.
+
+The reason for each choice, and the alternatives that were rejected, is in `specs/adr/`.
+
 ## Continuous integration
 
 `.github/workflows/ci.yml` builds, runs the non-browser tests, installs Chromium and runs the browser
@@ -276,6 +298,8 @@ first push is the first run.
 
 It builds and tests `CoreRentalNet.sln` only, so the agent tree's suite does not run in it — a
 path-filtered job for `agentfoundry/AgentFoundry.sln` is `e05s09`'s, and without it the two-tree
-separation is nominal. As measured on 2026-09-19: **636** non-browser tests, **104** browser (one
-real-tenant test skipped) and **63** agent tests. The figure this paragraph carried before — 410 and 94
-— had been stale for long enough that nobody could say when it stopped being true.
+separation is nominal. As measured on 2026-10-05: **827** non-browser tests and **183** agent tests,
+both 0 failed. The browser tier could not be measured: its `CoreRentalNet.E2E.LocalAgent` stand-in was
+deleted in `a6e127e` while `HostFixture` still starts it, so the suite cannot start. The figure this
+paragraph carried before — 636, 104 and 63 — had been stale for long enough that nobody could say
+when it stopped being true. The four baselines and their latest numbers are in `specs/baselines.md`.
