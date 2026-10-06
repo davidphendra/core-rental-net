@@ -1,4 +1,3 @@
-using System.Globalization;
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
@@ -69,12 +68,12 @@ public sealed class MoneyTests
     [Fact] // MON-06
     public void The_currency_format_is_the_cultures_and_reads_in_rupiah()
     {
-        // The prefix, the group separator and the zero decimals belong to the configured culture,
-        // not to a format string written beside the amount: the Host sets CurrentCulture at
-        // start-up (Composition/BusinessCulture) from the name appsettings.json ships, which is
-        // what this names. The old "1,234.50 USD" case went with the hard-coded formatter, because
-        // no production path builds a non-rupiah amount.
-        var business = new CultureInfo("en-ID", useUserOverride: false);
+        // The prefix and the group separator belong to the configured culture; the zero decimals
+        // belong to the currency, because ICU reports two for en-ID on Linux and zero on macOS.
+        // The Host sets CurrentCulture at start-up from the name appsettings.json ships, through
+        // the same helper this names. The old "1,234.50 USD" case went with the hard-coded
+        // formatter, because no production path builds a non-rupiah amount.
+        var business = BusinessCulture.For("en-ID");
 
         Idr(400000m).Amount.ToString("C", business).Should().Be("Rp400.000");
         Idr(1500000m).Amount.ToString("C", business).Should().Be("Rp1.500.000");

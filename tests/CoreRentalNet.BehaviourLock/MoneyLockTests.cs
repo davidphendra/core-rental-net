@@ -1,4 +1,3 @@
-using System.Globalization;
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
@@ -84,10 +83,11 @@ public sealed class MoneyLockTests
     [Fact]
     public void Idr_is_displayed_with_no_decimals_and_local_grouping()
     {
-        // Re-pointed when the format moved off a hard-coded prefix and onto the culture: the
-        // culture is what puts "Rp" before a zero-decimal amount, exactly as before. The browser
-        // suite pins the page this is drawn on, and the architecture suite pins the culture that
+        // Re-pointed when the format moved off a hard-coded prefix and onto the culture, and again
+        // when the zero decimals moved off the culture and onto the currency: the culture puts
+        // "Rp" in front, and the currency decides that there are no decimals. The browser suite
+        // pins the page this is drawn on, and the architecture suite pins the culture that
         // appsettings.json ships.
-        Idr(400_000m).Amount.ToString("C", new CultureInfo("en-ID", useUserOverride: false)).Should().Be("Rp400.000");
+        Idr(400_000m).Amount.ToString("C", BusinessCulture.For("en-ID")).Should().Be("Rp400.000");
     }
 }

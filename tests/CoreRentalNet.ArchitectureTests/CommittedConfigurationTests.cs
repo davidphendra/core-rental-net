@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Application;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Workspace.Application.Rules;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -47,7 +48,7 @@ public sealed class CommittedConfigurationTests
         name.Should().NotBeNullOrWhiteSpace(
             "a server runs under the invariant culture, under which an amount reads \u00a4400,000.00");
 
-        var culture = new CultureInfo(name, useUserOverride: false);
+        var culture = BusinessCulture.For(name);
         var region = new RegionInfo(name);
 
         // Which money a region uses is read from the locale rather than written here: en-ID names the
@@ -65,7 +66,8 @@ public sealed class CommittedConfigurationTests
             $"the configured culture is '{name}', and its region uses {region.ISOCurrencySymbol}");
 
         // And what an amount draws is that locale's symbol, because the symbol is the culture's and
-        // not a prefix in the markup. en-ID draws "Rp0" the way id-ID did.
+        // not a prefix in the markup, and the currency's own number of decimals, so en-ID draws
+        // "Rp0" on every machine.
         0m.ToString("C", culture).Should().Be($"{region.CurrencySymbol}0");
     }
 

@@ -1,4 +1,5 @@
 using System.Globalization;
+using CoreRentalNet.BuildingBlocks.Application;
 
 namespace CoreRentalNet.Host.Extentions;
 
@@ -15,8 +16,9 @@ namespace CoreRentalNet.Host.Extentions;
 /// </para>
 /// <para>
 /// The value is configuration rather than a constant, so which market a deployment writes for is a
-/// settings change. The constructor that refuses user overrides is the one used, so a machine's own
-/// regional tweaks cannot change what an invoice reads.
+/// settings change. The culture is built by <see cref="BusinessCulture"/>, which takes the symbol
+/// and the separators from it and the number of decimals from the currency, so neither a machine's
+/// own regional tweaks nor its CLDR data can change what an invoice reads.
 /// </para>
 /// </remarks>
 internal static class BusinessCultureExtentions
@@ -35,7 +37,7 @@ internal static class BusinessCultureExtentions
             return;
         }
 
-        var culture = new CultureInfo(name, useUserOverride: false);
+        var culture = BusinessCulture.For(name);
 
         CultureInfo.DefaultThreadCurrentCulture = culture;
         CultureInfo.DefaultThreadCurrentUICulture = culture;
