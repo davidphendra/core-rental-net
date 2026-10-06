@@ -17,25 +17,30 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
 # ---------------------------------------------------------------------------------------------
-# Edit these when the App Service exists. Service connection, app name and resource group come
-# from the Azure portal / Azure DevOps project settings. `appType` defaults to Linux, the usual
-# choice for .NET on App Service; switch to `webAppWindows` for a Windows plan.
+# The deployment target is not stored in this file. The service connection, app name, resource
+# group and app type come from the `core-rental-app-service` variable group (Pipelines ->
+# Library), so a server change is a Library edit rather than a commit. Create the group and
+# authorize this pipeline on it before the first deploy.
 # ---------------------------------------------------------------------------------------------
 variables:
-  # Build
-  buildConfiguration: 'Release'
-  dotnetVersion: '10.0.400'
-  solution: 'CoreRentalNet.sln'
-  hostProject: 'src/Host/CoreRentalNet.Host/CoreRentalNet.Host.csproj'
+  # Build. A `variables:` block is either a mapping or a sequence, never both, so adding the
+  # group reference below puts these in the sequence form.
+  - name: buildConfiguration
+    value: 'Release'
+  - name: dotnetVersion
+    value: '10.0.400'
+  - name: solution
+    value: 'CoreRentalNet.sln'
+  - name: hostProject
+    value: 'src/Host/CoreRentalNet.Host/CoreRentalNet.Host.csproj'
   # Directory.Build.props expects a release pipeline to pass the version, and scripts/resolve-version.sh
   # resolves it from the tag being built. versionFloor is the version an untagged build keeps.
-  versionFloor: '0.1.0'
+  - name: versionFloor
+    value: '0.1.0'
 
-  # Deployment target — replace the placeholders before enabling deployment.
-  azureServiceConnection: '<azure-service-connection>'   # ARM service connection in Azure DevOps
-  webAppName: '<web-app-name>'
-  resourceGroup: '<resource-group>'
-  appType: 'webAppLinux'                                 # webAppLinux | webAppWindows
+  # Deployment target — never a value in this file. The group holds AZURE_SERVICE_CONNECTION,
+  # WEB_APP_NAME, RESOURCE_GROUP and APP_SERVICE_TYPE.
+  - group: 'core-rental-app-service'
 
 # The agent tree is a separate deployable with its own pipeline (agentfoundry/azure-pipelines.yml),
 # so an agent-only change does not rebuild or redeploy this application.
@@ -158,14 +163,35 @@ stages:
           - download: current
             artifact: 'app-$(version)-$(shortSha)'
 
-          # Code only. App settings and secrets are expected to be present in App Service.
-          # For a Windows app (`appType: webAppWindows`), replace `packageForLinux` with `package`.
+          # The deployment target comes from the `core-rental-app-service` variable group. An
+          # undefined macro is left as the literal `$(NAME)` rather than blanked, so this rejects
+          # both a missing value and an unresolved one, and names which, before anything deploys.
+          - script: |
+              set -euo pipefail
+              for name in AZURE_SERVICE_CONNECTION WEB_APP_NAME RESOURCE_GROUP APP_SERVICE_TYPE; do
+                value="${!name:-}"
+                case "$value" in
+                  ''|*'$('*)
+                    echo "##vso[task.logissue type=error]Variable group 'core-rental-app-service' is missing $name"
+                    exit 1 ;;
+                esac
+              done
+            displayName: 'Check the deployment target variables'
+            env:
+              AZURE_SERVICE_CONNECTION: '$(AZURE_SERVICE_CONNECTION)'
+              WEB_APP_NAME: '$(WEB_APP_NAME)'
+              RESOURCE_GROUP: '$(RESOURCE_GROUP)'
+              APP_SERVICE_TYPE: '$(APP_SERVICE_TYPE)'
+
+          # Code only. App settings and secrets are expected to be present in App Service. The
+          # package input has a single name and `packageForLinux` is one of its aliases, so neither
+          # selects the app type; `appType` does.
           - task: AzureRmWebAppDeployment@4
             displayName: 'Deploy to App Service'
             inputs:
               ConnectionType: 'AzureRM'
-              azureSubscription: '$(azureServiceConnection)'
-              appType: '$(appType)'
-              WebAppName: '$(webAppName)'
-              ResourceGroupName: '$(resourceGroup)'
-              packageForLinux: '$(Pipeline.Workspace)/app-$(version)-$(shortSha)'
+              azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+              appType: '$(APP_SERVICE_TYPE)'
+              WebAppName: '$(WEB_APP_NAME)'
+              ResourceGroupName: '$(RESOURCE_GROUP)'
+              package: '$(Pipeline.Workspace)/app-$(version)-$(shortSha)'

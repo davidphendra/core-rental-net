@@ -16,7 +16,8 @@
 #   - Secretless. azd signs in with a workload identity federated token from the ARM service
 #     connection; no client secret is stored anywhere.
 #   - Configuration comes from the `core-rental-foundry` variable group, which must exist (with
-#     the values listed below) before the first run.
+#     the values listed below, including the service connection) before the first run. Nothing the
+#     deployment can change is stored in this file.
 #   - Both agents deploy. `azd deploy` with no service name ships workspace-suggestions and
 #     echo-agent, the two services in azure.yaml.
 
@@ -52,7 +53,8 @@ pool:
 
 variables:
   # Create this group under Pipelines -> Library with:
-  #   AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_AI_MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_ENDPOINT
+  #   AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_AI_MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_ENDPOINT,
+  #   AZURE_SERVICE_CONNECTION (the agent tree's own ARM service connection)
   # None of them is a secret.
   - group: 'core-rental-foundry'
   - name: buildConfiguration
@@ -65,8 +67,6 @@ variables:
     value: '1.27.1'                                        # azure.yaml requires azd >= 1.27.1
   - name: azdEnvironmentName
     value: 'core-rental-foundry'
-  - name: azureServiceConnection
-    value: '<azure-service-connection>'                    # ARM service connection with a federated credential
 
 stages:
 - stage: CI
@@ -163,13 +163,28 @@ stages:
               azd extension install microsoft.foundry --no-prompt
             displayName: 'Install azd and the Foundry extensions'
 
+          # AzureCLI@2 resolves its connection before its script runs, so the service connection
+          # cannot be checked from inside that script. An unresolved macro is passed through as the
+          # literal `$(...)`, which a plain empty test would accept.
+          - script: |
+              set -euo pipefail
+              value="${AZURE_SERVICE_CONNECTION:-}"
+              case "$value" in
+                ''|*'$('*)
+                  echo "##vso[task.logissue type=error]Variable group 'core-rental-foundry' is missing AZURE_SERVICE_CONNECTION"
+                  exit 1 ;;
+              esac
+            displayName: 'Check the deployment target variables'
+            env:
+              AZURE_SERVICE_CONNECTION: '$(AZURE_SERVICE_CONNECTION)'
+
           # Workload identity federation: the task supplies a short-lived federated token and azd
           # signs in with it. With a secret-based service connection instead, replace the
           # `--federated-token` line with `--client-secret "$servicePrincipalKey"`.
           - task: AzureCLI@2
             displayName: 'Authenticate azd and deploy'
             inputs:
-              azureSubscription: '$(azureServiceConnection)'
+              azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               addSpnToEnvironment: true
@@ -183,13 +198,16 @@ stages:
                   --federated-token "$idToken" \
                   --tenant-id "$tenantId"
 
-                # Fail fast with a clear message rather than letting azd read an empty value. These
-                # come from the `core-rental-foundry` variable group.
+                # Fail fast with a clear message rather than letting azd read an unset value. These
+                # come from the `core-rental-foundry` variable group; a macro ADO could not resolve
+                # arrives as the literal `$(...)`, which is not empty, so both are rejected.
                 for name in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_MODEL_DEPLOYMENT_NAME AZURE_AI_PROJECT_ENDPOINT; do
-                  if [ -z "${!name:-}" ]; then
-                    echo "##vso[task.logissue type=error]Variable group 'core-rental-foundry' is missing $name"
-                    exit 1
-                  fi
+                  value="${!name:-}"
+                  case "$value" in
+                    ''|*'$('*)
+                      echo "##vso[task.logissue type=error]Variable group 'core-rental-foundry' is missing $name"
+                      exit 1 ;;
+                  esac
                 done
 
                 # .azure/ is not committed, so every run builds a fresh azd environment. The project
