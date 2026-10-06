@@ -39,7 +39,8 @@ variables:
     value: '0.1.0'
 
   # Deployment target — never a value in this file. The group holds AZURE_SERVICE_CONNECTION,
-  # WEB_APP_NAME, RESOURCE_GROUP and APP_SERVICE_TYPE.
+  # WEB_APP_NAME, RESOURCE_GROUP and APP_SERVICE_TYPE (`webApp` for Windows, `webAppLinux` for
+  # Linux; the deploy task accepts no container value).
   - group: 'core-rental-app-service'
 
 # The agent tree is a separate deployable with its own pipeline (agentfoundry/azure-pipelines.yml),
@@ -183,15 +184,19 @@ stages:
               RESOURCE_GROUP: '$(RESOURCE_GROUP)'
               APP_SERVICE_TYPE: '$(APP_SERVICE_TYPE)'
 
-          # Code only. App settings and secrets are expected to be present in App Service. The
-          # package input has a single name and `packageForLinux` is one of its aliases, so neither
-          # selects the app type; `appType` does.
-          - task: AzureRmWebAppDeployment@4
+          # Code only. App settings and secrets are expected to be present in App Service. This task
+          # accepts only Web App on Windows (`webApp`) and Web App on Linux (`webAppLinux`), so
+          # `APP_SERVICE_TYPE` cannot name a container. The comment above the deployment target group
+          # lists the accepted values.
+          #
+          # `runtimeStack`, `startUpCommand`, `appSettings` and `configurationStrings` are left unset
+          # on purpose: this task would otherwise overwrite the runtime and settings the deployment
+          # keeps out of band. `deploymentMethod` is left at its `auto` default, which zips the folder.
+          - task: AzureWebApp@1
             displayName: 'Deploy to App Service'
             inputs:
-              ConnectionType: 'AzureRM'
               azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
               appType: '$(APP_SERVICE_TYPE)'
-              WebAppName: '$(WEB_APP_NAME)'
-              ResourceGroupName: '$(RESOURCE_GROUP)'
+              appName: '$(WEB_APP_NAME)'
+              resourceGroupName: '$(RESOURCE_GROUP)'
               package: '$(Pipeline.Workspace)/app-$(version)-$(shortSha)'
