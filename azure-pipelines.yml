@@ -108,7 +108,7 @@ stages:
         --no-build
         --filter "FullyQualifiedName!~CoreRentalNet.E2E"
         --logger "trx;LogFileName=test-results.trx"
-        --resultsDirectory $(Agent.TempDirectory)
+        --results-directory $(Agent.TempDirectory)
       displayName: 'Unit, architecture and integration tests'
 
     - task: PublishTestResults@2

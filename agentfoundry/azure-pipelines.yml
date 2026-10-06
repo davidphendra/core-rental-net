@@ -111,7 +111,7 @@ stages:
         --configuration $(buildConfiguration)
         --no-build
         --logger "trx;LogFileName=agent-tests.trx"
-        --resultsDirectory $(Agent.TempDirectory)
+        --results-directory $(Agent.TempDirectory)
       displayName: 'Agent tests'
 
     - task: PublishTestResults@2
