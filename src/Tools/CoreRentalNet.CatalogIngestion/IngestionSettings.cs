@@ -5,9 +5,11 @@ namespace CoreRentalNet.CatalogIngestion;
 /// <summary>Everything one ingestion run was configured with, already resolved and validated.</summary>
 /// <remarks>
 /// <para>
-/// <b>Every value has a default, and the defaults are the values this tool is known to work with</b> — the
-/// local embedding server, its model, that model's width, and the chunking measured against it. An absent key
-/// therefore runs the tool as intended, and the configuration file only has to say what differs.
+/// <b>Two values have no default, because there is no local server to fall back to.</b> The Azure OpenAI
+/// endpoint and the deployment's key are what a run cannot invent, so an absent one stops the run rather than
+/// targeting something that is not there. Every other value has a default, and those defaults — the model, the
+/// width it is asked for, and the chunking measured against it — are what the configuration file only has to
+/// state when it differs.
 /// </para>
 /// <para>
 /// <b>A value that is present but unusable is not the same as an absent one</b> and is refused rather than
@@ -18,7 +20,8 @@ namespace CoreRentalNet.CatalogIngestion;
 internal sealed record IngestionSettings(
     string CataloguePath,
     string DatabasePath,
-    string EmbeddingServer,
+    string EmbeddingEndpoint,
+    string EmbeddingApiKey,
     string EmbeddingModel,
     int Width,
     ChunkerSettings Chunker)
@@ -29,12 +32,9 @@ internal sealed record IngestionSettings(
     /// <summary>The vector file, relative to the tool's project directory.</summary>
     public const string DefaultDatabasePath = "App_Data/product_embedding.db";
 
-    /// <summary>The local OpenAI-compatible embedding server.</summary>
-    public const string DefaultEmbeddingServer = "http://localhost:8080/v1";
+    /// <summary>The deployment name, which is the identifier the resource serves the model under.</summary>
+    public const string DefaultEmbeddingModel = "text-embedding-3-small";
 
-    /// <summary>The embedding model that server serves.</summary>
-    public const string DefaultEmbeddingModel = "all-MiniLM-L6-v2-embedding";
-
-    /// <summary>How wide that model's vectors are.</summary>
+    /// <summary>How wide the vectors are asked to be, though the model's native width is 1536.</summary>
     public const int DefaultWidth = 384;
 }

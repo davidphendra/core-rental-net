@@ -20,10 +20,10 @@ namespace CoreRentalNet.Host.Tests;
 public sealed class DiscoveryUnavailableTests
 {
     private static VectorEmbeddingSettings Configured()
-        => new("http://localhost:8080/v1", "all-MiniLM-L6-v2-embedding", "App_Data/product_embedding.db", 384);
+        => new("https://example.openai.azure.com/", "key", "text-embedding-3-small", "App_Data/product_embedding.db", 384);
 
     private static VectorEmbeddingSettings Unconfigured()
-        => new(string.Empty, string.Empty, string.Empty, 384);
+        => new(string.Empty, string.Empty, string.Empty, string.Empty, 384);
 
     /// <summary>An application with just enough registered to run the gate, and a log a test can read.</summary>
     private static (WebApplication App, StubCatalogIndexFreshnessService Freshness, CapturingLoggerProvider Logs) Host(

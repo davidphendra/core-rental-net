@@ -63,7 +63,11 @@ async Task<int> Run()
     // for a reason that does not matter here.
     var catalogue = new ProductCatalogService(settings.CataloguePath, webRootPath: null);
 
-    var embeddings = OpenAiCompatibleEmbeddingService.Build(settings.EmbeddingServer, settings.EmbeddingModel);
+    var embeddings = OpenAiCompatibleEmbeddingService.Build(
+        new Uri(settings.EmbeddingEndpoint),
+        settings.EmbeddingApiKey,
+        settings.EmbeddingModel,
+        settings.Width);
     var semanticProductChunker = new SemanticProductChunker(new ClientEmbeddingGenerator(embeddings), settings.Chunker);
     var store = new SqliteProductEmbeddingStore(settings.DatabasePath);
 

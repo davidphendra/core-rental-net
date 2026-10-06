@@ -12,10 +12,12 @@ internal static class Usage
         Builds the catalogue's vector index from products.json.
 
         Every value has a default; a key is only needed when it differs. A value that is set but
-        unusable stops the run rather than falling back.
+        unusable stops the run rather than falling back. The endpoint and the key have no default,
+        because there is nothing local to fall back to.
 
-        Embedding:Server         the OpenAI-compatible embedding server       (default http://localhost:8080/v1)
-        Embedding:Model          the embedding model it serves                (default all-MiniLM-L6-v2-embedding)
+        Embedding:Endpoint       the Azure OpenAI resource endpoint           (required)
+        Embedding:ApiKey         the embedding deployment's key               (required)
+        Embedding:Model          the deployment name the resource serves      (default text-embedding-3-small)
         Embedding:Width          how many floats each vector holds            (default 384)
         Catalog:FilePath         path to products.json                        (default ../../shared/data/products.json)
         Database:Path            the SQLite file written                      (default App_Data/product_embedding.db)

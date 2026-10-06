@@ -34,7 +34,7 @@ internal static class ConfigurationReader
     /// </remarks>
     private static readonly ImmutableHashSet<string> s_safeToRepeat = ImmutableHashSet.Create(
         StringComparer.Ordinal,
-        "Embedding:Server",
+        "Embedding:Endpoint",
         "Embedding:Model",
         "Embedding:Width",
         "Catalog:FilePath",
@@ -59,7 +59,8 @@ internal static class ConfigurationReader
         return new IngestionSettings(
             ResolvedPath(configuration, "Catalog:FilePath", IngestionSettings.DefaultCataloguePath, baseDirectory),
             ResolvedPath(configuration, "Database:Path", IngestionSettings.DefaultDatabasePath, baseDirectory),
-            Server(configuration, "Embedding:Server", IngestionSettings.DefaultEmbeddingServer),
+            Endpoint(configuration),
+            Required(configuration, "Embedding:ApiKey"),
             Text(configuration, "Embedding:Model", IngestionSettings.DefaultEmbeddingModel),
             Positive(configuration, "Embedding:Width", IngestionSettings.DefaultWidth),
             Chunker(configuration));
@@ -91,16 +92,21 @@ internal static class ConfigurationReader
             : stated.Trim();
     }
 
-    /// <summary>The embedding server, which has to be an absolute URL this tool can call.</summary>
-    private static string Server(IConfiguration configuration, string key, string fallback)
+    /// <summary>The Azure OpenAI resource endpoint, which has to be an absolute https URL.</summary>
+    private static string Endpoint(IConfiguration configuration)
     {
-        var server = Text(configuration, key, fallback);
+        var stated = Required(configuration, "Embedding:Endpoint");
 
-        return Uri.TryCreate(server, UriKind.Absolute, out var uri)
-            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
-                ? server
-                : throw new ArgumentException($"{key} must be an absolute http or https URL, but was {Stated(key, server)}.");
+        return Uri.TryCreate(stated, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+            ? stated
+            : throw new ArgumentException($"Embedding:Endpoint must be an absolute https URL, but was {Stated("Embedding:Endpoint", stated)}.");
     }
+
+    /// <summary>A value this run cannot start without. There is no local server to fall back to.</summary>
+    private static string Required(IConfiguration configuration, string key)
+        => configuration[key]?.Trim() is { Length: > 0 } value
+            ? value
+            : throw new ArgumentException($"{key} is not configured. Set it in appsettings.Local.json or the environment.");
 
     /// <summary>A whole number greater than zero, or the default when the key is absent.</summary>
     private static int Positive(IConfiguration configuration, string key, int fallback)

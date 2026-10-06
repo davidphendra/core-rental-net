@@ -149,6 +149,29 @@ public sealed class CommittedConfigurationTests
         }
     }
 
+    [Fact] // AUTH-08
+    public void No_embedding_key_is_committed_to_configuration()
+    {
+        // The embedding key is a credential in every sense the client secret is, so it belongs to the same
+        // rule: the local file or the environment. "We will be careful" is not a control.
+        var offenders = new List<string>();
+
+        foreach (var file in ConfigurationFiles())
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(file));
+
+            foreach (var value in FindKeys(document.RootElement, "ApiKey"))
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    offenders.Add($"{Path.GetRelativePath(RepoRoot.Path, file)} sets ApiKey");
+                }
+            }
+        }
+
+        offenders.Should().BeEmpty("the embedding key comes from the local file or the environment");
+    }
+
     private static IEnumerable<string> ConfigurationFiles()
         => Directory.GetFiles(RepoRoot.Combine("src"), "appsettings*.json", SearchOption.AllDirectories)
             .Where(file => !file.Contains("/obj/", StringComparison.Ordinal)

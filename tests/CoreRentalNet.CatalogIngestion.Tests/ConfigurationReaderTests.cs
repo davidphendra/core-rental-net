@@ -20,8 +20,9 @@ public sealed class ConfigurationReaderTests
     {
         ["Catalog:FilePath"] = "/tmp/products.json",
         ["Database:Path"] = "/tmp/product_embedding.db",
-        ["Embedding:Server"] = "http://localhost:8080/v1",
-        ["Embedding:Model"] = "all-MiniLM-L6-v2-embedding",
+        ["Embedding:Endpoint"] = "https://example.openai.azure.com/",
+        ["Embedding:ApiKey"] = "key",
+        ["Embedding:Model"] = "text-embedding-3-small",
         ["Embedding:Width"] = "384",
         ["Chunker:TokenLimit"] = "256",
         ["Chunker:BufferSize"] = "1",
@@ -43,8 +44,9 @@ public sealed class ConfigurationReaderTests
 
         settings.CataloguePath.Should().Be("/tmp/products.json");
         settings.DatabasePath.Should().Be("/tmp/product_embedding.db");
-        settings.EmbeddingServer.Should().Be("http://localhost:8080/v1");
-        settings.EmbeddingModel.Should().Be("all-MiniLM-L6-v2-embedding");
+        settings.EmbeddingEndpoint.Should().Be("https://example.openai.azure.com/");
+        settings.EmbeddingApiKey.Should().Be("key");
+        settings.EmbeddingModel.Should().Be("text-embedding-3-small");
         settings.Width.Should().Be(384);
         settings.Chunker.Should().Be(new ChunkerSettings(256, 1, "Percentile", 95, null, 1, 200));
     }
@@ -52,11 +54,16 @@ public sealed class ConfigurationReaderTests
     [Fact]
     public void An_absent_key_takes_its_default_rather_than_stopping_the_run()
     {
-        // An empty configuration is a working configuration: the defaults are the values this tool is known
-        // to work with, and a file only has to say what differs from them.
-        var settings = Read(new Dictionary<string, string?>());
+        // The endpoint and the key are the two values a run cannot invent; every other key has a default, so a
+        // file only has to say what differs from them.
+        var values = new Dictionary<string, string?>
+        {
+            ["Embedding:Endpoint"] = "https://example.openai.azure.com/",
+            ["Embedding:ApiKey"] = "key",
+        };
 
-        settings.EmbeddingServer.Should().Be(IngestionSettings.DefaultEmbeddingServer);
+        var settings = Read(values);
+
         settings.EmbeddingModel.Should().Be(IngestionSettings.DefaultEmbeddingModel);
         settings.Width.Should().Be(IngestionSettings.DefaultWidth);
         settings.Chunker.TokenLimit.Should().Be(ChunkerSettings.DefaultTokenLimit);
@@ -71,9 +78,12 @@ public sealed class ConfigurationReaderTests
     [InlineData("Embedding:Width", "abc")]
     [InlineData("Embedding:Width", "0")]
     [InlineData("Embedding:Width", "")]
-    [InlineData("Embedding:Server", "not-a-url")]
-    [InlineData("Embedding:Server", "/v1")]
-    [InlineData("Embedding:Server", "ftp://localhost")]
+    [InlineData("Embedding:Endpoint", "not-a-url")]
+    [InlineData("Embedding:Endpoint", "/v1")]
+    [InlineData("Embedding:Endpoint", "ftp://localhost")]
+    [InlineData("Embedding:Endpoint", "http://localhost")]
+    [InlineData("Embedding:Endpoint", "")]
+    [InlineData("Embedding:ApiKey", "")]
     [InlineData("Embedding:Model", "")]
     [InlineData("Chunker:ThresholdType", "Vibes")]
     [InlineData("Chunker:TokenLimit", "-1")]

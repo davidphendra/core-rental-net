@@ -14,10 +14,10 @@ namespace CoreRentalNet.Host.Extentions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Nothing here resolves a credential, because nothing here calls a cloud service.</b> The vectors are built
-/// by the ingestion tool against a local OpenAI-compatible server, and this application embeds its queries
-/// through the same one. The adapter that talks to it is shared rather than written twice, so a query vector
-/// and a stored vector are produced by one implementation of one protocol.
+/// <b>The key is read here and the client is built once.</b> The vectors are built by the ingestion tool
+/// against the Azure OpenAI deployment, and this application embeds its queries through the same deployment
+/// with the same key. The adapter that talks to it is shared rather than written twice, so a query vector and
+/// a stored vector are produced by one implementation of one protocol.
 /// </para>
 /// <para>
 /// <b>The vectors are read from the tool's own file, not from this application's database.</b> The tool owns
@@ -42,7 +42,11 @@ internal static class DiscoveryRegistrationExtentions
 
         builder.Services.AddSingleton<IEmbeddingService>(
             settings.IsConfigured
-                ? OpenAiCompatibleEmbeddingService.Build(settings.Server, settings.Model)
+                ? OpenAiCompatibleEmbeddingService.Build(
+                    new Uri(settings.Endpoint),
+                    settings.ApiKey,
+                    settings.Model,
+                    settings.Width)
                 : new EmbeddingNotConfigured());
 
         var databasePath = ResolveDatabasePath(builder, settings.EmbeddingDatabase);

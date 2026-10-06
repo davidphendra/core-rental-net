@@ -26,12 +26,12 @@ owner's explicit consent:
 
 ## Last measured
 
-Measured on 2026-10-05, on `main`, after the version endpoint was removed and the footer was left
-reading the assembly's informational version:
+Measured on 2026-10-05, on `main`, after the embedding model moved to the Azure OpenAI deployment
+`text-embedding-3-small`, asked for 384 dimensions:
 
 | Baseline | Result |
 |---|---|
 | `BUILD` | 0 warnings, 0 errors (both solutions) |
-| `NONBROWSER` | 819 passed, 0 failed, 0 skipped |
+| `NONBROWSER` | 823 passed, 0 failed, 0 skipped |
 | `AGENT` | 183 passed, 0 failed |
 | `BROWSER` | **not run** — the `CoreRentalNet.E2E.LocalAgent` stand-in was deleted in `a6e127e` while `HostFixture` still starts it. Pre-existing and unrelated to this change; the browser tier cannot start until that fixture is restored. |

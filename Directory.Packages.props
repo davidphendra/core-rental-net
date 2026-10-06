@@ -52,11 +52,17 @@
     <!-- Named directly by the module's embedding adapter, which takes a credential rather than resolving one. -->
     <PackageVersion Include="Azure.Core" Version="1.62.0" />
   </ItemGroup>
+  <ItemGroup Label="The embedding deployment">
+    <!-- Azure OpenAI's API-key client, over the OpenAI types the shared embedding adapter wraps. It carries
+         the resource endpoint, the deployment name and the credential; its OpenAI dependency is the pin in
+         the group below, because one OpenAI version has to serve this adapter and the Foundry agent both. -->
+    <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
+  </ItemGroup>
   <ItemGroup Label="The catalogue ingestion tool">
-    <!-- Pinned to the Foundry set above, and they must move together with it: the ingestion tool reaches the
-         embedding deployment through the project client, so a version of either that disagrees with
+    <!-- Pinned to the Foundry set above, and they must move together with Azure.AI.Projects: the workspace
+         suggestion adapter reaches a Foundry project with them, so a version of either that disagrees with
          Azure.AI.Projects is a client that cannot be built. Direct references rather than transitive, because
-         the tool names these types itself and a transitive version is one that resolution chooses. -->
+         the Adapter names these types itself and a transitive version is one that resolution chooses. -->
     <PackageVersion Include="Azure.AI.Extensions.OpenAI" Version="3.0.0-beta.2" />
     <PackageVersion Include="OpenAI" Version="2.13.0" />
     <!-- The transport exception type the ingestion tool's failure classifier names directly. It arrives with
