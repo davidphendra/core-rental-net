@@ -35,13 +35,13 @@ facts reached Application Insights:
 | Baseline | Result |
 |---|---|
 | `BUILD` | 0 warnings, 0 errors |
-| `NONBROWSER` | 795 passed, 0 failed, 0 skipped |
+| `NONBROWSER` | 797 passed, 0 failed, 0 skipped |
 | `TOOL` | 42 passed, 0 failed, 0 skipped |
 | `AGENT` | 184 passed, 0 failed |
 | `BROWSER` | **not run** — the `CoreRentalNet.E2E.LocalAgent` stand-in was deleted in `a6e127e` while `HostFixture` still starts it. Pre-existing and unrelated to this change; the browser tier cannot start until that fixture is restored. |
 
-`NONBROWSER` rose from 781 by fourteen. Two are the Foundry credential choice committed immediately
-before this change; the other twelve are six facts for the build identity and its reader, five for the
-business meter, and one configuration guard that keeps the telemetry connection string out of every
-committed file. `NONBROWSER` no longer counts the ingestion tool's 42 tests, which the `TOOL` row
-above now records.
+`NONBROWSER` rose from 781 by sixteen: six facts for the build identity and its reader, five for the
+business meter, one configuration guard that keeps the telemetry connection string out of every committed
+file, two for the start-up announcement, and two for the Foundry credential choice committed immediately
+before all of it. `NONBROWSER` no longer counts the ingestion tool's 42 tests, which the `TOOL` row above
+now records.

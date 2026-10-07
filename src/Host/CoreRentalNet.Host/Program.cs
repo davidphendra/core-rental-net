@@ -52,6 +52,10 @@ builder.Services.AddScoped<IWorkspaceSession, WorkspaceSession>();
 
 var app = builder.Build();
 
+// First, so a deployment that never becomes ready still says which build it is. The same four values the
+// telemetry resource carries and the footer shows, on the log stream.
+app.AnnounceBuildIdentity();
+
 app.UseApplicationPipeline(identity);
 
 app.MapRazorComponents<App>()

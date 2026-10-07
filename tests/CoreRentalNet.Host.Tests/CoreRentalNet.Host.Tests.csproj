@@ -23,6 +23,9 @@
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="JsonSchema.Net" />
+    <!-- FakeLogger, so the start-up announcement is proven by what it logged rather than by reading the
+         strings it builds. -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
 
