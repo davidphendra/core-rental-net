@@ -116,7 +116,10 @@ Console.WriteLine(string.Join("\n",
 IChatClient modelClient;
 try
 {
-    modelClient = AgentFoundryRegistration.BuildChatClient(builder.Configuration, modelTransportRetryOptions);
+    var credential = FoundryCredential.Create(builder.WebApplicationBuilder.Environment);
+    modelClient = AgentFoundryRegistration.BuildChatClient(
+        builder.Configuration, credential,
+        modelTransportRetryOptions);
 }
 catch (Exception exception)
 {

@@ -29,7 +29,7 @@ public sealed class AgentFoundryRegistrationTests
     public void A_missing_project_endpoint_is_refused_by_name()
     {
         var act = () => AgentFoundryRegistration.BuildChatClient(Configuration(
-            ("AZURE_AI_MODEL_DEPLOYMENT_NAME", "gpt-4.1-mini")));
+            ("AZURE_AI_MODEL_DEPLOYMENT_NAME", "gpt-4.1-mini")), new FixedTokenCredential());
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*FOUNDRY_PROJECT_ENDPOINT*");
     }
@@ -38,7 +38,7 @@ public sealed class AgentFoundryRegistrationTests
     public void A_missing_model_deployment_is_refused_by_name()
     {
         var act = () => AgentFoundryRegistration.BuildChatClient(Configuration(
-            ("FOUNDRY_PROJECT_ENDPOINT", "https://example.invalid/api/projects/p")));
+            ("FOUNDRY_PROJECT_ENDPOINT", "https://example.invalid/api/projects/p")), new FixedTokenCredential());
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*AZURE_AI_MODEL_DEPLOYMENT_NAME*");
     }
@@ -49,7 +49,7 @@ public sealed class AgentFoundryRegistrationTests
         // An environment variable set to nothing is the shape a half-finished deployment actually has.
         var act = () => AgentFoundryRegistration.BuildChatClient(Configuration(
             ("FOUNDRY_PROJECT_ENDPOINT", "  "),
-            ("AZURE_AI_MODEL_DEPLOYMENT_NAME", "gpt-4.1-mini")));
+            ("AZURE_AI_MODEL_DEPLOYMENT_NAME", "gpt-4.1-mini")), new FixedTokenCredential());
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*FOUNDRY_PROJECT_ENDPOINT*");
     }

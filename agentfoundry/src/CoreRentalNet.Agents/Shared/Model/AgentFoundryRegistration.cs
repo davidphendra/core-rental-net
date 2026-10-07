@@ -1,7 +1,6 @@
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
 using Azure.Core;
-using Azure.Identity;
 using Microsoft.Extensions.AI;
 using System.ClientModel.Primitives;
 
@@ -35,9 +34,11 @@ internal static class AgentFoundryRegistration
     /// </remarks>
     public static IChatClient BuildChatClient(
         IConfiguration configuration,
+        TokenCredential credential,
         ModelTransportRetryOptions? modelTransportRetryOptions = null)
     {
         ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(credential);
 
         var endpoint = Required(configuration, "FOUNDRY_PROJECT_ENDPOINT");
         var model = Required(configuration, ModelKey);
@@ -49,35 +50,11 @@ internal static class AgentFoundryRegistration
             RetryPolicy = new ClientRetryPolicy(transportRetryOptions.MaximumRetryAttempts),
         };
 
-        return new AIProjectClient(new Uri(endpoint), Credential())
+        return new AIProjectClient(new Uri(endpoint), credential)
             .GetProjectOpenAIClient(openAiOptions)
             .GetChatClient(model)
             .AsIChatClient();
     }
-
-    /// <summary>The credential this process presents to Foundry, chosen for where the process is running.</summary>
-    /// <remarks>
-    /// <para>
-    /// In a hosted container the whole chain is the point: managed identity answers in milliseconds, so the
-    /// default is what should be used.
-    /// </para>
-    /// <para>
-    /// On a developer's machine it is the opposite. Managed identity and workload identity have no source to
-    /// answer from, and <c>DefaultAzureCredential</c> still probes them before it reaches the developer's own
-    /// sign-in — a probe that takes about a hundred seconds to fail. The model client's network timeout is
-    /// also a hundred seconds, so the first token request is cancelled while it is still probing, retried, and
-    /// cancelled again: the run dies as "Retry failed after 4 tries" without ever reaching the model. Excluding
-    /// those two sources turns the first token request into the developer's own sign-in, which answers at once.
-    /// </para>
-    /// </remarks>
-    private static TokenCredential Credential()
-        => FoundryEnvironment.IsHosted
-            ? new DefaultAzureCredential()
-            : new DefaultAzureCredential(new DefaultAzureCredentialOptions
-            {
-                ExcludeManagedIdentityCredential = true,
-                ExcludeWorkloadIdentityCredential = true,
-            });
 
     /// <summary>A setting a deployment must supply, or a failure that names it.</summary>
     /// <remarks>
