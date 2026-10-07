@@ -44,7 +44,8 @@ internal static class WorkspaceSuggestionRegistrationExtentions
             connectionSettings.IsConfigured
                 ? new AgentFoundryWorkspaceSuggestionAdapter(
                     connectionSettings,
-                    serviceProvider.GetRequiredService<IWorkspaceSuggestionProgressReader>())
+                    serviceProvider.GetRequiredService<IWorkspaceSuggestionProgressReader>(),
+                    builder.Environment)
                 : new NotConfiguredWorkspaceSuggestionAgentAdapter());
 
         builder.Services.AddSingleton<IWorkspaceSuggestionRunRecordWriter, LoggerWorkspaceSuggestionRunRecordWriter>();

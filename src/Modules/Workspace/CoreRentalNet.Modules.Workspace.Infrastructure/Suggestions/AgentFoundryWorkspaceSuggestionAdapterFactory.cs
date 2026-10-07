@@ -1,9 +1,9 @@
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using Azure.AI.Projects;
-using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Hosting;
 using OpenAI;
 using OpenAI.Responses;
 
@@ -13,11 +13,11 @@ namespace CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 /// <remarks>
 /// <para>
 /// The only class in the application that touches an Azure type, and the only place a credential is resolved.
-/// <c>AzureCliCredential</c> is the developer's own <c>az login</c>: it answers on a machine that has signed
-/// in, and it never probes managed identity or workload identity, which is the ~100-second stall a
-/// <c>DefaultAzureCredential</c> pays on a laptop before it reaches the same sign-in. <b>A deployment must
-/// replace it with a managed identity</b> - a container has no CLI to answer - and the agent's own host makes
-/// the same choice the same way.
+/// <c>FoundryCredential</c> names the developer's own <c>az login</c> on a development machine and the
+/// system-assigned managed identity everywhere else. A chain such as <c>DefaultAzureCredential</c> is not used:
+/// it never skips a source that cannot answer, which is the ~100-second stall it pays on a laptop before it
+/// reaches the same sign-in. <b>The choice is the environment's, made in one place</b> - the factory here - and
+/// the agent's own host makes the same choice the same way.
 /// </para>
 /// <para>
 /// <b>There are two paths, and the difference is the scheme rather than a setting.</b> A Foundry project is
@@ -60,11 +60,16 @@ internal static class AgentFoundryWorkspaceSuggestionAdapterFactory
     }
 
     /// <summary>The agent, built against whichever endpoint is configured.</summary>
-    public static AIAgent Build(AgentFoundryConnectionSetting connectionSetting)
+    public static AIAgent Build(
+        AgentFoundryConnectionSetting connectionSetting,
+        IHostEnvironment hostEnvironment)
     {
         ArgumentNullException.ThrowIfNull(connectionSetting);
+        ArgumentNullException.ThrowIfNull(hostEnvironment);
 
-        return connectionSetting.IsLocal() ? LocalChat(connectionSetting) : Hosted(connectionSetting);
+        return connectionSetting.IsLocal()
+            ? LocalChat(connectionSetting)
+            : Hosted(connectionSetting, hostEnvironment);
     }
 
     /// <summary>
@@ -128,10 +133,12 @@ internal static class AgentFoundryWorkspaceSuggestionAdapterFactory
     /// rather than building its own, so the network timeout stated here is the one the agent call runs under;
     /// without it the call inherits the 100-second default and a long run is cancelled and retried.
     /// </remarks>
-    private static AIAgent Hosted(AgentFoundryConnectionSetting connectionSetting)
+    private static AIAgent Hosted(
+        AgentFoundryConnectionSetting connectionSetting,
+        IHostEnvironment hostEnvironment)
         => new AIProjectClient(
                 new Uri(connectionSetting.ProjectEndpoint),
-                new AzureCliCredential(),
+                FoundryCredential.Create(hostEnvironment),
                 OptionsForTheHostedClient(connectionSetting))
             .AsAIAgent(AgentEndpoint(connectionSetting));
 }

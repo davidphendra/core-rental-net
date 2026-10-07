@@ -3,6 +3,7 @@ using System.Text;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.Hosting;
 
 namespace CoreRentalNet.Modules.Workspace.Infrastructure.Suggestions;
 
@@ -30,16 +31,20 @@ public sealed class AgentFoundryWorkspaceSuggestionAdapter : IWorkspaceSuggestio
 {
     private readonly AgentFoundryConnectionSetting _connectionSetting;
     private readonly IWorkspaceSuggestionProgressReader _progressReader;
+    private readonly IHostEnvironment _hostEnvironment;
 
     public AgentFoundryWorkspaceSuggestionAdapter(
         AgentFoundryConnectionSetting connectionSetting,
-        IWorkspaceSuggestionProgressReader progressReader)
+        IWorkspaceSuggestionProgressReader progressReader,
+        IHostEnvironment hostEnvironment)
     {
         ArgumentNullException.ThrowIfNull(connectionSetting);
         ArgumentNullException.ThrowIfNull(progressReader);
+        ArgumentNullException.ThrowIfNull(hostEnvironment);
 
         _connectionSetting = connectionSetting;
         _progressReader = progressReader;
+        _hostEnvironment = hostEnvironment;
     }
 
     /// <summary>Translates the agent's streamed text into the application's events, as the text arrives.</summary>
@@ -55,7 +60,7 @@ public sealed class AgentFoundryWorkspaceSuggestionAdapter : IWorkspaceSuggestio
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var requestPayload = AgentFoundrySuggestionRequestPayload.From(suggestionRequestPayload);
-        var agentClient = AgentFoundryWorkspaceSuggestionAdapterFactory.Build(_connectionSetting);
+        var agentClient = AgentFoundryWorkspaceSuggestionAdapterFactory.Build(_connectionSetting, _hostEnvironment);
         var updateFragments = new StringBuilder();
 
         await foreach (var raised in RelayUpdateStream(
