@@ -53,9 +53,10 @@ pool:
 
 variables:
   # Create this group under Pipelines -> Library with:
-  #   AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_AI_MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_ENDPOINT,
-  #   AZURE_SERVICE_CONNECTION (the agent tree's own ARM service connection)
-  # None of them is a secret.
+  #   AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_AI_MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_ID,
+  #   AZURE_AI_PROJECT_ENDPOINT, AZURE_SERVICE_CONNECTION (the agent tree's own ARM service connection)
+  # None of them is a secret. AZURE_AI_PROJECT_ID is the project's ARM resource id, not its endpoint;
+  # see the note on `azd env set` below for why both exist.
   - group: 'core-rental-foundry'
   - name: buildConfiguration
     value: 'Release'
@@ -214,7 +215,7 @@ stages:
                 # Fail fast with a clear message rather than letting azd read an unset value. These
                 # come from the `core-rental-foundry` variable group; a macro ADO could not resolve
                 # arrives as the literal `$(...)`, which is not empty, so both are rejected.
-                for name in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_MODEL_DEPLOYMENT_NAME AZURE_AI_PROJECT_ENDPOINT; do
+                for name in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_MODEL_DEPLOYMENT_NAME AZURE_AI_PROJECT_ID AZURE_AI_PROJECT_ENDPOINT; do
                   value="${!name:-}"
                   case "$value" in
                     ''|*'$('*)
@@ -230,6 +231,13 @@ stages:
                 azd env set AZURE_LOCATION "$AZURE_LOCATION"
                 azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME "$AZURE_AI_MODEL_DEPLOYMENT_NAME"
                 azd env set AZURE_AI_PROJECT_ENDPOINT "$AZURE_AI_PROJECT_ENDPOINT"
+                # Required, and not derivable from the endpoint: `azd provision` normally supplies this
+                # as a provision output, and this pipeline deliberately never provisions. The agent
+                # publisher resolves its target through the microsoft.foundry provider, which reads
+                # AZURE_AI_PROJECT_ID and fails with "Microsoft Foundry project ID is required"
+                # without it. It must be the ARM resource id, and it must name the same project as the
+                # endpoint above or the extension rejects the pair as mismatched.
+                azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
 
                 # No service name: azure.yaml's workspace-suggestions and echo-agent both deploy.
                 azd deploy --no-prompt
@@ -239,4 +247,5 @@ stages:
               AZURE_SUBSCRIPTION_ID: '$(AZURE_SUBSCRIPTION_ID)'
               AZURE_LOCATION: '$(AZURE_LOCATION)'
               AZURE_AI_MODEL_DEPLOYMENT_NAME: '$(AZURE_AI_MODEL_DEPLOYMENT_NAME)'
+              AZURE_AI_PROJECT_ID: '$(AZURE_AI_PROJECT_ID)'
               AZURE_AI_PROJECT_ENDPOINT: '$(AZURE_AI_PROJECT_ENDPOINT)'
