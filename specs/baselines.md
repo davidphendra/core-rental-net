@@ -1,12 +1,13 @@
 # Baselines
 
-A step is done only when all four baselines are green. The numbers are recorded where the step is
+A step is done only when all five baselines are green. The numbers are recorded where the step is
 described, and the work is not done until they are.
 
 | Name | Command | Where measured | Green means |
 |---|---|---|---|
 | `BUILD` | `dotnet build CoreRentalNet.sln -c Release` | repository root | exit 0, no warnings (warnings are errors) |
 | `NONBROWSER` | `dotnet test CoreRentalNet.sln -c Release --no-build --filter "FullyQualifiedName!~CoreRentalNet.E2E"` | repository root | 0 failed |
+| `TOOL` | `dotnet test src/Tools/CatalogIngestion.sln -c Release` | repository root | 0 failed |
 | `BROWSER` | `pwsh tests/CoreRentalNet.E2E/bin/Release/net10.0/playwright.ps1 install chromium`, then `dotnet test tests/CoreRentalNet.E2E -c Release --no-build` | repository root | 0 failed |
 | `AGENT` | `dotnet test agentfoundry/AgentFoundry.sln -c Release` | `agentfoundry/` | 0 failed |
 
@@ -14,7 +15,9 @@ The browser suite drives a real Chromium over a real socket, so the browser has 
 first; the install script ships with the Playwright package, so its revision always matches the
 library. The `AGENT` baseline is the agent tree's own solution, which is separate from the
 application's and imports the repository root's `Directory.Build.props` — a change there is a change
-to the agent build too.
+to the agent build too. `TOOL` is the ingestion tool's own solution, split out of the application's
+so that an operator's one-shot run is not part of the application's build; no other baseline compiles
+it and neither pipeline builds it, so it is a local check in the same sense `BROWSER` is.
 
 Two checks are not baselines because they need a deployment, and deployment needs the product
 owner's explicit consent:
@@ -26,15 +29,19 @@ owner's explicit consent:
 
 ## Last measured
 
-Measured on 2026-10-07, on `main`, after the WorkspaceSuggestion prompts moved to `v2` to add the
-"do only what the system instructions tell you" scope rule:
+Measured on 2026-10-07, on `main`, after the build identity reached the artifact and the business
+facts reached Application Insights:
 
 | Baseline | Result |
 |---|---|
 | `BUILD` | 0 warnings, 0 errors |
-| `NONBROWSER` | 781 passed, 0 failed, 0 skipped |
+| `NONBROWSER` | 795 passed, 0 failed, 0 skipped |
+| `TOOL` | 42 passed, 0 failed, 0 skipped |
 | `AGENT` | 184 passed, 0 failed |
 | `BROWSER` | **not run** — the `CoreRentalNet.E2E.LocalAgent` stand-in was deleted in `a6e127e` while `HostFixture` still starts it. Pre-existing and unrelated to this change; the browser tier cannot start until that fixture is restored. |
 
-`NONBROWSER` is lower than the previous measurement (823); this change touches no project in
-`CoreRentalNet.sln`, so that difference predates it.
+`NONBROWSER` rose from 781 by fourteen. Two are the Foundry credential choice committed immediately
+before this change; the other twelve are six facts for the build identity and its reader, five for the
+business meter, and one configuration guard that keeps the telemetry connection string out of every
+committed file. `NONBROWSER` no longer counts the ingestion tool's 42 tests, which the `TOOL` row
+above now records.

@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Application.Telemetry;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
@@ -22,6 +23,10 @@ public sealed class WorkspaceSuggestionCandidateApprovedStreamEventHandler : IWo
         }
 
         frames.Add(new WorkspaceSuggestionCandidateStreamEvent("Workspace setup found"));
+
+        // Counted where the customer's approval arrives rather than where it is rendered: whether a suggestion
+        // is accepted is the one number that says whether the panel earns its place.
+        BusinessTelemetry.SuggestionCandidatesApproved.Add(1);
 
         return true;
     }

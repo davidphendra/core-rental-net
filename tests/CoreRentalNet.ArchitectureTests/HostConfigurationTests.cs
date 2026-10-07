@@ -41,7 +41,8 @@ public sealed class HostConfigurationTests
     /// The identity secret comes from user secrets locally and from the environment otherwise, and
     /// <see cref="CommittedConfigurationTests"/> is the guard that keeps it out of every committed file.
     /// </remarks>
-    private static readonly ImmutableArray<string> DeclaredNowhere = ["Auth0:ClientSecret", "VectorEmbedding:ApiKey"];
+    private static readonly ImmutableArray<string> DeclaredNowhere =
+        ["Auth0:ClientSecret", "VectorEmbedding:ApiKey", "APPLICATIONINSIGHTS_CONNECTION_STRING"];
 
     /// <summary>Build output and the styles vendored beside the application are not the application.</summary>
     private static readonly ImmutableArray<string> ExcludedSegments =

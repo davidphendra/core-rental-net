@@ -75,6 +75,18 @@ public sealed class AppVersionTests
             "the fallback the footer shows and the floor the build stamps have to be the same number");
     }
 
+    [Fact] // VER-07
+    public void A_metadata_value_is_read_by_key_and_an_absent_or_blank_one_is_nothing()
+    {
+        // Proven against this assembly rather than the host's, so the test does not depend on whether the
+        // application it runs beside was stamped by the pipeline.
+        var assembly = typeof(AppVersionTests).Assembly;
+
+        AppVersion.MetadataOf(assembly, "BuildIdentityTestKey").Should().Be("stamped-value");
+        AppVersion.MetadataOf(assembly, "BuildIdentityTestBlankKey").Should().BeNull();
+        AppVersion.MetadataOf(assembly, "BuildIdentityTestMissingKey").Should().BeNull();
+    }
+
     /// <summary>The first Directory.Build.props above the test output, which is the repository's own.</summary>
     private static string FloorFile()
     {

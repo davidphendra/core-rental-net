@@ -174,6 +174,19 @@ public sealed class CommittedConfigurationTests
         offenders.Should().BeEmpty("the embedding key comes from the local file or the environment");
     }
 
+    [Fact] // MON-06
+    public void No_telemetry_connection_string_is_committed_to_configuration()
+    {
+        // An Application Insights connection string is a credential in every sense the client secret is, so it
+        // belongs to the same rule: the App Service setting or the environment. `InstrumentationKey=` is the
+        // part every such string carries, so its absence is what proves none is committed anywhere.
+        var offenders = ConfigurationFiles()
+            .Where(file => File.ReadAllText(file).Contains("InstrumentationKey=", StringComparison.Ordinal))
+            .Select(file => Path.GetRelativePath(RepoRoot.Path, file));
+
+        offenders.Should().BeEmpty("the telemetry connection string comes from the deployment or the environment");
+    }
+
     private static IEnumerable<string> ConfigurationFiles()
         => Directory.GetFiles(RepoRoot.Combine("src"), "appsettings*.json", SearchOption.AllDirectories)
             .Where(file => !file.Contains("/obj/", StringComparison.Ordinal)

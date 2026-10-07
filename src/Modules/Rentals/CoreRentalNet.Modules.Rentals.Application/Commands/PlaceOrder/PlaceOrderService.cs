@@ -1,4 +1,5 @@
 using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.BuildingBlocks.Application.Telemetry;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Rentals.Application.Services;
 using CoreRentalNet.Modules.Rentals.Application.Rules;
@@ -57,6 +58,8 @@ public sealed class PlaceOrderService(
         await invoices.AddAsync(firstInvoice, cancellationToken).ConfigureAwait(false);
         await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
+        RecordOrderPlaced(request, firstInvoice.Total);
+
         return new PlaceOrderResult(
             rental.Id.Value,
             rental.Number.Value,
@@ -65,6 +68,20 @@ public sealed class PlaceOrderService(
             firstInvoice.Total,
             placedOn,
             deliveries.ScheduledFor(placedOn));
+    }
+
+    /// <summary>The sale, recorded where the order comes into being rather than at the checkout page.</summary>
+    /// <remarks>
+    /// This is the only place that knows an order was created, so it is the only place that cannot count a browse
+    /// as a sale. The monthly figure is summed from the lines because the result carries only what was billed up
+    /// front.
+    /// </remarks>
+    private static void RecordOrderPlaced(PlaceOrderRequest request, Money firstInvoiceTotal)
+    {
+        BusinessTelemetry.OrdersPlaced.Add(1);
+        BusinessTelemetry.OrderFirstInvoiceValue.Record(firstInvoiceTotal.Amount);
+        BusinessTelemetry.OrderMonthlyValue.Record(
+            request.Lines.Sum(line => line.UnitMonthlyPrice.Amount * line.Quantity));
     }
 
     /// <summary>Everything that has to hold before an order is built or a number is reserved.</summary>

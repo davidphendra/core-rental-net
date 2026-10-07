@@ -235,13 +235,13 @@ button, input, textarea, select { font: inherit; color: inherit; }
   background: var(--surface);
 }
 .app-footer__inner { text-align: center; }
-.app-footer__version {
+.app-footer__build {
   color: var(--on-surface-variant); font-family: var(--font-label); font-size: var(--label-sm-size);
   line-height: var(--label-sm-line); font-weight: var(--label-sm-weight); letter-spacing: var(--label-sm-tracking);
 }
 
 /* The workspace nav is fixed over the last stretch of the page on small screens; without this the
-   version sits underneath it. Only the footer moves, so no other page's layout changes. */
+   build line sits underneath it. Only the footer moves, so no other page's layout changes. */
 @media (max-width: 1023px) { .app-footer { margin-bottom: var(--bottom-nav-height); } }
 
 @media (min-width: 1024px) {

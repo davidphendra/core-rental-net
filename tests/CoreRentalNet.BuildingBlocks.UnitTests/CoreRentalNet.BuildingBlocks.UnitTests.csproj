@@ -18,6 +18,9 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <!-- MetricCollector<T>, so an instrument is proven by collecting what it records rather than by reading
+         the code that emits it. -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
   </ItemGroup>
 
 

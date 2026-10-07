@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace CoreRentalNet.Host.Presentation;
 
 /// <summary>
-/// The version the footer shows.
+/// The build identity the footer shows and the telemetry resource carries.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -19,6 +19,12 @@ namespace CoreRentalNet.Host.Presentation;
 /// pipeline may stamp a commit after "+" (<c>1.4.1+abc1234</c>) as build metadata; the footer is a
 /// version, so that is trimmed away and what remains is validated as a semantic version.
 /// </para>
+/// <para>
+/// <b>The other three fields are assembly metadata rather than a file beside the assembly.</b> They
+/// say which commit the artifact was built from, which pipeline run produced it, and where it was
+/// built to run. Being in the binary is the point: no deployment can change them without rebuilding,
+/// and a build that carried none reports nothing rather than an empty identity.
+/// </para>
 /// </remarks>
 public static partial class AppVersion
 {
@@ -28,12 +34,35 @@ public static partial class AppVersion
     /// <summary>The running application's version.</summary>
     public static string Current => Of(typeof(AppVersion).Assembly);
 
+    /// <summary>The commit the artifact was built from, or null when the build carried none.</summary>
+    public static string? GitSha => MetadataOf(typeof(AppVersion).Assembly, GitShaKey);
+
+    /// <summary>The pipeline run that produced the artifact, or null when the build carried none.</summary>
+    public static string? BuildId => MetadataOf(typeof(AppVersion).Assembly, BuildIdKey);
+
+    /// <summary>Where the artifact was built to run, or null when the build named no environment.</summary>
+    public static string? Environment => MetadataOf(typeof(AppVersion).Assembly, EnvironmentKey);
+
     /// <summary>The version an assembly was stamped with, or the floor when it cannot be read.</summary>
     public static string Of(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
         return Parse(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
+    }
+
+    /// <summary>A metadata value an assembly was stamped with, or null when it carries none.</summary>
+    /// <remarks>An empty value is not an identity, so a stamped-but-blank value is refused rather than read.</remarks>
+    public static string? MetadataOf(Assembly assembly, string key)
+    {
+        ArgumentNullException.ThrowIfNull(assembly);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        var value = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(attribute => string.Equals(attribute.Key, key, StringComparison.Ordinal))
+            ?.Value;
+
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
     /// <summary>
@@ -60,6 +89,11 @@ public static partial class AppVersion
 
         return SemanticVersion().IsMatch(withoutTagPrefix) ? withoutTagPrefix : Fallback;
     }
+
+    /// <summary>The assembly metadata keys the pipeline stamps the build identity under.</summary>
+    private const string GitShaKey = "GitSha";
+    private const string BuildIdKey = "BuildId";
+    private const string EnvironmentKey = "Environment";
 
     [GeneratedRegex(@"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")]
     private static partial Regex SemanticVersion();

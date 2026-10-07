@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using CoreRentalNet.BuildingBlocks.Application.Telemetry;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Agent;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Run.Events;
 using CoreRentalNet.Modules.Workspace.Application.Suggestions.Records;
@@ -31,6 +32,7 @@ public sealed class WorkspaceSuggestionRunService(
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var startedTimestamp = Stopwatch.GetTimestamp();
+        BusinessTelemetry.SuggestionRunsStarted.Add(1);
         var suggestionRunState = new WorkspaceSuggestionRunState(suggestionRequestPayload.Query);
 
         try
@@ -54,8 +56,16 @@ public sealed class WorkspaceSuggestionRunService(
                 suggestionRunState.MarkEnded(WorkspaceSuggestionVerdict.Stopped);
             }
 
-            suggestionRunRecordWriter.WriteRunRecord(
-                suggestionRunState.CreateRunRecord(hashedCustomerIdentity, startedTimestamp));
+            var suggestionRunRecord = suggestionRunState.CreateRunRecord(hashedCustomerIdentity, startedTimestamp);
+            suggestionRunRecordWriter.WriteRunRecord(suggestionRunRecord);
+
+            // Read from the record the run already writes, so the metric and the ledger cannot describe
+            // different endings. The verdict is a closed set, which is what makes it safe as a dimension, and
+            // Unavailable climbing is the number that says the agent is degrading.
+            BusinessTelemetry.SuggestionRunsEnded.Add(
+                1,
+                new KeyValuePair<string, object?>("verdict", suggestionRunRecord.Verdict.ToString()));
+            BusinessTelemetry.SuggestionRunDuration.Record(suggestionRunRecord.LatencyMilliseconds / 1000.0);
         }
     }
 }

@@ -84,6 +84,13 @@
          sides of the wire. -->
     <PackageVersion Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
   </ItemGroup>
+  <ItemGroup Label="Telemetry">
+    <!-- Azure Monitor's OpenTelemetry distro. One package rather than the five it brings: ASP.NET Core,
+         HttpClient, SqlClient and runtime instrumentation, the OTLP exporter, and the Application Insights
+         reader the build identity rides as a resource attribute. It carries its own OpenTelemetry SDK,
+         which is the same 1.15.x line the agent host already resolves transitively. MIT. -->
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.6.0" />
+  </ItemGroup>
   <ItemGroup Label="The catalogue's name search">
     <!-- Ranks the products a search matches, so the catalogue's name search can say which match is best
          rather than returning them in file order. MIT. Version 7.0.2 is the latest release; its 8.x line is
@@ -101,6 +108,9 @@
     <!-- FakeTimeProvider, so the scheduler and the billing anchor are tested by moving the
          clock rather than by sleeping. -->
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.10.0" />
+    <!-- MetricCollector<T>, so an instrument is proven by collecting what it records rather than by
+         reading the code that emits it. Same release line as the fake clock above. -->
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.Testing" Version="10.10.0" />
     <!-- 1.62.0 matches the Chromium revision already in the local Playwright cache. -->
     <PackageVersion Include="Microsoft.Playwright" Version="1.62.0" />
     <!-- The in-process test host: the catalogue endpoint's HTTP tests run the real application

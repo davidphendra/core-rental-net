@@ -11,6 +11,9 @@ builder.AddLocalDevelopmentSettings();
 // from configuration rather than written beside each format string.
 builder.AddBusinessCulture();
 builder.AddBuildingBlocks();
+// Telemetry before anything that emits it: the meter and the build identity are registered here, so an
+// instrument recorded later is attributed to this deployment rather than to nothing.
+builder.AddTelemetry();
 
 var identity = builder.AddOptionalIdentity();
 builder.AddCatalogAuthorization();

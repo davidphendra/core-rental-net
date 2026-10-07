@@ -11,6 +11,19 @@
     <UserSecretsId>f8dee84b-dfca-4aa3-befc-6914cd1a1d8f</UserSecretsId>
   </PropertyGroup>
 
+  <!-- The build identity baked into the artifact: the commit, the pipeline run and the environment the
+       deployment is for. The pipeline passes each as an MSBuild property; a developer's build passes none,
+       so every item is conditional and the reader returns nothing for the rest. This is the only place the
+       identity is stored - not a file beside the assembly, which a deployment could edit without
+       rebuilding. `AppEnvironment` rather than `Environment`, which names a machine's variables rather
+       than the deployment the artifact was built for. The version is deliberately absent here: it is the
+       informational version, which the SDK stamps and Directory.Build.props already computes. -->
+  <ItemGroup>
+    <AssemblyMetadata Include="GitSha" Value="$(GitSha)" Condition="'$(GitSha)' != ''" />
+    <AssemblyMetadata Include="BuildId" Value="$(BuildId)" Condition="'$(BuildId)' != ''" />
+    <AssemblyMetadata Include="Environment" Value="$(AppEnvironment)" Condition="'$(AppEnvironment)' != ''" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Auth0's wrapper is the integration point; the OpenID Connect handler it wraps
          is referenced directly because the session policy is applied on that handler. -->
@@ -24,6 +37,9 @@
     <!-- The MCP server the catalogue's tools are published over, so a machine caller can discover and
          call them. Pinned at the same major as the agent's client: one protocol, one version, both sides. -->
     <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    <!-- Traces, metrics and logs to Application Insights, and the provider the build identity rides as a
+         resource attribute. The composition root is the only place a provider is named. -->
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>

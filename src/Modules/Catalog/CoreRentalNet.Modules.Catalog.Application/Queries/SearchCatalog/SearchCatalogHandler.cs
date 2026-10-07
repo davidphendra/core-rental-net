@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Application.Telemetry;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
@@ -43,6 +44,21 @@ public sealed class SearchCatalogHandler(
             query.SubCategory,
             query.MaximumMonthlyAmount);
 
+        var rankedProducts = Rank(productsMatchingTheFilters, query);
+
+        // Recorded at the boundary a customer crosses, not at the HTTP edge: an empty answer is a lost sale, and
+        // this is the only place that can tell a real search from the catalogue simply being browsed.
+        BusinessTelemetry.CatalogSearches.Add(1);
+        BusinessTelemetry.CatalogSearchResults.Record(rankedProducts.Count);
+
+        return rankedProducts;
+    }
+
+    /// <summary>Which of the two name searches applies, decided from which one the caller filled in.</summary>
+    private IReadOnlyList<ProductView> Rank(
+        IReadOnlyList<ProductView> productsMatchingTheFilters,
+        SearchCatalogQuery query)
+    {
         if (query.ExpandedSearchTerms is { Count: > 0 } expandedSearchTerms)
         {
             return catalogNameSearchService

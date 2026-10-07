@@ -37,6 +37,11 @@ variables:
   # resolves it from the tag being built. versionFloor is the version an untagged build keeps.
   - name: versionFloor
     value: '0.1.0'
+  # The environment the deployed artifact is stamped as. Baked into the assembly rather than injected at
+  # run time, so the running application reports where it was built to run from its own metadata. The agent
+  # pipeline's `agentEnvironment` is the same value by the same rule.
+  - name: appEnvironment
+    value: 'production'
 
   # Deployment target — never a value in this file. The group holds AZURE_SERVICE_CONNECTION,
   # WEB_APP_NAME, RESOURCE_GROUP and APP_SERVICE_TYPE (`webApp` for Windows, `webAppLinux` for
@@ -98,6 +103,9 @@ stages:
         --no-restore
         -p:Version=$(version)
         -p:InformationalVersion=$(informationalVersion)
+        -p:GitSha=$(shortSha)
+        -p:BuildId=$(Build.BuildId)
+        -p:AppEnvironment=$(appEnvironment)
       displayName: 'Build (Release)'
 
     # The gate: unit, architecture and integration tests. The browser suite (CoreRentalNet.E2E)
@@ -125,6 +133,9 @@ stages:
         --no-restore
         -p:Version=$(version)
         -p:InformationalVersion=$(informationalVersion)
+        -p:GitSha=$(shortSha)
+        -p:BuildId=$(Build.BuildId)
+        -p:AppEnvironment=$(appEnvironment)
         --output $(Build.ArtifactStagingDirectory)/app
       displayName: 'Publish host'
 

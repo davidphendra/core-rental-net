@@ -1,4 +1,6 @@
-@* The application's version, centred at the foot of every page.
+@* The application's build identity, centred at the foot of every page: the release, the environment, the
+   commit and the pipeline run, so a viewer can say which artifact is on screen. All four are stamped into
+   the artifact this page was served from, and the same four ride every metric in Application Insights.
 
    None of the four designs draws a footer, so this is a deliberate addition to them, recorded here
    rather than silently. Its styling is the header's instead of a new vocabulary - the same
@@ -7,8 +9,8 @@
 
    It is the same on every page, including the builder, where the selection panel stops above it
    rather than sitting over it. Nothing here has to know which page it is on. *@
-<footer class="app-footer" aria-label="Version">
+<footer class="app-footer" aria-label="Build">
     <div class="container app-footer__inner">
-        <span class="app-footer__version">@AppVersion.Current</span>
+        <span class="app-footer__build">@AppBuildIdentity.Current.Label</span>
     </div>
 </footer>

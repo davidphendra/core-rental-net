@@ -1,4 +1,5 @@
 using CoreRentalNet.BuildingBlocks.Application;
+using CoreRentalNet.BuildingBlocks.Application.Telemetry;
 using CoreRentalNet.Modules.Workspace.Application.Contracts.Composition;
 using CoreRentalNet.Modules.Workspace.Application.Services;
 using CoreRentalNet.Modules.Workspace.Domain;
@@ -33,6 +34,12 @@ public sealed class ConvertWorkspaceToOrder(
             workspaces.MarkConverted(workspace);
             await repository.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        // Both endings are counted, so the tag has two values to compare: reaching this page again is a
+        // different fact from the conversion that created the order, and told apart only by that tag.
+        BusinessTelemetry.WorkspaceConversions.Add(
+            1,
+            new KeyValuePair<string, object?>("firstAttempt", !alreadyConverted));
 
         return Snapshot(workspace, alreadyConverted);
     }
