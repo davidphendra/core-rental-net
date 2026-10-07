@@ -12,6 +12,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 
 namespace CoreRentalNet.Agents.Tests;
 
@@ -529,16 +530,25 @@ public sealed class WorkflowTests
             "gpt-4.1-mini",
             "test-prompts",
             loggerFactory.CreateLogger<TelemetryChatClient>());
+
+        var runScope = new StubRunScope(
+            (typeof(IMcpAccessTokenService), tokens),
+            (typeof(IMcpAuthorizationConnection), catalogue),
+            (typeof(ITelemetryChatClient), modelCallTelemetry),
+            (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+            (typeof(AccessTokenHeaderReader), callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing()),
+            (typeof(McpToolAnswerLedger), recordedToolAnswers));
+
+        // The ending is stated as a service so the graph resolves it, exactly as the host registers it.
+        runScope.With<IRunEnding>(new RunEnding(runScope));
+
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            tokens, catalogue, modelCallTelemetry, TestGuardrails.Pipeline, TestGuardrails.AllowList, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
+            runScope, TestGuardrails.AllowList, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
             stageAgents,
-            tokens,
-            callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing(),
+            runScope,
             new WorkspaceSuggestionWorkflowOptions(),
-            recordedToolAnswers,
-            modelCallTelemetry,
             loggerFactory);
 
         return new WorkspaceSuggestionWorkflow(

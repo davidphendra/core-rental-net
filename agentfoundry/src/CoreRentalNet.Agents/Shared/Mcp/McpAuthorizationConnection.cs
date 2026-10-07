@@ -3,13 +3,16 @@ using ModelContextProtocol.Client;
 
 namespace CoreRentalNet.Agents.Shared.Mcp;
 
-internal interface IMcpAuthorizationConnection
+internal interface IMcpAuthorizationConnection : IAsyncDisposable
 {
     /// <summary>True when this deployment has been told where the server is.</summary>
     bool IsConfigured { get; }
 
     /// <summary>The tools the call's own token entitles, discovered once and kept for the call.</summary>
     Task<IReadOnlyList<AITool>> ToolsAsync(CancellationToken cancellationToken);
+
+    /// <summary>Closes the call's session while its token is still held, and is harmless a second time.</summary>
+    ValueTask CloseAsync();
 }
 
 /// <summary>One call's connection to an MCP server, and the tools its token entitles.</summary>
@@ -28,10 +31,11 @@ internal sealed class McpAuthorizationConnection(
     McpSetting mcpSetting,
     IMcpAccessTokenService accessTokenService,
     ILoggerFactory loggerFactory,
-    ILogger<McpAuthorizationConnection> logger) : IMcpAuthorizationConnection, IAsyncDisposable
+    ILogger<McpAuthorizationConnection> logger) : IMcpAuthorizationConnection
 {
     private McpClient? _client;
     private IReadOnlyList<AITool>? _tools;
+    private bool _closed;
 
     /// <summary>True when this deployment has been told where the server is.</summary>
     public bool IsConfigured => mcpSetting.IsConfigured;
@@ -87,11 +91,28 @@ internal sealed class McpAuthorizationConnection(
         return _tools;
     }
 
-    public async ValueTask DisposeAsync()
+    /// <summary>Closes the session, which is the one authenticated thing the ending must do before releasing.</summary>
+    /// <remarks>
+    /// The MCP transport sends its session-termination request from inside the client's disposal, and that request
+    /// carries the caller's token. Closing here, while the token is still held, is what lets the transport clean
+    /// up; the scope's own disposal then finds the work already done.
+    /// </remarks>
+    public async ValueTask CloseAsync()
     {
+        if (_closed)
+        {
+            return;
+        }
+
+        _closed = true;
+        _tools = null;
+
         if (_client is not null)
         {
             await _client.DisposeAsync();
+            _client = null;
         }
     }
+
+    public ValueTask DisposeAsync() => CloseAsync();
 }

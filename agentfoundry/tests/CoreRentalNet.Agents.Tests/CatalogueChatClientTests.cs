@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using Xunit;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
@@ -90,11 +91,12 @@ public sealed class CatalogueChatClientTests
 
         return new(
             inner,
-            tokens,
-            catalogue,
+            new StubRunScope(
+                (typeof(IMcpAccessTokenService), tokens),
+                (typeof(IMcpAuthorizationConnection), catalogue),
+                (typeof(IToolGuardPipeline), TestGuardrails.Pipeline)),
             readsCatalogue,
             TestGuardrails.AllowList,
-            TestGuardrails.Pipeline,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 

@@ -1,10 +1,8 @@
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
-using CoreRentalNet.Agents.Shared.Mcp;
-using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Scoping;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.Logging;
 
@@ -19,17 +17,15 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 /// single source of what the bounds are.
 /// </para>
 /// <para>
-/// Scoped like the run, because the executors it builds hold the run's token service, its tool-answer ledger and
-/// its model-call telemetry.
+/// <b>The executors belong to the graph, and the graph outlives the request.</b> The token service, header reader,
+/// tool-answer ledger and model-call telemetry they need are the run's, so they are handed the run scope and reach
+/// the run's own instances as they run, rather than holding a root-captured copy of them.
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionExecutorBuilder(
     WorkspaceSuggestionAgentBuilder agentBuilder,
-    IMcpAccessTokenService accessTokenService,
-    AccessTokenHeaderReader accessTokenHeaderReader,
+    IRunScope runScope,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
-    McpToolAnswerLedger recordedToolAnswers,
-    ITelemetryChatClient telemetryChatClient,
     ILoggerFactory loggerFactory)
 {
     /// <summary>The graph's nodes, built and bound, ready for the topology to be laid over them.</summary>
@@ -41,7 +37,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
         return new(
             Input: new WorkspaceInputExecutor(
-                accessTokenService, accessTokenHeaderReader, workflowOptions, telemetryChatClient, logger).BindExecutor(),
+                runScope, workflowOptions, logger).BindExecutor(),
 
             Verifier: new WorkspaceRequestVerificationExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Verifier),
@@ -58,14 +54,14 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
             Retriever: new CatalogueProductRetrievalExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Retriever),
-                recordedToolAnswers, logger
+                runScope, logger
             ).BindExecutor(),
 
             ProductPool: new WorkspaceComponentProductPoolExecutor(
                 new WorkspaceComponentProductPoolBuilder(CatalogueSearchToolNames.All),
                 new WorkspaceComponentProductPoolPolicy(
                     workflowOptions.MaximumRetrievedProductsPerComponentForReranking),
-                recordedToolAnswers, logger
+                runScope, logger
             ).BindExecutor(),
 
             Reranker: new WorkspaceComponentProductRerankingExecutor(
@@ -95,8 +91,8 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
                 logger
             ).BindExecutor(),
 
-            Success: new WorkspaceSuggestionSuccessCompletionExecutor(telemetryChatClient, accessTokenService, logger).BindExecutor(),
-            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(telemetryChatClient, accessTokenService, logger).BindExecutor(),
-            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(telemetryChatClient, accessTokenService, logger).BindExecutor());
+            Success: new WorkspaceSuggestionSuccessCompletionExecutor(runScope, logger).BindExecutor(),
+            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(runScope, logger).BindExecutor(),
+            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(runScope, logger).BindExecutor());
     }
 }

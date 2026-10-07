@@ -1,7 +1,7 @@
 using CoreRentalNet.Agents.Shared.Agents;
-using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
+using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Shared.Telemetry;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -20,15 +20,13 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 /// stage of it.
 /// </para>
 /// <para>
-/// Scoped like the run: every decorator here holds the run's token service, its mcpAuthorizationConnection connection and its
-/// model-call telemetry.
+/// <b>The stage agents belong to the graph, and the graph outlives the request.</b> Every decorator here that needs
+/// the run's token service, its connection or its model-call telemetry is handed the run scope instead, and reaches
+/// the run's own instance at the call. That is what lets the served agent be a singleton.
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionAgentBuilder(
-    IMcpAccessTokenService accessTokenService,
-    IMcpAuthorizationConnection mcpAuthorizationConnection,
-    ITelemetryChatClient telemetryChatClient,
-    IToolGuardPipeline toolGuardPipeline,
+    IRunScope runScope,
     IToolAllowList toolAllowList,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
@@ -48,16 +46,14 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
     private IChatClient StageChatClient(AgentProfile agentProfile)
         => new AuthorisedMcpChatClient(
             RegularChatClient(agentProfile),
-            accessTokenService,
-            mcpAuthorizationConnection,
+            runScope,
             agentProfile.UsesCatalogueTools,
             toolAllowList,
-            toolGuardPipeline,
             loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
         );
 
     private IChatClient RegularChatClient(AgentProfile agentProfile)
-        => new FunctionInvokingChatClient(telemetryChatClient, loggerFactory)
+        => new FunctionInvokingChatClient(new RunScopedChatClient(runScope), loggerFactory)
             .AsBuilder()
             .UseOpenTelemetry(
                 loggerFactory,

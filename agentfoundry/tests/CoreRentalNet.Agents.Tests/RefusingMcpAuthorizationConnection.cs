@@ -17,4 +17,8 @@ internal sealed class RefusingMcpAuthorizationConnection : IMcpAuthorizationConn
         => throw new CatalogueUnavailableException(
             "https://catalogue.test/mcp",
             new HttpRequestException("HTTP 401 Unauthorized"));
+
+    public ValueTask CloseAsync() => ValueTask.CompletedTask;
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

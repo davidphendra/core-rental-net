@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Scoping;
 
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
@@ -16,7 +17,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 internal sealed class WorkspaceComponentProductPoolExecutor(
     WorkspaceComponentProductPoolBuilder poolBuilder,
     WorkspaceComponentProductPoolPolicy poolPolicy,
-    McpToolAnswerLedger recordedToolAnswers,
+    IRunScope runScope,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.ProductPool, logger)
 {
@@ -29,7 +30,7 @@ internal sealed class WorkspaceComponentProductPoolExecutor(
         CancellationToken cancellationToken = default)
     {
         workspaceSuggestionWorkflowState.CandidatePool = poolPolicy.ApplyPoolBounds(
-            poolBuilder.BuildPoolFrom(recordedToolAnswers));
+            poolBuilder.BuildPoolFrom(runScope.Resolve<McpToolAnswerLedger>()));
 
         return ValueTask.FromResult(workspaceSuggestionWorkflowState);
     }

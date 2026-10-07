@@ -71,6 +71,11 @@ public static class WorkspaceSuggestionRegistration
         // Scoped like the run, so the tools a call listed stay callable for as long as its token lives.
         services.AddScoped<IMcpAuthorizationConnection, McpAuthorizationConnection>();
 
+        // The run's ending, stated once: the catalogue session a run opened is closed while the token it was
+        // opened with is still held, and only then is the token given up. The transport's own session-termination
+        // request is authenticated, so releasing first is what made shutdown fail.
+        services.AddScoped<IRunEnding, RunEnding>();
+
         // One attempt's tool answers, recorded as they return and cleared when the next retrieval begins. Scoped
         // like the run, and read by the stage that ranks the products those answers carry.
         services.AddScoped<McpToolAnswerLedger>();
@@ -107,15 +112,17 @@ public static class WorkspaceSuggestionRegistration
             [.. provider.GetServices<IToolResultGuard>()]));
 
         // The stage agents - the one place the decorators' order is stated - and the executors built from them.
-        // Both are scoped like the run, because the agents hold its token service and its model-call telemetry
-        // and the executors hold its ledger.
-        services.AddScoped<WorkspaceSuggestionAgentBuilder>();
-        services.AddScoped<WorkspaceSuggestionExecutorBuilder>();
-        services.AddScoped<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();
+        // Both belong to the graph, which the hosting resolves once from the root container and reuses, so they
+        // hold the run scope rather than the run's services and reach those at each call.
+        services.AddSingleton<WorkspaceSuggestionAgentBuilder>();
+        services.AddSingleton<WorkspaceSuggestionExecutorBuilder>();
+        services.AddSingleton<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();
 
         // The served agent is the workflow agent itself, resolved per request and never wrapped: hosting can
-        // redirect a hosted workflow's checkpoints only when it can copy that agent.
-        services.AddKeyedScoped<AIAgent>(workspaceSuggestionAgentIdentity.AgentName, (provider, _) =>
+        // redirect a hosted workflow's checkpoints only when it can copy that agent. It is a singleton because
+        // that is what the root resolution hosting performs can honor; the run's own state is reached through the
+        // run scope, so one instance serves concurrent runs without sharing them.
+        services.AddKeyedSingleton<AIAgent>(workspaceSuggestionAgentIdentity.AgentName, (provider, _) =>
             provider.GetRequiredService<IWorkspaceSuggestionWorkflow>().AsAIAgent());
 
         return workspaceSuggestionAgentIdentity.AgentName;

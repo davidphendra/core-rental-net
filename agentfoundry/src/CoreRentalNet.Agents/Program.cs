@@ -22,6 +22,7 @@ using CoreRentalNet.Agents.Features.EchoReply;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Shared.Diagnostics;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Shared.Model;
 using CoreRentalNet.Agents.Shared.Telemetry;
 
@@ -135,6 +136,10 @@ builder.Services.AddSingleton(modelClient);
 // presented to whichever MCP server a feature searches.
 builder.Services.AddScoped<IMcpAccessTokenService, McpAccessTokenService>();
 
+// The served graph is resolved from the root container and outlives the request, so it reaches the run-scoped
+// services through the request's own scope rather than holding a root-captured instance of them.
+builder.Services.AddSingleton<IRunScope, RunScope>();
+
 // The features this deployable serves. A new feature is a new line here and a folder under Features/.
 var servedWorkspaceSuggestionAgent = builder.Services.AddWorkspaceSuggestionFeature(
     builder.Configuration, modelClient);
@@ -150,7 +155,10 @@ Console.WriteLine(string.Join("\n",
 // "No agent name specified in the request (via agent.name or metadata["entity_id"]) and no default AIAgent is
 // registered." The deployment's own name is the right default: a container serving `echo-agent` answers a
 // nameless request with the echo, and one serving the workspace agent answers it with the workspace agent.
-builder.Services.AddScoped<AIAgent>(serviceProvider =>
+//
+// It is a singleton for the same reason the keyed agents are: hosting resolves it from the root container,
+// on every request and not only a nameless one, so a scoped registration is rejected by scope validation.
+builder.Services.AddSingleton<AIAgent>(serviceProvider =>
     serviceProvider.GetRequiredKeyedService<AIAgent>(defaultAgentName));
 
 // Resolves an agent for a request from keyed DI by the name the request carries — no instance is handed over.

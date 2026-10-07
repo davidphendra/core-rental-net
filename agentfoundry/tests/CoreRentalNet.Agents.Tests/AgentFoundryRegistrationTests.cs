@@ -7,7 +7,9 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Model;
+using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 using Xunit;
@@ -98,6 +100,33 @@ public sealed class AgentFoundryRegistrationTests
                 "callers depend on the port and DI injects the sealed implementation");
     }
 
+    [Fact] // the resolution a request performs, under the scope validation Development turns on
+    public void The_host_resolves_its_served_agent_from_the_root_provider()
+    {
+        var configuration = Configuration(
+            (WorkspaceSuggestionAgentIdentity.ConfigurationKey, SuggestionAgentName));
+
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddHttpContextAccessor();
+        services.AddSingleton(configuration);
+        services.AddScoped<IMcpAccessTokenService>(
+            _ => new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance));
+        services.AddSingleton<IRunScope, RunScope>();
+
+        var servedAgentName = services.AddWorkspaceSuggestionFeature(
+            configuration, new ScriptedChatClient("{}"));
+
+        using var provider = services.BuildServiceProvider(
+            new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+
+        // Hosting resolves the keyed agent from the root provider, so this is exactly the resolution a request
+        // performs. Before the graph held the run scope instead of the run's own services, it threw here.
+        var agent = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(servedAgentName);
+
+        agent.Name.Should().Be(SuggestionAgentName);
+    }
+
     private static WorkspaceSuggestionWorkflow Workflow()
     {
         var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
@@ -109,26 +138,30 @@ public sealed class AgentFoundryRegistrationTests
             "test-prompts",
             NullLogger<TelemetryChatClient>.Instance);
 
-        var stageAgents = new WorkspaceSuggestionAgentBuilder(
+        var catalogue = new McpAuthorizationConnection(
+            catalog,
             tokens,
-            new McpAuthorizationConnection(
-                catalog,
-                tokens,
-                NullLoggerFactory.Instance,
-                NullLogger<McpAuthorizationConnection>.Instance),
-            modelCallTelemetry,
-            TestGuardrails.Pipeline,
+            NullLoggerFactory.Instance,
+            NullLogger<McpAuthorizationConnection>.Instance);
+
+        var runScope = new StubRunScope(
+            (typeof(IMcpAccessTokenService), tokens),
+            (typeof(IMcpAuthorizationConnection), catalogue),
+            (typeof(ITelemetryChatClient), modelCallTelemetry),
+            (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+            (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.CarryingNothing()),
+            (typeof(McpToolAnswerLedger), recordedToolAnswers));
+
+        var stageAgents = new WorkspaceSuggestionAgentBuilder(
+            runScope,
             TestGuardrails.AllowList,
             new ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
             stageAgents,
-            tokens,
-            TheInvocationARunArrivesIn.CarryingNothing(),
+            runScope,
             new WorkspaceSuggestionWorkflowOptions(),
-            recordedToolAnswers,
-            modelCallTelemetry,
             NullLoggerFactory.Instance);
 
         return new(

@@ -5,6 +5,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.ChatClients;
+using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -58,26 +59,30 @@ public sealed class WorkspaceSuggestionExecutorsTests
             "test-prompts",
             NullLogger<TelemetryChatClient>.Instance);
 
-        var stageAgents = new WorkspaceSuggestionAgentBuilder(
+        var catalogue = new McpAuthorizationConnection(
+            new McpSetting(string.Empty),
             tokens,
-            new McpAuthorizationConnection(
-                new McpSetting(string.Empty),
-                tokens,
-                NullLoggerFactory.Instance,
-                NullLogger<McpAuthorizationConnection>.Instance),
-            modelCallTelemetry,
-            TestGuardrails.Pipeline,
+            NullLoggerFactory.Instance,
+            NullLogger<McpAuthorizationConnection>.Instance);
+
+        var runScope = new StubRunScope(
+            (typeof(IMcpAccessTokenService), tokens),
+            (typeof(IMcpAuthorizationConnection), catalogue),
+            (typeof(ITelemetryChatClient), modelCallTelemetry),
+            (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+            (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.CarryingNothing()),
+            (typeof(McpToolAnswerLedger), recordedToolAnswers));
+
+        var stageAgents = new WorkspaceSuggestionAgentBuilder(
+            runScope,
             TestGuardrails.AllowList,
             new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 
         return new WorkspaceSuggestionExecutorBuilder(
             stageAgents,
-            tokens,
-            TheInvocationARunArrivesIn.CarryingNothing(),
+            runScope,
             new WorkspaceSuggestionWorkflowOptions(),
-            recordedToolAnswers,
-            modelCallTelemetry,
             NullLoggerFactory.Instance).Build();
     }
 }

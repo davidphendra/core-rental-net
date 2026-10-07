@@ -98,11 +98,12 @@ public sealed class CatalogueToolGuardrailTests
 
         return new AuthorisedMcpChatClient(
             new FunctionInvokingChatClient(new OneToolCallThenAnswer(), NullLoggerFactory.Instance),
-            tokens,
-            new OfferingMcpAuthorizationConnection(tool),
-            offersMcpTools: true,
+            new StubRunScope(
+                (typeof(IMcpAccessTokenService), tokens),
+                (typeof(IMcpAuthorizationConnection), new OfferingMcpAuthorizationConnection(tool)),
+                (typeof(IToolGuardPipeline), pipeline)),
+            true,
             TestGuardrails.AllowList,
-            pipeline,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 
@@ -113,6 +114,10 @@ public sealed class CatalogueToolGuardrailTests
 
         public Task<IReadOnlyList<AITool>> ToolsAsync(CancellationToken cancellationToken)
             => Task.FromResult<IReadOnlyList<AITool>>(tools);
+
+        public ValueTask CloseAsync() => ValueTask.CompletedTask;
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
     /// <summary>A model that asks for the catalogue tool once and then answers.</summary>

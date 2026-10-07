@@ -3,6 +3,7 @@ using Microsoft.Extensions.AI;
 using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Guardrails.Tools;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Scoping;
 
 namespace CoreRentalNet.Agents.Shared.ChatClients;
 
@@ -28,11 +29,9 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 /// </remarks>
 internal sealed class AuthorisedMcpChatClient(
     IChatClient innerClient,
-    IMcpAccessTokenService accessTokens,
-    IMcpAuthorizationConnection mcpAuthorizationConnection,
+    IRunScope runScope,
     bool offersMcpTools,
     IToolAllowList toolAllowList,
-    IToolGuardPipeline toolGuardPipeline,
     ILogger<AuthorisedMcpChatClient> logger) : DelegatingChatClient(innerClient)
 {
     /// <inheritdoc />
@@ -79,7 +78,11 @@ internal sealed class AuthorisedMcpChatClient(
         }
 
         // A catalogue reader with nothing to search with is offered no tools either: no connection to list them
-        // from, or no caller token to search with.
+        // from, or no caller token to search with. The run's own instances are reached here, at the call, because
+        // the graph that hosts this decorator is resolved once and outlives the request.
+        var accessTokens = runScope.Resolve<IMcpAccessTokenService>();
+        var mcpAuthorizationConnection = runScope.Resolve<IMcpAuthorizationConnection>();
+
         if (!mcpAuthorizationConnection.IsConfigured || string.IsNullOrEmpty(accessTokens.Token))
         {
             logger.LogInformation(
@@ -93,6 +96,7 @@ internal sealed class AuthorisedMcpChatClient(
         // permit should never reach the prompt, where its name and description are untrusted input (§12). Each
         // permitted tool goes on wrapped, so guarding and recording happen wherever the tool runs rather than
         // only where the framework happened to look.
+        var toolGuardPipeline = runScope.Resolve<IToolGuardPipeline>();
         var tools = (await mcpAuthorizationConnection.ToolsAsync(cancellationToken))
             .Where(tool => toolAllowList.Contains(tool.Name))
             .Select(tool => tool is AIFunction toolFunction

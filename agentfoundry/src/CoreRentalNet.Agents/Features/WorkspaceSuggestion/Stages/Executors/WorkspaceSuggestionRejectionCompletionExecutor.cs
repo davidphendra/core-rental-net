@@ -4,14 +4,14 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.StreamEvent;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Shared.ChatClients;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
 internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
-    ITelemetryChatClient telemetryChatClient,
-    IMcpAccessTokenService accessTokenService,
+    IRunScope runScope,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
 {
@@ -23,10 +23,13 @@ internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
         IWorkflowContext workflowContext,
         CancellationToken cancellationToken = default)
     {
-        // The run is over, so the credential it borrowed is given up here — before the ending is announced, and
-        // long before the call's scope is disposed. A later stage that reached for it would find nothing, which is
-        // the point: nothing after an ending is entitled to the caller's authority.
-        accessTokenService.Release();
+        // The run is over: the catalogue session it opened is closed, and the token it borrowed is given up —
+        // in that order, stated in RunEnding — before the ending is announced, and long before the call's scope
+        // is disposed. A later stage that reached for the token would find nothing, which is the point: nothing
+        // after an ending is entitled to the caller's authority.
+        var telemetryChatClient = runScope.Resolve<ITelemetryChatClient>();
+
+        await runScope.Resolve<IRunEnding>().EndTheRunAsync();
 
         workspaceSuggestionWorkflowState.RunStatus = WorkspaceSuggestionRunStatus.Rejected;
 

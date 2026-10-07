@@ -7,6 +7,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Shared.Serialization;
 using CoreRentalNet.Agents.Shared.Workflows;
 
@@ -25,10 +26,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceInputExecutor(
-    IMcpAccessTokenService accessTokens,
-    AccessTokenHeaderReader accessTokenHeaderReader,
+    IRunScope runScope,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
-    ITelemetryChatClient telemetryChatClient,
     ILogger logger)
     : ChatEntryStageExecutor(WorkspaceWorkflowExecutorNames.Input)
 {
@@ -47,6 +46,12 @@ internal sealed class WorkspaceInputExecutor(
         // Read here, once, because this is the only stage still inside the HTTP request: the workflow may hand a
         // later stage to another thread, and a header read there would depend on the context surviving the hop.
         // The message carries nothing to take back out, so the run's token comes from one place and one only.
+        // The run's own instances are reached here, at the start of the run, because the graph that holds this
+        // executor was resolved once and outlives the request.
+        var accessTokens = runScope.Resolve<IMcpAccessTokenService>();
+        var accessTokenHeaderReader = runScope.Resolve<AccessTokenHeaderReader>();
+        var telemetryChatClient = runScope.Resolve<ITelemetryChatClient>();
+
         accessTokens.Token ??= accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
 
         var suggestionRequest = Read(messages) ?? FromSentence(messages);

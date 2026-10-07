@@ -21,10 +21,12 @@ public static class EchoReplyRegistration
         }
 
         services.AddSingleton(echoAgentIdentity);
-        services.AddScoped<EchoReplyWorkflowFactory>();
-        services.AddScoped<IEchoReplyWorkflow, EchoReplyWorkflow>();
+        services.AddSingleton<EchoReplyWorkflowFactory>();
+        services.AddSingleton<IEchoReplyWorkflow, EchoReplyWorkflow>();
 
-        services.AddKeyedScoped<AIAgent>(echoAgentIdentity.AgentName, (provider, _) =>
+        // The echo graph holds no run state at all, so it is a singleton like every served agent the root
+        // resolution hosting performs can honor.
+        services.AddKeyedSingleton<AIAgent>(echoAgentIdentity.AgentName, (provider, _) =>
             provider.GetRequiredService<IEchoReplyWorkflow>().AsAIAgent());
 
         return echoAgentIdentity.AgentName;

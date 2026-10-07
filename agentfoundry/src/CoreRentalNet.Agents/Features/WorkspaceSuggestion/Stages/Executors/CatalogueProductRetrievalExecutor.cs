@@ -5,6 +5,7 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 using CoreRentalNet.Agents.Shared.ChatClients;
 using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
@@ -12,7 +13,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// <summary>Searches the catalogue with the caller's own entitlement, and chooses nothing.</summary>
 internal sealed class CatalogueProductRetrievalExecutor(
     AIAgent stageAgent,
-    McpToolAnswerLedger recordedToolAnswers,
+    IRunScope runScope,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger, modelBacked: true)
 {
@@ -25,8 +26,9 @@ internal sealed class CatalogueProductRetrievalExecutor(
         CancellationToken cancellationToken = default)
     {
         // An attempt's searches are the only ones its reranker may consider, so the ledger starts empty: an
-        // accumulating one would hand attempt two the products attempt one rejected.
-        recordedToolAnswers.ClearRecordedAnswers();
+        // accumulating one would hand attempt two the products attempt one rejected. The ledger is the run's own,
+        // reached through the run scope because this executor belongs to the graph and outlives the request.
+        runScope.Resolve<McpToolAnswerLedger>().ClearRecordedAnswers();
 
         await RunProcessingStageAsync(
             workspaceSuggestionWorkflowState,
