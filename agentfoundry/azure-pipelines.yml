@@ -183,9 +183,12 @@ stages:
             env:
               AZURE_SERVICE_CONNECTION: '$(AZURE_SERVICE_CONNECTION)'
 
-          # Workload identity federation: the task supplies a short-lived federated token and azd
-          # signs in with it. With a secret-based service connection instead, replace the
-          # `--federated-token` line with `--client-secret "$servicePrincipalKey"`.
+          # Workload identity federation. azd has no `--federated-token` flag, so it is not handed a
+          # token at all: `--federated-credential-provider azure-pipelines` tells azd to acquire the
+          # token itself, and it reads the client id, tenant id and service connection from the
+          # AZURESUBSCRIPTION_CLIENT_ID / _TENANT_ID / _SERVICE_CONNECTION_ID variables that
+          # AzureCLI@2 exports when `addSpnToEnvironment: true` is set. With a secret-based service
+          # connection instead, drop the provider flag and pass `--client-secret "$servicePrincipalKey"`.
           - task: AzureCLI@2
             displayName: 'Authenticate azd and deploy'
             inputs:
@@ -200,7 +203,7 @@ stages:
 
                 azd auth login \
                   --client-id "$servicePrincipalId" \
-                  --federated-token "$idToken" \
+                  --federated-credential-provider azure-pipelines \
                   --tenant-id "$tenantId"
 
                 # Fail fast with a clear message rather than letting azd read an unset value. These
