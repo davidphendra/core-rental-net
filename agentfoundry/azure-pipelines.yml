@@ -189,6 +189,11 @@ stages:
           # AZURESUBSCRIPTION_CLIENT_ID / _TENANT_ID / _SERVICE_CONNECTION_ID variables that
           # AzureCLI@2 exports when `addSpnToEnvironment: true` is set. With a secret-based service
           # connection instead, drop the provider flag and pass `--client-secret "$servicePrincipalKey"`.
+          #
+          # SYSTEM_ACCESSTOKEN is required by azd, not by the deployment: it builds an
+          # azidentity.AzurePipelinesCredential and uses this OAuth token to reach the token service
+          # at vstoken.dev.azure.com. YAML does not inject System.AccessToken on its own, so it has to
+          # be mapped explicitly. It expires with the job and is never written to disk by azd.
           - task: AzureCLI@2
             displayName: 'Authenticate azd and deploy'
             inputs:
@@ -230,6 +235,7 @@ stages:
                 azd deploy --no-prompt
             env:
               AZD_ENVIRONMENT: '$(azdEnvironmentName)'
+              SYSTEM_ACCESSTOKEN: '$(System.AccessToken)'
               AZURE_SUBSCRIPTION_ID: '$(AZURE_SUBSCRIPTION_ID)'
               AZURE_LOCATION: '$(AZURE_LOCATION)'
               AZURE_AI_MODEL_DEPLOYMENT_NAME: '$(AZURE_AI_MODEL_DEPLOYMENT_NAME)'
