@@ -42,6 +42,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Assembly metadata for AgentVersionTests: the metadata reader is proven against this assembly, so the
+         test does not depend on whether the agent it runs beside was stamped by the pipeline. -->
+    <AssemblyMetadata Include="BuildIdentityTestKey" Value="stamped-value" />
+    <AssemblyMetadata Include="BuildIdentityTestBlankKey" Value="" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- The tests read the same committed schemas the application pins its DTOs to. -->
     <Content Include="../../shared/contracts/*.json"
              Link="contracts/%(Filename)%(Extension)"

@@ -67,6 +67,10 @@ variables:
     value: '1.27.1'                                        # azure.yaml requires azd >= 1.27.1
   - name: azdEnvironmentName
     value: 'core-rental-foundry'
+  # The environment the deployed artifact is stamped as. It is baked into the assembly rather than injected
+  # at run time, so the running agent reports where it was built to run from its own metadata.
+  - name: agentEnvironment
+    value: 'production'
 
 stages:
 - stage: CI
@@ -91,9 +95,10 @@ stages:
       workingDirectory: '$(Build.SourcesDirectory)'
       displayName: 'Resolve version from the tag'
 
-    # Foundry builds the deployed agent remotely from this folder, so the version has to be inside it.
-    # The generated file is gitignored and travels with the zip.
-    - script: bash scripts/write-agent-version.sh "$(version)" "$(informationalVersion)"
+    # Foundry builds the deployed agent remotely from this folder, so the identity has to be inside it. The
+    # generated file is gitignored and travels with the zip. CI names no environment: the artifact it builds
+    # is tested, not deployed, and the deploy stage stamps the environment the deployment actually uses.
+    - script: bash scripts/write-agent-version.sh "$(version)" "$(informationalVersion)" "$(shortSha)" "$(Build.BuildId)" ""
       workingDirectory: '$(Build.SourcesDirectory)'
       displayName: 'Stamp the agent project with the release version'
 
@@ -148,7 +153,7 @@ stages:
             workingDirectory: '$(Build.SourcesDirectory)'
             displayName: 'Resolve version from the tag'
 
-          - script: bash scripts/write-agent-version.sh "$(version)" "$(informationalVersion)"
+          - script: bash scripts/write-agent-version.sh "$(version)" "$(informationalVersion)" "$(shortSha)" "$(Build.BuildId)" "$(agentEnvironment)"
             workingDirectory: '$(Build.SourcesDirectory)'
             displayName: 'Stamp the agent project with the release version'
 

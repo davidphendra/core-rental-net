@@ -14,7 +14,9 @@ using DotNetEnv;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using CoreRentalNet.Agents.Features.EchoReply;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
@@ -37,17 +39,31 @@ foreach (var (key, value) in localDefaults)
     }
 }
 
+// The build identity, read from the artifact's own metadata. Nothing here comes from the process environment:
+// the release, the commit, the pipeline run and the environment are stamped into the assembly by the
+// pipeline, so a container reports the build it was made from and nothing a process can set.
+var build = AgentBuildIdentity.Current;
+
 var builder = AgentHost.CreateBuilder(args);
 
 // The application's own source, meter and redaction processor. The hosting platform builds the providers and
 // chooses the exporters; this only tells them what our code emits and what must be scrubbed before it leaves.
 // The source and the meter are added here because the distro cannot know about an application's own vocabulary.
+// The build identity is added as a resource attribute, so every span and every metric carries it without a
+// single instrument naming it; the keys are ours because the platform already fills service.*.
 builder.ConfigureTracing(tracing => tracing
     .AddSource(WorkspaceTelemetry.Name)
-    .AddProcessor(new TokenLeakRedactionProcessor()));
+    .AddProcessor(new TokenLeakRedactionProcessor())
+    .ConfigureResource(resource => resource.AddAttributes(build.ResourceAttributes())));
 
-builder.Services.ConfigureOpenTelemetryMeterProvider(metrics =>
-    metrics.AddMeter(WorkspaceTelemetry.Name));
+builder.Services.ConfigureOpenTelemetryMeterProvider(metrics => metrics
+    .AddMeter(WorkspaceTelemetry.Name)
+    .ConfigureResource(resource => resource.AddAttributes(build.ResourceAttributes())));
+
+// The hosting package sets the logger provider's resource after ours, so the identity cannot ride that
+// resource. It is stamped on each log record instead, through a processor the hosting adds from these options.
+builder.Services.Configure<OpenTelemetryLoggerOptions>(logging =>
+    logging.AddProcessor(new AgentBuildIdentityLogProcessor(build)));
 
 // The names hosting resolves requests by. Read from configuration — the platform's environment variable when it
 // set one, appsettings.json otherwise — so the keyed registrations hosting looks agents up under are the names
@@ -83,7 +99,10 @@ var modelTransportRetryOptions =
 // here with only whether it is present — except the agent names, which are not secrets.
 Console.WriteLine(string.Join("\n",
     "[startup] hosted agent deployable",
-    $"[startup]   version                             : {AgentVersion.Current}{(AgentVersion.Build is { } commit ? $"+{commit}" : string.Empty)}",
+    $"[startup]   version                             : {build.Version}",
+    $"[startup]   git sha                             : {build.GitSha ?? "(unset)"}",
+    $"[startup]   build id                            : {build.BuildId ?? "(unset)"}",
+    $"[startup]   environment                         : {build.Environment}",
     $"[startup]   hosted                              : {(string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT")) ? "no" : "yes")}",
     $"[startup]   FOUNDRY_PROJECT_ENDPOINT            : {Present(builder.Configuration["FOUNDRY_PROJECT_ENDPOINT"])}",
     $"[startup]   {AgentFoundryRegistration.ModelKey,-34}: {Present(builder.Configuration[AgentFoundryRegistration.ModelKey])}",

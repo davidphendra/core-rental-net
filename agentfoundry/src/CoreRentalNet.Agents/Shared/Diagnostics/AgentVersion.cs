@@ -3,18 +3,17 @@ using System.Text.RegularExpressions;
 
 namespace CoreRentalNet.Agents.Shared.Diagnostics;
 
-/// <summary>The version the hosted agent was built as, and the commit it came from.</summary>
+/// <summary>The build identity the hosted agent was built with, read from its own metadata.</summary>
 /// <remarks>
 /// <para>
-/// The agent is built remotely from a zipped project folder, so the repository root's version properties
-/// do not reach it. The pipeline writes <c>Version.g.props</c> into the folder instead and this reads the
+/// The agent is built remotely from a zipped project folder, so the repository root's version properties do
+/// not reach it. The pipeline writes <c>Version.g.props</c> into the folder instead and this reads the
 /// result. It is kept inside the project folder rather than linked to the application's reader, because a
 /// linked file would not travel in the zip.
 /// </para>
 /// <para>
-/// The rules are the application's: the version is the release without the commit, anything that is not a
-/// semantic version is refused rather than shown, and the commit after "+" is build metadata and never
-/// part of the version.
+/// The identity is baked into the artifact as assembly metadata rather than read from the process
+/// environment, so the running agent reports the build it was made from and nothing a process can set.
 /// </para>
 /// </remarks>
 internal static partial class AgentVersion
@@ -26,7 +25,13 @@ internal static partial class AgentVersion
     public static string Current => Of(typeof(AgentVersion).Assembly);
 
     /// <summary>The commit the running agent was built from, or null when the build carried none.</summary>
-    public static string? Build => BuildOf(typeof(AgentVersion).Assembly);
+    public static string? GitSha => MetadataOf(typeof(AgentVersion).Assembly, GitShaKey);
+
+    /// <summary>The pipeline run that produced the running agent, or null when the build carried none.</summary>
+    public static string? BuildId => MetadataOf(typeof(AgentVersion).Assembly, BuildIdKey);
+
+    /// <summary>Where the running agent was built to run, or null when the build named no environment.</summary>
+    public static string? Environment => MetadataOf(typeof(AgentVersion).Assembly, EnvironmentKey);
 
     /// <summary>The version an assembly was stamped with, or the floor when it cannot be read.</summary>
     public static string Of(Assembly assembly)
@@ -34,14 +39,6 @@ internal static partial class AgentVersion
         ArgumentNullException.ThrowIfNull(assembly);
 
         return Parse(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
-    }
-
-    /// <summary>The commit an assembly was built from, or null when it carries none.</summary>
-    public static string? BuildOf(Assembly assembly)
-    {
-        ArgumentNullException.ThrowIfNull(assembly);
-
-        return ParseBuild(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
     }
 
     /// <summary>The semantic version in an informational version, or <see cref="Fallback"/>.</summary>
@@ -59,18 +56,24 @@ internal static partial class AgentVersion
         return SemanticVersion().IsMatch(withoutTagPrefix) ? withoutTagPrefix : Fallback;
     }
 
-    /// <summary>The commit in an informational version's build metadata, or null when there is none.</summary>
-    public static string? ParseBuild(string? informationalVersion)
+    /// <summary>A metadata value an assembly was stamped with, or null when it carries none.</summary>
+    /// <remarks>An empty value is not an identity, so a stamped-but-blank value is refused rather than shown.</remarks>
+    public static string? MetadataOf(Assembly assembly, string key)
     {
-        var plus = informationalVersion?.IndexOf('+', StringComparison.Ordinal) ?? -1;
-        if (informationalVersion is null || plus < 0)
-        {
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(assembly);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        var metadata = informationalVersion[(plus + 1)..].Trim();
-        return metadata.Length == 0 ? null : metadata;
+        var value = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(attribute => string.Equals(attribute.Key, key, StringComparison.Ordinal))
+            ?.Value;
+
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
+
+    /// <summary>The assembly metadata keys the pipeline stamps the build identity under.</summary>
+    private const string GitShaKey = "GitSha";
+    private const string BuildIdKey = "BuildId";
+    private const string EnvironmentKey = "Environment";
 
     [GeneratedRegex(@"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$")]
     private static partial Regex SemanticVersion();

@@ -22,7 +22,7 @@ owner's explicit consent:
 | Name | Command | Green means |
 |---|---|---|
 | `SMOKE` | the deployed host's footer shows the version | the footer matches the tag that was built |
-| `AGENT-DEPLOY` | `azd ai agent invoke …` against the deployment | the `[startup]` version line matches the tag that was built |
+| `AGENT-DEPLOY` | `azd ai agent invoke …` against the deployment | the `[startup]` version line matches the tag that was built, and the `git sha`, `build id` and `environment` lines match the run and the environment stamped into the artifact |
 
 ## Last measured
 

@@ -290,11 +290,24 @@ tag with `scripts/resolve-version.sh` and writes `Version.g.props` into `src/Cor
 `azd deploy`; the csproj imports it when present and carries its own copy of the version mapping. The file is
 gitignored, so a developer's build keeps the floor `0.1.0`.
 
-Every startup prints the release and the commit it was built from, beside the settings it reports:
+Every startup prints the build identity beside the settings it reports:
 
 ```text
-[startup]   version                             : 1.4.1+abc1234
+[startup]   version                             : 1.4.1
+[startup]   git sha                             : abc1234
+[startup]   build id                            : 12345
+[startup]   environment                         : production
 ```
+
+All four are stamped into the artifact: the pipeline writes them into `Version.g.props`, the csproj emits each
+as assembly metadata, and `AgentVersion` reads them back from the assembly — so a container reports the build
+it was made from and nothing a process can set. A developer's build carries no commit, build id or
+environment, so the first two read `(unset)` and the environment reads `local`.
+
+The same four are contributed to OpenTelemetry as resource attributes (`version`, `gitSha`, `buildId`,
+`environment`): the span and metric providers get them with `ConfigureResource`, and each log record is
+stamped by a processor, because the hosting package sets the logger provider's resource after ours. The keys
+are the deployment's own rather than `service.*`, which the platform already fills.
 
 ---
 
