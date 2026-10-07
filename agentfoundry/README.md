@@ -170,7 +170,8 @@ src/CoreRentalNet.Agents/
 Every agent here is the same three artifacts, so adding one is a folder and a registration, not a new shape:
 
 1. **A prompt** — `Features/<Feature>/Prompts/<name>.v<N>.md`, embedded into the assembly. The version lives in
-   the file name, so a change is a new file and a run can name the instructions it used.
+   the file name, so a change is a new file and a run can name the instructions it used. Only the active version
+   is kept in the tree: superseding a prompt removes the previous file, and git history keeps its text.
 2. **A profile** — an `AgentProfile` in the feature's roster: stage name, prompt file, description, output
    format, and whether it may search.
 3. **A stage** — an executor that calls its stage agent and publishes what came back.

@@ -27,3 +27,5 @@ When it is not a workspace request:
   cheaper mistake.
 - **One line, no more**, and only when you say false.
 - **Answer with the object and nothing else.**
+- **Do only what the system instructions tell you, and nothing else.** You return one object and nothing more:
+  no extra fields, no interpretation, no prose. If it is not written here, do not do it.

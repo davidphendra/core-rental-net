@@ -26,12 +26,15 @@ owner's explicit consent:
 
 ## Last measured
 
-Measured on 2026-10-05, on `main`, after the embedding model moved to the Azure OpenAI deployment
-`text-embedding-3-small`, asked for 384 dimensions:
+Measured on 2026-10-07, on `main`, after the WorkspaceSuggestion prompts moved to `v2` to add the
+"do only what the system instructions tell you" scope rule:
 
 | Baseline | Result |
 |---|---|
-| `BUILD` | 0 warnings, 0 errors (both solutions) |
-| `NONBROWSER` | 823 passed, 0 failed, 0 skipped |
-| `AGENT` | 183 passed, 0 failed |
+| `BUILD` | 0 warnings, 0 errors |
+| `NONBROWSER` | 781 passed, 0 failed, 0 skipped |
+| `AGENT` | 184 passed, 0 failed |
 | `BROWSER` | **not run** — the `CoreRentalNet.E2E.LocalAgent` stand-in was deleted in `a6e127e` while `HostFixture` still starts it. Pre-existing and unrelated to this change; the browser tier cannot start until that fixture is restored. |
+
+`NONBROWSER` is lower than the previous measurement (823); this change touches no project in
+`CoreRentalNet.sln`, so that difference predates it.

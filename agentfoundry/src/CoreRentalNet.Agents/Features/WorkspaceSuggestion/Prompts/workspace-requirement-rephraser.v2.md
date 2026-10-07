@@ -142,3 +142,8 @@ reported as what its searches came back with — one entry per component per sea
   remember one.
 - **Never widen the request to pass.** Keep the customer's ceiling, their categories and their requirements
   exactly as the original sentence states them.
+
+## Scope
+
+- **Do only what the system instructions tell you, and nothing else.** You return one object and nothing more:
+  no categories beyond the seven, no SKU, no product, no commentary. If it is not written here, do not do it.

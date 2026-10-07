@@ -16,44 +16,44 @@ public sealed class EmbeddedInstructionSourceTests
     [Fact]
     public void The_verification_prompt_is_embedded_and_readable()
     {
-        var source = new EmbeddedInstructionSource("workspace-request-verifier.v1.md");
+        var source = new EmbeddedInstructionSource("workspace-request-verifier.v2.md");
 
         source.Text.Should().NotBeNullOrWhiteSpace();
         source.Text.Should().Contain("isWorkspaceRequest", "the output contract is part of the prompt");
-        source.Version.Should().Be("workspace-request-verifier.v1");
+        source.Version.Should().Be("workspace-request-verifier.v2");
     }
 
     [Fact]
     public void The_rephrasing_prompt_is_embedded_and_readable()
     {
-        var source = new EmbeddedInstructionSource("workspace-requirement-rephraser.v1.md");
+        var source = new EmbeddedInstructionSource("workspace-requirement-rephraser.v2.md");
 
         source.Text.Should().NotBeNullOrWhiteSpace();
         source.Text.Should().Contain("search_terms", "the output contract is part of the prompt");
         source.Text.Should().Contain("total_budget", "the budget rules are part of the prompt");
-        source.Version.Should().Be("workspace-requirement-rephraser.v1");
+        source.Version.Should().Be("workspace-requirement-rephraser.v2");
     }
 
     [Fact]
     public void The_retrieval_prompt_is_embedded_and_names_no_product_of_its_own()
     {
-        var source = new EmbeddedInstructionSource("catalogue-product-retriever.v1.md");
+        var source = new EmbeddedInstructionSource("catalogue-product-retriever.v2.md");
 
         source.Text.Should().NotBeNullOrWhiteSpace();
         source.Text.Should().Contain("searches", "what each search came back with is what it reports");
         source.Text.Should().Contain(
             "do not list the products",
             "the products come from the recorded tool answers, so it is told not to restate them");
-        source.Version.Should().Be("catalogue-product-retriever.v1");
+        source.Version.Should().Be("catalogue-product-retriever.v2");
     }
 
     [Fact]
     public void The_version_comes_from_the_file_name_rather_than_from_a_constant()
     {
-        new EmbeddedInstructionSource("workspace-request-verifier.v1.md").Version
-            .Should().Be("workspace-request-verifier.v1");
-        new EmbeddedInstructionSource("workspace-setup-composer.v1.md").Version
-            .Should().Be("workspace-setup-composer.v1");
+        new EmbeddedInstructionSource("workspace-request-verifier.v2.md").Version
+            .Should().Be("workspace-request-verifier.v2");
+        new EmbeddedInstructionSource("workspace-setup-composer.v2.md").Version
+            .Should().Be("workspace-setup-composer.v2");
     }
 
     [Fact] // a prompt file is named after the agent it instructs, so the two cannot drift apart
@@ -85,6 +85,19 @@ public sealed class EmbeddedInstructionSourceTests
             var source = new EmbeddedInstructionSource(profile.PromptFileName);
 
             source.Text.Should().NotBeNullOrWhiteSpace($"{profile.Name} must be able to find its instructions");
+        }
+    }
+
+    [Fact] // the scope rule is what keeps an agent inside its instructions, on the prompt that is actually used
+    public void Every_active_prompt_tells_its_agent_to_do_only_what_it_is_told()
+    {
+        const string scope = "Do only what the system instructions tell you, and nothing else.";
+
+        foreach (var profile in WorkspaceSuggestionAgentRoster.All)
+        {
+            var source = new EmbeddedInstructionSource(profile.PromptFileName);
+
+            source.Text.Should().Contain(scope, $"{profile.Name} must be told to do only what it is instructed");
         }
     }
 

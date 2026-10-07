@@ -23,13 +23,13 @@ internal static class WorkspaceSuggestionAgentRoster
 {
     public static AgentProfile Verifier { get; } = new(
         Name: "workspace-request-verifier",
-        PromptFileName: "workspace-request-verifier.v1.md",
+        PromptFileName: "workspace-request-verifier.v2.md",
         Description: "Decides whether the customer's sentence is a request to furnish a workspace at all.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequestVerificationResult>());
 
     public static AgentProfile Rephraser { get; } = new(
         Name: "workspace-requirement-rephraser",
-        PromptFileName: "workspace-requirement-rephraser.v1.md",
+        PromptFileName: "workspace-requirement-rephraser.v2.md",
         Description: "Turns the sentence into what the workspace must be and the words that find each part of it.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansion>());
 
@@ -42,19 +42,19 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Reranker { get; } = new(
         Name: "catalogue-candidate-reranker",
-        PromptFileName: "catalogue-candidate-reranker.v1.md",
+        PromptFileName: "catalogue-candidate-reranker.v2.md",
         Description: "Orders each component's retrieved products against the need that component must answer.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceComponentProductRankingResult>());
 
     public static AgentProfile Composer { get; } = new(
         Name: "workspace-setup-composer",
-        PromptFileName: "workspace-setup-composer.v1.md",
+        PromptFileName: "workspace-setup-composer.v2.md",
         Description: "Composes candidate setups from the retrieved products and the expansion.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceSetupCandidateSet>());
 
     public static AgentProfile Reviewer { get; } = new(
         Name: "workspace-setup-reviewer",
-        PromptFileName: "workspace-setup-reviewer.v1.md",
+        PromptFileName: "workspace-setup-reviewer.v2.md",
         Description: "Decides whether the composed setups satisfy the customer's request.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceSetupReviewResult>());
 
