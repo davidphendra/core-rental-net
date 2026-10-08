@@ -32,7 +32,7 @@ namespace CoreRentalNet.Host.Extentions;
 internal static class TelemetryExtentions
 {
     /// <summary>The connection string Application Insights is reached with. Never a value in this repository.</summary>
-    private const string ConnectionStringKey = "APPLICATIONINSIGHTS_CONNECTION_STRING";
+    private const string ConnectionStringKey = "ApplicationInsights:ConnectionString";
 
     /// <summary>What this application is called in every backend it reports to.</summary>
     private const string ServiceName = "core-rental-app";
