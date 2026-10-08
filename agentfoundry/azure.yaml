@@ -23,15 +23,27 @@ services:
               sku:
                   name: GlobalStandard
                   capacity: 100
+            - name: text-embedding-3-small
+              model:
+                format: OpenAI
+                name: text-embedding-3-small
+                version: "1"
+              sku:
+                name: GlobalStandard
+                capacity: 100
 
-    workspace-suggestions:
+    core-rental-workspace-suggestion-agent:
         project: src/CoreRentalNet.Agents
         host: azure.ai.agent
         language: csharp
         uses:
             - ai-project
         env:
+            FOUNDRY_PROJECT_ENDPOINT: ${FOUNDRY_PROJECT_ENDPOINT}
             AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+            APPLICATIONINSIGHTS_CONNECTION_STRING: ${APPLICATIONINSIGHTS_CONNECTION_STRING}
+            CATALOGTOOLS__MCPENDPOINT: ${CATALOGTOOLS__MCPENDPOINT}
+            DOTNET_ENVIRONMENT: ${DOTNET_ENVIRONMENT}
             # FOUNDRY_AGENT_NAME is deliberately NOT mapped here: the hosting platform reserves the FOUNDRY_
             # prefix and injects the resolved agent name itself. Mapping it from an azd variable nobody set once
             # injected it empty, and an agent name that is present and empty is worse than one that is absent.
@@ -61,20 +73,21 @@ services:
               version: 2.0.0
 
     # A second agent service, because azd addresses azure.ai.agent SERVICES by their key in this file, not the
-    # keyed agents inside a container. `azd ai agent invoke echo-agent "..."` therefore needs a service keyed
-    # `echo-agent`; the container it runs is the same project, and the name below is what Foundry resolves.
-    echo-agent:
+    # keyed agents inside a container. `azd ai agent invoke echo-reverse-agent "..."` therefore needs a service keyed
+    # `echo-reverse-agent`; the container it runs is the same project, and the name below is what Foundry resolves.
+    echo-reverse-agent:
         project: src/CoreRentalNet.Agents
         host: azure.ai.agent
         language: csharp
         uses:
             - ai-project
         env:
-            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
             # Which agent a request that names none gets. `azd ai agent invoke --local` sends no agent name and
             # `azd ai agent run <service>` does not pass the service name through locally, so the container has
             # to be told. Remotely the platform injects FOUNDRY_AGENT_NAME and the two agree.
-            AGENTHOST__DEFAULTAGENTNAME: echo-agent
+            AGENTHOST__DEFAULTAGENTNAME: echo-reverse-agent
+            ECHOAGENT__AGENTNAME: ${ECHOAGENT__AGENTNAME}
+            ECHOAGENT__ISENABLED: ${ECHOAGENT__ISENABLED}
         codeConfiguration:
             dependencyResolution: remote_build
             entryPoint: CoreRentalNet.Agents.dll
@@ -83,8 +96,8 @@ services:
             resources:
                 cpu: "0.5"
                 memory: 1Gi
-        description: A test aid that replies with the message it was sent, unchanged. No model, no catalogue.
-        displayName: Echo Agent
+        description: A test aid that replies with the reversed message it was sent, unchanged. No model, no catalogue.
+        displayName: Echo Reverse Agent
         kind: hosted
         metadata:
             tags:
@@ -92,7 +105,7 @@ services:
                 - Responses Protocol
                 - Agent Framework
                 - .NET
-        name: echo-agent
+        name: echo-reverse-agent
         protocols:
             - protocol: responses
               version: 2.0.0

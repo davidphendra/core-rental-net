@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using CoreRentalNet.Agents.Shared.Configuration;
 
-namespace CoreRentalNet.Agents.Features.EchoReply;
+namespace CoreRentalNet.Agents.Features.EchoReverse;
 
 /// <summary>The name a console addresses the echo agent by, and whether this deployable serves it at all.</summary>
 /// <remarks>

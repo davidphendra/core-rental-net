@@ -9,7 +9,6 @@
 // the feature's workflow agent itself: hosting can only redirect a hosted workflow's checkpoints when the agent
 // it resolves is that workflow agent, so nothing is allowed to wrap it.
 
-using Azure.AI.AgentServer.Core;
 using DotNetEnv;
 using Microsoft.Agents.AI.Foundry.Hosting;
 using Microsoft.Agents.AI;
@@ -18,7 +17,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using CoreRentalNet.Agents.Features.EchoReply;
+using CoreRentalNet.Agents.Features.EchoReverse;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Shared.Diagnostics;
 using CoreRentalNet.Agents.Shared.Mcp;
@@ -84,33 +83,17 @@ var workspaceSuggestionAgentName = builder.Configuration[WorkspaceSuggestionAgen
 // Remotely the injected FOUNDRY_AGENT_NAME already answers it, so this is unset there and the two agree when
 // it is set.
 var defaultAgentName = builder.Configuration["AgentHost:DefaultAgentName"]?.Trim() is { Length: > 0 } namedAgent
-    ? namedAgent
-    : workspaceSuggestionAgentName;
-var echoAgentName = builder.Configuration[EchoAgentIdentity.AgentNameKey];
-var echoAgentEnabled = !bool.TryParse(builder.Configuration[EchoAgentIdentity.IsEnabledKey], out var echoIsEnabled)
-    || echoIsEnabled;
+                            ? namedAgent
+                            : workspaceSuggestionAgentName;
+var echoAgentEnabled = !bool.TryParse(
+                               builder.Configuration[EchoAgentIdentity.IsEnabledKey],
+                               out var echoIsEnabled) || echoIsEnabled;
 
 // The model transport's own budget: how long one call may take, and how many times one failed call is retried.
 // It is deliberately not a workflow's attempt count, which is configuration too and belongs to its feature.
 var modelTransportRetryOptions =
     builder.Configuration.GetSection("ModelTransport").Get<ModelTransportRetryOptions>()
         ?? new ModelTransportRetryOptions();
-
-// Startup diagnostics, printed before anything else can fail. Every setting a deployment must supply is named
-// here with only whether it is present — except the agent names, which are not secrets.
-Console.WriteLine(string.Join("\n",
-    "[startup] hosted agent deployable",
-    $"[startup]   version                             : {build.Version}",
-    $"[startup]   git sha                             : {build.GitSha ?? "(unset)"}",
-    $"[startup]   build id                            : {build.BuildId ?? "(unset)"}",
-    $"[startup]   environment                         : {build.Environment}",
-    $"[startup]   hosted                              : {(string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT")) ? "no" : "yes")}",
-    $"[startup]   FOUNDRY_PROJECT_ENDPOINT            : {Present(builder.Configuration["FOUNDRY_PROJECT_ENDPOINT"])}",
-    $"[startup]   {AgentFoundryRegistration.ModelKey,-34}: {Present(builder.Configuration[AgentFoundryRegistration.ModelKey])}",
-    $"[startup]   {"ModelTransport",-34}: {modelTransportRetryOptions.NetworkTimeout} per call, {modelTransportRetryOptions.MaximumRetryAttempts} transport retries",
-    $"[startup]   {WorkspaceSuggestionAgentIdentity.ConfigurationKey,-34}: {(string.IsNullOrWhiteSpace(workspaceSuggestionAgentName) ? "MISSING" : workspaceSuggestionAgentName)}",
-    $"[startup]   {EchoAgentIdentity.AgentNameKey,-34}: {(string.IsNullOrWhiteSpace(echoAgentName) ? EchoAgentIdentity.DefaultAgentName : echoAgentName)} ({(echoAgentEnabled ? "enabled" : "disabled")})",
-    $"[startup]   {"AgentHost:DefaultAgentName",-34}: {(string.IsNullOrWhiteSpace(defaultAgentName) ? "MISSING" : defaultAgentName)}"));
 
 // One model client, shared by every feature's stages. Refuses startup by name when a setting is missing, so a
 // container that is never ready says which one rather than only that it was not ready.
@@ -143,11 +126,7 @@ builder.Services.AddSingleton<IRunScope, RunScope>();
 // The features this deployable serves. A new feature is a new line here and a folder under Features/.
 var servedWorkspaceSuggestionAgent = builder.Services.AddWorkspaceSuggestionFeature(
     builder.Configuration, modelClient);
-var servedEchoAgent = builder.Services.AddEchoReplyFeature(builder.Configuration);
-
-Console.WriteLine(string.Join("\n",
-    $"[startup] serving {servedWorkspaceSuggestionAgent}",
-    $"[startup] serving {servedEchoAgent ?? "(echo agent disabled)"}"));
+var echoReverseAgentInstanceName = builder.Services.AddEchoReverseFeature(builder.Configuration);
 
 // A request that names no agent gets the one this deployment is named for. Hosting falls back to a default
 // agent when the request carries no name — which is exactly what `azd ai agent invoke --local` sends — so
@@ -168,9 +147,24 @@ builder.Services.AddFoundryResponses();
 builder.RegisterProtocol("responses", endpoints => endpoints.MapFoundryResponses());
 
 var app = builder.Build();
-Console.WriteLine("[startup] host built; listening. Agents resolve per request from keyed DI by agent.name.");
-app.Run();
 
-/// <summary>Whether a required setting is present, without ever printing it.</summary>
+// Startup diagnostics, printed before anything else can fail. Every setting a deployment must supply is named
+// here with only whether it is present — except the agent names, which are not secrets.
+Console.WriteLine("[startup] host built; listening.");
+Console.WriteLine(string.Join("\n",
+    "[startup] hosted agent deployable",
+    $"[startup]   version                             : {build.Version}",
+    $"[startup]   git sha                             : {build.GitSha ?? "(unset)"}",
+    $"[startup]   build id                            : {build.BuildId ?? "(unset)"}",
+    $"[startup]   environment                         : {build.Environment}",
+    $"[startup]   hosted                              : {(string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("FOUNDRY_HOSTING_ENVIRONMENT")) ? "no" : "yes")}",
+    $"[startup]   FOUNDRY_PROJECT_ENDPOINT            : {Present(builder.Configuration["FOUNDRY_PROJECT_ENDPOINT"])}",
+    $"[startup]   {AgentFoundryRegistration.ModelKey,-34}: {Present(builder.Configuration[AgentFoundryRegistration.ModelKey])}",
+    $"[startup]   {"ModelTransport",-34}: {modelTransportRetryOptions.NetworkTimeout} per call, {modelTransportRetryOptions.MaximumRetryAttempts} transport retries",
+    $"[startup]   {WorkspaceSuggestionAgentIdentity.ConfigurationKey,-34}: {(string.IsNullOrWhiteSpace(workspaceSuggestionAgentName) ? "MISSING" : workspaceSuggestionAgentName)}",
+    $"[startup]   {EchoAgentIdentity.AgentNameKey,-34}: {(echoReverseAgentInstanceName ?? EchoAgentIdentity.DefaultAgentName)} ({(echoAgentEnabled ? "enabled" : "disabled")})",
+    $"[startup]   {"AgentHost:DefaultAgentName",-34}: {(string.IsNullOrWhiteSpace(defaultAgentName) ? "MISSING" : defaultAgentName)}"));
+
+app.Run();
 static string Present(string? value)
     => string.IsNullOrWhiteSpace(value) ? "MISSING" : "set";

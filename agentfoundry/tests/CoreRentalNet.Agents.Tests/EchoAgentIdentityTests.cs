@@ -1,6 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
-using CoreRentalNet.Agents.Features.EchoReply;
+using CoreRentalNet.Agents.Features.EchoReverse;
 using Xunit;
 
 namespace CoreRentalNet.Agents.Tests;
