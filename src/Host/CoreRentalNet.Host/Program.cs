@@ -65,7 +65,7 @@ app.MapRazorComponents<App>()
     // two policies are enforced together, so a disagreement is a subtle way to be wrong.
     .AddInteractiveServerRenderMode(options => options.ContentSecurityFrameAncestorsPolicy = "'none'");
 
-await app.ApplyMigrationsInDevelopmentAsync();
+await app.ApplyMigrationsAsync();
 
 // Vectors that are absent or stale refuse the similarity search and name the tool to run; they do not stop
 // the application.
