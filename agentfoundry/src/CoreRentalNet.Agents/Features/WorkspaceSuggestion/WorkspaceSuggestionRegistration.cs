@@ -31,16 +31,20 @@ public static class WorkspaceSuggestionRegistration
     private const int MaximumToolResultCharacters = 100_000;
 
     /// <summary>Registers the feature, and answers the agent name it serves.</summary>
-    public static string AddWorkspaceSuggestionFeature(
+    /// <remarks>
+    /// The identity is handed in rather than read here: the composition root reads configuration once, so the
+    /// name hosting resolves the agent under and the name the startup report prints come from one value.
+    /// </remarks>
+    internal static string AddWorkspaceSuggestionFeature(
         this IServiceCollection services,
         IConfiguration configuration,
+        WorkspaceSuggestionAgentIdentity workspaceSuggestionAgentIdentity,
         IChatClient modelClient)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(workspaceSuggestionAgentIdentity);
         ArgumentNullException.ThrowIfNull(modelClient);
-
-        var workspaceSuggestionAgentIdentity = WorkspaceSuggestionAgentIdentity.FromConfiguration(configuration);
 
         services.AddSingleton(workspaceSuggestionAgentIdentity);
         services.AddSingleton(McpSetting.FromConfiguration(configuration, CatalogueEndpointKey));

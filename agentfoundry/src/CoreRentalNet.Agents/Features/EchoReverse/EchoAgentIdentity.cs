@@ -12,7 +12,7 @@ public sealed record EchoAgentIdentity
 {
     public const string AgentNameKey = "EchoAgent:AgentName";
     public const string IsEnabledKey = "EchoAgent:IsEnabled";
-    public const string DefaultAgentName = "echo-agent";
+    public const string DefaultAgentName = "echo-reverse-agent";
 
     public required string AgentName { get; init; }
 

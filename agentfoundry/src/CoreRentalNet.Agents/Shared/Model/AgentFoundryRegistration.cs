@@ -16,6 +16,9 @@ internal static class AgentFoundryRegistration
     /// <summary>The deployment the run reports having used.</summary>
     public const string ModelKey = "AZURE_AI_MODEL_DEPLOYMENT_NAME";
 
+    /// <summary>The Foundry project endpoint, which a deployment must supply.</summary>
+    public const string ProjectEndpointKey = "FOUNDRY_PROJECT_ENDPOINT";
+
     /// <summary>How long one model call may take before the client gives up on it.</summary>
     /// <remarks>
     /// One run carries a large context — the specification, the catalogue results and the answer schema — so a
@@ -40,7 +43,7 @@ internal static class AgentFoundryRegistration
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentNullException.ThrowIfNull(credential);
 
-        var endpoint = Required(configuration, "FOUNDRY_PROJECT_ENDPOINT");
+        var endpoint = Required(configuration, ProjectEndpointKey);
         var model = Required(configuration, ModelKey);
         var transportRetryOptions = modelTransportRetryOptions ?? new ModelTransportRetryOptions();
 

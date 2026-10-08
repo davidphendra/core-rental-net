@@ -5,12 +5,15 @@ namespace CoreRentalNet.Agents.Features.EchoReverse;
 
 public static class EchoReverseRegistration
 {
-    public static string? AddEchoReverseFeature(this IServiceCollection services, IConfiguration configuration)
+    /// <remarks>
+    /// The identity is handed in rather than read here: the composition root reads configuration once, so the
+    /// name this agent is registered under and the name the startup report prints come from one value.
+    /// </remarks>
+    public static string? AddEchoReverseFeature(this IServiceCollection services, EchoAgentIdentity echoAgentIdentity)
     {
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(echoAgentIdentity);
 
-        var echoAgentIdentity = EchoAgentIdentity.FromConfiguration(configuration);
         if (!echoAgentIdentity.IsEnabled)
         {
             return null;

@@ -23,7 +23,7 @@ public sealed class EchoWorkflowTests
     {
         var agent = EchoWorkflowFactory.Build()
             .AsAIAgent(
-                name: "echo-agent",
+                name: EchoAgentIdentity.DefaultAgentName,
                 includeWorkflowOutputsInResponse: true);
 
         var response = await agent.RunAsync("hello there");

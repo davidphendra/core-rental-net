@@ -29,19 +29,24 @@ owner's explicit consent:
 
 ## Last measured
 
-Measured on 2026-10-07, on `main`, after the build identity reached the artifact and the business
-facts reached Application Insights:
+Measured on 2026-10-08, on `main`, after the composition root was rebuilt as a list of host steps and the
+echo agent's name was completed from `echo-agent` to `echo-reverse-agent`:
 
 | Baseline | Result |
 |---|---|
 | `BUILD` | 0 warnings, 0 errors |
 | `NONBROWSER` | 797 passed, 0 failed, 0 skipped |
 | `TOOL` | 42 passed, 0 failed, 0 skipped |
-| `AGENT` | 184 passed, 0 failed |
+| `AGENT` | 199 passed, 0 failed |
 | `BROWSER` | **not run** — the `CoreRentalNet.E2E.LocalAgent` stand-in was deleted in `a6e127e` while `HostFixture` still starts it. Pre-existing and unrelated to this change; the browser tier cannot start until that fixture is restored. |
 
-`NONBROWSER` rose from 781 by sixteen: six facts for the build identity and its reader, five for the
-business meter, one configuration guard that keeps the telemetry connection string out of every committed
-file, two for the start-up announcement, and two for the Foundry credential choice committed immediately
-before all of it. `NONBROWSER` no longer counts the ingestion tool's 42 tests, which the `TOOL` row above
-now records.
+`AGENT` rose from the recorded 184 by fifteen, to 199. Thirteen are the composition-root extraction: seven
+pin the host's settings (the fallback default agent, the trim rule, the echo state, the disabled-echo refusal,
+the transport bind, and the two presence fields), two the default-agent registration, three the startup report,
+and one the `.env` refill rule. The remaining two were already in the tree and unrecorded when this change was
+measured.
+
+`BUILD` and `NONBROWSER` are unchanged at 797: `agentfoundry/` is a separate solution, and nothing in the root
+tree reads it, so a change confined to it cannot move either. `TOOL` was re-measured and is unchanged. The
+echo agent's rename touches `azure.yaml`, the pipeline, `appsettings.json`, `.env.example` and the README; it is
+not exercised by any baseline, and `AGENT-DEPLOY` remains the check that would prove it on a deployment.

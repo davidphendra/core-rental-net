@@ -9,7 +9,7 @@ Two features ship today:
 | Feature | Served agent | What it does | Cost |
 |---|---|---|---|
 | `Features/WorkspaceSuggestion` | `core-rental-workspace-suggestion-agent` | Turns one customer sentence into workspace setups drawn from the catalogue | A model call per stage, several per run |
-| `Features/EchoReply` | `echo-agent` | Replies with the message it was sent | Nothing — no model, no catalogue |
+| `Features/EchoReverse` | `echo-reverse-agent` | Replies with the message it was sent | Nothing — no model, no catalogue |
 
 ---
 
@@ -129,7 +129,7 @@ events a stage chooses to publish.
 
 ### 1.2 Echo
 
-`echo-agent` answers with the caller's message, verbatim. Nothing else.
+`echo-reverse-agent` answers with the caller's message, verbatim. Nothing else.
 
 It exists so that hosting can be exercised from a console — routing by name, session handling, streaming — with
 no model call, no catalogue and no cost. It is a **workflow with one stage** on purpose: hosting treats an agent
@@ -146,8 +146,10 @@ It is enabled by default and switched off in a deployment with `ECHOAGENT__ISENA
 
 ```
 src/CoreRentalNet.Agents/
-├── Program.cs                     the composition root: reads as a list of features
+├── Program.cs                     the composition root: a list of host steps and features
 ├── appsettings.json
+├── Hosting/                       host bootstrapping: settings · telemetry · model client ·
+│                                  default agent · startup report · local .env
 ├── Shared/                        reused by every feature
 │   ├── Agents/          AgentProfile · AgentFactory
 │   ├── ChatClients/     the model call's decorators: telemetry · guardrail · MCP tools · the no-op leaf
@@ -160,10 +162,10 @@ src/CoreRentalNet.Agents/
 │   └── Workflows/       ChatEntryStageExecutor · StreamingStageExecutor · WorkflowOutputPublisher
 └── Features/
     ├── WorkspaceSuggestion/       prompts · roster · domain · stages · policies · graph
-    └── EchoReply/                 prompt · roster · stage client · stage · graph
+    └── EchoReverse/               prompt · roster · stage client · stage · graph
 ```
 
-**`Shared/` is anything a second feature would use unchanged.** Everything else belongs to a feature.
+**`Hosting/` bootstraps the host; `Shared/` is anything a second feature would use unchanged.** Everything else belongs to a feature.
 
 ### 2.2 How an agent is defined
 
@@ -219,13 +221,13 @@ startup by name rather than serving an agent nothing can find.
 | Setting | Default | Meaning |
 |---|---|---|
 | `FOUNDRY_AGENT_NAME` | `core-rental-workspace-suggestion-agent` | **Reserved prefix.** The platform injects the deployed name; the value here is the local default. Must equal the `azure.yaml` service `name`. |
-| `EchoAgent:AgentName` | `echo-agent` | The name a console addresses the echo agent by |
+| `EchoAgent:AgentName` | `echo-reverse-agent` | The name a console addresses the echo agent by |
 | `EchoAgent:IsEnabled` | `true` | Set `false` to stop serving the echo agent |
 | `AgentHost:DefaultAgentName` | the workspace agent's name | Which agent a request that names none gets. **Set per service in `azure.yaml`** — see below |
 
 **There are two `azure.ai.agent` services in `azure.yaml`, not one.** `azd` addresses *services* by their key in
-that file — not the keyed agents inside a container — so `azd ai agent invoke echo-agent …` needs a service
-keyed `echo-agent`. Both services point at the same project; the container runs the same code either way and
+that file — not the keyed agents inside a container — so `azd ai agent invoke echo-reverse-agent …` needs a service
+keyed `echo-reverse-agent`. Both services point at the same project; the container runs the same code either way and
 serves both agents, and the service `name:` is what Foundry resolves and what the platform injects as
 `FOUNDRY_AGENT_NAME`. That injected name is also the container's **default agent**, so a request that names
 nothing gets the agent the deployment is named for.
@@ -267,7 +269,7 @@ platform reserves it.
 
 ```yaml
 services:
-    workspace-suggestions:
+    core-rental-workspace-suggestion-agent:
         project: src/CoreRentalNet.Agents
         host: azure.ai.agent
         name: core-rental-workspace-suggestion-agent   # what Foundry resolves
@@ -329,7 +331,7 @@ dotnet test AgentFoundry.sln
 | `WorkflowGraphSpikeTests` | the two hosting mechanics the design rests on: the chat-protocol requirement and yielded output reaching the caller |
 | `WorkspaceWorkflowContractSchemaTests` · `ContractSchemaTests` | every contract against its committed JSON Schema, in both directions |
 | `RephraserSpecTests` · `WorkspaceRequestVerificationContractTests` · `InvalidModelOutputTests` | the stage contracts over a fake chat client |
-| `EchoReplyChatClientTests` · `EchoReplyWorkflowTests` | the echo replies exactly, streams, and builds from its roster |
+| `EchoWorkflowTests` | the echo replies exactly, streams, and builds from its roster |
 | `WorkspaceSuggestionAgentIdentityTests` · `EchoAgentIdentityTests` | configured names, and startup refusing a missing one by name |
 | `CatalogueChatClientTests` · `ModelCallDecoratorTests` | the caller token is lifted, tools are offered only where declared, the guardrail fires |
 
@@ -345,20 +347,20 @@ or, through azd — **naming the service you intend to invoke**:
 
 ```bash
 cd agentfoundry
-azd ai agent run workspace-suggestions     # this container's default agent: the workspace agent
-azd ai agent run echo-agent                # this container's default agent: the echo agent
+azd ai agent run core-rental-workspace-suggestion-agent     # this container's default agent: the workspace agent
+azd ai agent run echo-reverse-agent                         # this container's default agent: the echo agent
 ```
 
 The host binds `PORT` (default `8088`) and **ignores** `ASPNETCORE_URLS`.
 
 > **A `dotnet run` container answers as the workspace agent.** With no `azure.ai.agent` service behind it, the
 default falls back to `FOUNDRY_AGENT_NAME` — the workspace agent — and `azd ai agent invoke --local` sends no
-agent name, so `azd ai agent invoke echo-agent "…" --local` against that container is answered by the
+agent name, so `azd ai agent invoke echo-reverse-agent "…" --local` against that container is answered by the
 **workspace** agent. Start the container as the service you mean to invoke, and check it before invoking: every
 startup prints which agent a nameless request will get.
 >
 > ```text
-> [startup]   AgentHost:DefaultAgentName        : echo-agent
+> [startup]   AgentHost:DefaultAgentName        : echo-reverse-agent
 > ```
 
 ### 4.3 Check it is ready
@@ -372,17 +374,17 @@ acknowledged needs:
 
 ```text
 [startup]   FOUNDRY_AGENT_NAME                : core-rental-workspace-suggestion-agent
-[startup]   EchoAgent:AgentName               : echo-agent (enabled)
+[startup]   EchoAgent:AgentName               : echo-reverse-agent (enabled)
 [startup] serving core-rental-workspace-suggestion-agent
-[startup] serving echo-agent
+[startup] serving echo-reverse-agent
 ```
 
 ### 4.4 Invoke the echo agent — the smoke test
 
 ```bash
-azd ai agent run echo-agent                              # terminal 1 — note the service name
-azd ai agent invoke echo-agent "hello there" --local    # terminal 2
-azd ai agent invoke echo-agent "hello there"            # against the deployment
+azd ai agent run echo-reverse-agent                              # terminal 1 — note the service name
+azd ai agent invoke echo-reverse-agent "hello there" --local    # terminal 2
+azd ai agent invoke echo-reverse-agent "hello there"            # against the deployment
 ```
 
 Expected: `hello there`, in a fraction of a second and with no model call.
@@ -391,12 +393,12 @@ Expected: `hello there`, in a fraction of a second and with no model call.
 no agent name at all, and `azd ai agent run <service>` does not pass the service name through locally — only the
 hosting platform injects `FOUNDRY_AGENT_NAME`. So a local container can only answer with the one agent it was
 started as, which is why each `azure.ai.agent` service sets `AGENTHOST__DEFAULTAGENTNAME` in `azure.yaml`.
-Running the echo container and then invoking `workspace-suggestions` against it will answer with the echo, and
+Running the echo container and then invoking `core-rental-workspace-suggestion-agent` against it will answer with the echo, and
 nothing can detect the mismatch, because azd never sends the name. Then, without any
 client:
 ```bash
 curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
-  -d '{"model":"echo-agent","input":"hello there","stream":true}' \
+  -d '{"model":"echo-reverse-agent","input":"hello there","stream":true}' \
   http://127.0.0.1:8088/responses
 ```
 
@@ -405,8 +407,8 @@ curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
 From a console, a sentence is enough:
 
 ```bash
-azd ai agent run workspace-suggestions
-azd ai agent invoke workspace-suggestions "a desk and a chair under 500000" --local
+azd ai agent run core-rental-workspace-suggestion-agent
+azd ai agent invoke core-rental-workspace-suggestion-agent "a desk and a chair under 500000" --local
 ```
 
 A console sends a sentence, not the application's envelope, so the run reads it as a query over every slot this

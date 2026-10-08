@@ -88,8 +88,12 @@ public sealed class AgentFoundryRegistrationTests
         services.AddScoped<IMcpAccessTokenService>(
             _ => new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance));
 
+        var configuration = Configuration(
+            (WorkspaceSuggestionAgentIdentity.ConfigurationKey, SuggestionAgentName));
+
         services.AddWorkspaceSuggestionFeature(
-            Configuration((WorkspaceSuggestionAgentIdentity.ConfigurationKey, SuggestionAgentName)),
+            configuration,
+            WorkspaceSuggestionAgentIdentity.FromConfiguration(configuration),
             new ScriptedChatClient("{}"));
 
         using var provider = services.BuildServiceProvider();
@@ -115,7 +119,9 @@ public sealed class AgentFoundryRegistrationTests
         services.AddSingleton<IRunScope, RunScope>();
 
         var servedAgentName = services.AddWorkspaceSuggestionFeature(
-            configuration, new ScriptedChatClient("{}"));
+            configuration,
+            WorkspaceSuggestionAgentIdentity.FromConfiguration(configuration),
+            new ScriptedChatClient("{}"));
 
         using var provider = services.BuildServiceProvider(
             new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });

@@ -15,7 +15,7 @@ public sealed class EchoAgentIdentityTests
     {
         var identity = EchoAgentIdentity.FromConfiguration(Configuration());
 
-        identity.AgentName.Should().Be("echo-agent", "azd addresses the agent by this name");
+        identity.AgentName.Should().Be(EchoAgentIdentity.DefaultAgentName, "azd addresses the agent by this name");
         identity.IsEnabled.Should().BeTrue("it costs nothing and echoes only the text its caller sent");
     }
 

@@ -245,8 +245,8 @@ stages:
                 # `dotnet publish` runs share obj/, which fails the second on a locked
                 # rpswa.dswa.cache.json, and on a 2-core agent the concurrent publish is also what
                 # gets one of them OOM-killed (`signal: killed`). Sequential calls avoid both.
-                azd deploy workspace-suggestions --no-prompt
-                azd deploy echo-agent --no-prompt
+                azd deploy core-rental-workspace-suggestion-agent --no-prompt
+                azd deploy echo-reverse-agent --no-prompt
             env:
               AZD_ENVIRONMENT: '$(azdEnvironmentName)'
               SYSTEM_ACCESSTOKEN: '$(System.AccessToken)'
