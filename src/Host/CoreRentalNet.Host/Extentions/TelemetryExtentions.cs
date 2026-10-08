@@ -46,6 +46,7 @@ internal static class TelemetryExtentions
         ArgumentNullException.ThrowIfNull(builder);
 
         var build = AppBuildIdentity.Current;
+        var connectionString = builder.Configuration[ConnectionStringKey];
 
         var telemetry = builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics => metrics
@@ -69,6 +70,7 @@ internal static class TelemetryExtentions
         if (!string.IsNullOrWhiteSpace(builder.Configuration[ConnectionStringKey]))
         {
             telemetry.UseAzureMonitor();
+            telemetry.UseAzureMonitor(options => options.ConnectionString = connectionString);
         }
     }
 }
