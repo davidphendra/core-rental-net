@@ -168,9 +168,9 @@ stages:
               set -euo pipefail
               curl -fsSL https://aka.ms/install-azd.sh | bash -s -- --version $(azdVersion)
               export PATH="$HOME/.azd/bin:$PATH"
-              azd extension install azure.ai.agents --yes --no-prompt
-              azd extension install azure.ai.projects --yes --no-prompt
-              azd extension install microsoft.foundry --yes --no-prompt
+              azd extension install azure.ai.agents --no-prompt
+              azd extension install azure.ai.projects --no-prompt
+              azd extension install microsoft.foundry --no-prompt
             displayName: 'Install azd and the Foundry extensions'
 
           # AzureCLI@2 resolves its connection before its script runs, so the service connection
