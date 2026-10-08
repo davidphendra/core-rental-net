@@ -8,11 +8,12 @@
 #
 # Two stages:
 #   CI     - restore, build and test agentfoundry/AgentFoundry.sln.
-#   Deploy - `azd deploy` after a manual approval on the ADO Environment below.
+#   Deploy - `azd provision` then `azd deploy`, after a manual approval on the ADO Environment below.
 #
 # Decisions this file encodes:
-#   - Deploy only. The Foundry project and the model deployment already exist and are pinned in
-#     azure.yaml, so the pipeline registers new agent versions and never provisions.
+#   - Provision, then deploy. azure.yaml pins the existing Foundry project, so `azd provision`
+#     reconciles the declared model deployments into it and populates the project outputs the
+#     agent services read; the two `azd deploy` calls then register new agent versions.
 #   - Secretless. azd signs in with a workload identity federated token from the ARM service
 #     connection; no client secret is stored anywhere.
 #   - Configuration comes from the `core-rental-foundry` variable group, which must exist (with
@@ -55,7 +56,9 @@ pool:
 variables:
   # Create this group under Pipelines -> Library with:
   #   AZURE_SUBSCRIPTION_ID, AZURE_LOCATION, AZURE_AI_MODEL_DEPLOYMENT_NAME, AZURE_AI_PROJECT_ID,
-  #   AZURE_AI_PROJECT_ENDPOINT, AZURE_SERVICE_CONNECTION (the agent tree's own ARM service connection)
+  #   AZURE_AI_PROJECT_ENDPOINT, AZURE_SERVICE_CONNECTION (the agent tree's own ARM service connection),
+  #   APPLICATIONINSIGHTS_CONNECTION_STRING, CATALOGTOOLS__MCPENDPOINT, DOTNET_ENVIRONMENT,
+  #   ECHOAGENT__AGENTNAME, ECHOAGENT__ISENABLED
   # None of them is a secret. AZURE_AI_PROJECT_ID is the project's ARM resource id, not its endpoint;
   # see the note on `azd env set` below for why both exist.
   - group: 'core-rental-foundry'
@@ -216,7 +219,17 @@ stages:
                 # Fail fast with a clear message rather than letting azd read an unset value. These
                 # come from the `core-rental-foundry` variable group; a macro ADO could not resolve
                 # arrives as the literal `$(...)`, which is not empty, so both are rejected.
-                for name in AZURE_SUBSCRIPTION_ID AZURE_LOCATION AZURE_AI_MODEL_DEPLOYMENT_NAME AZURE_AI_PROJECT_ID AZURE_AI_PROJECT_ENDPOINT; do
+                for name in \
+                  AZURE_SUBSCRIPTION_ID \
+                  AZURE_LOCATION \
+                  AZURE_AI_MODEL_DEPLOYMENT_NAME \
+                  AZURE_AI_PROJECT_ID \
+                  AZURE_AI_PROJECT_ENDPOINT \
+                  APPLICATIONINSIGHTS_CONNECTION_STRING \
+                  CATALOGTOOLS__MCPENDPOINT \
+                  DOTNET_ENVIRONMENT \
+                  ECHOAGENT__AGENTNAME \
+                  ECHOAGENT__ISENABLED; do
                   value="${!name:-}"
                   case "$value" in
                     ''|*'$('*)
@@ -225,20 +238,29 @@ stages:
                   esac
                 done
 
-                # .azure/ is not committed, so every run builds a fresh azd environment. The project
-                # itself is not provisioned here — azure.yaml pins the existing endpoint.
+                # .azure/ is not committed, so every run builds a fresh azd environment.
                 azd env new "$AZD_ENVIRONMENT" --no-prompt
                 azd env set AZURE_SUBSCRIPTION_ID "$AZURE_SUBSCRIPTION_ID"
                 azd env set AZURE_LOCATION "$AZURE_LOCATION"
                 azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME "$AZURE_AI_MODEL_DEPLOYMENT_NAME"
                 azd env set AZURE_AI_PROJECT_ENDPOINT "$AZURE_AI_PROJECT_ENDPOINT"
-                # Required, and not derivable from the endpoint: `azd provision` normally supplies this
-                # as a provision output, and this pipeline deliberately never provisions. The agent
-                # publisher resolves its target through the microsoft.foundry provider, which reads
-                # AZURE_AI_PROJECT_ID and fails with "Microsoft Foundry project ID is required"
-                # without it. It must be the ARM resource id, and it must name the same project as the
-                # endpoint above or the extension rejects the pair as mismatched.
+                # Required, and not derivable from the endpoint. It must be the ARM resource id, and it
+                # must name the same project as the endpoint above or the extension rejects the pair as
+                # mismatched. It is set here so the project is targeted before provisioning runs.
                 azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
+
+                # Reconcile the model deployments azure.yaml declares into the pinned project and
+                # populate the project outputs the agent services read. azure.yaml sets `endpoint:`,
+                # so this connects to the existing project rather than creating one.
+                azd provision --no-prompt
+
+                # Variables the agent services read through azure.yaml `env:`. Without these the
+                # deployed agents start with the setting empty.
+                azd env set APPLICATIONINSIGHTS_CONNECTION_STRING "$APPLICATIONINSIGHTS_CONNECTION_STRING"
+                azd env set CATALOGTOOLS__MCPENDPOINT "$CATALOGTOOLS__MCPENDPOINT"
+                azd env set DOTNET_ENVIRONMENT "$DOTNET_ENVIRONMENT"
+                azd env set ECHOAGENT__AGENTNAME "$ECHOAGENT__AGENTNAME"
+                azd env set ECHOAGENT__ISENABLED "$ECHOAGENT__ISENABLED"
 
                 # One service per call, not `azd deploy` bare. Both agent services point at the same
                 # project directory, and an unqualified deploy packages them in parallel: the two
@@ -255,3 +277,8 @@ stages:
               AZURE_AI_MODEL_DEPLOYMENT_NAME: '$(AZURE_AI_MODEL_DEPLOYMENT_NAME)'
               AZURE_AI_PROJECT_ID: '$(AZURE_AI_PROJECT_ID)'
               AZURE_AI_PROJECT_ENDPOINT: '$(AZURE_AI_PROJECT_ENDPOINT)'
+              APPLICATIONINSIGHTS_CONNECTION_STRING: '$(APPLICATIONINSIGHTS_CONNECTION_STRING)'
+              CATALOGTOOLS__MCPENDPOINT: '$(CATALOGTOOLS__MCPENDPOINT)'
+              DOTNET_ENVIRONMENT: '$(DOTNET_ENVIRONMENT)'
+              ECHOAGENT__AGENTNAME: '$(ECHOAGENT__AGENTNAME)'
+              ECHOAGENT__ISENABLED: '$(ECHOAGENT__ISENABLED)'
