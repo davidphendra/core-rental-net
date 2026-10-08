@@ -67,9 +67,12 @@ internal static class TelemetryExtentions
                 .AddService(ServiceName)
                 .AddAttributes(build.ResourceAttributes()));
 
-        if (!string.IsNullOrWhiteSpace(builder.Configuration[ConnectionStringKey]))
+        // Exactly one call, with the connection string in it. The exporter rejects a second registration
+        // on the same service collection - "Multiple calls to UseAzureMonitorExporter" - and it does so
+        // while the host is starting, so attaching the exporter and then configuring it is not a tidier
+        // two-step: it is a deployment that will not come up.
+        if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            telemetry.UseAzureMonitor();
             telemetry.UseAzureMonitor(options => options.ConnectionString = connectionString);
         }
     }

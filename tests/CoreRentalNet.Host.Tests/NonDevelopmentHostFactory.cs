@@ -16,8 +16,19 @@ namespace CoreRentalNet.Host.Tests;
 public sealed class NonDevelopmentHostFactory : WebApplicationFactory<Program>
 {
     private readonly string _database;
+    private readonly IEnumerable<KeyValuePair<string, string?>> _settings;
 
-    public NonDevelopmentHostFactory(string database) => _database = database;
+    /// <summary>Settings this start needs on top of the two every start is given.</summary>
+    /// <remarks>
+    /// Host configuration rather than app configuration, because the entry point reads every setting it
+    /// names while it is still composing the builder. A setting added here reaches the same reads an
+    /// App Service application setting would, which is how a test can stand in for a deployment.
+    /// </remarks>
+    public NonDevelopmentHostFactory(string database, IEnumerable<KeyValuePair<string, string?>>? settings = null)
+    {
+        _database = database;
+        _settings = settings ?? [];
+    }
 
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -29,6 +40,7 @@ public sealed class NonDevelopmentHostFactory : WebApplicationFactory<Program>
         [
             new KeyValuePair<string, string?>("Auth0:Enabled", "false"),
             new KeyValuePair<string, string?>("Sqlite:DatabasePath", _database),
+            .. _settings,
         ]));
 
         return base.CreateHost(builder);
