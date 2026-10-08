@@ -22,7 +22,9 @@ public static class EchoReverseRegistration
         services.AddKeyedSingleton<AIAgent>(
             echoAgentIdentity.AgentName,
             EchoWorkflowFactory.Build()
-                                    .AsAIAgent(name: echoAgentIdentity.AgentName)
+                                    .AsAIAgent(
+                                        name: echoAgentIdentity.AgentName,
+                                        includeWorkflowOutputsInResponse: true)
         );
 
         return echoAgentIdentity.AgentName;
