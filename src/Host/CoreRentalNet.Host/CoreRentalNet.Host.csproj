@@ -54,4 +54,11 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="App_Data\corerental.db" />
+    <Content Include="App_Data\corerental.db" />
+    <None Remove="App_Data\product_embedding.db" />
+    <Content Include="App_Data\product_embedding.db" />
+  </ItemGroup>
+
 </Project>
