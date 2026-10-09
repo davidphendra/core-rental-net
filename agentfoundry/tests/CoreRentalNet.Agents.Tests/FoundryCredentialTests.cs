@@ -22,7 +22,7 @@ public sealed class FoundryCredentialTests
         => FoundryCredential.Create(
                 new EnvironmentNamed(Environments.Production),
                 Configuration(("FOUNDRY_AGENT_INSTANCE_CLIENT_ID", "123456")))
-            .Should().BeOfType<ManagedIdentityCredential>();
+            .Should().BeOfType<DefaultAzureCredential>();
 
     private static IConfiguration Configuration(params (string Key, string Value)[] values)
         => new ConfigurationBuilder()
