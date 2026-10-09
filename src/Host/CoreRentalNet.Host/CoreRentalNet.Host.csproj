@@ -55,10 +55,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\..\shared\data\products.json">
+      <Link>App_Data/products.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Remove="App_Data\corerental.db" />
-    <Content Include="App_Data\corerental.db" />
+    <Content Include="App_Data\corerental.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Remove="App_Data\product_embedding.db" />
-    <Content Include="App_Data\product_embedding.db" />
+    <Content Include="App_Data\product_embedding.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
