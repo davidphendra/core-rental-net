@@ -80,14 +80,17 @@ internal sealed class AuthorisedMcpChatClient(
         // A catalogue reader with nothing to search with is offered no tools either: no connection to list them
         // from, or no caller token to search with. The run's own instances are reached here, at the call, because
         // the graph that hosts this decorator is resolved once and outlives the request.
-        var accessTokens = runScope.Resolve<IMcpAccessTokenService>();
+        var accessTokenService = runScope.Resolve<IMcpAccessTokenService>();
         var mcpAuthorizationConnection = runScope.Resolve<IMcpAuthorizationConnection>();
+        var accessTokenHeaderReader = runScope.Resolve<AccessTokenHeaderReader>();
 
-        if (!mcpAuthorizationConnection.IsConfigured || string.IsNullOrEmpty(accessTokens.Token))
+        accessTokenService.Token = accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
+
+        if (!mcpAuthorizationConnection.IsConfigured || string.IsNullOrEmpty(accessTokenService.Token))
         {
             logger.LogInformation(
                 "Chat call prepared: no MCP tools; caller token {Token}.",
-                string.IsNullOrEmpty(accessTokens.Token) ? "absent" : "present");
+                string.IsNullOrEmpty(accessTokenService.Token) ? "absent" : "present");
 
             return (messages, WithoutTools(options));
         }
