@@ -17,5 +17,5 @@ public sealed class FoundryCredentialTests
     [Fact]
     public void Anything_else_presents_the_managed_identity()
         => FoundryCredential.Create(new EnvironmentNamed(Environments.Production))
-            .Should().BeOfType<DefaultAzureCredential>();
+            .Should().BeOfType<ManagedIdentityCredential>();
 }

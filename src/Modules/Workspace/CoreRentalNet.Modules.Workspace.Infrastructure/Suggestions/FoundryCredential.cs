@@ -22,5 +22,5 @@ internal static class FoundryCredential
     public static TokenCredential Create(IHostEnvironment environment)
         => environment.IsDevelopment()
             ? new AzureCliCredential()
-            : new DefaultAzureCredential();
+            : new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
 }
