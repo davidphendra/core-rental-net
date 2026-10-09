@@ -19,9 +19,6 @@ internal static class FoundryCredential
         if (environment.IsDevelopment())
             return new AzureCliCredential();
 
-        var agentClientId = configuration["FOUNDRY_AGENT_INSTANCE_CLIENT_ID"];
-        return new ManagedIdentityCredential(
-            ManagedIdentityId.FromUserAssignedClientId(agentClientId)
-        );
+        return new DefaultAzureCredential();
     }
 }
