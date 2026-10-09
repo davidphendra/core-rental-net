@@ -44,6 +44,8 @@ services:
             APPLICATIONINSIGHTS_CONNECTION_STRING: ${APPLICATIONINSIGHTS_CONNECTION_STRING}
             CATALOGTOOLS__MCPENDPOINT: ${CATALOGTOOLS__MCPENDPOINT}
             DOTNET_ENVIRONMENT: ${DOTNET_ENVIRONMENT}
+            FOUNDRY_AGENT_INSTANCE_CLIENT_ID: ${FOUNDRY_AGENT_INSTANCE_CLIENT_ID}
+
             # FOUNDRY_AGENT_NAME is deliberately NOT mapped here: the hosting platform reserves the FOUNDRY_
             # prefix and injects the resolved agent name itself. Mapping it from an azd variable nobody set once
             # injected it empty, and an agent name that is present and empty is worse than one that is absent.
