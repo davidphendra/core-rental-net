@@ -1,7 +1,8 @@
 using System.ClientModel;
 using System.ClientModel.Primitives;
-using Azure.AI.Projects;
+using Azure.AI.Extensions.OpenAI;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Foundry;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Hosting;
 using OpenAI;
@@ -103,11 +104,18 @@ internal static class AgentFoundryWorkspaceSuggestionAdapterFactory
         return options;
     }
 
-    /// <summary>The options a Foundry project is reached with, including the same policy.</summary>
-    private static AIProjectClientOptions OptionsForTheHostedClient(
-        AgentFoundryConnectionSetting connectionSetting)
+    /// <summary>The options the per-agent endpoint client is built with, including the policy that states the token.</summary>
+    /// <remarks>
+    /// <b>On the per-agent options, and that is not a preference.</b> The agent-endpoint client builds a pipeline
+    /// of its own from these options - <c>GetProjectResponsesClientForAgentEndpoint</c> calls <c>CreatePipeline</c>
+    /// rather than reusing the project client's - so a policy added to <c>AIProjectClientOptions</c> never reaches
+    /// the request: the token goes out unset, which is silent, and a dropped token is indistinguishable from a
+    /// catalogue that refused the caller. The agent-endpoint constructor documents that policies added here execute
+    /// on the per-agent traffic, which is the traffic that carries the token.
+    /// </remarks>
+    internal static ProjectOpenAIClientOptions OptionsForTheHostedAgent()
     {
-        var options = new AIProjectClientOptions
+        var options = new ProjectOpenAIClientOptions
         {
             NetworkTimeout = AgentNetworkTimeout
         };
@@ -129,16 +137,16 @@ internal static class AgentFoundryWorkspaceSuggestionAdapterFactory
 
     /// <summary>A Foundry project: the per-agent endpoint, reached with the application's own identity.</summary>
     /// <remarks>
-    /// The options are not decoration. <c>AsAIAgent(client, endpoint)</c> reuses this project client's pipeline
-    /// rather than building its own, so the network timeout stated here is the one the agent call runs under;
+    /// <b>Built by the agent-endpoint constructor rather than by <c>AIProjectClient.AsAIAgent</c>.</b> The two take
+    /// different options, and the policy that states the run's token only reaches the wire on the per-agent options
+    /// this constructor is given. The network timeout stated there is likewise the one the agent call runs under;
     /// without it the call inherits the 100-second default and a long run is cancelled and retried.
     /// </remarks>
     private static AIAgent Hosted(
         AgentFoundryConnectionSetting connectionSetting,
         IHostEnvironment hostEnvironment)
-        => new AIProjectClient(
-                new Uri(connectionSetting.ProjectEndpoint),
-                FoundryCredential.Create(hostEnvironment),
-                OptionsForTheHostedClient(connectionSetting))
-            .AsAIAgent(AgentEndpoint(connectionSetting));
+        => new FoundryAgent(
+            AgentEndpoint(connectionSetting),
+            FoundryCredential.Create(hostEnvironment),
+            OptionsForTheHostedAgent());
 }

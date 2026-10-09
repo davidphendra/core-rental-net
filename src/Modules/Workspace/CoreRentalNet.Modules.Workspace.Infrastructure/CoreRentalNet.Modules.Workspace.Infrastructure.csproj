@@ -10,6 +10,9 @@
          here rather than in the host because this is the only project that names them. -->
     <PackageReference Include="Microsoft.Agents.AI.Foundry" />
     <PackageReference Include="Azure.AI.Projects" />
+    <!-- The per-agent endpoint client options the hosted agent is built with (ProjectOpenAIClientOptions). Named
+         directly rather than reached transitively, because the token policy must be stated on these options. -->
+    <PackageReference Include="Azure.AI.Extensions.OpenAI" />
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" />
