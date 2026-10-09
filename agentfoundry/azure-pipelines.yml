@@ -261,6 +261,7 @@ stages:
                 azd env set DOTNET_ENVIRONMENT "$DOTNET_ENVIRONMENT"
                 azd env set ECHOAGENT__AGENTNAME "$ECHOAGENT__AGENTNAME"
                 azd env set ECHOAGENT__ISENABLED "$ECHOAGENT__ISENABLED"
+                azd env set FOUNDRY_AGENT_INSTANCE_CLIENT_ID "$FOUNDRY_AGENT_INSTANCE_CLIENT_ID"
 
                 # One service per call, not `azd deploy` bare. Both agent services point at the same
                 # project directory, and an unqualified deploy packages them in parallel: the two
@@ -282,3 +283,4 @@ stages:
               DOTNET_ENVIRONMENT: '$(DOTNET_ENVIRONMENT)'
               ECHOAGENT__AGENTNAME: '$(ECHOAGENT__AGENTNAME)'
               ECHOAGENT__ISENABLED: '$(ECHOAGENT__ISENABLED)'
+              FOUNDRY_AGENT_INSTANCE_CLIENT_ID: '$(FOUNDRY_AGENT_INSTANCE_CLIENT_ID)'

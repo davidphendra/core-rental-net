@@ -1,6 +1,7 @@
 using Azure.Identity;
 using AwesomeAssertions;
 using CoreRentalNet.Agents.Shared.Model;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -11,11 +12,20 @@ public sealed class FoundryCredentialTests
 {
     [Fact]
     public void Development_presents_the_developer_sign_in()
-        => FoundryCredential.Create(new EnvironmentNamed(Environments.Development))
+        => FoundryCredential.Create(
+                new EnvironmentNamed(Environments.Development),
+                Configuration(("FOUNDRY_AGENT_INSTANCE_CLIENT_ID", "123456")))
             .Should().BeOfType<AzureCliCredential>();
 
     [Fact]
     public void Anything_else_presents_the_managed_identity()
-        => FoundryCredential.Create(new EnvironmentNamed(Environments.Production))
+        => FoundryCredential.Create(
+                new EnvironmentNamed(Environments.Production),
+                Configuration(("FOUNDRY_AGENT_INSTANCE_CLIENT_ID", "123456")))
             .Should().BeOfType<ManagedIdentityCredential>();
+
+    private static IConfiguration Configuration(params (string Key, string Value)[] values)
+        => new ConfigurationBuilder()
+            .AddInMemoryCollection(values.ToDictionary(pair => pair.Key, pair => (string?)pair.Value))
+            .Build();
 }

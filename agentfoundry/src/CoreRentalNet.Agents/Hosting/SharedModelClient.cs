@@ -21,7 +21,10 @@ internal static class SharedModelClient
 
         try
         {
-            var credential = FoundryCredential.Create(builder.WebApplicationBuilder.Environment);
+            var credential = FoundryCredential.Create(
+                builder.WebApplicationBuilder.Environment,
+                builder.Configuration
+            );
 
             return AgentFoundryRegistration.BuildChatClient(builder.Configuration, credential, modelTransport);
         }

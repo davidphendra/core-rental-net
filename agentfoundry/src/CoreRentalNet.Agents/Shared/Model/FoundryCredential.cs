@@ -14,8 +14,14 @@ namespace CoreRentalNet.Agents.Shared.Model;
 /// </remarks>
 internal static class FoundryCredential
 {
-    public static TokenCredential Create(IHostEnvironment environment)
-        => environment.IsDevelopment()
-            ? new AzureCliCredential()
-            : new ManagedIdentityCredential(ManagedIdentityId.SystemAssigned);
+    public static TokenCredential Create(IHostEnvironment environment, IConfiguration configuration)
+    {
+        if (environment.IsDevelopment())
+            return new AzureCliCredential();
+
+        var agentClientId = configuration["FOUNDRY_AGENT_INSTANCE_CLIENT_ID"];
+        return new ManagedIdentityCredential(
+            ManagedIdentityId.FromUserAssignedClientId(agentClientId)
+        );
+    }
 }
