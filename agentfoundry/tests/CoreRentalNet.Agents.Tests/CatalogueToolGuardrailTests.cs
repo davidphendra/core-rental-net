@@ -91,17 +91,16 @@ public sealed class CatalogueToolGuardrailTests
             argumentGuards,
             [new ToolResultRecordingGuard(ledger)]);
 
-        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance)
-        {
-            Token = "the-callers-token",
-        };
+        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
 
         return new AuthorisedMcpChatClient(
             new FunctionInvokingChatClient(new OneToolCallThenAnswer(), NullLoggerFactory.Instance),
             new StubRunScope(
                 (typeof(IMcpAccessTokenService), tokens),
                 (typeof(IMcpAuthorizationConnection), new OfferingMcpAuthorizationConnection(tool)),
-                (typeof(IToolGuardPipeline), pipeline)),
+                (typeof(IToolGuardPipeline), pipeline),
+                (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.Carrying(
+                    AccessTokenHeader.Name, "the-callers-token"))),
             true,
             TestGuardrails.AllowList,
             NullLogger<AuthorisedMcpChatClient>.Instance);

@@ -331,12 +331,15 @@ public sealed class WorkflowTests
     public async Task A_catalogue_that_refuses_the_call_ends_the_run_unavailable()
     {
         var runLog = new RunLogRecordingLoggerFactory();
-        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance)
-        {
-            Token = "the-callers-token",
-        };
+        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var client = new ScriptedChatClient(Verification, Expansion);
-        var agent = Build(client, runLog, tokens, catalogue: new RefusingMcpAuthorizationConnection());
+        var agent = Build(
+            client,
+            runLog,
+            tokens,
+            callerAccessTokenHeaderReader: TheInvocationARunArrivesIn.Carrying(
+                AccessTokenHeader.Name, "the-callers-token"),
+            catalogue: new RefusingMcpAuthorizationConnection());
 
         var text = (await agent.RunAsync(Request)).Text!;
 

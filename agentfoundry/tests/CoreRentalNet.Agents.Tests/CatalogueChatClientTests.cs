@@ -94,7 +94,8 @@ public sealed class CatalogueChatClientTests
             new StubRunScope(
                 (typeof(IMcpAccessTokenService), tokens),
                 (typeof(IMcpAuthorizationConnection), catalogue),
-                (typeof(IToolGuardPipeline), TestGuardrails.Pipeline)),
+                (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+                (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.CarryingNothing())),
             readsCatalogue,
             TestGuardrails.AllowList,
             NullLogger<AuthorisedMcpChatClient>.Instance);
