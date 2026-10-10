@@ -47,7 +47,7 @@ public sealed class DiscoveryUnavailableTests
         var (app, _, logs) = Host(Configured(), new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.NotBuilt));
         using var host = app;
 
-        app.GateSimilarityOnIndex();
+        app.CheckSimilarityOnVectorEmbedding();
 
         app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeFalse();
         logs.Entries.Should().Contain(entry => entry.Level == LogLevel.Error && entry.Message.Contains("unavailable"));
@@ -60,7 +60,7 @@ public sealed class DiscoveryUnavailableTests
         var (app, freshness, logs) = Host(Configured(), new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.Usable));
         using var host = app;
 
-        app.GateSimilarityOnIndex();
+        app.CheckSimilarityOnVectorEmbedding();
 
         freshness.Checks.Should().Be(1, "the check has to have run for this to prove anything");
         app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeTrue();
@@ -75,7 +75,7 @@ public sealed class DiscoveryUnavailableTests
             new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.Stale("the catalogue has changed since the vectors were built")));
         using var host = app;
 
-        app.GateSimilarityOnIndex();
+        app.CheckSimilarityOnVectorEmbedding();
 
         // The operator has to be able to act on the line, so it says which value disagreed rather than only that
         // something did.
@@ -93,7 +93,7 @@ public sealed class DiscoveryUnavailableTests
             new StubCatalogIndexFreshnessService(() => throw new InvalidOperationException("the database is unreadable")));
         await using var host = app;
 
-        var gate = () => app.GateSimilarityOnIndex();
+        var gate = () => app.CheckSimilarityOnVectorEmbedding();
 
         gate.Should().NotThrow();
         app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeFalse();
@@ -109,7 +109,7 @@ public sealed class DiscoveryUnavailableTests
         var (app, freshness, _) = Host(Unconfigured(), new StubCatalogIndexFreshnessService(() => CatalogIndexVerdict.NotBuilt));
         using var host = app;
 
-        app.GateSimilarityOnIndex();
+        app.CheckSimilarityOnVectorEmbedding();
 
         freshness.Checks.Should().Be(0);
         app.Services.GetRequiredService<CatalogIndexAvailability>().IsUsable.Should().BeTrue();

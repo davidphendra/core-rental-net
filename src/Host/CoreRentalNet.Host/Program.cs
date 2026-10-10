@@ -69,6 +69,6 @@ await app.ApplyMigrationsAsync();
 
 // Vectors that are absent or stale refuse the similarity search and name the tool to run; they do not stop
 // the application.
-app.GateSimilarityOnIndex();
+app.CheckSimilarityOnVectorEmbedding();
 
 await app.RunAsync();
