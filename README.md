@@ -171,6 +171,28 @@ The metadata is not decoration; it is the bridge between a customer's words and 
 
 Without the generated metadata and the widened index the same sentence matches nothing — which is the whole point of generating it.
 
+### 3.7 How it works — end to end
+
+The catalogue is built once; after that every customer follows the same walk. Each step below is what the customer does, what the system does under it, and where that lives.
+
+1. 🔑 **Sign in with Auth0.** The header's sign-in link leaves for Auth0 and returns to `/account/callback` (`AccountController`, `SignInRedirect.razor`). The role is read from the access token's permissions (`RoleClaims`) and the permissions become claims (`PermissionClaims`); the gate model is [8.7](#87-enterprise-identity-and-rbac). Signed-out, the funnel still works — identity is **additive**.
+2. 🎨 **Open the builder.** `/builder` (`Builder.razor`) draws the seven slots on the canvas (`SlotCanvas.razor`), with capacities from `Workspace:SlotCapacity`. The panels and the picker search the catalogue with `SearchField.razor` — a **BM25** name search, and the **semantic** search where the caller is entitled to it.
+3. 💬 **Type a sentence.** The suggestion panel (`SuggestionPanel.razor`) starts a run against `/suggestions`, carrying the caller's token, and is gated by `WorkspaceSuggestionPolicy` (closed by default). The agent streams typed events — `stageStarted`, `stageCompleted`, `retry`, `candidate`, `completed` — which `SuggestionPanelState.cs` turns into the lines the customer reads ([9.6](#96-the-typed-event-stream)).
+4. ✅ **Choose a setup.** Each candidate is a `SuggestedProductCard.razor`; applying one puts its lines on the canvas, and applying over a non-empty workspace confirms first (`CompositionConfirmDialog.razor`).
+5. 🧾 **Review and rent.** `Review.razor` collects the delivery address (`DeliveryAddressField.razor`) and the customer types `this is a demo` (`DemoConfirmDialog.razor`, checked by `DemoConfirmation`). The first month plus delivery (`Rentals:DeliveryFeeAmount`) is recorded as an invoice, and `OrderConfirmation.razor` shows the order.
+6. 🔁 **Afterwards.** The scheduler (`RentalScheduler`, every `Rentals:SchedulerIntervalMinutes`) activates the rental, raises each monthly renewal exactly once, and honours a cancellation at the end of the paid month.
+
+**Under the hood.** The catalogue the walk reads is generated once, offline — the Hugging Face dataset through `CatalogPopulate` and `CatalogIngestion` ([3.5](#35-where-the-catalogue-comes-from), [8.6](#86-the-catalogue-provenance-generation-and-ingestion)). The agent run behind step 3 is the six-stage workflow with its retry edge ([9.4](#94-the-workspace-suggestion-graph)). Every step runs under the caller's own roles and permissions ([8.7](#87-enterprise-identity-and-rbac), [10.4](#104-permissions-and-gates)).
+
+| Stage | What happens | Where it lives |
+|---|---|---|
+| 🔑 Sign in | Auth0 OIDC returns to `/account/callback`; role and permissions lifted | `AccountController` · [8.7](#87-enterprise-identity-and-rbac) |
+| 🎨 Design | seven slots on the canvas; catalogue searched by BM25 and semantic | `Builder.razor` · `SlotCanvas.razor` |
+| 💬 Ask | a run starts with the caller's token; typed events stream back | `SuggestionPanel.razor` · [9.6](#96-the-typed-event-stream) |
+| ✅ Choose | a candidate is applied to the canvas (confirmed when it is not empty) | `SuggestedProductCard.razor` |
+| 🧾 Rent | the demo phrase → first month + delivery recorded as an invoice | `Review.razor` · `DemoConfirmation` |
+| 🔁 Run | the scheduler activates, renews monthly once, cancels at period end | `RentalScheduler` |
+
 ---
 
 ## 4. Repository map
