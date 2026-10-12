@@ -1,175 +1,310 @@
 # Core Rental
 
-Rent a fully equipped office setup — desk, chair, monitors, plants, coffee — month to month, in
-Bali. Compose it on a canvas, see what it costs as you go, and rent it.
+**A multi-agent demonstration on a .NET 10 modular monolith — the product application, and the agent host it feeds.**
 
-This is a **demonstration**. No money changes hands, there is no payment provider in the code, and
-you confirm a rental by typing `this is a demo`.
+## Contents
 
-## What it does
+| Part | Sections |
+|---|---|
+| **A — Orientation** | [1. Title & status](#1-title--status) · [2. What it is](#2-what-it-is) · [3. System at a glance](#3-system-at-a-glance) · [4. Repository map](#4-repository-map) · [5. New here? Start with this](#5-new-here-start-with-this) · [6. Requirements](#6-requirements) · [7. Quick start](#7-quick-start) |
+| **B — Architecture** | [8. The application](#8-architecture--the-application) · [9. The agent host](#9-architecture--the-agent-host) · [10. How the two connect](#10-how-the-two-connect) · [11. Domain glossary](#11-domain-glossary) |
+| **C — Reference** | [12. Configuration](#12-configuration) · [13. Testing & quality gates](#13-testing--quality-gates) · [14. Build, versioning & CI](#14-build-versioning--ci) · [15. Deployment & operations](#15-deployment--operations) |
+| **D — Help & process** | [16. Troubleshooting / FAQ](#16-troubleshooting--faq) · [17. Process & conventions](#17-process--conventions) · [18. Credits](#18-credits) |
 
-1. **Design** a workspace on a fixed canvas: seven slots, one desk, one chair, up to three
-   monitors, a lamp, a plant, a coffee station and a relax zone.
-2. **Rent** it. You give a delivery address and type the phrase; the first month and a one-time
-   delivery charge are recorded as an invoice and settled immediately.
-3. **Work.** A background run schedules the delivery, activates the rental, and raises each monthly
-   renewal exactly once until you cancel — which takes effect at the end of the month you have
-   already paid for.
+---
 
-## Requirements
+## 1. Title & status
 
-- **.NET SDK 10.0.400** (pinned in `global.json`)
-- **Chromium for the browser suite.** Install it once with
-  `pwsh tests/CoreRentalNet.E2E/bin/Debug/net10.0/playwright.ps1 install chromium`.
-  Everything else runs without it. `pwsh` ships with GitHub runners; on macOS and Linux you can
-  also use `npx playwright install chromium`.
+### 1.1 Name and one-line description
 
-## Run it
+The application is branded **Core Rental** (`src/Host/CoreRentalNet.Host/Components/App.razor` sets the title *"Core Rental — your Bali office, delivered"*; `AppHeader.razor` shows the brand). It is two deployables built from one repository:
+
+- 🏢 **CoreRentalNet** — the Blazor application and module tree (`CoreRentalNet.sln`).
+- 🤖 **AgentFoundry** — the hosted multi-agent service (`agentfoundry/AgentFoundry.sln`).
+
+### 1.2 Status
+
+Badges are deliberately **not** used: several signals below cannot be represented truthfully by a badge. This table is the current, code- and run-derived state.
+
+| Signal | Where | State |
+|---|---|---|
+| 🚀 Release build | Azure DevOps — `azure-pipelines.yml` | Authority for version + artifact |
+| 🔁 PR build / tests | GitHub Actions — `.github/workflows/ci.yml` | Triggers on push to `main`; on the remote since **2026-10-06** |
+| 🆔 Remote | `origin` → `github.com/davidphendra/core-rental-net` | Present |
+| 🧪 Non-browser tests | `dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"` | ✅ **799 passed / 0 failed** (2026-10-12) |
+| 🤖 Agent tests | `cd agentfoundry && dotnet test AgentFoundry.sln` | ✅ **199 passed / 0 failed** (2026-10-12) |
+| 🌐 Browser tests | `dotnet test tests/CoreRentalNet.E2E` | ⚠️ **121 total — 54 passed / 66 failed / 1 skipped** (2026-10-12) |
+| ⚖️ License | `git ls-files` | No `LICENSE` file is declared |
+
+The GitHub workflow builds and tests `CoreRentalNet.sln` only; the agent tree's suite does **not** run in it.
+
+### 1.3 Demonstration disclaimer
+
+> ⚠️ **This is a demonstration.** No money changes hands, there is no payment provider in the code, and you confirm a rental by typing **`this is a demo`**. The phrase is a constant — `Rentals.Application/Rules/DemoConfirmation.cs` — and a test proves capitalisation and surrounding spaces do not matter.
+
+---
+
+## 2. What it is
+
+### 2.1 The product in one paragraph
+
+Rent a fully equipped office setup — desk, chair, monitors, plants, coffee — month to month, in Bali. Compose it on a fixed canvas, see what it costs as you go, and rent it.
+
+### 2.2 The three-step journey
+
+1. 🎨 **Design.** Compose a workspace on a fixed canvas. The capacity of each slot is fixed in `Workspace:SlotCapacity` (`src/Host/CoreRentalNet.Host/appsettings.json`):
+
+   | Slot | Desk | Chair | Monitor | Lamp | Plant | CoffeeStation | RelaxZone |
+   |---|---|---|---|---|---|---|---|
+   | Capacity | 1 | 1 | 3 | 1 | 1 | 1 | 1 |
+
+2. 🛒 **Rent.** Give a delivery address and type the demo phrase. The first month plus a one-time delivery charge (`Rentals:DeliveryFeeAmount`, default `750000` IDR; `TaxRate`, default `0`) are recorded as an invoice and settled immediately.
+3. 🔁 **Work.** A background run (`Rentals:SchedulerIntervalMinutes`, default `60`) schedules the delivery, activates the rental, and raises each monthly renewal exactly once until you cancel — cancellation taking effect at the end of the month already paid for.
+
+### 2.3 What is deliberately absent
+
+Each omission is a design decision proved by code, not an oversight. `tests/CoreRentalNet.ArchitectureTests` holds tests for the first and second; the third follows from the scheduler being the only thing that advances an order.
+
+| ❌ Absent | 💡 Why it is absent by construction |
+|---|---|
+| 💳 Payment provider | There is **no payment package** in `Directory.Packages.props` and `NoPaymentCodeTests` asserts it. Payment cannot fail, so there is no retry, dunning or failure state to model. |
+| 👤 Accounts | A draft is addressed by an opaque token in an `HttpOnly` cookie (`Host/Infrastructure/DraftTokenMiddleware.cs`); an order by a token in its confirmation link. Numbers are labels, never credentials. |
+| 🛡️ Administrator | The only thing that moves an order forward is the schedule (`Rentals.Application/Scheduling/RentalScheduler.cs`). |
+
+### 2.4 The two audiences
+
+- 🧱 **Application team** → `src/`, `CoreRentalNet.sln` — the modular monolith and its Blazor host.
+- 🤖 **Agent team** → `agentfoundry/`, `AgentFoundry.sln` — the Foundry hosted agents and their workflow.
+
+---
+
+## 3. System at a glance
+
+### 3.1 The two deployables
+
+| Deployable | Solution | Role | Ships |
+|---|---|---|---|
+| 🏢 **CoreRentalNet** | `CoreRentalNet.sln` | The product application; also **hosts the catalogue MCP server at `/mcp`** | Blazor app + SQLite |
+| 🤖 **AgentFoundry** | `agentfoundry/AgentFoundry.sln` | Serves Foundry hosted agents over the Responses protocol (Microsoft Agent Framework) | One container serving two named agents |
+
+### 3.2 One diagram
+
+```
+        👤 caller (browser or console)
+             │  request carries  x-client-mcp-catalog-access-token
+             ▼
+ ┌───────────────────────────────────────────────┐
+ │ 🤖 AgentFoundry container                      │
+ │   Foundry hosted agents · Responses protocol   │
+ │    • core-rental-workspace-suggestion-agent    │
+ │    • echo-reverse-agent                        │
+ │   WorkspaceSuggestion workflow                 │
+ │    6 model stages + deterministic policies     │
+ └───────────────────────┬───────────────────────┘
+                         │ MCP over HTTP — caller's token stamped per call
+                         │ 🔧 search_catalogue            (read:catalog)
+                         │ 🔧 search_similarity_catalogue (SimilaritySearch)
+                         ▼
+ ┌───────────────────────────────────────────────┐
+ │ 🏢 CoreRentalNet application                   │
+ │   Host: /mcp · REST · Swagger · Blazor          │
+ │   Modules: Catalog · Discovery · Workspace ·    │
+ │            Rentals  (+ BuildingBlocks)          │
+ │   SQLite: application db + derived vector file   │
+ └───────────────────────────────────────────────┘
+```
+
+### 3.3 The handshake in one paragraph
+
+- 🔑 The caller's access token arrives on the invocation header (`x-client-mcp-catalog-access-token`), is read once, held for the run, and stamped on **every** MCP request.
+- 🚫 The agent process holds **no** catalogue credential of its own.
+- 🛑 A run with no token reports `unavailable` rather than answering from memory.
+
+Section [10](#10-how-the-two-connect) expands this.
+
+### 3.4 What runs where
+
+| Component | 💻 Local dev | ☁️ Hosted container | Who supplies it |
+|---|---|---|---|
+| Foundry project endpoint | `.env` → `FOUNDRY_PROJECT_ENDPOINT` | injected by the platform | Platform |
+| Agent name | `FOUNDRY_AGENT_NAME` local default | injected by the platform | Platform |
+| Model deployment | `AZURE_AI_MODEL_DEPLOYMENT_NAME` | mapped in `azure.yaml` | azd |
+| Catalogue MCP endpoint | `CATALOGTOOLS__MCPENDPOINT` | mapped in `azure.yaml` | azd |
+| Caller token | request header | request header | 👤 caller — never stored |
+
+### 3.5 Where the catalogue comes from
+
+The catalogue is **generated**, not hand-written. It is built from the Hugging Face
+[`McAuley-Lab/Amazon-Reviews-2023`](https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023)
+dataset in two steps — `CatalogPopulate` reads the source products and their reviews and generates each
+product's search metadata with a local model, then `CatalogIngestion` embeds the result — before the
+application reads it. Section [8.6](#86-the-catalogue-provenance-and-ingestion) shows the whole pipeline.
+
+---
+
+## 4. Repository map
+
+### 4.1 Top level
+
+| Path | What it holds |
+|---|---|
+| `src/` | The application source — modules, building blocks, host, ingestion tool, catalog data |
+| `agentfoundry/` | The agent deployable — its own solution, source, tests, `azure.yaml` and pipeline |
+| `tests/` | The application test projects (unit, integration, architecture, browser) |
+| `specs/design/` | Design prototypes kept as references |
+| `scripts/` | `resolve-version.sh`, `write-agent-version.sh` |
+| `.github/workflows/ci.yml` | GitHub Actions: build + tests + Chromium |
+| `azure-pipelines.yml` | Azure DevOps: version resolution, build, non-browser tests, deploy |
+| `CLAUDE.md`, `CONVENTIONS.md` | Authority chain and the enforced code/test conventions |
+
+### 4.2 Application source tree
+
+```
+src/
+├── BuildingBlocks/
+│   ├── CoreRentalNet.BuildingBlocks.Domain/          Money, BusinessTime, Guard, opaque tokens
+│   ├── CoreRentalNet.BuildingBlocks.Application/     IMoneyService, IOpaqueTokenService, telemetry
+│   └── CoreRentalNet.BuildingBlocks.Infrastructure/  SqliteDatabase, embeddings, vectors, hashing
+├── Modules/
+│   ├── Catalog/        205 products, read-only in memory, no database
+│   ├── Discovery/      similarity search, name search, vector-index freshness; owns no tables
+│   ├── Workspace/      the draft: slots, quantities, delivery address, the quote
+│   └── Rentals/        orders, invoices, periods, the schedule
+├── Tools/
+│   ├── CoreRentalNet.CatalogIngestion/   the deliberate step that builds the vector index
+│   └── CoreRentalNet.CatalogPopulate/    generates products.json from the HF dataset
+│                                          (both tools build from src/Tools/Tools.sln)
+├── Host/
+│   └── CoreRentalNet.Host/   Blazor app, controllers, MCP tools, identity, design tokens
+└── shared/data/products.json   the single source of truth for every price (205 products)
+```
+
+### 4.3 Agent host tree
+
+```
+agentfoundry/
+├── AgentFoundry.sln
+├── azure.yaml                       two azure.ai.agent services, both to the same project
+├── azure-pipelines.yml
+├── shared/contracts/                JSON Schema for every stage contract
+├── src/CoreRentalNet.Agents/
+│   ├── Program.cs                   the composition root: host steps and features
+│   ├── Hosting/                     settings · telemetry · model client · default agent · startup report · .env
+│   ├── Shared/                      Agents · ChatClients · Guardrails · Mcp · Model · Prompts · Scoping · Workflows
+│   └── Features/
+│       ├── WorkspaceSuggestion/     prompts · roster · domain · stages · policies · graph
+│       └── EchoReverse/             one stage that reverses its input
+└── tests/CoreRentalNet.Agents.Tests/
+```
+
+### 4.4 Test projects
+
+| Project | Tier | Measured (2026-10-12) |
+|---|---|---|
+| `CoreRentalNet.BuildingBlocks.UnitTests` | Unit | 37 |
+| `CoreRentalNet.Modules.Catalog.UnitTests` | Unit | 70 |
+| `CoreRentalNet.Modules.Workspace.UnitTests` | Unit | 81 |
+| `CoreRentalNet.Modules.Rentals.UnitTests` | Unit | 94 |
+| `CoreRentalNet.BehaviourLock` | Behaviour lock | 37 |
+| `CoreRentalNet.IntegrationTests` | Integration | 148 |
+| `CoreRentalNet.ArchitectureTests` | Architecture | 63 |
+| `CoreRentalNet.Host.Tests` | Host | 269 |
+| `CoreRentalNet.E2E` | Browser | 121 (54 ✅ / 66 ❌ / 1 ⏭) |
+| `CoreRentalNet.E2E.LocalProvider` | Test support — a local OIDC provider | — |
+| `agentfoundry/tests/CoreRentalNet.Agents.Tests` | Agent | 199 |
+
+### 4.5 Find it fast
+
+| Want to find… | Look in |
+|---|---|
+| A price | `src/shared/data/products.json` |
+| A business rule | `src/Modules/<Module>/…Application/` (`I…Service` implementations) |
+| A persisted type | `src/Modules/<Module>/…Domain/` (plain records) |
+| The MCP tools | `src/Host/CoreRentalNet.Host/Mcp/` |
+| An enforced architecture rule | `tests/CoreRentalNet.ArchitectureTests/` |
+| An agent stage | `agentfoundry/src/CoreRentalNet.Agents/Features/WorkspaceSuggestion/Stages/` |
+| A prompt | `agentfoundry/…/Features/WorkspaceSuggestion/Prompts/*.vN.md` |
+| The system prompt for the host | `CLAUDE.md` → `CONVENTIONS.md` |
+
+---
+
+## 5. New here? Start with this
+
+### 5.1 Reading path
+
+1. **This file, §1–§3** — the shape of the system (10 min).
+2. **`CONVENTIONS.md`** — the rules the code must obey (10 min).
+3. **`src/Host/CoreRentalNet.Host/Program.cs`** — the application composition root, one line per concern (5 min).
+4. **One module end to end** — `src/Modules/Workspace/` is the smallest complete vertical slice.
+5. **`agentfoundry/src/CoreRentalNet.Agents/Program.cs`** — the agent composition root (5 min).
+6. **`agentfoundry/README.md`** — the agent deep dive (§9–§10 of this file summarise it).
+
+### 5.2 Documentation map
+
+| Question | File |
+|---|---|
+| What is this and how do I run it? | `README.md` (this file) |
+| What are the mandatory coding/test rules? | `CONVENTIONS.md` |
+| What is the authority chain and the hard rules for an agent? | `CLAUDE.md` |
+| How does the agent workflow work in full detail? | `agentfoundry/README.md` |
+| What do the design prototypes look like? | `specs/design/` |
+
+### 5.3 The authority chain
+
+Read in this order before structural work: **`CLAUDE.md` → `CONVENTIONS.md` → `README.md` → the architecture tests.** The chain is stated in `CLAUDE.md`; it is not repeated here.
+
+### 5.4 Where the record of decisions lives
+
+This repository does **not** contain a `specs/baselines.md` or a `specs/adr/` directory. The decisions that exist are recorded in `CONVENTIONS.md` (the enforced rules), in `CLAUDE.md` (the hard rules), and in the code comments that explain *why*. No separate baseline or ADR file is present.
+
+---
+
+## 6. Requirements
+
+### 6.1 Required toolchain
+
+- **.NET SDK `10.0.400`**, pinned in `global.json` (`rollForward: latestPatch`). A newer patch such as `10.0.401` satisfies the pin.
+- The solution targets `net10.0` with nullable enabled and warnings-as-errors (`Directory.Build.props`).
+
+### 6.2 Browser suite prerequisite
+
+Chromium, installed once:
+
+```bash
+pwsh tests/CoreRentalNet.E2E/bin/Debug/net10.0/playwright.ps1 install chromium
+```
+
+`pwsh` ships with GitHub runners; on macOS and Linux `npx playwright install chromium` also works. Everything else runs without it.
+
+### 6.3 Agent host prerequisites
+
+- **`azd` ≥ `1.27.1`** and the **`azure.ai.agents` extension ≥ `1.0.0-beta.9`** (declared in `agentfoundry/azure.yaml`).
+- A **Foundry project** and a model deployment (the default is `gpt-4.1-mini`).
+- A catalogue MCP endpoint to search against (the application's `/mcp`).
+
+### 6.4 Optional identity
+
+Auth0 is **optional**. With nothing configured, identity is off and the funnel works exactly as described. Turning it on is entirely configuration — see [12.2](#122-identity-settings).
+
+### 6.5 Platform notes
+
+- Start the application **from its own project directory** (see [16.1](#161-running--styling)).
+- The agent host binds `PORT` (default `8088`) and **ignores** `ASPNETCORE_URLS`.
+
+---
+
+## 7. Quick start
+
+### 7.1 Run the application
 
 ```bash
 cd src/Host/CoreRentalNet.Host
 dotnet run
 ```
 
-Open the address it prints. The database is created on first run at
-`src/Host/CoreRentalNet.Host/App_Data/corerental.db`.
+Open the address it prints. The database is created on first run at `src/Host/CoreRentalNet.Host/App_Data/corerental.db`.
 
-Two things worth knowing:
-
-- **The demo phrase is `this is a demo`**, typed into the checkout dialog. Capitalisation and
-  surrounding spaces do not matter.
-- **Start the application from its own directory**, as `dotnet run` does. A development build
-  serves its stylesheets, fonts and product images from the project directory, so starting the
-  built assembly from somewhere else gives you a working page with no styling.
-
-### Signing in — optional
-
-The funnel works entirely without an account. Signing in is additive: it puts your name and email
-on the order and gives you a list of your own orders.
-
-**With nothing configured, identity is simply off** — no sign-in link, no account routes, and the
-application behaves exactly as described above. To turn it on against your own Auth0 tenant:
-
-1. In the Auth0 dashboard, create an application of type **Regular Web Application**.
-2. Register these URLs (the port is pinned, so they stay valid). Both are required.
-   - **Allowed Callback URLs:** `http://localhost:5199/account/callback`, and
-     `http://localhost:5199/swagger/oauth2-redirect.html` if you want to try the catalogue endpoint
-     from the documentation page — the provider matches a callback exactly, so a missing entry fails
-     the flow after the redirect with nothing said on the page.
-   - **Allowed Logout URLs:** `http://localhost:5199/` — the application root, because sign-out
-     hands the provider that address to return to rather than a route of ours.
-     This one is at **Account Settings → Advanced → Allowed Logout URLs**, which is a *tenant*
-     setting, not the application's own settings page. The provider says so itself when it is
-     missing.
-3. Put your **Domain**, **Client ID** and **Client secret** in
-   `src/Host/CoreRentalNet.Host/appsettings.Local.json`, which is **gitignored** and loaded last:
-
-   ```json
-   {
-     "Auth0": {
-       "Domain": "…",
-       "ClientId": "…",
-       "ClientSecret": "…",
-       "Audience": "https://your-api-identifier",
-       "Scope": "openid profile email read:catalog",
-       "LeewaySeconds": 180
-     }
-   }
-   ```
-
-   `Audience` is the API whose access token carries the account's permissions, and `Scope` names the
-   permission the login asks for — a per-app authorization policy issues a permission only when the
-   login requested it. Neither is set in `appsettings.json`, so a deployment with no API signs in
-   exactly as it did before.
-
-   `LeewaySeconds` is how far ahead of expiry the identity SDK refreshes the access token. Its shipped
-   value of **180** (three minutes) is declared in `appsettings.json`, beside the audience and scope;
-   naming it here overrides it. It matters because a suggestion run streams, and the agent presents the
-   caller's token to the catalogue on every call for as long as the run lasts — so the margin has to
-   exceed the longest run, or a run can outlive its own token. The identity SDK's own default is 60
-   seconds, and the API's **Maximum Access Token Lifetime** must be longer than whatever is set here.
-
-   The same three values drive the development documentation page at `/swagger`, which authorizes
-   with the same client and asks for the same scopes. One thing is worth knowing about PKCE: the
-   provider documents it for clients that cannot hold a secret — single-page and native applications —
-   while a regular web application is a confidential client, so a tenant that refuses the exchange
-   without a secret for it needs a public client for that page alone:
-
-   ```json
-   {
-     "Swagger": { "ClientId": "your-public-client-id" }
-   }
-   ```
-
-   Naming one changes nothing about the sign-in, and the page uses `Auth0:ClientId` when it is unset.
-
-   `appsettings.Development.json` stays as the tracked, empty template, and **the local file is
-   read in development only** — a deployed environment ignores it entirely, so a stray copy cannot
-   override production settings. A test holds that guard in place, and another fails the build if a
-   secret appears in a file that is committed.
-
-   Precedence in development, lowest to highest: `appsettings.json` → `appsettings.Development.json`
-   → user secrets → environment variables → **`appsettings.Local.json`**. The local file is loaded
-   last, so on a developer's machine it is the final word — which is the point of it.
-
-4. **The role is read from the access token.** The tenant names one permission per role —
-   `manager:role`, `supervisor:role`, `staff:role`, `guest:role` — so the role is the permission's
-   name before `:role`, shown with its first letter capitalised. Assign a role under **User
-   Management → Users**, then open that user's **Roles** tab, and the profile's Role line follows.
-
-   A tenant that would rather put roles in the token itself has to do it with an Action, because
-   Auth0 issues roles in no token on its own: reach for `api.accessToken.setCustomClaim` (or
-   `api.idToken.setCustomClaim`) and attach the Action to the **Login** flow. The application still
-   reads the claim named by `Auth0:RoleClaimType` (default
-   `https://core-rental.periang.auth0/roles`) and any claim whose own name ends in `/roles`, in
-   addition to the role permission. With none of that, the profile's Role line says the provider
-   sent none — the honest answer rather than a label the application invented.
-
-5. **The builder is gated by the `read:catalog` permission.** Auth0 writes an account's permissions
-   into the **access token** — never the ID token — and only when the login names an API's
-   identifier as the `audience`. To set it up:
-
-   - Create an **API** with an identifier (for example `https://corerental/api`).
-   - Add the permission **`read:catalog`** on its **Permissions** tab.
-   - Under **Settings → RBAC Settings**, enable **Enable RBAC** and **Add Permissions in the Access
-     Token**.
-   - Assign the permission to a role the account holds, under the role's **Permissions** tab. A
-     `Per-app authorization` policy also needs the application granted, on the API's **Application
-     Access** tab.
-   - Set `Auth0:Audience` to the identifier and add `read:catalog` to `Auth0:Scope`, beside the
-     credentials in `appsettings.Local.json`.
-
-   The gate itself is `Authorization:CatalogRead:ClaimType` = `permissions` and `:ClaimValue` =
-   `read:catalog`. An account that carries it may open the builder; a signed-in account that does
-   not is told the builder is refused. The header's link is hidden unless the account carries the
-   claim, so the affordance and the gate agree.
-
-6. **Allow Offline Access, or a session ends at the first token expiry.** The access token Auth0 issues is
-   short-lived; the sign-in cookie is not. The application asks the identity SDK for a refresh token and the
-   SDK exchanges it whenever the access token has expired - which is what keeps a session usable past the first
-   expiry, and the SDK adds `offline_access` to the login's scopes on its own. Auth0 issues a refresh token only
-   when the API has **Allow Offline Access** switched on (**APIs → your API → Settings**). Without it the SDK
-   finds no refresh token, ends the local session and sends the customer back to sign in; a session that was
-   already signed in when the setting was turned on is asked to sign in once. **Refresh Token Rotation** on the
-   same page is worth enabling, and the SDK stores the rotated token it returns. How far ahead of expiry the
-   SDK refreshes is `Auth0:LeewaySeconds` — **180**, three minutes, by default — because a suggestion run
-   streams and the agent keeps presenting the caller's token to the catalogue while it does; the API's
-   **Maximum Access Token Lifetime** must be longer than that margin.
-
-7. Run the app and use the sign-in link in the header.
-
-**Signing out takes one extra click.** The application clears its own cookie and sends the browser
-to the provider's logout endpoint; without an `id_token_hint` the provider asks for confirmation
-before ending its own session. That is the provider's screen, not ours.
-
-A test fails the build if a client secret ever appears in a committed configuration file.
-
-For any other environment, set `Auth0__Domain`, `Auth0__ClientId` and `Auth0__ClientSecret` as
-environment variables or application settings, and register that environment's own callback and
-logout URLs in the tenant. Sign-in requires **HTTPS** outside development, because the
-authentication cookie cannot be marked `Secure` over plain HTTP.
-
-### Start over
+### 7.2 Reset the demo
 
 The catalog is read once at startup and the database is disposable:
 
@@ -179,127 +314,542 @@ rm -rf src/Host/CoreRentalNet.Host/App_Data
 
 Editing `src/shared/data/products.json` has no effect until you do that.
 
-## Test it
+### 7.3 Run the agent host
 
 ```bash
-dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"   # 529 tests
-dotnet test tests/CoreRentalNet.E2E                                              # 103 in a browser
+cd agentfoundry/src/CoreRentalNet.Agents
+cp .env.example .env          # then fill FOUNDRY_PROJECT_ENDPOINT and AZURE_AI_MODEL_DEPLOYMENT_NAME
+PORT=8088 dotnet run
 ```
 
-| Layer | What it proves |
+Or through azd, **naming the service you intend to invoke**:
+
+```bash
+cd agentfoundry
+azd ai agent run core-rental-workspace-suggestion-agent
+```
+
+### 7.4 Smoke-test the echo agent — costs nothing
+
+The echo agent **reverses** the message it is sent (verified in `ReverseNodeExecutor`). It makes no model call and needs no catalogue, so it proves hosting works:
+
+```bash
+azd ai agent run echo-reverse-agent                              # terminal 1
+azd ai agent invoke echo-reverse-agent "hello there" --local    # terminal 2
+```
+
+Expected: the reversed text, in a fraction of a second.
+
+### 7.5 Invoke the workspace agent with a caller token
+
+A console sends a sentence, not the application's envelope, so a plain `invoke` reads it as a query over every slot. **A console cannot search the catalogue** — the agent searches *as the caller*, and a console invoke carries no token. Use the full request to exercise the pipeline:
+
+```bash
+curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
+  -H 'x-client-mcp-catalog-access-token: <the caller's token>' \
+  -d '{"model":"core-rental-workspace-suggestion-agent","input":"{\"runId\":\"r1\",\"query\":\"a desk and a chair under 500000\",\"currency\":\"IDR\",\"ceilingMonthly\":500000,\"slots\":[{\"slot\":\"Desk\",\"capacity\":1},{\"slot\":\"Chair\",\"capacity\":1}]}","stream":true}' \
+  http://127.0.0.1:8088/responses
+```
+
+A run streams one typed JSON event per line (`stageStarted`, `stageCompleted`, `retry`, `candidate`, `completed`) — see [9.6](#96-the-typed-event-stream).
+
+### 7.6 Wire the two together end to end
+
+1. Start the application host (it publishes `/mcp`).
+2. Mint a caller token that carries `read:catalog`.
+3. Point the agent at it: `CATALOGTOOLS__MCPENDPOINT=<host>/mcp`.
+4. Invoke as in [7.5](#75-invoke-the-workspace-agent-with-a-caller-token) and confirm real SKUs in the `candidate` events.
+
+### 7.7 Turn on sign-in
+
+Optional and additive; see [12.2](#122-identity-settings) for the Auth0 setup.
+
+---
+
+## 8. Architecture — the application
+
+### 8.1 The monolith and its modules
+
+`Program.cs` is the composition root, one `Add…` line per concern. The modules are **BuildingBlocks** (shared primitives), **Catalog**, **Discovery**, **Workspace** and **Rentals**.
+
+### 8.2 Clean Architecture per module
+
+Each module is split into three projects with a fixed direction of dependency:
+
+- 🧾 **Domain** — plain records, no business methods (`Catalog.Domain/Product.cs`).
+- ⚙️ **Application** — business rules in `I…Service` implementations (`Workspace.Application`, `Rentals.Application`).
+- 🔌 **Infrastructure** — adapters: EF Core/SQLite, file loaders, vector search.
+
+Callers depend on the interface, never the class; DI injects the `sealed` implementation.
+
+### 8.3 The Dependency Rule and its enforcers
+
+`tests/CoreRentalNet.ArchitectureTests` (63 tests) holds the boundary: `ModuleBoundaryTests`, `ApplicationDependencyTests`, `ProviderIsolationTests`, `PackagePolicyTests`. No module reaches another module's `Domain` or `Infrastructure`, and no EF Core/ASP.NET/SQLite type appears in Domain or Application.
+
+### 8.4 Isolation by convention
+
+- **One type per file** (`OneTypePerFileTests`).
+- **Small classes, KISS** — ≤150 lines per file, ≤40 lines per method, ≤3 nesting levels (`CodingStandardTests`).
+- **Manual concurrency** — every write service bumps the record's `Version`; a forgotten bump is a silent lost update.
+
+### 8.5 Persistence
+
+Two local SQLite files, one write process each, module isolation by table prefix:
+
+- The application database — `Sqlite:DatabasePath`, default `App_Data/corerental.db`.
+- The catalogue vector file — built deliberately by `CoreRentalNet.CatalogIngestion` (`src/Tools/`), because the vectors are derived data seeded per environment rather than schema.
+
+`Sqlite:JournalMode` defaults to `WAL`; a rollback journal is required on a network filesystem, which is why the journal mode is configuration. `Sqlite:BusyTimeoutSeconds` defaults to `30`. **This application must never scale out.**
+
+### 8.6 The catalogue: provenance and ingestion
+
+The catalogue is **generated**, and its provenance is the Hugging Face Amazon Reviews dataset.
+
+```
+Hugging Face: McAuley-Lab/Amazon-Reviews-2023
+   meta_*.jsonl (product fields)  +  review category files (user feedback)
+        │  src/Tools/CoreRentalNet.CatalogPopulate --extract
+        ▼
+   compact input: the pinned products plus spare candidates, each with its reviews
+        │  CatalogPopulate (default)
+        │     copied or computed in code: SKU, price, rating, dimensions, category path, image
+        │     generated by Qwen3-Coder-30B-A3B-Instruct: tags, bestFor, notFor, review summary, type, material, assembly
+        ▼
+   src/shared/data/products.json   (205 products; the single source of truth for every price)
+        │  src/Tools/CoreRentalNet.CatalogIngestion
+        ▼
+   App_Data/product_embedding.db   (384-dim vectors)  →  Discovery, catalog API and MCP
+```
+
+The rules the generator applies, each reversible from the committed file:
+
+- **SKU** — the three-letter category prefix plus the first nine characters of the source `parent_asin`.
+- **Price** — the source USD price at a fixed **16,000 IDR/USD**, spread over twelve months, rounded to the nearest thousand IDR.
+- **Name, description, image** — the source values, with the description joined from its parts and the image vendored under `wwwroot/images/vendored/<SKU>.<ext>`.
+- **Metadata** — the loader's four-key shape (`tags`, `attributes`, `bestFor`, `notFor`), with attributes lower-case and unspaced.
+
+> ℹ️ `CatalogPopulate` is a **reconstruction** of the tool that first built this file; the original was never committed. It reproduces the recorded pipeline rules, and it is reproducible for a pinned model and prompt — but it is **not** byte-identical, because the metadata is model-generated.
+
+Vectors are embedded with the `VectorEmbedding` settings (model `text-embedding-3-small`, width `384`).
+
+---
+
+## 9. Architecture — the agent host
+
+### 9.1 The hosting model
+
+The host serves **Foundry hosted agents** over the **Responses** protocol via the Microsoft Agent Framework. `Program.cs` registers host steps and features only. The *served agent is the workflow agent itself, unwrapped* — hosting can only redirect a hosted workflow's checkpoints when it can copy that agent.
+
+### 9.2 The folder law
+
+- `Hosting/` — bootstraps the host (settings, telemetry, model client, default agent, startup report).
+- `Shared/` — anything a second feature would use unchanged.
+- `Features/<X>/` — one feature, self-contained.
+
+### 9.3 Anatomy of an agent
+
+Every agent is the same three artifacts, so adding one is a folder plus a registration:
+
+1. **A prompt** — `Features/<Feature>/Prompts/<name>.v<N>.md`, embedded. The version is in the file name.
+2. **A profile** — an `AgentProfile` in the feature's roster (stage name, prompt, output format, whether it may search).
+3. **A stage** — an executor that calls its stage agent and publishes what came back.
+
+### 9.4 The workspace-suggestion graph
+
+A run is a bounded workflow, not a straight line:
+
+```
+read request → verify → rephrase & expand → retrieve → build pool → rerank
+→ bound → compose → validate structure → review
+   ├─ acceptable → complete: success
+   └─ rejected   → decide retry ─ attempts left → back to rephrase
+                                └ attempts exhausted → complete: unavailable
+```
+
+The verifier runs **once**; retry returns to **rephrasing**, not composition; and **no model decides the lifecycle** — the retry decision is deterministic code.
+
+### 9.5 Model stages vs deterministic policies
+
+- **Six model stages** — Verifier · Rephraser · Retriever · Reranker · Composer · Reviewer.
+- **Deterministic policies** — the product pool, the selection policy, the search-vocabulary limit, the structure validator, and the retry-decision policy.
+
+The pool is built from the MCP tools' **own recorded answers**, never from a model's retyped report.
+
+### 9.6 The typed event stream
+
+A caller receives a sequence of events, one JSON object each, discriminated by `type`:
+
+| `type` | Carries | When |
+|---|---|---|
+| `stageStarted` | `processingStage` | a stage begins |
+| `stageCompleted` | `processingStage` | a stage finishes |
+| `retry` | `nextAttemptNumber`, `maximumAttemptCount` | a rejected attempt gives way |
+| `candidate` | `approvedWorkspaceSetup` | an approved setup — **after** review |
+| `completed` | `runStatus`, `outcomeReason`, `completedAttemptCount`, `runUsage` | the run ends |
+
+`runStatus` is one of `success`, `rejected`, `unavailable`, and is deliberately **separate** from the candidates. No model text ever reaches a caller.
+
+### 9.7 The chat-client decorator stack
+
+Each model call is wrapped in an ordered stack: **telemetry → guardrail → MCP tools**, over a no-op leaf. Tool calls additionally pass an ordered guardrail pipeline (allow-list, caller authorization, argument ceiling, vocabulary, result size, result schema, untrusted-content redaction, ledger recording).
+
+### 9.8 Deep dive
+
+For the full graph, the stage table, the search-recall measurements and every setting, continue to **[`agentfoundry/README.md`](agentfoundry/README.md)**.
+
+---
+
+## 10. How the two connect
+
+### 10.1 The catalogue as an MCP server
+
+The application exposes its catalogue as MCP tools under `/mcp`:
+
+- `search_catalogue` — gated by `read:catalog`.
+- `search_similarity_catalogue` — gated by the `SimilaritySearch` claim (closed by default).
+
+`CatalogToolLimits` bounds one tool answer (default 8 rows, maximum 25) and one search (maximum 8 terms, 80 characters per term, 400 for a typed search, 400 for a description).
+
+### 10.2 Server-authorised vs caller-authorised
+
+This is the one design decision that explains most of the agent's cross-cutting code: the agent does **not** hold a catalogue credential. It presents the **caller's** token, so the catalogue enforces the caller's own entitlements.
+
+### 10.3 The caller-token lifecycle
+
+`AccessTokenHeaderReader` reads the token off the invocation header (`x-client-mcp-catalog-access-token`); `IMcpAccessTokenService` holds it for the run; `McpAccessTokenHandler` stamps it on each MCP request. It is **never logged** — a guardrail fails the run loudly if a model answer repeats it, and a telemetry processor scrubs it before export.
+
+### 10.4 Permissions and gates
+
+| Gate | Claim type | Claim value | Default |
+|---|---|---|---|
+| `CatalogRead` | `permissions` | `read:catalog` | enabled |
+| `SimilaritySearch` | *(empty)* | *(empty)* | **closed** |
+| `WorkspaceSuggestion` | *(empty)* | *(empty)* | **closed** |
+
+An empty claim type/value means closed: the capability is refused, not open.
+
+### 10.5 The failure mode by design
+
+A request with no token does **not** produce an answer from memory — it reports `unavailable`. That is the trust model, not a defect.
+
+---
+
+## 11. Domain glossary
+
+### 11.1 Workspace & catalogue terms
+
+| Term | Meaning | Code |
+|---|---|---|
+| **Slot** | A position on the canvas (Desk, Chair, Monitor, Lamp, Plant, CoffeeStation, RelaxZone) with a fixed capacity | `Workspace.Domain`, `Workspace:SlotCapacity` |
+| **Draft** | The workspace being composed, addressed by an opaque cookie token | `Host/Infrastructure/DraftTokenMiddleware.cs` |
+| **Product / SKU** | A catalogue item; the SKU is the identifier | `Catalog.Domain/Product.cs` |
+| **Ceiling** | A monthly budget that narrows a catalogue search | agent `ceilingMonthly` |
+
+### 11.2 Rental lifecycle terms
+
+| Term | Meaning | Code |
+|---|---|---|
+| **Order** | A placed rental | `Rentals.Application/Commands/PlaceOrder/` |
+| **Invoice** | The first month plus delivery, or a renewal | `InvoiceView`, `RenewalInvoiceIssuer` |
+| **Period** | A paid month of the rental | `Rentals.Domain` |
+| **Schedule** | The background run that advances an order | `Rentals.Application/Scheduling/RentalScheduler.cs` |
+| **Confirmation token** | The opaque link that discloses an order | `GetRentalByToken`, `GetInvoicesByToken` |
+
+### 11.3 Agent pipeline terms
+
+| Term | Meaning |
 |---|---|
-| Unit | The domain: money, slots, the workspace, orders, invoices, the schedule |
-| Integration | Against a real SQLite file, a real catalog file and a real database schema |
-| Architecture | Module boundaries, table prefixes, no clock reads, no payment code |
+| **Run** | One bounded workflow execution |
+| **Stage** | One model or deterministic step in the graph |
+| **Requirement expansion** | The rephraser's output: per-component retrieval query, terms, synonyms, concepts |
+| **Candidate** | An approved workspace setup, published only after review |
+| **`runStatus`** | `success` · `rejected` · `unavailable` — separate from candidates |
+
+### 11.4 Term → project map
+
+Domain types live in `src/Modules/<Module>/CoreRentalNet.Modules.<Module>.Domain`; business rules in the matching `.Application` project; agent types in `agentfoundry/src/CoreRentalNet.Agents/Features/WorkspaceSuggestion/Domain/`.
+
+---
+
+## 12. Configuration
+
+### 12.1 Application settings
+
+From `src/Host/CoreRentalNet.Host/appsettings.json`:
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `Culture:Name` | `en-ID` | Business culture |
+| `Catalog:FilePath` | *(empty)* | Catalogue file; empty means the shared default |
+| `Rentals:DeliveryFeeAmount` | `750000` | One-time delivery charge (IDR) |
+| `Rentals:TaxRate` | `0` | Tax rate |
+| `Rentals:SchedulerIntervalMinutes` | `60` | How often the schedule runs |
+| `Workspace:SlotCapacity:*` | Desk 1 · Chair 1 · Monitor 3 · Lamp 1 · Plant 1 · CoffeeStation 1 · RelaxZone 1 | Per-slot capacity |
+| `Sqlite:DatabasePath` | `App_Data/corerental.db` | Application database |
+| `Sqlite:JournalMode` | `WAL` | `WAL` locally; a rollback journal on a network filesystem |
+| `Sqlite:BusyTimeoutSeconds` | `30` | SQLite busy timeout |
+| `VectorEmbedding:Model` | `text-embedding-3-small` | Embedding model |
+| `VectorEmbedding:Width` | `384` | Vector width |
+| `AgentFoundry:Enabled` | `false` | Whether the host calls the suggestion agent |
+| `AgentFoundry:AgentName` | `core-rental-workspace-suggestion-agent` | The agent the host calls |
+
+### 12.2 Identity settings
+
+`Auth0` is optional and off when nothing is configured. To enable it, put your values in `src/Host/CoreRentalNet.Host/appsettings.Local.json`, which is **gitignored** and loaded **last**:
+
+```json
+{
+  "Auth0": {
+    "Domain": "…",
+    "ClientId": "…",
+    "ClientSecret": "…",
+    "Audience": "https://your-api-identifier",
+    "Scope": "openid profile email read:catalog",
+    "LeewaySeconds": 180
+  }
+}
+```
+
+Key points, all verified in `IdentitySettings` and `appsettings.json`:
+
+- `Auth0:Enabled` defaults to `true`; with empty `Domain`/`ClientId` the identity path is inert.
+- `Auth0:LeewaySeconds` defaults to **180** — how far ahead of expiry the SDK refreshes the access token. It must exceed the longest streaming run.
+- `Swagger:ClientId` is used by the `/swagger` page; it falls back to `Auth0:ClientId` when unset.
+- The role is read from the access token; `Auth0:RoleClaimType` names the claim (and any claim ending in `/roles` is also read).
+
+Register these URLs in the tenant (the port is pinned): callback `http://localhost:5199/account/callback` (and `/swagger/oauth2-redirect.html` for the docs page), logout `http://localhost:5199/`. The walkthrough for roles, the `read:catalog` permission, and offline access is the same as any Auth0 regular web application — the settings above are the whole of what this repository needs.
+
+For any other environment, set `Auth0__Domain`, `Auth0__ClientId`, `Auth0__ClientSecret` as environment variables or application settings. Sign-in requires **HTTPS** outside development.
+
+### 12.3 Agent host settings
+
+From `agentfoundry/src/CoreRentalNet.Agents/appsettings.json`:
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `FOUNDRY_PROJECT_ENDPOINT` | *(empty)* | The Foundry project. Required; injected in a container |
+| `AZURE_AI_MODEL_DEPLOYMENT_NAME` | `gpt-4.1-mini` | The deployment every stage runs on |
+| `FOUNDRY_AGENT_NAME` | `core-rental-workspace-suggestion-agent` | Reserved prefix; injected by the platform |
+| `Telemetry:CaptureContent` | `true` | Attach sentence/prompts/answers to spans; never a secret |
+| `ModelTransport:NetworkTimeout` | `00:10:00` | How long one model call may take |
+| `ModelTransport:MaximumRetryAttempts` | `2` | How many times one failed call is retried (**not** a run's attempts) |
+| `WorkspaceSuggestionWorkflow:MaximumAttemptCount` | `3` | How many times a run may rephrase and retry |
+| `WorkspaceSuggestionWorkflow:MaximumRetrievedProductsPerComponentForReranking` | `15` | Products offered to the reranker per component |
+| `WorkspaceSuggestionWorkflow:MaximumSelectedProductsPerComponent` | `3` | Products offered to the composer per component |
+| `WorkspaceSuggestionWorkflow:MaximumSearchTermCountPerComponent` | `8` | Words one component's search may carry |
+| `WorkspaceSuggestionWorkflow:MaximumSearchTermCharacterCount` | `80` | Longest one search term may be |
+| `CatalogTools:McpEndpoint` | *(empty)* | The catalogue MCP server; absent ⇒ the agent cannot search |
+| `EchoAgent:AgentName` | `echo-reverse-agent` | The name a console addresses the echo agent by |
+| `EchoAgent:IsEnabled` | `true` | Set `false` to stop serving the echo agent |
+
+### 12.4 Environment variable convention
+
+A setting is its section path with `__` for `:` — `ECHOAGENT__ISENABLED=false`, `CATALOGTOOLS__MCPENDPOINT=https://host/mcp`, `WORKSPACESUGGESTIONWORKFLOW__MAXIMUMATTEMPTCOUNT=5`. **Never use a `FOUNDRY_` prefix for a setting of our own** — the platform reserves it.
+
+### 12.5 Precedence and local files
+
+Application, lowest to highest: `appsettings.json` → `appsettings.Development.json` → user secrets → environment variables → **`appsettings.Local.json`**. The local file is loaded last and is **read in development only**; a deployed environment ignores it, and a test holds that guard in place.
+
+Agent host: environment first, then `appsettings.json`, with a local `.env` filling anything the platform injected empty. `.env.example` documents every key.
+
+### 12.6 Secrets rules
+
+No secrets in the repository. `appsettings.Local.json` and `.env` are gitignored and development-only. A test (`CommittedConfigurationTests`, `NoWireContractCarriesASecretTests`) fails the build if a secret appears in a committed configuration file.
+
+---
+
+## 13. Testing & quality gates
+
+### 13.1 The four baselines
+
+The project speaks of four baselines — **`BUILD`**, **`NONBROWSER`**, **`BROWSER`**, **`AGENT`**. They are named in `CLAUDE.md`; the current measured numbers are in [1.2](#12-status) and [4.4](#44-test-projects). *(No `specs/baselines.md` file exists in this repository.)*
+
+### 13.2 Test tiers and what each proves
+
+| Tier | What it proves |
+|---|---|
+| Unit | Money, slots, the workspace, orders, invoices, the schedule |
+| Integration | A real SQLite file, a real catalog file, a real schema |
+| Architecture | Module boundaries, table prefixes, one type per file, no clock reads, no payment code |
+| Behaviour lock | The behaviours that must not regress |
 | Browser | The whole funnel in Chromium, with **no mocks and no intercepted calls** |
+| Agent | The workflow graph, stage contracts, guardrails, MCP token handling |
 
-The browser suite starts a real application process with its own throwaway database, and one test
-asserts that nothing sits between the browser and the server. A second process is the identity
-provider the sign-in tests drive a real OIDC handshake against, on localhost, from this repository
-(`tests/CoreRentalNet.E2E.LocalProvider`) - so authentication is exercised without a tenant, secrets
-or the public internet. It exists because four separate bugs in this project were invisible to a
-green unit suite and to every command-line check.
+### 13.3 Run the application suite
 
-One test is opt-in and reaches a **real tenant**. It is skipped unless credentials are in the
-environment, because it needs a tenant, a real account and the network - none of which belongs in
-the hermetic suite:
+```bash
+dotnet test CoreRentalNet.sln --filter "FullyQualifiedName!~CoreRentalNet.E2E"
+```
+
+Current: **799 passed, 0 failed**.
+
+### 13.4 Run the agent suite
+
+```bash
+cd agentfoundry
+dotnet test AgentFoundry.sln
+```
+
+Current: **199 passed, 0 failed**.
+
+### 13.5 The browser tier
+
+```bash
+dotnet test tests/CoreRentalNet.E2E
+```
+
+Current: **121 total — 54 passed, 66 failed, 1 skipped** (2026-10-12). The suite starts a real application process and a local OIDC provider (`tests/CoreRentalNet.E2E.LocalProvider`); failures were **not diagnosed as part of this document**. The earlier claim that the tier "cannot start" was inaccurate — it starts and runs.
+
+### 13.6 The opt-in real-tenant test
+
+One test reaches a real Auth0 tenant and is skipped unless credentials are present:
 
 ```bash
 CORERENTAL_TENANT_EMAIL=you@example.com CORERENTAL_TENANT_PASSWORD=... \
   dotnet test tests/CoreRentalNet.E2E --filter FullyQualifiedName~RealTenantTests
 ```
 
-Add `CORERENTAL_TENANT_AUDIENCE` when the tenant has an API whose access token carries the gate's
-permission; without it the test asserts the refusal the missing audience produces. The tenant's
-credentials themselves come from `appsettings.Local.json`, and `CORERENTAL_TENANT_URL` reuses an
-already-running host instead of starting one on `http://localhost:5199`.
+Add `CORERENTAL_TENANT_AUDIENCE` when the tenant has an API whose token carries the gate's permission.
 
-## Where things are
+### 13.7 F.I.R.S.T. and naming
 
-```
-src/BuildingBlocks/     Money, opaque tokens, the business calendar, SQLite plumbing
-src/Modules/Catalog/    205 products, read-only in memory, no database at all
-src/Modules/Discovery/  The similarity search, the name search, the vector file's freshness; owns no tables
-src/Tools/              CoreRentalNet.CatalogIngestion, the deliberate step that builds that index
-src/Modules/Workspace/  The draft: slots, quantities, delivery address, the quote
-src/Modules/Rentals/    Orders, invoices, periods, the schedule
-src/Host/               The Blazor application, its components and its design tokens
-src/shared/data/        products.json, the single source of truth for every price
-specs/                  the baselines, the decisions, and the design prototypes
-```
+`[Fact]`/`[Theory]` with a matrix id where one exists; name a test after the behaviour it proves; every bug fix gets a regression test. The full list is in `CONVENTIONS.md`.
 
-`specs/` is the record of why, not just what:
+---
 
-- `specs/baselines.md` — what `BUILD`, `NONBROWSER`, `BROWSER` and `AGENT` mean, and where each is
-  measured
-- `specs/adr/` — the decisions, with the alternatives that were rejected and why
-- `specs/design/` — design prototypes, kept as references
+## 14. Build, versioning & CI
 
-The plan documents this file once listed — a release plan, epic capsules and a commit plan — were
-removed deliberately and are not coming back. `CONVENTIONS.md`, the ADRs and this file carry the rest.
+### 14.1 Two solutions
 
-## Decisions worth knowing before you read the code
+`CoreRentalNet.sln` builds the application; `agentfoundry/AgentFoundry.sln` builds the agent. They are separate on purpose, and the two pipelines treat them separately.
 
-- **Money** is `decimal` in IDR, rounded once per line, and the client never sends an amount that
-  influences a charge. The draft stores product references; prices are recomputed from the catalog
-  on every read and frozen only when an invoice is issued.
-- **Two local SQLite files**, one write process each, module isolation by table prefix. The
-  application database (`Sqlite:DatabasePath`) and the catalogue vector file (`Database:Path`, built
-  deliberately by `CoreRentalNet.CatalogIngestion`) are separate because the vectors are derived data
-  seeded per environment rather than schema. The ingestion tool is standalone — it references no
-  discovery project and writes only its own file. WAL locally; a rollback journal is required on a
-  network filesystem, which is why the journal mode is configuration. This application must never
-  scale out.
-- **No payment provider.** Payment cannot fail by construction, so there is no retry, no dunning
-  and no failure state to model.
-- **No accounts.** A draft is addressed by an opaque token in an `HttpOnly` cookie; an order by a
-  token in its confirmation link. Numbers are labels, never credentials.
-- **No administrator.** The only thing that moves an order forward is the schedule.
+### 14.2 Version from the git tag
 
-## Known limitations
-
-- **The confirmation link is the only way to see an order.** A repeated checkout cannot reproduce
-  the access token, so it lands on a page that says so and tells the customer to keep their link.
-  With no account and no email, that is inherent rather than an oversight.
-- **The scheduler reads invoices one order at a time.** Fine for a demonstration; it would need a
-  projection before it met a large book.
-- **No deployment configuration.** There is a CI workflow, but nothing deploys. Any deployment is a
-  deliberate decision that has not been made yet, and it would need the database path and journal
-  mode pointed at persistent storage.
-
-## Versioning
-
-The release identity is the Git tag, and the pipeline is where it is resolved. The build never reads
-Git: `scripts/resolve-version.sh` turns the tag being built into a semantic version plus the short
-commit, and the pipelines pass that to `dotnet build` and `dotnet publish`. `Directory.Build.props`
-turns the one value into the three .NET properties:
+The build never reads Git. `scripts/resolve-version.sh` turns the tag being built into a semantic version plus the short commit, and the pipeline passes that to `dotnet build`. `Directory.Build.props` maps the one value to three .NET properties:
 
 | Property | Value | Example |
 |---|---|---|
 | `AssemblyVersion` | stabilized `MAJOR.MINOR.0.0` | `1.4.0.0` |
-| `FileVersion` | the release `MAJOR.MINOR.PATCH.0` | `1.4.1.0` |
-| `InformationalVersion` | the release plus the commit as build metadata | `1.4.1+abc1234` |
+| `FileVersion` | release `MAJOR.MINOR.PATCH.0` | `1.4.1.0` |
+| `InformationalVersion` | release plus commit as build metadata | `1.4.1+abc1234` |
 
-The footer shows that version, read from the artifact's own assembly information; the commit is trimmed
-away, so the footer is a version rather than a fingerprint. A build with no tag keeps the floor `0.1.0`.
+A build with no tag keeps the floor `0.1.0` (`VersionPrefix`).
 
-The agent tree is versioned the same way, with one difference: Foundry builds the deployed agent
-remotely from a zipped project folder, so the repository's props files are not there. The pipeline
-writes `Version.g.props` inside `agentfoundry/src/CoreRentalNet.Agents/` instead, and that project
-carries its own copy of the mapping and prints the version in its startup diagnostics.
+### 14.3 The agent's remote build
 
-The reason for each choice, and the alternatives that were rejected, is in `specs/adr/`.
+Foundry builds the deployed agent remotely from a zipped project folder, so the repository root's `Directory.Build.props` is not in that zip. The pipeline writes `agentfoundry/src/CoreRentalNet.Agents/Version.g.props` instead (via `scripts/write-agent-version.sh`), and the csproj turns each property into assembly metadata. The file is gitignored, so a developer's build keeps the floor.
 
-## Continuous integration
+### 14.4 What CI runs
 
-`.github/workflows/ci.yml` builds, runs the non-browser tests, installs Chromium and runs the browser
-tests. It has **never executed**: this repository has no remote yet. The file is committed so that the
-first push is the first run.
+- **Azure DevOps — `azure-pipelines.yml`**: two stages. **CI** restores, builds (warnings-as-errors), runs the non-browser suite and publishes the host; **Deploy** ships the artifact to Azure App Service behind a manual approval, skipped for pull requests. The application only.
+- **GitHub Actions — `.github/workflows/ci.yml`**: builds and tests `CoreRentalNet.sln`, installs Chromium and runs the browser suite. It states it is **not** the release authority. It builds the application solution only, so the agent suite does not run here.
 
-It builds and tests `CoreRentalNet.sln` only, so the agent tree's suite does not run in it — a
-path-filtered job for `agentfoundry/AgentFoundry.sln` is `e05s09`'s, and without it the two-tree
-separation is nominal. As measured on 2026-10-05: **827** non-browser tests and **183** agent tests,
-both 0 failed. The browser tier could not be measured: its `CoreRentalNet.E2E.LocalAgent` stand-in was
-deleted in `a6e127e` while `HostFixture` still starts it, so the suite cannot start. The figure this
-paragraph carried before — 636, 104 and 63 — had been stale for long enough that nobody could say
-when it stopped being true. The four baselines and their latest numbers are in `specs/baselines.md`.
+The remote has existed since 2026-10-06; the workflow triggers on push to `main`.
+
+---
+
+## 15. Deployment & operations
+
+### 15.1 `azure.yaml` services
+
+`agentfoundry/azure.yaml` declares **two `azure.ai.agent` services**, both pointing at the same project, because `azd` addresses *services* by their key — not the keyed agents inside a container:
+
+- `core-rental-workspace-suggestion-agent`
+- `echo-reverse-agent`
+
+`FOUNDRY_AGENT_NAME` is deliberately **not** mapped in `env:`; the platform injects it.
+
+### 15.2 Deploy the agent host
+
+The Azure DevOps agent pipeline resolves the version, writes `Version.g.props`, and runs `azd deploy`. The application's deploy is the second stage of `azure-pipelines.yml`.
+
+### 15.3 Readiness and diagnostics
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8088/readiness      # 200
+```
+
+Startup prints one line per setting and one per served agent, plus the build identity (`version`, `git sha`, `build id`, `environment`), read back from the artifact's own assembly metadata.
+
+### 15.4 Operating several agents in one container
+
+Hosting resolves a request by the agent name it carries and looks it up in keyed services; the deployment registers the agent it is named for as its default. **Locally, one container answers as one agent**: `azd ai agent invoke --local` sends no name, so the container replies with `AgentHost:DefaultAgentName`. Run the service you intend to invoke — a mismatch is silent.
+
+### 15.5 Known limitations
+
+- **The confirmation link is the only way to see an order.** A repeated checkout cannot reproduce the access token; with no account and no email, that is inherent.
+- **The scheduler reads invoices one order at a time.** Fine for a demonstration; it would need a projection for a large book.
+- **No deployment configuration for the application database.** The database is disposable and the content root is allowed to be ephemeral; a durable deployment would need the path and journal mode pointed at persistent storage.
+- **The browser tier is currently red** (see [13.5](#135-the-browser-tier)).
+
+### 15.6 Not yet decided
+
+Deployment of the agent host beyond azd, scaling, and secret rotation are deliberate decisions that have not been made.
+
+---
+
+## 16. Troubleshooting / FAQ
+
+### 16.1 Running & styling
+
+- **A working page with no styling** → you started the built assembly from the wrong directory. A development build serves stylesheets, fonts and product images from the project directory; start it with `dotnet run` from `src/Host/CoreRentalNet.Host`.
+- **Editing `products.json` has no effect** → the catalog is read once at startup. Delete `App_Data` (see [7.2](#72-reset-the-demo)).
+
+### 16.2 Identity & Auth0
+
+- **The flow fails after the redirect with nothing on the page** → a callback URL does not match exactly. Register both callback URLs (see [12.2](#122-identity-settings)).
+- **Sign-out asks for confirmation** → the provider's own screen, because no `id_token_hint` is sent. That is the provider, not the application.
+- **A session ends at the first token expiry** → the API is missing **Allow Offline Access**, so no refresh token is issued.
+
+### 16.3 Agent host traps
+
+- **Local invoke answers the wrong agent** → `azd ai agent invoke --local` sends no name; the container replies with `AgentHost:DefaultAgentName`. Start the service you intend to invoke.
+- **A console run ends in an error at retrieval** → a console carries no caller token, so the agent cannot search. Use the explicit request with the `x-client-mcp-catalog-access-token` header ([7.5](#75-invoke-the-workspace-agent-with-a-caller-token)).
+- **A nameless request gets the wrong agent** → set `AGENTHOST__DEFAULTAGENTNAME` (the `azure.yaml` services do this per service).
+
+### 16.4 Catalogue & vectors
+
+- **The agent cannot search** → `CatalogTools:McpEndpoint` is empty, or the caller token lacks `read:catalog`.
+- **Similarity search reports itself unavailable** → the vector file is absent or stale; run `CoreRentalNet.CatalogIngestion`.
+- **Editing `products.json` has no lasting effect** → it is generated by `CatalogPopulate`; a hand edit is overwritten on the next run. Regeneration needs the local model and the operator-supplied source files.
+
+### 16.5 Tests
+
+- **A single tier** → pass `--filter` or target the project directly (see [13](#13-testing--quality-gates)).
+- **The browser tier fails broadly** → it is currently red as measured on 2026-10-12; the cause was not diagnosed here.
+
+---
+
+## 17. Process & conventions
+
+### 17.1 The authority chain
+
+Read **`CLAUDE.md`** first: it is the auto-loaded entry point, and it names the documents in the order they are read. This file does not reproduce the chain.
+
+### 17.2 Hard rules
+
+- A step is done only when the baselines are green (`BUILD`, `NONBROWSER`, `BROWSER`, `AGENT`).
+- **Domain is records. Application is services.** Callers depend on the interface, never the class.
+- One type per file. ≤150 lines per file, ≤40 lines per method, ≤3 nesting levels.
+- No mutable static state. No secrets in the repository.
+- Never deploy or provision without explicit product-owner consent. Do not push to origin.
+
+### 17.3 Commits & branches
+
+One revertible commit per step; update the architecture test and its non-vacuity guard in the same commit as the code it guards.
+
+### 17.4 Where specs live
+
+Output documents are written under `specs/`. This repository currently holds only `specs/design/` (the prototypes); there is no `specs/baselines.md` and no `specs/adr/`. `CONVENTIONS.md` is the convention list those rules refer to.
+
+---
+
+## 18. Credits
+
+### 18.1 Third-party
+
+Built on **.NET 10**, **Microsoft Agent Framework** (`Microsoft.Agents.AI.*`), **Azure AI Foundry** (`Azure.AI.Projects`, `Azure.AI.Extensions.OpenAI`), **Azure OpenAI**, **Entity Framework Core + SQLite** (`Microsoft.EntityFrameworkCore.Sqlite`, `Microsoft.Data.Sqlite`), **ModelContextProtocol.AspNetCore**, **Lifti.Core** (name search), **HiraokaHyperTools.sqlite-vec** (vector search), **Auth0.AspNetCore.Authentication**, **OpenTelemetry** (Azure Monitor) and **xUnit**. See `Directory.Packages.props` for the pinned versions.
+
+### 18.2 Design references
+
+The prototypes under `specs/design/` are kept as references for the visual design.

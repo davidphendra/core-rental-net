@@ -1,29 +1,337 @@
 # CoreRentalNet.Agents
 
-The hosted-agent deployable for CoreRentalNet. It serves one or more **Foundry hosted agents** over the
-**Responses** protocol, and it is organised so that a feature — its instructions, its stages and its graph —
-lives in one folder a newcomer can find without reading the whole project.
+**The hosted-agent deployable for CoreRentalNet: it serves Foundry agents over the Responses protocol, and turns one customer sentence into workspace setups drawn from the catalogue.**
 
-Two features ship today:
+> 🔗 For the product application and the whole-system view, see the **[root README](../README.md)**.
 
-| Feature | Served agent | What it does | Cost |
-|---|---|---|---|
-| `Features/WorkspaceSuggestion` | `core-rental-workspace-suggestion-agent` | Turns one customer sentence into workspace setups drawn from the catalogue | A model call per stage, several per run |
-| `Features/EchoReverse` | `echo-reverse-agent` | Replies with the message it was sent | Nothing — no model, no catalogue |
+## Contents
+
+| Part | Sections |
+|---|---|
+| **A — Orientation** | [1. Status](#1-title--status) · [2. What it is](#2-what-it-is) · [3. System at a glance](#3-system-at-a-glance) · [4. Repository map](#4-repository-map) · [5. New here? Start with this](#5-new-here-start-with-this) · [6. Requirements](#6-requirements) · [7. Quick start](#7-quick-start) |
+| **B — Architecture** | [8. The host](#8-architecture--the-host) · [9. The agents](#9-architecture--the-agents) · [10. How it connects to the catalogue](#10-how-it-connects-to-the-catalogue) · [11. Domain glossary](#11-domain-glossary) |
+| **C — Reference** | [12. Configuration](#12-configuration) · [13. Testing & quality gates](#13-testing--quality-gates) · [14. Build, versioning & CI](#14-build-versioning--ci) · [15. Deployment & operations](#15-deployment--operations) |
+| **D — Help & process** | [16. Troubleshooting / FAQ](#16-troubleshooting--faq) · [17. Process & conventions](#17-process--conventions) · [18. Credits](#18-credits) |
 
 ---
 
-## 1. Features
+## 1. Title & status
 
-### 1.1 Workspace suggestion
+### 1.1 Name and one-line description
 
-One sentence in, workspace setups out. The customer's sentence, the slot rules and their own catalogue token
-arrive in a single request; the agent searches the catalogue **as the caller**, composes a few genuinely
-different setups, and streams what happens while it works.
+`CoreRentalNet.Agents` is the deployable that serves one or more **Foundry hosted agents**. A feature — its instructions, its stages and its graph — lives in one folder a newcomer can find without reading the whole project.
 
-**The graph.** A run is a bounded workflow, not a straight line:
+### 1.2 Status
 
-```text
+The agent suite is measured by running it. No badge is used, because the run state is a file- and code-derived fact, not an external service.
+
+| Signal | Where | State |
+|---|---|---|
+| 🧪 Agent tests | `dotnet test AgentFoundry.sln` | ✅ **199 passed / 0 failed** (2026-10-12) |
+| 📦 Solution | `AgentFoundry.sln` | `src/CoreRentalNet.Agents` + `tests/CoreRentalNet.Agents.Tests` |
+| 🤖 Agents served | `azure.yaml` | Two: `core-rental-workspace-suggestion-agent`, `echo-reverse-agent` |
+| 🚀 CI / deploy | `azure-pipelines.yml` (agent tree) | Separate ADO pipeline; `azd provision` then `azd deploy` |
+
+### 1.3 Back to the application
+
+This deployable **consumes** the application: the catalogue lives in the CoreRentalNet application and is reached over MCP. For the product itself, start at the [root README](../README.md).
+
+---
+
+## 2. What it is
+
+### 2.1 The deployable in one paragraph
+
+The container binds `PORT` (default `8088`), serves readiness and the Responses protocol, and holds no catalogue credential of its own. Every run searches the catalogue **as the caller**, using a token carried on the invocation.
+
+### 2.2 The two agents it serves
+
+| Feature | Agent | What it does | Cost |
+|---|---|---|---|
+| `Features/WorkspaceSuggestion` | `core-rental-workspace-suggestion-agent` | Turns one customer sentence into workspace setups drawn from the catalogue | A model call per stage, several per run |
+| `Features/EchoReverse` | `echo-reverse-agent` | **Reverses** the message it was sent (`ReverseNodeExecutor`) | Nothing — no model, no catalogue |
+
+### 2.3 What it is not
+
+- 🚫 It holds **no** catalogue credential — the caller's token is presented instead.
+- 🚫 **No model decides the lifecycle** — whether another attempt runs is deterministic code.
+- 🚫 A run with no token does **not** answer from memory; it reports `unavailable`.
+
+### 2.4 Audiences
+
+- 🤖 **Agent team** — `Program.cs`, `Hosting/`, `Shared/`, `Features/`.
+- 🧱 **Application team** — the caller of the workspace endpoint; owns the catalogue and `/mcp`.
+
+---
+
+## 3. System at a glance
+
+### 3.1 Relationship to the application
+
+The application hosts the catalogue MCP server at `/mcp` and the `/suggestions` run endpoint. This deployable is the agent side of that boundary: it is configured with the MCP endpoint and searches through it.
+
+The catalogue behind `/mcp` is itself generated — from the Hugging Face Amazon Reviews dataset by `CatalogPopulate`, then embedded by `CatalogIngestion`. See the [root README §8.6](../README.md#86-the-catalogue-provenance-and-ingestion).
+
+### 3.2 One diagram
+
+```
+        👤 caller (browser or console)
+             │  request carries  x-client-mcp-catalog-access-token
+             ▼
+ ┌───────────────────────────────────────────────┐
+ │ 🤖 CoreRentalNet.Agents (this deployable)      │
+ │   Foundry hosted agents · Responses protocol   │
+ │    • core-rental-workspace-suggestion-agent    │
+ │    • echo-reverse-agent                        │
+ │   WorkspaceSuggestion workflow                 │
+ │    6 model stages + deterministic policies     │
+ └───────────────────────┬───────────────────────┘
+                         │ MCP over HTTP — caller's token stamped per call
+                         │ 🔧 search_catalogue            (read:catalog)
+                         │ 🔧 search_similarity_catalogue (SimilaritySearch)
+                         ▼
+ ┌───────────────────────────────────────────────┐
+ │ 🏢 CoreRentalNet application (/mcp)            │
+ └───────────────────────────────────────────────┘
+```
+
+### 3.3 The handshake in one paragraph
+
+- 🔑 `AccessTokenHeaderReader` reads the caller's token off the invocation header; `IMcpAccessTokenService` holds it for the run; `McpAccessTokenHandler` stamps it on each MCP request.
+- 🚫 The process holds **no** catalogue identity to configure — the endpoint is the whole of the MCP configuration.
+- 🛑 No token ⇒ `CatalogueUnavailableException` ⇒ a run that ends `unavailable`.
+
+### 3.4 What runs where
+
+| Component | 💻 Local dev | ☁️ Hosted container | Who supplies it |
+|---|---|---|---|
+| Foundry project endpoint | `.env` → `FOUNDRY_PROJECT_ENDPOINT` | injected by the platform | Platform |
+| Agent name | `FOUNDRY_AGENT_NAME` local default | injected by the platform | Platform |
+| Model deployment | `AZURE_AI_MODEL_DEPLOYMENT_NAME` | mapped in `azure.yaml` | azd |
+| Catalogue MCP endpoint | `CATALOGTOOLS__MCPENDPOINT` | mapped in `azure.yaml` | azd |
+| Caller token | request header | request header | 👤 caller — never stored |
+
+---
+
+## 4. Repository map
+
+### 4.1 Top level
+
+| Path | What it holds |
+|---|---|
+| `AgentFoundry.sln` | The agent solution |
+| `src/CoreRentalNet.Agents/` | The deployable's source |
+| `tests/CoreRentalNet.Agents.Tests/` | The agent test suite |
+| `shared/contracts/*.json` | JSON Schema for every stage contract |
+| `azure.yaml` | The two `azure.ai.agent` services |
+| `azure-pipelines.yml` | The agent tree's Azure DevOps pipeline |
+
+### 4.2 Source tree
+
+```
+src/CoreRentalNet.Agents/
+├── Program.cs                     the composition root: host steps and features
+├── appsettings.json
+├── Hosting/                       bootstrapping: settings · telemetry · model client ·
+│                                   default agent · startup report · local .env
+├── Shared/                        reused by every feature
+│   ├── Agents/          AgentProfile · AgentFactory
+│   ├── ChatClients/     the model call's decorators
+│   ├── Configuration/   HostedAgentName
+│   ├── Diagnostics/     AgentBuildIdentity · AgentVersion
+│   ├── Guardrails/      Abstractions · Arguments · Pipeline · Results · Tools
+│   ├── Mcp/             caller-authorised MCP: header reader · token holder · connection ·
+│   │                    request policy · tool-answer ledger
+│   ├── Model/           model client registration · transport options · run usage
+│   ├── Prompts/         embedded instruction source
+│   ├── Scoping/         IRunScope · RunScope
+│   ├── Serialization/   ContractJson
+│   ├── Telemetry/       build-identity processor · token-leak redaction · workspace telemetry
+│   └── Workflows/       ChatEntryStageExecutor · StreamingStageExecutor · WorkflowOutputPublisher
+└── Features/
+    ├── WorkspaceSuggestion/       prompts · roster · domain · stages · policies · graph
+    └── EchoReverse/               prompt-free · roster-free · one stage · graph
+```
+
+### 4.3 Test tree
+
+`tests/CoreRentalNet.Agents.Tests/` — one project, 56 files, 199 tests. It covers the graph, the stage contracts, the guardrails, the MCP token handling, the host settings and the build identity.
+
+### 4.4 Find it fast
+
+| Want to find… | Look in |
+|---|---|
+| A stage's prompt | `Features/WorkspaceSuggestion/Prompts/<name>.vN.md` |
+| A stage's identity & contract | `Features/WorkspaceSuggestion/Agents/WorkspaceSuggestionAgentRoster.cs` |
+| A stage's code | `Features/WorkspaceSuggestion/Stages/Executors/` |
+| A deterministic policy | `Features/WorkspaceSuggestion/Stages/DeterministicPolicies/` |
+| A stage contract shape | `shared/contracts/*.schema.json` |
+| The catalog tool guard order | `Features/WorkspaceSuggestion/WorkspaceSuggestionRegistration.cs` |
+
+---
+
+## 5. New here? Start with this
+
+### 5.1 Reading path
+
+1. **This file, §1–§3** — the shape of the deployable (10 min).
+2. **`Program.cs`** — the composition root, one line per concern (5 min).
+3. **`Features/WorkspaceSuggestion/WorkspaceSuggestionWorkflow.cs`** and `…AgentRoster.cs` — the graph and its stages (10 min).
+4. **`Features/WorkspaceSuggestion/WorkspaceSuggestionRegistration.cs`** — what a feature registers (10 min).
+5. **`Shared/ChatClients/`** and **`Shared/Guardrails/`** — the cross-cutting behaviour.
+
+### 5.2 Documentation map
+
+| Question | File |
+|---|---|
+| What is the whole system? | [root `README.md`](../README.md) |
+| What are the mandatory coding/test rules? | [`../CONVENTIONS.md`](../CONVENTIONS.md) |
+| What is the authority chain? | [`../CLAUDE.md`](../CLAUDE.md) |
+| How was this deployable built and deployed? | this file, §14–§15 |
+
+### 5.3 The authority chain
+
+The repository's authority chain is stated in [`../CLAUDE.md`](../CLAUDE.md); it is not repeated here.
+
+### 5.4 Where decisions live
+
+There is no `specs/adr/` directory in this repository. The decisions that exist are recorded in `CONVENTIONS.md`, in `CLAUDE.md`, and in the code comments that explain *why*.
+
+---
+
+## 6. Requirements
+
+### 6.1 Toolchain
+
+- **.NET SDK `10.0.400`**, pinned in `../global.json`; the deployable targets `net10.0`.
+- The repository's `Directory.Build.props` and `global.json` apply to this tree as well.
+
+### 6.2 azd and the extension
+
+- **`azd` ≥ `1.27.1`** and the **`azure.ai.agents` extension ≥ `1.0.0-beta.9`** (declared in `azure.yaml`; the pipeline pins azd `1.35.1`).
+
+### 6.3 Foundry project and model
+
+- A **Foundry project** endpoint (`FOUNDRY_PROJECT_ENDPOINT`) — required; injected in a container.
+- A **model deployment** (`AZURE_AI_MODEL_DEPLOYMENT_NAME`, default `gpt-4.1-mini`).
+
+### 6.4 Catalogue endpoint
+
+- `CATALOGTOOLS__MCPENDPOINT` pointing at the application's `/mcp`. Absent ⇒ the agent cannot search rather than answering from memory.
+
+---
+
+## 7. Quick start
+
+### 7.1 Build and test
+
+```bash
+cd agentfoundry
+dotnet test AgentFoundry.sln
+```
+
+### 7.2 Run it locally
+
+```bash
+cd agentfoundry/src/CoreRentalNet.Agents
+cp .env.example .env          # then fill FOUNDRY_PROJECT_ENDPOINT and AZURE_AI_MODEL_DEPLOYMENT_NAME
+PORT=8088 dotnet run
+```
+
+Or through azd, **naming the service you intend to invoke**:
+
+```bash
+cd agentfoundry
+azd ai agent run core-rental-workspace-suggestion-agent
+```
+
+The host binds `PORT` (default `8088`) and **ignores** `ASPNETCORE_URLS`.
+
+### 7.3 Check it is ready
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8088/readiness      # 200
+```
+
+Startup prints, before anything else can fail, what a deployment must supply — each required setting as `set` or `MISSING` — the agent names it serves, and the build identity.
+
+### 7.4 Smoke-test the echo agent
+
+The echo agent **reverses** the message it is sent. It makes no model call and needs no catalogue.
+
+```bash
+azd ai agent run echo-reverse-agent                              # terminal 1
+azd ai agent invoke echo-reverse-agent "hello there" --local    # terminal 2
+```
+
+Expected: the reversed text, in a fraction of a second.
+
+### 7.5 Invoke the workspace agent with a caller token
+
+A console sends a sentence, not the application's envelope, and **cannot search the catalogue** (it carries no caller token). Use the explicit request to exercise the pipeline:
+
+```bash
+curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
+  -H 'x-client-mcp-catalog-access-token: <the caller's token>' \
+  -d '{"model":"core-rental-workspace-suggestion-agent","input":"{\"runId\":\"r1\",\"query\":\"a desk and a chair under 500000\",\"currency\":\"IDR\",\"ceilingMonthly\":500000,\"slots\":[{\"slot\":\"Desk\",\"capacity\":1},{\"slot\":\"Chair\",\"capacity\":1}]}","stream":true}' \
+  http://127.0.0.1:8088/responses
+```
+
+A run streams one typed JSON event per line — see [9.6](#96-the-typed-event-stream).
+
+### 7.6 End-to-end against the real catalogue
+
+1. Start the application host (it publishes `/mcp`).
+2. Mint a caller token that carries `read:catalog`.
+3. Point the agent at it: `CATALOGTOOLS__MCPENDPOINT=<host>/mcp`.
+4. Invoke as in [7.5](#75-invoke-the-workspace-agent-with-a-caller-token) and confirm real SKUs.
+
+---
+
+## 8. Architecture — the host
+
+### 8.1 The hosting model
+
+`Program.cs` is the composition root: a list of host steps and features, and no logic of its own. `AgentHost.CreateBuilder` binds the port and wires telemetry; `AddFoundryResponses` registers the Responses server; `RegisterProtocol` maps it. The **served agent is always the feature's workflow agent itself, unwrapped** — hosting can only redirect a hosted workflow's checkpoints when the agent it resolves is that workflow agent.
+
+### 8.2 The folder law
+
+**`Hosting/` bootstraps the host; `Shared/` is anything a second feature would use unchanged; everything else belongs to a feature.**
+
+### 8.3 The composition root
+
+The order in `Program.cs` is deliberate: settings are resolved once (`AgentHostSettings.FromConfiguration`), telemetry is added before anything emits it, the shared model client is built once, then the MCP token plumbing and run scope, then each feature registers itself, then the default agent.
+
+### 8.4 `Hosting/` bootstrapping
+
+| Concern | Where |
+|---|---|
+| Configuration, resolved once | `AgentHostSettings` |
+| Telemetry providers and resources | `HostTelemetry` |
+| Shared model client | `SharedModelClient` |
+| The default agent fallback | `DefaultAgent` |
+| The startup report | `StartupReport` |
+| Local `.env` fill | `LocalEnvironmentDefaults` |
+
+---
+
+## 9. Architecture — the agents
+
+### 9.1 Anatomy of an agent
+
+Every agent is the same three artifacts, so adding one is a folder and a registration, not a new shape:
+
+1. **A prompt** — `Features/<Feature>/Prompts/<name>.v<N>.md`, embedded into the assembly. The version lives in the file name, so a run can name the instructions it used. Only the active version is kept; superseding a prompt removes the previous file, and git history keeps its text.
+2. **A profile** — an `AgentProfile` in the feature's roster: stage name, prompt file, description, output format, and whether it may search (`UsesCatalogueTools`).
+3. **A stage** — an executor that calls its stage agent and publishes what came back.
+
+`AgentFactory` builds the `AIAgent` from a profile and an `IChatClient`, which is what lets the whole tree run offline against a fake.
+
+### 9.2 The workspace-suggestion graph
+
+A run is a bounded workflow, not a straight line:
+
+```
 read request
      │
      ▼
@@ -34,15 +342,15 @@ rephrase & expand requirement ◄───────────────�
      ▼                                                           │
 retrieve catalogue products                                      │
      ▼                                                           │
-build candidate product pool      (deterministic: from the tool answers, per component) │
+build candidate product pool      (deterministic)                │
      ▼                                                           │
-rerank per component              (best first, with a reason)     │
+rerank per component              (best first, with a reason)    │
      ▼                                                           │
-bound retrieved products          (deterministic: top-N, dedupe)  │
+bound retrieved products          (deterministic: top-N, dedupe) │
      ▼                                                           │
 compose workspace setups                                         │
      ▼                                                           │
-validate setup structure          (deterministic: provenance)     │
+validate setup structure          (deterministic: provenance)    │
      │ structurally invalid ─────────────────────────────────────┤
      │ structurally valid                                        │
      ▼                                                           │
@@ -52,68 +360,38 @@ review workspace setups                                          │
                               └── attempts exhausted ──► complete: unavailable
 ```
 
-Three rules the graph enforces, and the reason it is a graph rather than a prompt:
+Three rules the graph enforces: the **verifier runs once**; retry returns to **rephrasing, not composition**; and **no model decides the lifecycle**.
 
-- **The verifier runs once.** It is on no retry edge, because whether a sentence is about a workspace does not
-  change when a setup is rejected.
-- **Retry returns to rephrasing, not composition.** A rejected setup set means the sentence has to be read
-  *differently* — and, with the expansion below, searched differently; composing again from the same reading
-  fails the same way.
-- **No model decides the lifecycle.** The verifier and the reviewer return validity. Whether another attempt
-  runs is deterministic code — `WorkspaceSetupRetryDecisionPolicy` — reading the verdict and the attempt count.
+### 9.3 Model stages
 
-**The stages.** Six stage agents, each one prompt and one profile:
+Six stage agents, each one prompt and one profile (`WorkspaceSuggestionAgentRoster`):
 
-| Stage | Decides | Given | Tools |
-|---|---|---|---|
-| Verifier | Is this a workspace request at all? | the sentence, the slot rules | none |
-| Rephraser | What does the customer want, and what words will find it? | the sentence, the slot rules, the currency, the ceiling the application recorded, the previous attempt's issues | none |
-| Retriever | What does the catalogue offer? | one search per requested component: its words and the catalogue arguments that go with them | the catalogue's MCP tools |
-| Reranker | Which of what it offered answers each component? | every requested component's need, and the products a search returned for it — names, descriptions and prices | none |
-| Composer | Which products form a setup? | the expansion, the retrieved products | none |
-| Reviewer | Does the setup set satisfy the request? | the sentence, the expansion, what each search came back with, the setups | none |
+| Stage | Agent name | Prompt | Decides | Tools |
+|---|---|---|---|---|
+| Verifier | `workspace-request-verifier` | `workspace-request-verifier.v2.md` | Is this a workspace request at all? | none |
+| Rephraser | `workspace-requirement-rephraser` | `workspace-requirement-rephraser.v2.md` | What does the customer want, and what words will find it? | none |
+| Retriever | `catalogue-product-retriever` | `catalogue-product-retriever.v2.md` | What does the catalogue offer? | the catalogue's MCP tools |
+| Reranker | `catalogue-candidate-reranker` | `catalogue-candidate-reranker.v2.md` | Which of what it offered answers each component? | none |
+| Composer | `workspace-setup-composer` | `workspace-setup-composer.v2.md` | Which products form a setup? | none |
+| Reviewer | `workspace-setup-reviewer` | `workspace-setup-reviewer.v2.md` | Does the setup set satisfy the request? | none |
 
-Four deterministic stages sit between them: `WorkspaceComponentProductPoolPolicy` (what the tools answered,
-one product per SKU, at most fifteen per component), `WorkspaceComponentProductSelectionPolicy` (the reranker's
-order, a SKU it was never given dropped), `WorkspaceSetupCandidateStructureValidator` (every SKU came from the
-reranked set, quantities within capacity, components actually requested) and `WorkspaceSetupRetryDecisionPolicy`
-(which of the three endings, and whether there is an attempt left to retry).
-`WorkspaceComponentSearchVocabularyLimitPolicy` is applied **inside** the rephrasing stage
-rather than as a stage of its own, because the words have to be bounded before the retriever can see them — and
-`WorkspaceComponentProductSelectionPolicy` likewise inside reranking, where dropping an ungiven SKU and restoring
-a product's slot are code rather than prompt.
+### 9.4 Deterministic policies
 
-**The pool is built from the tools' own answers, not from a model's report.** Every MCP tool answer is recorded as
-it returns; the pool is read from those recordings, so a product's description reaches the reranker without any
-model having retyped it. That is why the retriever no longer lists products at all — a model copying six hundred
-characters can shorten or fuse them, and nothing downstream would notice.
+Code, not prompts — the decisions a model must not make:
 
-**The expansion, and why the search had to change with it.** The rephraser answers with a *requirement
-expansion*: what the whole workspace is for, what it may cost, and — for each of the seven catalogue components —
-a retrieval query, search terms, synonyms and semantic concepts. That shape is the fix for what the pipeline
-shipped with. A described need used to reach `search_catalogue` as a single phrase, and the name search requires
-**every** word of what it is given, so a sentence about a need matched nothing at all. Measured over the real
-205-product catalogue, seven needs of seven found **0** products as one typed phrase and **10 to 28** as terms.
-The tool therefore takes **several terms that are alternatives**: every word of one term must appear, and a
-product needs to match only one. `ExpandedSearchRecallTests` keeps both halves of that measurement.
+- `WorkspaceComponentProductPoolPolicy` — one product per SKU, at most fifteen per component.
+- `WorkspaceComponentProductSelectionPolicy` — the reranker's order, a SKU it was never given dropped.
+- `WorkspaceComponentSearchVocabularyLimitPolicy` — bounds the words before the retriever sees them.
+- `WorkspaceSetupCandidateStructureValidator` — every SKU came from the reranked set, quantities within capacity, components actually requested.
+- `WorkspaceSetupRetryDecisionPolicy` — which of the three endings, and whether an attempt is left.
 
-**The index reads a product's description as well as its name, and only the terms may see it.** A need's
-distinguishing words — *lumbar support*, *glare* — are stated in prose, so indexing only the name is what made
-those needs unreachable. That widening is bounded to the expanded terms: what a customer types in a search box is
-still answered from the name alone, so no search in the application answers differently from the day before it.
-`LiftiProductNameSearchServiceTests` pins both halves — the word *lumbar* appears in three chairs' descriptions
-and no chair's name, is found by a term, and is not found by the typed search.
+### 9.5 The echo agent
 
-**The budget acts on the search, not only on the composition.** When the customer stated a total and no
-per-component split, the rephraser works out the allocation, and each component's `maximumMonthlyAmount` is
-passed to the catalogue, which treats it as a **narrowing** filter: a product above it is not eligible, so a good
-name match can never bring it back. A search that came back empty *because of that ceiling* reports the cheapest
-product the ceiling excluded; the reviewer turns that figure into a correction, and the retry reallocates.
-Without that path, a run whose allocation was too tight would report that no workspace fits a catalogue that
-could have furnished one.
+`echo-reverse-agent` **reverses** the caller's message (`ReverseNodeExecutor`) and does nothing else. It exists so hosting can be exercised from a console — routing by name, session handling, streaming — with no model call, no catalogue and no cost. It is a **workflow with one stage** on purpose: hosting treats an agent that runs a workflow differently from one that does not. It is enabled by default and switched off with `ECHOAGENT__ISENABLED=false`.
 
-**The stream.** A caller does not receive one document. It receives a sequence of typed events, one JSON object
-each, discriminated by `type`:
+### 9.6 The typed event stream
+
+No model text ever reaches a caller. A caller receives typed events, one JSON object each, discriminated by `type`:
 
 | `type` | Carries | When |
 |---|---|---|
@@ -123,149 +401,150 @@ each, discriminated by `type`:
 | `candidate` | `approvedWorkspaceSetup` | an approved setup — **after** review, never before |
 | `completed` | `runStatus`, `outcomeReason`, `completedAttemptCount`, `runUsage` | the run ends |
 
-`runStatus` is one of `success`, `rejected`, `unavailable`, and it is deliberately **separate** from the
-candidates: a setup's arrival must never imply a successful run. No model text ever reaches a caller — only the
-events a stage chooses to publish.
+`runStatus` is one of `success`, `rejected`, `unavailable`, and is deliberately **separate** from the candidates: a setup's arrival must never imply a successful run. The `type` discriminator comes from `StreamingStageExecutor<TState, TEvent>`, so a stage cannot publish through a concrete type and silently drop it.
 
-### 1.2 Echo
+### 9.7 The chat-client decorator stack
 
-`echo-reverse-agent` answers with the caller's message, verbatim. Nothing else.
+Each model call is wrapped in an ordered stack — **telemetry → guardrail → MCP tools** — over a no-op leaf. `TelemetryChatClient` is the innermost, wrapping the guardrail: it owns the run's span, records one line and the token counts per call, names the stage from the call's options, and reports the run's total on the `completed` event. `GuardrailChatClient` fails the run loudly if an answer ever repeats the caller's token. `AuthorisedMcpChatClient` offers the catalogue tools only to a stage that declares `UsesCatalogueTools`.
 
-It exists so that hosting can be exercised from a console — routing by name, session handling, streaming — with
-no model call, no catalogue and no cost. It is a **workflow with one stage** on purpose: hosting treats an agent
-that runs a workflow differently from one that does not, so a plain agent would test a different path from the
-one the real pipeline uses.
+### 9.8 Guardrails
 
-It is enabled by default and switched off in a deployment with `ECHOAGENT__ISENABLED=false`.
+The guard **wraps the tool itself, not the function loop** (`GuardedToolFunction`, a `DelegatingAIFunction`): the catalogue's tools reach the model's options from inside the chat-client chain, downstream of where MAF function middleware would transform tools, so a tool guarded there would be a tool guarded nowhere. The order is stated once, in `ToolGuardPipeline` and the composition root, not in MAF's middleware composition:
+
+| Phase | Guards, in order |
+|---|---|
+| Arguments | `ToolAllowListGuard` → `ToolAuthorizationGuard` → `ArgumentCeilingGuard` → `ToolArgumentGuard` (the catalogue's category/subCategory vocabulary) |
+| Results | `ToolResultSizeGuard` → `ToolResultSchemaGuard` → `UntrustedToolDataGuard` → `ToolResultRecordingGuard` (the ledger) |
+
+The allow-list is also what decides which tools the model is offered. A denied argument guard stops the chain before the tool runs and the reason is **returned to the model**, not thrown, so it may correct the call.
 
 ---
 
-## 2. Architecture
+## 10. How it connects to the catalogue
 
-### 2.1 Layout
+### 10.1 The catalogue as an MCP server
 
-```
-src/CoreRentalNet.Agents/
-├── Program.cs                     the composition root: a list of host steps and features
-├── appsettings.json
-├── Hosting/                       host bootstrapping: settings · telemetry · model client ·
-│                                  default agent · startup report · local .env
-├── Shared/                        reused by every feature
-│   ├── Agents/          AgentProfile · AgentFactory
-│   ├── ChatClients/     the model call's decorators: telemetry · guardrail · MCP tools · the no-op leaf
-│   ├── Configuration/   HostedAgentName
-│   ├── Mcp/             caller-authorised MCP: header reader · per-call token holder ·
-│   │                    connection · attachment handler · request policy · tool-answer ledger
-│   ├── Model/           model client registration · transport options · run usage
-│   ├── Prompts/         embedded instruction source
-│   ├── Serialization/   ContractJson
-│   └── Workflows/       ChatEntryStageExecutor · StreamingStageExecutor · WorkflowOutputPublisher
-└── Features/
-    ├── WorkspaceSuggestion/       prompts · roster · domain · stages · policies · graph
-    └── EchoReverse/               prompt · roster · stage client · stage · graph
-```
+The application exposes two tools under `/mcp`:
 
-**`Hosting/` bootstraps the host; `Shared/` is anything a second feature would use unchanged.** Everything else belongs to a feature.
+- `search_catalogue` — gated by `read:catalog`.
+- `search_similarity_catalogue` — gated by the `SimilaritySearch` claim (closed by default).
 
-### 2.2 How an agent is defined
+The retriever is offered whichever tools the caller's token entitles, so the same run can discover one tool or two.
 
-Every agent here is the same three artifacts, so adding one is a folder and a registration, not a new shape:
+### 10.2 Server-authorised vs caller-authorised
 
-1. **A prompt** — `Features/<Feature>/Prompts/<name>.v<N>.md`, embedded into the assembly. The version lives in
-   the file name, so a change is a new file and a run can name the instructions it used. Only the active version
-   is kept in the tree: superseding a prompt removes the previous file, and git history keeps its text.
-2. **A profile** — an `AgentProfile` in the feature's roster: stage name, prompt file, description, output
-   format, and whether it may search.
-3. **A stage** — an executor that calls its stage agent and publishes what came back.
+The single decision that explains the cross-cutting code: the agent does **not** hold a catalogue credential. It presents the **caller's** token, so the catalogue enforces the caller's own entitlements.
 
-`AgentFactory` builds the `AIAgent` from a profile and an `IChatClient`, which is what lets the whole tree run
-offline against a fake.
+### 10.3 The caller-token lifecycle
 
-### 2.3 Three constraints that shaped the code
+`AccessTokenHeaderReader` reads the token (`x-client-mcp-catalog-access-token`) off the invocation; `IMcpAccessTokenService` holds it for the run; `McpAccessTokenHandler` stamps it on each MCP request. It is **never logged** — a guardrail fails the run if a model answer repeats it, and `TokenLeakRedactionProcessor` scrubs it before export.
 
-Found by building against the pinned packages, not assumed:
+### 10.4 Permissions and gates
 
-- **The served agent must be the workflow agent itself, unwrapped.** Hosting redirects a hosted workflow's
-  checkpoints only when it can copy that agent, and it declines to copy one behind middleware. So nothing wraps
-  the served agent; per-call work lives one layer down, at each stage's model call.
-- **A workflow served as an agent must speak the chat protocol.** `List<ChatMessage>` *and* a turn token, or
-  hosting refuses the workflow before a run starts. That is what `ChatEntryStageExecutor` is for.
-- **A workflow event does not cross the agent boundary as content; a yielded message does.** Every stage
-  publishes through `WorkflowOutputPublisher`, which yields one assistant message per event.
-- **A request that names no agent needs a default.** Hosting falls back to a non-keyed `AIAgent` when the
-  request carries no name — and `azd ai agent invoke --local` sends no name at all. Each deployment therefore
-  registers the agent it is named for as its default, so a nameless request gets the right one.
-
-### 2.4 Cross-cutting concerns
-
-| Concern | Where | Note |
+| Gate | Owner | Default |
 |---|---|---|
-| The caller's credential | `AccessTokenHeaderReader` → `IMcpAccessTokenService` → `McpAccessTokenHandler` | read once off the invocation, held for the call, stamped on each MCP request; never logged |
-| Catalogue tools | the same decorator | offered only to a stage that declares `UsesCatalogueTools` |
-| Run cost, run span and model telemetry | `TelemetryChatClient` | scoped to the run; the innermost decorator, wrapping the guardrail. It owns the run's span, records one line and the token counts per call, names the stage from the call's options, and reports the run's total on the `completed` event. The run's outcome metrics are read once from the workflow state by `WorkspaceWorkflowTelemetry`, and every node's span by `WorkspaceSuggestionStreamingExecutor` |
-| Token-leak guardrail | `GuardrailChatClient` | fails the run loudly if an answer ever repeats the caller's token, and marks the span so `TokenLeakRedactionProcessor` scrubs it before export |
-| Tool-call guardrails | `Shared/Guardrails/` + `Features/WorkspaceSuggestion/Guardrails/` | one MAF function middleware runs an ordered pipeline around every MCP tool call: allow-list, caller authorization, argument-size ceiling, the catalogue's category/subCategory vocabulary, then result size, result schema, untrusted-content redaction, and last the ledger recording. Only `Shared/Guardrails/MAF/` knows MAF; the policies are ordinary code. The allow-list is also what decides which tools the model is offered |
-| Transport retries | `ModelTransportRetryOptions` | **not** a run's attempt count; the two never share a counter |
-| The `type` discriminator | `StreamingStageExecutor<TState, TEvent>` | the union is a class type parameter, so a stage cannot publish through a concrete type and silently drop `type` |
+| `CatalogRead` (`permissions` = `read:catalog`) | the application | enabled |
+| `SimilaritySearch` | the application | **closed** |
+| `WorkspaceSuggestion` | the application | **closed** |
+
+An empty claim type/value means closed: the capability is refused, not open.
+
+### 10.5 The failure mode by design
+
+A run whose request carries no token reports `unavailable` (`CatalogueUnavailableException`) rather than composing from memory. That is the trust model, not a defect.
 
 ---
 
-## 3. Configuration
+## 11. Domain glossary
 
-Settings are read from the environment first, then `appsettings.json`; a local `.env` fills anything the
-platform injected empty. **An empty setting is absent, not a value** — a missing required setting refuses
-startup by name rather than serving an agent nothing can find.
+### 11.1 Feature terms
 
-### 3.1 Agent names
+| Term | Meaning |
+|---|---|
+| **Run** | One bounded workflow execution |
+| **Stage** | One model or deterministic step in the graph |
+| **Requirement expansion** | The rephraser's output: per-component query, terms, synonyms, semantic concepts |
+| **Candidate** | An approved workspace setup, published only after review |
+
+### 11.2 Stage terms
+
+| Term | Meaning |
+|---|---|
+| **Verifier** | Decides whether the sentence is a workspace request |
+| **Rephraser** | Produces the requirement expansion and the search vocabulary |
+| **Retriever** | Searches the catalogue (the only stage with tools) |
+| **Reranker** | Orders each component's products against its need |
+| **Composer** | Builds candidate setups |
+| **Reviewer** | Decides whether the setup set satisfies the request |
+
+### 11.3 Event and status terms
+
+| Term | Meaning |
+|---|---|
+| `stageStarted` / `stageCompleted` | A stage's boundaries |
+| `retry` | A rejected attempt gives way |
+| `candidate` | An approved setup |
+| `completed` | The run ends, carrying `runStatus` |
+| `success` / `rejected` / `unavailable` | The three run outcomes |
+
+### 11.4 Term → code
+
+Domain types live in `Features/WorkspaceSuggestion/Domain/` (events under `Domain/Events`, outputs under `Domain/Outputs`, tools under `Domain/Tools`). The stage identities live in `Agents/WorkspaceSuggestionAgentRoster.cs`.
+
+---
+
+## 12. Configuration
+
+### 12.1 Agent names
 
 | Setting | Default | Meaning |
 |---|---|---|
 | `FOUNDRY_AGENT_NAME` | `core-rental-workspace-suggestion-agent` | **Reserved prefix.** The platform injects the deployed name; the value here is the local default. Must equal the `azure.yaml` service `name`. |
 | `EchoAgent:AgentName` | `echo-reverse-agent` | The name a console addresses the echo agent by |
 | `EchoAgent:IsEnabled` | `true` | Set `false` to stop serving the echo agent |
-| `AgentHost:DefaultAgentName` | the workspace agent's name | Which agent a request that names none gets. **Set per service in `azure.yaml`** — see below |
+| `AgentHost:DefaultAgentName` | the workspace agent's name | Which agent a request that names none gets. **Set per service in `azure.yaml`.** |
 
-**There are two `azure.ai.agent` services in `azure.yaml`, not one.** `azd` addresses *services* by their key in
-that file — not the keyed agents inside a container — so `azd ai agent invoke echo-reverse-agent …` needs a service
-keyed `echo-reverse-agent`. Both services point at the same project; the container runs the same code either way and
-serves both agents, and the service `name:` is what Foundry resolves and what the platform injects as
-`FOUNDRY_AGENT_NAME`. That injected name is also the container's **default agent**, so a request that names
-nothing gets the agent the deployment is named for.
-
-### 3.2 Model and transport
+### 12.2 Model and transport
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `FOUNDRY_PROJECT_ENDPOINT` | *(empty)* | The Foundry project. Required; injected by the platform in a container |
+| `FOUNDRY_PROJECT_ENDPOINT` | *(empty)* | The Foundry project. Required; injected in a container |
 | `AZURE_AI_MODEL_DEPLOYMENT_NAME` | `gpt-4.1-mini` | The deployment every stage runs on |
-| `ModelTransport:NetworkTimeout` | `00:10:00` | How long one model call may take before the transport gives up |
-| `ModelTransport:MaximumRetryAttempts` | `2` | How many times one failed call is retried |
+| `ModelTransport:NetworkTimeout` | `00:10:00` | How long one model call may take |
+| `ModelTransport:MaximumRetryAttempts` | `2` | How many times one failed call is retried — **not** a run's attempt count |
 
-### 3.3 Workspace suggestion
+### 12.3 Workspace workflow bounds
 
 | Setting | Default | Meaning |
 |---|---|---|
 | `WorkspaceSuggestionWorkflow:MaximumAttemptCount` | `3` | How many times a run may rephrase and try again |
 | `WorkspaceSuggestionWorkflow:MaximumRetrievedProductsPerComponentForReranking` | `15` | How many products each component offers the reranker |
-| `WorkspaceSuggestionWorkflow:MaximumSearchTermCountPerComponent` | `8` | How many words one component's search may carry, terms and synonyms together |
-| `WorkspaceSuggestionWorkflow:MaximumSearchTermCharacterCount` | `80` | How long one search term may be |
 | `WorkspaceSuggestionWorkflow:MaximumSelectedProductsPerComponent` | `3` | How many products each component offers the composer |
-| `CatalogTools:McpEndpoint` | *(empty)* | The catalogue's MCP server. Absent ⇒ the agent cannot search rather than answering from memory |
+| `WorkspaceSuggestionWorkflow:MaximumSearchTermCountPerComponent` | `8` | How many words one component's search may carry |
+| `WorkspaceSuggestionWorkflow:MaximumSearchTermCharacterCount` | `80` | How long one search term may be |
 
-The catalogue's two tools are gated by the **caller's** token, in the application's configuration:
-`search_catalogue` needs `read:catalog`, which ships enabled; `search_similarity_catalogue` needs the
-`SimilaritySearch` claim, which ships **closed** and is set to `poweruser:aibuilder` in local development. The
-retriever is offered whichever ones the caller's token entitles, which is why the process configures no
-credential of its own — and why the same run can discover one tool or two.
+### 12.4 Catalogue tools
 
-### 3.4 Environment variables
+| Setting | Default | Meaning |
+|---|---|---|
+| `CatalogTools:McpEndpoint` | *(empty)* | The catalogue's MCP server. Absent ⇒ the agent cannot search |
 
-A setting is its section path with `__` for `:` — `ECHOAGENT__ISENABLED=false`,
-`WORKSPACESUGGESTIONWORKFLOW__MAXIMUMATTEMPTCOUNT=5`, `CATALOGTOOLS__MCPENDPOINT=https://host/mcp`.
-`.env.example` documents every one. **Never define a setting of our own with a `FOUNDRY_` prefix** — the
-platform reserves it.
+### 12.5 Echo agent
 
-### 3.5 `azure.yaml`
+| Setting | Default | Meaning |
+|---|---|---|
+| `EchoAgent:AgentName` | `echo-reverse-agent` | The name a console addresses it by |
+| `EchoAgent:IsEnabled` | `true` | `false` stops serving it |
+
+### 12.6 Environment variable convention
+
+A setting is its section path with `__` for `:` — `ECHOAGENT__ISENABLED=false`, `WORKSPACESUGGESTIONWORKFLOW__MAXIMUMATTEMPTCOUNT=5`, `CATALOGTOOLS__MCPENDPOINT=https://host/mcp`. **Never define a setting of our own with a `FOUNDRY_` prefix** — the platform reserves it.
+
+### 12.7 Precedence and local files
+
+Settings are read from the environment first, then `appsettings.json`; a local `.env` fills anything the platform injected empty. **An empty setting is absent, not a value** — a missing required setting refuses startup by name. `.env.example` documents every key.
+
+### 12.8 `azure.yaml`
 
 ```yaml
 services:
@@ -281,194 +560,187 @@ services:
               version: 2.0.0
 ```
 
-`FOUNDRY_AGENT_NAME` is deliberately **not** mapped in `env:` — the platform injects it, and mapping it from an
-azd variable nobody set once injected it empty.
-
-### 3.6 Version
-
-The deployed agent is built by Foundry from a zip of this project folder, so the repository root's
-`Directory.Build.props` is not present in that build. The Azure DevOps pipeline resolves the release from the
-tag with `scripts/resolve-version.sh` and writes `Version.g.props` into `src/CoreRentalNet.Agents/` before
-`azd deploy`; the csproj imports it when present and carries its own copy of the version mapping. The file is
-gitignored, so a developer's build keeps the floor `0.1.0`.
-
-Every startup prints the build identity beside the settings it reports:
-
-```text
-[startup]   version                             : 1.4.1
-[startup]   git sha                             : abc1234
-[startup]   build id                            : 12345
-[startup]   environment                         : production
-```
-
-All four are stamped into the artifact: the pipeline writes them into `Version.g.props`, the csproj emits each
-as assembly metadata, and `AgentVersion` reads them back from the assembly — so a container reports the build
-it was made from and nothing a process can set. A developer's build carries no commit, build id or
-environment, so the first two read `(unset)` and the environment reads `local`.
-
-The same four are contributed to OpenTelemetry as resource attributes (`version`, `gitSha`, `buildId`,
-`environment`): the span and metric providers get them with `ConfigureResource`, and each log record is
-stamped by a processor, because the hosting package sets the logger provider's resource after ours. The keys
-are the deployment's own rather than `service.*`, which the platform already fills.
+**There are two `azure.ai.agent` services, not one.** `azd` addresses *services* by their key, not the keyed agents inside a container, so `azd ai agent invoke echo-reverse-agent …` needs a service keyed `echo-reverse-agent`. Both point at the same project; the container serves both. `FOUNDRY_AGENT_NAME` is deliberately **not** mapped in `env:` — the platform injects it.
 
 ---
 
-## 4. Testing
+## 13. Testing & quality gates
 
-### 4.1 Unit and contract tests
+### 13.1 The agent suite
 
 ```bash
 cd agentfoundry
 dotnet test AgentFoundry.sln
 ```
 
-| Suite | Covers |
-|---|---|
-| `WorkflowTests` | the graph: every stage runs in order, a rejection runs only the verifier, a rejected review returns to rephrasing, the third rejection ends `unavailable` |
-| `ExpandedSearchRecallTests` | the measurement: each described component is findable by its terms, and none is findable as one typed phrase |
-| `NameSearchPoolCharacterisationTests` | the measurement the pool's width is derived from: the terms rule puts the product within fifteen, a single broad term buries it at #14–#30 |
-| `McpToolAnswerLedgerTests` · `WorkspaceComponentProductPoolBuilderTests` · `WorkspaceComponentProductSelectionPolicyTests` | the recorded answers, and the two guarantees a reranker's answer is read under |
-| `WorkflowGraphSpikeTests` | the two hosting mechanics the design rests on: the chat-protocol requirement and yielded output reaching the caller |
-| `WorkspaceWorkflowContractSchemaTests` · `ContractSchemaTests` | every contract against its committed JSON Schema, in both directions |
-| `RephraserSpecTests` · `WorkspaceRequestVerificationContractTests` · `InvalidModelOutputTests` | the stage contracts over a fake chat client |
-| `EchoWorkflowTests` | the echo replies exactly, streams, and builds from its roster |
-| `WorkspaceSuggestionAgentIdentityTests` · `EchoAgentIdentityTests` | configured names, and startup refusing a missing one by name |
-| `CatalogueChatClientTests` · `ModelCallDecoratorTests` | the caller token is lifted, tools are offered only where declared, the guardrail fires |
+Current: **199 passed / 0 failed** (2026-10-12).
 
-### 4.2 Run it locally
+### 13.2 What each test proves
+
+| Area | Covers |
+|---|---|
+| Graph | every stage runs in order; a rejection runs only the verifier; a rejected review returns to rephrasing; the third rejection ends `unavailable` |
+| Stage contracts | the stage contracts over a fake chat client (`RephraserSpecTests`, `WorkspaceRequestVerificationContractTests`, `InvalidModelOutputTests`) |
+| Contract schemas | every contract against its committed JSON Schema, both directions (`ContractSchemaTests`, `WorkspaceWorkflowContractSchemaTests`) |
+| Guardrails | the pipeline, the ledger, the pool builder, the selection and vocabulary policies (`Guardrails/GuardrailTests`, `McpToolAnswerLedgerTests`, `WorkspaceComponentProductPoolBuilderTests`) |
+| MCP token | the caller token is lifted, tools are offered only where declared, the guardrail fires (`CatalogueChatClientTests`, `McpAccessTokenHandlerTests`, `McpAccessTokenServiceTests`) |
+| Host | settings, startup refusals, build identity (`AgentHostSettingsTests`, `StartupReportTests`, `AgentVersionTests`) |
+| Echo | replies exactly, streams, builds from its roster (`EchoWorkflowTests`) |
+
+### 13.3 Application-side tests are not in this suite
+
+These tests measure the catalogue's search and live in the **application solution**, under `../tests/CoreRentalNet.IntegrationTests/`:
+
+- `ExpandedSearchRecallTests` — each described component is findable by its terms, and none as one typed phrase.
+- `NameSearchPoolCharacterisationTests` — the measurement the pool's width is derived from.
+- `LiftiProductNameSearchServiceTests` — a term finds a description-only word; a typed search does not.
+
+`dotnet test AgentFoundry.sln` does **not** run them; run them from the repository root against `CoreRentalNet.sln`.
+
+### 13.4 Run it
 
 ```bash
 cd agentfoundry/src/CoreRentalNet.Agents
-cp .env.example .env          # then fill FOUNDRY_PROJECT_ENDPOINT and AZURE_AI_MODEL_DEPLOYMENT_NAME
+cp .env.example .env
 PORT=8088 dotnet run
 ```
 
-or, through azd — **naming the service you intend to invoke**:
+### 13.5 Contract schemas
 
-```bash
-cd agentfoundry
-azd ai agent run core-rental-workspace-suggestion-agent     # this container's default agent: the workspace agent
-azd ai agent run echo-reverse-agent                         # this container's default agent: the echo agent
-```
+`shared/contracts/*.schema.json` holds the JSON Schema for every stage contract. A test checks each contract against its schema in both directions.
 
-The host binds `PORT` (default `8088`) and **ignores** `ASPNETCORE_URLS`.
+---
 
-> **A `dotnet run` container answers as the workspace agent.** With no `azure.ai.agent` service behind it, the
-default falls back to `FOUNDRY_AGENT_NAME` — the workspace agent — and `azd ai agent invoke --local` sends no
-agent name, so `azd ai agent invoke echo-reverse-agent "…" --local` against that container is answered by the
-**workspace** agent. Start the container as the service you mean to invoke, and check it before invoking: every
-startup prints which agent a nameless request will get.
->
-> ```text
-> [startup]   AgentHost:DefaultAgentName        : echo-reverse-agent
-> ```
+## 14. Build, versioning & CI
 
-### 4.3 Check it is ready
+### 14.1 The solution
+
+`AgentFoundry.sln` builds `src/CoreRentalNet.Agents` and `tests/CoreRentalNet.Agents.Tests`. It is separate from the application's `CoreRentalNet.sln`.
+
+### 14.2 Version from the git tag
+
+The build never reads Git. `../scripts/resolve-version.sh` turns the tag being built into a semantic version plus the short commit, and the pipeline passes it in.
+
+### 14.3 The agent's remote build
+
+Foundry builds the deployed agent **remotely** from a zipped project folder, so the repository root's `Directory.Build.props` is **not** in that build. The pipeline writes `../scripts/write-agent-version.sh`'s output — `Version.g.props` — inside `src/CoreRentalNet.Agents/`, and the csproj imports it when present. Each property becomes assembly metadata, so the running container reports the build it was made from. The file is gitignored, so a developer's build keeps the floor `0.1.0`.
+
+### 14.4 The pipelines
+
+- **`agentfoundry/azure-pipelines.yml`** — a **separate** Azure DevOps pipeline. Two stages: **CI** restores, builds and tests `agentfoundry/AgentFoundry.sln`; **Deploy** runs `azd provision` then `azd deploy`, after a manual approval. It is path-filtered to `agentfoundry/**`, `Directory.Build.props`, `global.json` and `scripts/**`. Configuration comes from the `core-rental-foundry` variable group; `azd` signs in with a federated token, so no secret is stored. Both agents deploy one at a time (naming the service), because the two services share one project directory.
+- **The root `.github/workflows/ci.yml` does not run this suite** — it builds `CoreRentalNet.sln` only.
+
+---
+
+## 15. Deployment & operations
+
+### 15.1 `azure.yaml` services
+
+Two `azure.ai.agent` services, both pointing at `src/CoreRentalNet.Agents`, plus an `azure.ai.project` service that pins the existing Foundry project and its model deployments.
+
+### 15.2 Deploy
+
+The agent pipeline resolves the version, writes `Version.g.props`, runs `azd provision`, then `azd deploy` per service. Provision reconciles the declared model deployments into the project; deploy registers new agent versions.
+
+### 15.3 Readiness and diagnostics
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8088/readiness      # 200
 ```
 
-Startup prints one line per setting and one per served agent, which is what a container that is never
-acknowledged needs:
+Startup prints, before anything else can fail, what a deployment must supply — each required setting as `set` or `MISSING` — the agent names, and the build identity read back from the artifact's own assembly metadata:
 
 ```text
-[startup]   FOUNDRY_AGENT_NAME                : core-rental-workspace-suggestion-agent
-[startup]   EchoAgent:AgentName               : echo-reverse-agent (enabled)
-[startup] serving core-rental-workspace-suggestion-agent
-[startup] serving echo-reverse-agent
+[startup] host built; listening.
+[startup] hosted agent deployable
+[startup]   version                             : 1.4.1
+[startup]   git sha                             : abc1234
+[startup]   build id                            : 12345
+[startup]   environment                         : production
+[startup]   hosted                              : yes
+[startup]   FOUNDRY_PROJECT_ENDPOINT            : set
+[startup]   AZURE_AI_MODEL_DEPLOYMENT_NAME      : set
+[startup]   ModelTransport                      : 00:10:00 per call, 2 transport retries
+[startup]   FOUNDRY_AGENT_NAME                  : core-rental-workspace-suggestion-agent
+[startup]   EchoAgent:AgentName                 : echo-reverse-agent (enabled)
+[startup]   AgentHost:DefaultAgentName         : core-rental-workspace-suggestion-agent
 ```
 
-### 4.4 Invoke the echo agent — the smoke test
+Readiness checks a workflow agent for checkpointing: an agent that runs a workflow is checked that hosting can copy it. Register the workflow agent unwrapped, or readiness fails.
 
-```bash
-azd ai agent run echo-reverse-agent                              # terminal 1 — note the service name
-azd ai agent invoke echo-reverse-agent "hello there" --local    # terminal 2
-azd ai agent invoke echo-reverse-agent "hello there"            # against the deployment
-```
+### 15.4 Serving several agents in one container
 
-Expected: `hello there`, in a fraction of a second and with no model call.
+Hosting resolves a request by the `agent.name` it carries and looks the agent up in keyed services. Every feature registers its own keyed agent under its own name, so one container serves all of them. A request naming an unregistered agent falls back to the default and warns; a request naming **nothing** takes the default.
 
-**The container you run must be the service you invoke.** `azd ai agent invoke --local` sends a request with
-no agent name at all, and `azd ai agent run <service>` does not pass the service name through locally — only the
-hosting platform injects `FOUNDRY_AGENT_NAME`. So a local container can only answer with the one agent it was
-started as, which is why each `azure.ai.agent` service sets `AGENTHOST__DEFAULTAGENTNAME` in `azure.yaml`.
-Running the echo container and then invoking `core-rental-workspace-suggestion-agent` against it will answer with the echo, and
-nothing can detect the mismatch, because azd never sends the name. Then, without any
-client:
-```bash
-curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
-  -d '{"model":"echo-reverse-agent","input":"hello there","stream":true}' \
-  http://127.0.0.1:8088/responses
-```
+### 15.5 Known limitations
 
-### 4.5 Invoke the workspace agent
+- **The caller's token is required to search.** A console invoke carries none, so it ends `unavailable` rather than composing from memory.
+- **Locally, one container answers as one agent.** `azd ai agent invoke --local` sends no name, so the container replies with `AgentHost:DefaultAgentName`; a mismatch is silent.
+- **`azd` resolves services, not agents.** A name you type after `azd ai agent invoke` must exist as a service key in `azure.yaml`.
 
-From a console, a sentence is enough:
+### 15.6 Not yet decided
 
-```bash
-azd ai agent run core-rental-workspace-suggestion-agent
-azd ai agent invoke core-rental-workspace-suggestion-agent "a desk and a chair under 500000" --local
-```
-
-A console sends a sentence, not the application's envelope, so the run reads it as a query over every slot this
-deployment can compose for, at capacity one and with no ceiling.
-
-**A console cannot search the catalogue.** The agent searches *as the caller*, and a console invoke carries no
-caller token, so a run from the command line ends in an error at the retrieval stage rather than composing from
-memory. That is the trust model, not a defect: use the full request below, with a token, to exercise the
-pipeline end to end.
-
-With an explicit request, which is the shape that carries the token, the ceiling and the capacities:
-
-```bash
-curl -sS -N -H 'Content-Type: application/json' -H 'Accept: text/event-stream' \
-  -H 'x-client-mcp-catalog-access-token: <the caller's token>' \
-  -d '{"model":"core-rental-workspace-suggestion-agent","input":"{\"runId\":\"r1\",\"query\":\"a desk and a chair under 500000\",\"currency\":\"IDR\",\"ceilingMonthly\":500000,\"slots\":[{\"slot\":\"Desk\",\"capacity\":1},{\"slot\":\"Chair\",\"capacity\":1}]}","stream":true}' \
-  http://127.0.0.1:8088/responses
-```
-
-A run streams one typed event per line, in order:
-
-```text
-{"type":"stageStarted","customerWorkflowIdentifier":"r1","processingStage":"verifyingRequest"}
-…
-{"type":"retry",   "nextAttemptNumber":2,"maximumAttemptCount":3}
-{"type":"candidate","approvedWorkspaceSetup":{"lines":[…]}}
-{"type":"completed","runStatus":"success","completedAttemptCount":2,
- "runUsage":{"modelCalls":11,"inputTokens":9541,"outputTokens":844,"model":"gpt-4.1-mini","promptVersion":"…"}}
-```
-
-The token is required, and it travels on the invocation rather than in the body: the agent searches the catalogue
-**as the caller**, so a run whose request carries no `x-client-mcp-catalog-access-token` header reports
-`unavailable` rather than composing from memory.
-
-### 4.6 End-to-end against the real catalogue
-
-The catalogue lives in the application repository:
-
-1. Start the application host (it publishes the catalogue's MCP endpoint at `/mcp`).
-2. Mint a caller token that carries `read:catalog`.
-3. Point the agent at it: `CATALOGTOOLS__MCPENDPOINT=<host>/mcp`.
-4. Invoke as in 4.5 and confirm real SKUs, names and amounts in the `candidate` events.
+Scaling beyond one container, secret rotation, and any deployment of the agent outside azd are deliberate decisions not yet made.
 
 ---
 
-## 5. Operational notes
+## 16. Troubleshooting / FAQ
 
-- **Serving several agents.** Hosting resolves a request by the `agent.name` it carries and looks the agent up
-  in keyed services. Every feature registers its own keyed agent under its own name, so one container serves
-  all of them. A request naming an unregistered agent falls back to the default and warns; a request naming
-  **nothing** takes the default, which is the agent `FOUNDRY_AGENT_NAME` names.
-- **`azd` resolves services, not agents.** A name you want to type after `azd ai agent invoke` has to exist as
-  an `azure.ai.agent` service key in `azure.yaml`. That is why the echo agent has its own service entry even
-  though it shares a container.
-- **Locally, one container answers as one agent.** `azd ai agent invoke --local` sends no agent name, so the
-  container replies with `AgentHost:DefaultAgentName`. Run the service you intend to invoke; a mismatch is
-  silent, because there is nothing in the local request for the container to check the name against.
-- **Readiness checks a workflow agent for checkpointing.** An agent that runs a workflow is checked that
-  hosting can copy it; anything else is passed over. Register the workflow agent unwrapped, or readiness fails.
-- **Secrets.** The process holds no catalogue credential: the caller's token arrives in the request and is
-  lifted out before the model sees it. Never log it, and keep `.env` out of version control.
-- **One commit per change.** The repository's convention is a revertible commit per step; a folder move and a
-  behaviour change do not belong in the same one.
+### 16.1 Local invoke answers the wrong agent
+
+`azd ai agent invoke --local` sends no agent name and `azd ai agent run <service>` does not pass the service name through locally, so the container answers with `AgentHost:DefaultAgentName`. Start the service you intend to invoke, and check the startup line that says which agent a nameless request will get.
+
+### 16.2 A console run cannot search the catalogue
+
+The agent searches *as the caller*, and a console carries no caller token, so the run ends in an error at retrieval. Use the explicit request with the `x-client-mcp-catalog-access-token` header ([7.5](#75-invoke-the-workspace-agent-with-a-caller-token)).
+
+### 16.3 Catalogue / MCP
+
+- **The agent cannot search** → `CatalogTools:McpEndpoint` is empty, or the caller token lacks `read:catalog`.
+- **Similarity search is not offered** → the `SimilaritySearch` claim is closed by default in the application.
+
+### 16.4 Model / transport
+
+`ModelTransport:NetworkTimeout` is how long one call may take; `ModelTransport:MaximumRetryAttempts` is how many times one failed call is retried. Neither is a run's attempt count — `WorkspaceSuggestionWorkflow:MaximumAttemptCount` is, and the two never share a counter.
+
+### 16.5 Guardrails
+
+- **A refused tool call is not an error** → the reason is returned to the model, which may correct the call; a throw would fail the stage.
+- **A tool is refused before it runs** → an argument guard denied it; the chain stops.
+
+---
+
+## 17. Process & conventions
+
+### 17.1 The authority chain
+
+Read [`../CLAUDE.md`](../CLAUDE.md) first; it is the auto-loaded entry point and names the documents in the order they are read.
+
+### 17.2 Hard rules
+
+- **One commit per change** — a folder move and a behaviour change do not belong in the same commit.
+- **Secrets.** The process holds no catalogue credential; never log the caller's token; keep `.env` out of version control.
+- **Never define a setting with a `FOUNDRY_` prefix** — the platform reserves it.
+- **Register the workflow agent unwrapped**, or readiness fails.
+
+### 17.3 Commits & branches
+
+The repository's convention is a revertible commit per step.
+
+### 17.4 Where specs live
+
+Output documents are written under `../specs/`. There is no `specs/adr/` directory; `CONVENTIONS.md` is the convention list those rules refer to.
+
+---
+
+## 18. Credits
+
+### 18.1 Third-party
+
+Built on the **Microsoft Agent Framework** (`Microsoft.Agents.AI.Foundry`, `Microsoft.Agents.AI.Foundry.Hosting`, `Microsoft.Agents.AI.Workflows`), **Azure AI Foundry** (`Azure.AI.Projects`, `Azure.Identity`), **ModelContextProtocol**, **DotNetEnv** (local `.env`), and **xUnit**. The application that owns the catalogue is a separate solution; see the [root README](../README.md).
+
+### 18.2 References
+
+- The whole system: [root `README.md`](../README.md).
+- Conventions and tests: [`../CONVENTIONS.md`](../CONVENTIONS.md).
+- Authority chain: [`../CLAUDE.md`](../CLAUDE.md).
