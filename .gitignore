@@ -29,3 +29,10 @@ appsettings.Local.json
 appsettings.*.local.json
 .env
 *.pfx
+
+# SQLite transient files and tool output. A WAL sidecar is recreated on the next open, and a
+# design-time or ingestion database is produced by a run rather than written by hand.
+*.db-shm
+*.db-wal
+design-time.db
+src/Tools/CoreRentalNet.CatalogIngestion/App_Data/
