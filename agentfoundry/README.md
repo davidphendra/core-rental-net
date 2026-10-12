@@ -462,6 +462,8 @@ The single decision that explains the cross-cutting code: the agent does **not**
 
 An empty claim type/value means closed: the capability is refused, not open.
 
+The claim that entitles a caller is the **caller's** RBAC, so the agent is offered only the tools that caller's token carries. The roles-and-permissions model is in the [root README §8.7](../README.md#87-enterprise-identity-and-rbac).
+
 ### 10.5 The failure mode by design
 
 A run whose request carries no token reports `unavailable` (`CatalogueUnavailableException`) rather than composing from memory. That is the trust model, not a defect.

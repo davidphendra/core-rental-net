@@ -58,6 +58,8 @@ The point is **metadata effectiveness in assisting workspace suggestion**. A cus
 
 They are **generated**: `CatalogPopulate` reads each product and its reviews and writes the search metadata (`tags`, `bestFor`, `notFor`, `reviewsummary`) with a local model. Section [3.6](#36-how-the-generated-metadata-aligns-a-query) follows one query from the sentence to the candidates.
 
+The demonstration also stands in for an **enterprise environment**: every capability is gated by **Auth0 roles and permissions** (section [8.7](#87-enterprise-identity-and-rbac)), and because the agent searches *as the caller*, those entitlements cross the agent boundary rather than being re-created inside it.
+
 ### 2.3 The three-step journey
 
 1. 🎨 **Design.** Compose a workspace on a fixed canvas. The capacity of each slot is fixed in `Workspace:SlotCapacity` (`src/Host/CoreRentalNet.Host/appsettings.json`):
@@ -465,6 +467,36 @@ Vectors are embedded with the `VectorEmbedding` settings (model `text-embedding-
 
 Section [3.6](#36-how-the-generated-metadata-aligns-a-query) follows how this metadata carries a customer's words to the right products.
 
+### 8.7 Enterprise identity and RBAC
+
+The application simulates an enterprise environment: sign-in goes through **Auth0**, and every capability is gated by the caller's **roles and permissions**.
+
+```
+ 👤 user (browser) ── OIDC sign-in ─▶ ☁️ Auth0 tenant
+                                        │ ID token + access token
+                                        │ permissions: ["read:catalog","manager:role", …]
+                                        ▼
+ 🏢 CoreRentalNet
+      PermissionClaims ← the access token's "permissions"
+      RoleClaims       ← any permission ending ":role" → role (Manager)
+                                        │
+      ClaimAuthorizationHandler — one rule, exact, case-sensitive, fails closed
+        ├─ CatalogRead          open when unconfigured   (pages cookie · API bearer)
+        ├─ SimilaritySearch     closed when unconfigured
+        ├─ WorkspaceSuggestion  closed when unconfigured (a paid model call)
+        └─ McpCaller            an authenticated caller; each tool decides its claim
+                                        │ the caller's own token travels on the invocation
+                                        ▼
+ 🤖 AgentFoundry — searches as the caller; its permissions decide which tools it may use
+```
+
+- 🔐 **Identity is optional and additive.** With no `Domain`/`ClientId` configured, `IdentitySettings.IsConfigured` is false: no OIDC scheme is registered, the sign-in affordance is hidden, and every gate answers its unconfigured behaviour.
+- 🧩 **Roles are permission bundles.** Auth0 issues roles in no token on its own, so the tenant names one permission per role — `manager:role`, `supervisor:role`, `staff:role`, `guest:role` — and `RoleClaims` lifts the role from the `:role` suffix (claim type `https://core-rental.periang.auth0/roles`).
+- 🎫 **Permissions live on the access token.** Auth0 never puts permissions on the ID token, and a post-login Action cannot see them, so `PermissionClaims` reads the `permissions` claim from the access token that arrives with the ID token. It is not re-verified, and the token itself is never stored.
+- ⚖️ **One handler, one rule.** `ClaimAuthorizationHandler` answers every policy: the account is authenticated **and** carries the configured claim with the configured value, compared exactly and case-sensitively. A configured provider with a blank claim **denies**.
+- 🛑 **Fail-closed, per permission.** `UnconfiguredBehaviour` is a required argument and `Closed` is declared first: reading the catalogue opens with no provider because it costs nothing, while a similarity search and a suggestion run close because both spend.
+- 🔗 **The gate is the caller's, not the agent's.** The same token the caller signed in with is presented to the catalogue on every MCP call, so the agent is offered only the tools that caller is entitled to ([10.4](#104-permissions-and-gates)).
+
 ---
 
 ## 9. Architecture — the agent host
@@ -553,13 +585,17 @@ This is the one design decision that explains most of the agent's cross-cutting 
 
 ### 10.4 Permissions and gates
 
-| Gate | Claim type | Claim value | Default |
-|---|---|---|---|
-| `CatalogRead` | `permissions` | `read:catalog` | enabled |
-| `SimilaritySearch` | *(empty)* | *(empty)* | **closed** |
-| `WorkspaceSuggestion` | *(empty)* | *(empty)* | **closed** |
+Every capability is one policy, and every policy is answered by one handler — the identity model is in [8.7](#87-enterprise-identity-and-rbac). Because a role is a bundle of permissions in Auth0, a role reaches the application only as the permissions it carries.
 
-An empty claim type/value means closed: the capability is refused, not open.
+| Policy | Claim checked | When unconfigured |
+|---|---|---|
+| `CatalogRead` (pages) · `CatalogApiRead` (machine) | `permissions` = `read:catalog` | **open** |
+| `SimilaritySearch` | *(configured per deployment)* | **closed** |
+| `WorkspaceSuggestion` | *(configured per deployment)* | **closed** |
+| `McpCaller` | an authenticated caller; each tool checks its own claim | **closed** |
+
+- The shipped `appsettings.json` sets `read:catalog` for the catalogue and leaves `SimilaritySearch` and `WorkspaceSuggestion` empty — and empty means **closed** wherever a provider is configured.
+- The catalogue's two MCP tools each carry their own claim, so the agent is offered only what the caller's token entitles: the **caller's** RBAC, not the agent's.
 
 ### 10.5 The failure mode by design
 
@@ -598,7 +634,16 @@ A request with no token does **not** produce an answer from memory — it report
 | **Candidate** | An approved workspace setup, published only after review |
 | **`runStatus`** | `success` · `rejected` · `unavailable` — separate from candidates |
 
-### 11.4 Term → project map
+### 11.4 Identity & access terms
+
+| Term | Meaning |
+|---|---|
+| **Role** | A bundle of permissions in Auth0 (`manager`, `supervisor`, `staff`, `guest`); the tenant names one permission per role as `manager:role`, and the application reads the role back from the `:role` suffix |
+| **Permission** | A value on the access token's `permissions` claim (`read:catalog`, `poweruser:aibuilder`); lifted into a claim, the token itself is not stored |
+| **Gate** | A policy that checks one claim before a capability runs; one handler answers them all (`ClaimAuthorizationHandler`) |
+| **Fail-closed** | The rule that a capability whose claim is unconfigured is refused, not opened (`UnconfiguredBehaviour`, `Closed` declared first) |
+
+### 11.5 Term → project map
 
 Domain types live in `src/Modules/<Module>/CoreRentalNet.Modules.<Module>.Domain`; business rules in the matching `.Application` project; agent types in `agentfoundry/src/CoreRentalNet.Agents/Features/WorkspaceSuggestion/Domain/`.
 
@@ -643,12 +688,12 @@ From `src/Host/CoreRentalNet.Host/appsettings.json`:
 }
 ```
 
-Key points, all verified in `IdentitySettings` and `appsettings.json`:
+How roles and permissions are read and enforced is in [8.7](#87-enterprise-identity-and-rbac); this section is the configuration. Key points, all verified in `IdentitySettings` and `appsettings.json`:
 
 - `Auth0:Enabled` defaults to `true`; with empty `Domain`/`ClientId` the identity path is inert.
 - `Auth0:LeewaySeconds` defaults to **180** — how far ahead of expiry the SDK refreshes the access token. It must exceed the longest streaming run.
 - `Swagger:ClientId` is used by the `/swagger` page; it falls back to `Auth0:ClientId` when unset.
-- The role is read from the access token; `Auth0:RoleClaimType` names the claim (and any claim ending in `/roles` is also read).
+- `Auth0:RoleClaimType` names where the roles are read from; the default and the permission-suffix convention are in [8.7](#87-enterprise-identity-and-rbac).
 
 Register these URLs in the tenant (the port is pinned): callback `http://localhost:5199/account/callback` (and `/swagger/oauth2-redirect.html` for the docs page), logout `http://localhost:5199/`. The walkthrough for roles, the `read:catalog` permission, and offline access is the same as any Auth0 regular web application — the settings above are the whole of what this repository needs.
 
