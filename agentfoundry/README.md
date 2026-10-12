@@ -74,27 +74,36 @@ The application hosts the catalogue MCP server at `/mcp` and the `/suggestions` 
 
 The catalogue behind `/mcp` is itself generated — from the Hugging Face Amazon Reviews dataset by `CatalogPopulate`, then embedded by `CatalogIngestion`. See the [root README §8.6](../README.md#86-the-catalogue-provenance-generation-and-ingestion).
 
+The catalogue answers through **two** searches, and the agent may use either: a **keyword search ranked by Okapi BM25**, and a **semantic search over vectors**.
+
 ### 3.2 One diagram
 
 ```
         👤 caller (browser or console)
              │  request carries  x-client-mcp-catalog-access-token
              ▼
- ┌───────────────────────────────────────────────┐
- │ 🤖 CoreRentalNet.Agents (this deployable)      │
- │   Foundry hosted agents · Responses protocol   │
- │    • core-rental-workspace-suggestion-agent    │
- │    • echo-reverse-agent                        │
- │   WorkspaceSuggestion workflow                 │
- │    6 model stages + deterministic policies     │
- └───────────────────────┬───────────────────────┘
+ ┌─────────────────────────────────────────────────────┐
+ │ 🤖 CoreRentalNet.Agents (this deployable)            │
+ │   Foundry hosted agents · Responses protocol         │
+ │    • core-rental-workspace-suggestion-agent          │
+ │    • echo-reverse-agent                              │
+ │   WorkspaceSuggestion workflow                       │
+ │    6 model stages + deterministic policies           │
+ └───────────────────────┬─────────────────────────────┘
                          │ MCP over HTTP — caller's token stamped per call
+                         │
                          │ 🔧 search_catalogue            (read:catalog)
+                         │      └─ keyword search · Okapi BM25 (Lifti)
+                         │         over product name + description
+                         │
                          │ 🔧 search_similarity_catalogue (SimilaritySearch)
+                         │      └─ semantic search · vectors (sqlite-vec, cosine)
+                         │         over product_embedding.db
                          ▼
- ┌───────────────────────────────────────────────┐
- │ 🏢 CoreRentalNet application (/mcp)            │
- └───────────────────────────────────────────────┘
+ ┌─────────────────────────────────────────────────────┐
+ │ 🏢 CoreRentalNet application (/mcp)                  │
+ │   Catalog (products.json) · Discovery (BM25 + vectors)│
+ └─────────────────────────────────────────────────────┘
 ```
 
 ### 3.3 The handshake in one paragraph
@@ -372,7 +381,7 @@ Six stage agents, each one prompt and one profile (`WorkspaceSuggestionAgentRost
 |---|---|---|---|---|
 | Verifier | `workspace-request-verifier` | `workspace-request-verifier.v2.md` | Is this a workspace request at all? | none |
 | Rephraser | `workspace-requirement-rephraser` | `workspace-requirement-rephraser.v2.md` | What does the customer want, and what words will find it? | none |
-| Retriever | `catalogue-product-retriever` | `catalogue-product-retriever.v2.md` | What does the catalogue offer? | the catalogue's MCP tools |
+| Retriever | `catalogue-product-retriever` | `catalogue-product-retriever.v2.md` | What does the catalogue offer? | the catalogue's MCP tools — **BM25** keyword and **semantic** vector search, as the caller's token allows |
 | Reranker | `catalogue-candidate-reranker` | `catalogue-candidate-reranker.v2.md` | Which of what it offered answers each component? | none |
 | Composer | `workspace-setup-composer` | `workspace-setup-composer.v2.md` | Which products form a setup? | none |
 | Reviewer | `workspace-setup-reviewer` | `workspace-setup-reviewer.v2.md` | Does the setup set satisfy the request? | none |
@@ -426,10 +435,12 @@ The allow-list is also what decides which tools the model is offered. A denied a
 
 ### 10.1 The catalogue as an MCP server
 
-The application exposes two tools under `/mcp`:
+The application exposes **two searches** under `/mcp`, each its own tool and its own permission:
 
-- `search_catalogue` — gated by `read:catalog`.
-- `search_similarity_catalogue` — gated by the `SimilaritySearch` claim (closed by default).
+- `search_catalogue` — a **keyword search ranked by Okapi BM25** (Lifti's default scorer, `k1 = 1.2`, `b = 0.75`). It indexes the product **name** and its **description**, and answers a whole-word match before a word-start match. Gated by `read:catalog`.
+- `search_similarity_catalogue` — a **semantic search over vectors**: the nearest passages by cosine distance in `product_embedding.db` (a `sqlite-vec` `vec0` table read with a `MATCH` query), reduced to each product's nearest passage. Gated by the `SimilaritySearch` claim (closed by default).
+
+The two differ in what they can find: BM25 matches the **words** a product carries — the description is indexed so an expanded term can reach it — while the semantic search matches a sentence's **meaning**. Both narrow through the same catalogue operation, so a product above the caller's ceiling is ineligible to either.
 
 The retriever is offered whichever tools the caller's token entitles, so the same run can discover one tool or two.
 
