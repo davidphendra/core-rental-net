@@ -21,6 +21,8 @@
 
 `CoreRentalNet.Agents` is the deployable that serves one or more **Foundry hosted agents**. A feature — its instructions, its stages and its graph — lives in one folder a newcomer can find without reading the whole project.
 
+Its suggestion quality rests on the catalogue's **generated metadata**; see the [root README §3.6](../README.md#36-how-the-generated-metadata-aligns-a-query).
+
 ### 1.2 Status
 
 The agent suite is measured by running it. No badge is used, because the run state is a file- and code-derived fact, not an external service.
@@ -70,7 +72,7 @@ The container binds `PORT` (default `8088`), serves readiness and the Responses 
 
 The application hosts the catalogue MCP server at `/mcp` and the `/suggestions` run endpoint. This deployable is the agent side of that boundary: it is configured with the MCP endpoint and searches through it.
 
-The catalogue behind `/mcp` is itself generated — from the Hugging Face Amazon Reviews dataset by `CatalogPopulate`, then embedded by `CatalogIngestion`. See the [root README §8.6](../README.md#86-the-catalogue-provenance-and-ingestion).
+The catalogue behind `/mcp` is itself generated — from the Hugging Face Amazon Reviews dataset by `CatalogPopulate`, then embedded by `CatalogIngestion`. See the [root README §8.6](../README.md#86-the-catalogue-provenance-generation-and-ingestion).
 
 ### 3.2 One diagram
 
