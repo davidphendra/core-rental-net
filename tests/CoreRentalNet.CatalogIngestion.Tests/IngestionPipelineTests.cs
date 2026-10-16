@@ -47,7 +47,7 @@ public sealed class IngestionPipelineTests
 
         written.Should().Be(6, "three products of two chunks each");
 
-        var rows = StoredRows.Read(database.Path);
+        var rows = ProductEmbeddings.Read(database.Path);
         rows.Should().HaveCount(6);
         rows.Select(row => row.SkuNo).Distinct().Should().BeEquivalentTo(["DSK0001", "CHA0001", "MON0001"]);
         rows.Should().OnlyContain(row => row.Name.Contains(row.SkuNo, StringComparison.Ordinal));
@@ -77,7 +77,7 @@ public sealed class IngestionPipelineTests
         await pipeline.RunAsync(CancellationToken.None);
         await pipeline.RunAsync(CancellationToken.None);
 
-        StoredRows.Read(database.Path).Should().HaveCount(6);
+        ProductEmbeddings.Read(database.Path).Should().HaveCount(6);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public sealed class IngestionPipelineTests
         var act = async () => await silent.RunAsync(CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*no chunks*");
-        StoredRows.Read(database.Path).Should().HaveCount(3);
+        ProductEmbeddings.Read(database.Path).Should().HaveCount(3);
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public sealed class IngestionPipelineTests
         var act = async () => await narrow.RunAsync(CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*was configured*");
-        StoredRows.Read(database.Path).Should().HaveCount(3);
+        ProductEmbeddings.Read(database.Path).Should().HaveCount(3);
     }
     [Fact]
     public async Task The_run_records_what_built_the_vectors_beside_them()

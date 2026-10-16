@@ -46,7 +46,7 @@ public sealed class SqliteProductEmbeddingStoreTests
 
         Store(database).ReplaceAll([Row("A", 1f, 0f), Row("A", 0f, 1f), Row("B", 1f, 1f)], Recipe, Stamp);
 
-        var rows = StoredRows.Read(database.Path);
+        var rows = ProductEmbeddings.Read(database.Path);
 
         rows.Should().HaveCount(3);
         rows.Select(row => row.SkuNo).Distinct().Should().BeEquivalentTo(["A", "B"]);
@@ -63,7 +63,7 @@ public sealed class SqliteProductEmbeddingStoreTests
         store.ReplaceAll([Row("A", 1f, 0f), Row("B", 1f, 0f)], Recipe, Stamp);
         store.ReplaceAll([Row("C", 1f, 0f)], Recipe, Stamp);
 
-        StoredRows.Read(database.Path).Should().ContainSingle().Which.SkuNo.Should().Be("C");
+        ProductEmbeddings.Read(database.Path).Should().ContainSingle().Which.SkuNo.Should().Be("C");
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class SqliteProductEmbeddingStoreTests
 
         Store(database).ReplaceAll([Row("A", 1f, 0f), Row("A", 0f, 1f)], Recipe, Stamp);
 
-        var rows = StoredRows.Read(database.Path);
+        var rows = ProductEmbeddings.Read(database.Path);
         var expected = Stamp.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);
 
         rows.Select(row => row.Id).Should().OnlyHaveUniqueItems();
@@ -87,7 +87,7 @@ public sealed class SqliteProductEmbeddingStoreTests
 
         Store(database).ReplaceAll([Row("A", 0.5f, -1.25f, 3f)], Recipe, Stamp);
 
-        StoredRows.Read(database.Path).Single().Embedding.Take(3).Should().Equal(0.5f, -1.25f, 3f);
+        ProductEmbeddings.Read(database.Path).Single().Embedding.Take(3).Should().Equal(0.5f, -1.25f, 3f);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public sealed class SqliteProductEmbeddingStoreTests
             Recipe,
             Stamp);
 
-        StoredRows.Nearest(database.Path, Padded([1f, 0f])).Should().Equal("ALIGNED", "DIAGONAL", "SIDEWAYS");
+        ProductEmbeddings.Nearest(database.Path, Padded([1f, 0f])).Should().Equal("ALIGNED", "DIAGONAL", "SIDEWAYS");
     }
 
     [Fact]

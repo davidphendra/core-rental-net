@@ -21,9 +21,9 @@ namespace CoreRentalNet.CatalogIngestion.Tests.Storage;
 /// own decoder would agree with a writer that had changed the format.
 /// </para>
 /// </remarks>
-internal static class StoredRows
+internal static class ProductEmbeddings
 {
-    public static IReadOnlyList<StoredRow> Read(string databasePath)
+    public static IReadOnlyList<ProductEmbedding> Read(string databasePath)
     {
         using var connection = Open(databasePath);
 
@@ -31,13 +31,13 @@ internal static class StoredRows
         command.CommandText =
             "SELECT id, skuNo, name, description, embedding, created_at FROM Discovery_ProductVector;";
 
-        var rows = new List<StoredRow>();
+        var rows = new List<ProductEmbedding>();
 
         using var reader = command.ExecuteReader();
 
         while (reader.Read())
         {
-            rows.Add(new StoredRow(
+            rows.Add(new ProductEmbedding(
                 reader.GetString(0),
                 reader.GetString(1),
                 reader.GetString(2),
