@@ -98,6 +98,12 @@
          BM25 (k1 = 1.2, b = 0.75), and it brings its own tokenisation, stemming and query parsing. -->
     <PackageVersion Include="Lifti.Core" Version="7.0.2" />
   </ItemGroup>
+  <ItemGroup Label="The catalogue populator's progress display">
+    <!-- The populator was silent for the minutes it streamed the source files, called the model and
+         downloaded images, so a waiting operator could not tell work from a hang. This renders one
+         progress bar per step, with the percentage, elapsed and remaining time. MIT, targets net10.0. -->
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+  </ItemGroup>
   <ItemGroup Label="Tests">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
