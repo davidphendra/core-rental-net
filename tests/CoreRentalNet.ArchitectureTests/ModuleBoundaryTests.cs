@@ -112,7 +112,7 @@ public sealed class ModuleBoundaryTests
             "otherwise this rule proves nothing");
         typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogScope)
             .GetProperty(nameof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogScope.Category))!
-            .PropertyType.Should().Be(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory);
+            .PropertyType.Should().Be(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory));
     }
 
     private static IReadOnlyList<(string Module, Assembly Assembly)> ModuleAssemblies()
