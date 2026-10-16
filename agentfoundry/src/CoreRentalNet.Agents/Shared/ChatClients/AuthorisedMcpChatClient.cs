@@ -30,7 +30,6 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 internal sealed class AuthorisedMcpChatClient(
     IChatClient innerClient,
     IRunScope runScope,
-    bool offersMcpTools,
     IToolAllowList toolAllowList,
     ILogger<AuthorisedMcpChatClient> logger) : DelegatingChatClient(innerClient)
 {
@@ -68,32 +67,10 @@ internal sealed class AuthorisedMcpChatClient(
         // The messages are the model's to read as they are: no member of one is a secret any more, because the
         // token is read from the invocation and never placed in a message.
 
-        // A stage that is not a catalogue reader is offered no tools at all — not "whatever the options it was
-        // handed happened to carry".
-        if (!offersMcpTools)
-        {
-            logger.LogInformation("Chat call prepared: the stage is offered no MCP tools.");
-
-            return (messages, WithoutTools(options));
-        }
-
         // A catalogue reader with nothing to search with is offered no tools either: no connection to list them
         // from, or no caller token to search with. The run's own instances are reached here, at the call, because
         // the graph that hosts this decorator is resolved once and outlives the request.
-        var accessTokenService = runScope.Resolve<IMcpAccessTokenService>();
         var mcpAuthorizationConnection = runScope.Resolve<IMcpAuthorizationConnection>();
-        var accessTokenHeaderReader = runScope.Resolve<AccessTokenHeaderReader>();
-
-        accessTokenService.Token = accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
-
-        if (!mcpAuthorizationConnection.IsConfigured || string.IsNullOrEmpty(accessTokenService.Token))
-        {
-            logger.LogInformation(
-                "Chat call prepared: no MCP tools; caller token {Token}.",
-                string.IsNullOrEmpty(accessTokenService.Token) ? "absent" : "present");
-
-            return (messages, WithoutTools(options));
-        }
 
         // The allow-list filters what the model is offered, not only what may run: a tool the deployment does not
         // permit should never reach the prompt, where its name and description are untrusted input (§12). Each
@@ -117,14 +94,5 @@ internal sealed class AuthorisedMcpChatClient(
         optionsWithTools.Tools = allTools;
 
         return (messages, optionsWithTools);
-    }
-
-    /// <summary>The options a stage with no catalogue tools runs on: the caller's, with no tool offered.</summary>
-    private static ChatOptions WithoutTools(ChatOptions? options)
-    {
-        var withoutTools = options?.Clone() ?? new ChatOptions();
-        withoutTools.Tools = [];
-
-        return withoutTools;
     }
 }

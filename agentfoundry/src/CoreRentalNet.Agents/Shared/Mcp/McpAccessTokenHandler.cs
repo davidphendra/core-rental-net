@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using Microsoft.Extensions.Logging;
 
 namespace CoreRentalNet.Agents.Shared.Mcp;
 
@@ -10,7 +9,6 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// turn that into a confusing refusal at the other end while hiding the mis-wiring.
 /// </remarks>
 internal sealed class McpAccessTokenHandler(
-    IMcpAccessTokenService mcpAccessTokenService,
     CatalogueServerRequestPolicy catalogueServerRequestPolicy,
     ILogger<McpAccessTokenHandler> logger) : DelegatingHandler
 {
@@ -29,9 +27,14 @@ internal sealed class McpAccessTokenHandler(
                 "attached to.");
         }
 
+        McpRunContext? runContext = McpRunScope.Current;
+
+        logger.LogInformation(
+            "Chat call prepared: no MCP tools; caller token {Token}.",
+            string.IsNullOrEmpty(runContext?.Token) ? "absent" : "present");
+
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer",
-            await mcpAccessTokenService.GetAsync(cancellationToken));
+            "Bearer", runContext?.Token);
 
         // The origin and the method are safe to record and the token is not, so only those two are named.
         logger.LogDebug(

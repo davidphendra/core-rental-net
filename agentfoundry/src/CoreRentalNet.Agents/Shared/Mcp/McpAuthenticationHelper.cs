@@ -1,4 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Client;
 
@@ -25,27 +24,14 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// </remarks>
 internal static class McpAuthenticationHelper
 {
-    /// <summary>How long one catalogue call may take before the transport gives up on it.</summary>
-    /// <remarks>
-    /// The catalogue's search tools can take longer than the 100-second default — a similarity search embeds the
-    /// sentence and scans the index — and a cancelled catalogue call is a failed run. The budget is stated rather
-    /// than left to the default the transport would otherwise apply.
-    /// </remarks>
-    private static readonly TimeSpan CallTimeout = TimeSpan.FromMinutes(5);
-
-    /// <summary>How long a pooled connection to the catalogue is kept before it is reopened.</summary>
-    private static readonly TimeSpan PooledConnectionLifetime = TimeSpan.FromMinutes(2);
-
     /// <summary>The authenticated client for one catalogue endpoint.</summary>
     public static async Task<McpClient?> ConnectAsync(
         Uri mcpEndpointUri,
-        IMcpAccessTokenService mcpAccessTokenService,
         CatalogueServerRequestPolicy catalogueServerRequestPolicy,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(mcpEndpointUri);
-        ArgumentNullException.ThrowIfNull(mcpAccessTokenService);
         ArgumentNullException.ThrowIfNull(catalogueServerRequestPolicy);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
@@ -59,8 +45,7 @@ internal static class McpAuthenticationHelper
                     // somewhere else.
                     Name = mcpEndpointUri.ToString(),
                 },
-                BuildTheClientThatPresentsTheCallersToken(
-                    mcpAccessTokenService,
+                HttpClientHelper.CreateWithPolicy(
                     catalogueServerRequestPolicy,
                     loggerFactory
                 ),
@@ -68,47 +53,4 @@ internal static class McpAuthenticationHelper
                 ownsHttpClient: true),
             cancellationToken: cancellationToken);
     }
-
-    /// <summary>The client the transport is handed: the token handler over the terminal handler it delegates to.</summary>
-    /// <remarks>
-    /// Stated apart from <see cref="ConnectAsync"/> so what the transport is protected by can be read and asserted
-    /// without a network. It is a credential's whole safety on this side: one server, over TLS, with no redirect
-    /// and no cookie jar to carry it anywhere else.
-    /// </remarks>
-    internal static HttpClient BuildTheClientThatPresentsTheCallersToken(
-        IMcpAccessTokenService mcpAccessTokenService,
-        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
-        ILoggerFactory loggerFactory)
-        => new(BuildTheTokenAttachmentHandler(mcpAccessTokenService, catalogueServerRequestPolicy, loggerFactory))
-        {
-            Timeout = CallTimeout,
-        };
-
-    /// <summary>The handler that attaches the token, over the terminal handler it delegates to.</summary>
-    internal static McpAccessTokenHandler BuildTheTokenAttachmentHandler(
-        IMcpAccessTokenService mcpAccessTokenService,
-        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
-        ILoggerFactory loggerFactory)
-        // A DelegatingHandler must be given the terminal handler it delegates to, or the first request fails
-        // with "The inner handler has not been assigned."
-        => new(
-            mcpAccessTokenService,
-            catalogueServerRequestPolicy,
-            loggerFactory.CreateLogger<McpAccessTokenHandler>())
-        {
-            InnerHandler = new SocketsHttpHandler
-            {
-                UseCookies = false,
-                AllowAutoRedirect = false,
-                PooledConnectionLifetime = PooledConnectionLifetime,
-
-                // The MAF sample states this as HttpClientHandler.CheckCertificateRevocationList;
-                // SocketsHttpHandler — which pools better, and is what this transport uses — carries the same
-                // setting on its TLS options, and its default is to check nothing.
-                SslOptions = new System.Net.Security.SslClientAuthenticationOptions
-                {
-                    CertificateRevocationCheckMode = X509RevocationMode.Online,
-                },
-            },
-        };
 }

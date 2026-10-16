@@ -65,9 +65,7 @@ public static class WorkspaceSuggestionRegistration
         // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
         // stage's call, so the totals are the run's, and it names the stage from the options its agent set.
         services.AddScoped<ITelemetryChatClient>(provider => new TelemetryChatClient(
-            new GuardrailChatClient(
-                modelClient,
-                provider.GetRequiredService<IMcpAccessTokenService>()),
+            new GuardrailChatClient(modelClient),
             configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
             WorkspaceSuggestionAgentRoster.PromptVersions,
             provider.GetRequiredService<ILogger<TelemetryChatClient>>()));

@@ -47,7 +47,6 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
         => new AuthorisedMcpChatClient(
             RegularChatClient(agentProfile),
             runScope,
-            agentProfile.UsesCatalogueTools,
             toolAllowList,
             loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
         );

@@ -43,17 +43,7 @@ internal sealed class WorkspaceInputExecutor(
         bool? emitEvents,
         CancellationToken cancellationToken = default)
     {
-        // Read here, once, because this is the only stage still inside the HTTP request: the workflow may hand a
-        // later stage to another thread, and a header read there would depend on the context surviving the hop.
-        // The message carries nothing to take back out, so the run's token comes from one place and one only.
-        // The run's own instances are reached here, at the start of the run, because the graph that holds this
-        // executor was resolved once and outlives the request.
-        var accessTokens = runScope.Resolve<IMcpAccessTokenService>();
-        var accessTokenHeaderReader = runScope.Resolve<AccessTokenHeaderReader>();
         var telemetryChatClient = runScope.Resolve<ITelemetryChatClient>();
-
-        accessTokens.Token ??= accessTokenHeaderReader.ReadTheCallersCatalogueAccessToken();
-
         var suggestionRequest = Read(messages) ?? FromSentence(messages);
 
         // The run's span opens here, in the one stage still inside the HTTP request, so it is parented to the
@@ -83,13 +73,10 @@ internal sealed class WorkspaceInputExecutor(
     /// <summary>The application's request, when the messages carry one.</summary>
     private static SuggestionRequest? Read(IReadOnlyList<ChatMessage> visibleMessages)
     {
-        foreach (var message in visibleMessages)
-        {
-            if (message.Role != ChatRole.User || string.IsNullOrWhiteSpace(message.Text))
-            {
-                continue;
-            }
+        var userMessages = visibleMessages.Where(m => m.Role == ChatRole.User && !string.IsNullOrWhiteSpace(m.Text));
 
+        foreach (var message in userMessages)
+        {
             try
             {
                 if (System.Text.Json.JsonSerializer.Deserialize<SuggestionRequest>(

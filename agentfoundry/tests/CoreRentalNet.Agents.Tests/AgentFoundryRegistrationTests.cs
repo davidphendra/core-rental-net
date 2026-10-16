@@ -85,8 +85,6 @@ public sealed class AgentFoundryRegistrationTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddScoped<IMcpAccessTokenService>(
-            _ => new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance));
 
         var configuration = Configuration(
             (WorkspaceSuggestionAgentIdentity.ConfigurationKey, SuggestionAgentName));
@@ -114,8 +112,6 @@ public sealed class AgentFoundryRegistrationTests
         services.AddLogging();
         services.AddHttpContextAccessor();
         services.AddSingleton(configuration);
-        services.AddScoped<IMcpAccessTokenService>(
-            _ => new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance));
         services.AddSingleton<IRunScope, RunScope>();
 
         var servedAgentName = services.AddWorkspaceSuggestionFeature(
@@ -135,7 +131,6 @@ public sealed class AgentFoundryRegistrationTests
 
     private static WorkspaceSuggestionWorkflow Workflow()
     {
-        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var catalog = new McpSetting(string.Empty);
         var recordedToolAnswers = new McpToolAnswerLedger();
         var modelCallTelemetry = new TelemetryChatClient(

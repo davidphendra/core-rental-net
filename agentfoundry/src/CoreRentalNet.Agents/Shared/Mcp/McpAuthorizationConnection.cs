@@ -29,7 +29,7 @@ internal interface IMcpAuthorizationConnection : IAsyncDisposable
 /// </remarks>
 internal sealed class McpAuthorizationConnection(
     McpSetting mcpSetting,
-    IMcpAccessTokenService accessTokenService,
+    IAccessTokenHeaderReader accessTokenHeaderReader,
     ILoggerFactory loggerFactory,
     ILogger<McpAuthorizationConnection> logger) : IMcpAuthorizationConnection
 {
@@ -53,12 +53,15 @@ internal sealed class McpAuthorizationConnection(
             return _tools;
         }
 
+        McpRunContext? previous = McpRunScope.Current;
+
         try
         {
+            var accessToken = accessTokenHeaderReader.ReadCallerAccessToken() ?? string.Empty;
+            McpRunScope.Current = new McpRunContext(AccessTokenHeader.Name, accessToken);
+
             _client = await McpAuthenticationHelper.ConnectAsync(
                 new Uri(mcpSetting.McpEndpoint, UriKind.Absolute),
-                accessTokenService,
-
                 // Built here rather than in the constructor: an unconfigured deployment has no endpoint to
                 // describe, and this is the point past which one is required.
                 new CatalogueServerRequestPolicy(mcpSetting),
@@ -86,6 +89,10 @@ internal sealed class McpAuthorizationConnection(
             // Typed rather than raw: the feature ends the run Unavailable when the catalogue refuses it, and a
             // transport exception would escape the workflow as a failed run instead.
             throw new CatalogueUnavailableException(mcpSetting.McpEndpoint, exception);
+        }
+        finally
+        {
+            McpRunScope.Current = previous;
         }
 
         return _tools;

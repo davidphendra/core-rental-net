@@ -19,8 +19,7 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 /// </para>
 /// </remarks>
 internal sealed class GuardrailChatClient(
-    IChatClient innerClient,
-    IMcpAccessTokenService accessTokens) : DelegatingChatClient(innerClient)
+    IChatClient innerClient) : DelegatingChatClient(innerClient)
 {
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -50,7 +49,8 @@ internal sealed class GuardrailChatClient(
     /// <summary>Throws when the caller's token survived into an answer.</summary>
     private void Guard(string? modelOutputText)
     {
-        var callerCatalogueToken = accessTokens.Token;
+        var runContext = McpRunScope.Current;
+        var callerCatalogueToken = runContext?.Token;
 
         if (string.IsNullOrEmpty(callerCatalogueToken) || string.IsNullOrEmpty(modelOutputText))
         {

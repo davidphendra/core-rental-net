@@ -1,7 +1,10 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-
 namespace CoreRentalNet.Agents.Shared.Mcp;
+
+internal interface IAccessTokenHeaderReader
+{
+    /// <summary>The token this invocation carries, or null when it carried none.</summary>
+    string? ReadCallerAccessToken();
+}
 
 /// <summary>Reads the caller's catalogue token off the invocation the run arrived in.</summary>
 /// <remarks>
@@ -17,14 +20,18 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// </remarks>
 internal sealed class AccessTokenHeaderReader(
     IHttpContextAccessor httpContextAccessor,
-    ILogger<AccessTokenHeaderReader> logger)
+    ILogger<AccessTokenHeaderReader> logger) : IAccessTokenHeaderReader
 {
     /// <summary>The token this invocation carries, or null when it carried none.</summary>
-    public string? ReadTheCallersCatalogueAccessToken()
+    public string? ReadCallerAccessToken()
     {
-        var carriedValue = httpContextAccessor.HttpContext?.Request.Headers[AccessTokenHeader.Name];
+        var callerAccessToken = string.Empty;
 
-        var callerAccessToken = carriedValue is { Count: > 0 } ? carriedValue.ToString() : null;
+        if (httpContextAccessor.HttpContext?.Request.Headers.ContainsKey(AccessTokenHeader.Name) ?? false)
+        {
+            var carriedValue = httpContextAccessor.HttpContext?.Request.Headers[AccessTokenHeader.Name];
+            callerAccessToken = carriedValue is { Count: > 0 } ? carriedValue.ToString() : null;
+        }
 
         logger.LogInformation(
             "Caller catalogue token {Presence} on the invocation.",

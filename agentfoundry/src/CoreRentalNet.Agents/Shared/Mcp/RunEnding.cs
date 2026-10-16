@@ -13,7 +13,5 @@ internal sealed class RunEnding(IRunScope runScope) : IRunEnding
     public async ValueTask EndTheRunAsync()
     {
         await runScope.Resolve<IMcpAuthorizationConnection>().CloseAsync();
-
-        runScope.Resolve<IMcpAccessTokenService>().Release();
     }
 }

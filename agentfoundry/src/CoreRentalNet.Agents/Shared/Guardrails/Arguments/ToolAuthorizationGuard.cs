@@ -15,11 +15,11 @@ namespace CoreRentalNet.Agents.Shared.Guardrails.Arguments;
 /// this says whether this run's caller was entitled to reach one.
 /// </para>
 /// </remarks>
-internal sealed class ToolAuthorizationGuard(IMcpAccessTokenService accessTokens) : IToolGuard
+internal sealed class ToolAuthorizationGuard() : IToolGuard
 {
     public ValueTask<GuardrailDecision> BeforeAsync(ToolInvocation invocation, CancellationToken cancellationToken)
         => ValueTask.FromResult(
-            string.IsNullOrEmpty(accessTokens.Token)
+            string.IsNullOrEmpty(McpRunScope.Current?.Token)
                 ? GuardrailDecision.Deny(
                     "The call was refused: this run carries no caller token, so no tool was entitled to it.")
                 : GuardrailDecision.Allow());
