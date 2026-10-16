@@ -29,16 +29,33 @@ public class ExtractorTests
                 reviews, empty, empty, empty,
                 "http://localhost:8080/v1", "model", 20, 400);
 
-            new Extractor(settings).Run().Should().Be(0);
+            var reporter = new RecordingProgressReporter();
+
+            new Extractor(settings).Run(reporter).Should().Be(0);
 
             var products = CompactProductStore.Read(compactPath).ToList();
             products.Should().HaveCount(4);
             products.Single(p => p.ParentAsin == "B000000001").ReviewCount.Should().Be(2);
+            Assert_export_reports_every_step_through_to_completion(reporter);
         }
         finally
         {
             Directory.Delete(directory, recursive: true);
         }
+    }
+
+    /// <summary>Every step the extraction runs appears, and the last report for it is its own completion.</summary>
+    private static void Assert_export_reports_every_step_through_to_completion(RecordingProgressReporter reporter)
+    {
+        reporter.Steps().Should().ContainInOrder(
+            "Scanning meta sources", "Selecting products", "Reading reviews", "Writing compact input");
+
+        foreach (var step in reporter.Steps())
+        {
+            reporter.Last(step).Completed.Should().Be(reporter.Last(step).Total, $"step '{step}' must finish");
+        }
+
+        reporter.Summaries.Should().ContainSingle().Which.Should().Contain("wrote 4 products");
     }
 
     private static string Meta(string directory, string name, string row)

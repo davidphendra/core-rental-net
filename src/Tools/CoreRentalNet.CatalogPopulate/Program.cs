@@ -1,7 +1,9 @@
 using CoreRentalNet.CatalogPopulate;
 using CoreRentalNet.CatalogPopulate.Extracting;
 using CoreRentalNet.CatalogPopulate.Populating;
+using CoreRentalNet.CatalogPopulate.Reporting;
 using Microsoft.Extensions.Configuration;
+using Spectre.Console;
 
 // The catalogue populator: one operator action, in two modes.
 //
@@ -39,11 +41,19 @@ catch (ArgumentException exception)
     return 2;
 }
 
+var reporter = new SpectreProgressReporter();
+AnsiConsole.MarkupLine(
+    $"[bold]{mode}[/] · compact {Markup.Escape(settings.CompactInputPath)} · "
+    + $"model {Markup.Escape(settings.LlmModel)} · target {settings.TargetTotal}");
+
 try
 {
-    return mode == Mode.Extract
-        ? new Extractor(settings).Run()
-        : await new Populator(settings).RunAsync();
+    if (mode == Mode.Extract)
+    {
+        return await reporter.RunAsync(() => Task.FromResult(new Extractor(settings).Run(reporter)));
+    }
+
+    return await reporter.RunAsync(() => new Populator(settings).RunAsync(reporter));
 }
 catch (Exception exception)
 {

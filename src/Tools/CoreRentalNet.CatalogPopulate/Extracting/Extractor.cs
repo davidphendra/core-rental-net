@@ -1,5 +1,6 @@
 using System.Text.Json;
 using CoreRentalNet.CatalogPopulate.Compact;
+using CoreRentalNet.CatalogPopulate.Reporting;
 using CoreRentalNet.CatalogPopulate.Selection;
 using CoreRentalNet.CatalogPopulate.Sources;
 using CoreRentalNet.CatalogPopulate.Transform;
@@ -10,29 +11,16 @@ namespace CoreRentalNet.CatalogPopulate.Extracting;
 internal sealed class Extractor(CatalogPopulateSettings settings)
 {
     /// <summary>Runs the extraction, returning a process exit code.</summary>
-    public int Run()
+    public int Run(IProgressReporter reporter)
     {
-        var byCategory = ProductCategories.All.ToDictionary(category => category.Key, _ => new List<AmazonMetaRecord>(), StringComparer.Ordinal);
+        var byCategory = new MetaScanner(reporter).Scan(MetaFiles());
 
-        foreach (var (fileKey, path) in MetaFiles())
-        {
-            foreach (var row in JsonLineReader.Read<AmazonMetaRecord>(path))
-            {
-                if (string.IsNullOrWhiteSpace(row.ParentAsin) || string.IsNullOrWhiteSpace(row.Title))
-                {
-                    continue;
-                }
-
-                var category = ProductCategories.Match(row);
-                if (category is not null && category.MetaFileKey == fileKey)
-                {
-                    byCategory[category.Key].Add(row);
-                }
-            }
-        }
-
+        reporter.Report(new ProgressUpdate("Selecting products", 0, 1, string.Empty));
         var selected = Select(byCategory);
-        var reviews = ReadReviews(selected.Keys);
+        reporter.Report(new ProgressUpdate(
+            "Selecting products", 1, 1, $"{selected.Count} selected across {ProductCategories.All.Count} categories"));
+
+        var reviews = new ReviewReader(reporter).Read(ReviewFiles(), selected.Keys);
 
         var products = ProductCategories.All
             .SelectMany(category => selected
@@ -41,8 +29,12 @@ internal sealed class Extractor(CatalogPopulateSettings settings)
                 .Select(pair => ToCompact(pair.Value.Category, pair.Value.Meta, reviews)))
             .ToList();
 
+        reporter.Report(new ProgressUpdate("Writing compact input", 0, 1, settings.CompactOutputPath));
         CompactProductStore.Write(settings.CompactOutputPath, products);
-        Console.WriteLine($"[extract] wrote {products.Count} products to {settings.CompactOutputPath}");
+        reporter.Report(new ProgressUpdate(
+            "Writing compact input", 1, 1, $"{products.Count} products → {settings.CompactOutputPath}"));
+
+        reporter.Complete($"[extract] wrote {products.Count} products to {settings.CompactOutputPath}");
 
         return 0;
     }
@@ -95,25 +87,6 @@ internal sealed class Extractor(CatalogPopulateSettings settings)
         }
 
         return selected;
-    }
-
-    private Dictionary<string, List<CompactReview>> ReadReviews(IEnumerable<string> asins)
-    {
-        var wanted = new HashSet<string>(asins, StringComparer.Ordinal);
-        var reviews = wanted.ToDictionary(asin => asin, _ => new List<CompactReview>(), StringComparer.Ordinal);
-
-        foreach (var (_, path) in ReviewFiles())
-        {
-            foreach (var row in JsonLineReader.Read<AmazonReviewRecord>(path))
-            {
-                if (row.ParentAsin is not null && wanted.Contains(row.ParentAsin))
-                {
-                    reviews[row.ParentAsin].Add(new CompactReview(row.Rating, row.Title, row.Text, row.HelpfulVote, row.Timestamp));
-                }
-            }
-        }
-
-        return reviews;
     }
 
     private static CompactProduct ToCompact(
