@@ -40,7 +40,7 @@
 </button>
 
 @code {
-    [Parameter, EditorRequired] public ProductView Product { get; set; } = default!;
+    [Parameter, EditorRequired] public ProductDto Product { get; set; } = default!;
 
-    [Parameter] public EventCallback<ProductView> OnSelect { get; set; }
+    [Parameter] public EventCallback<ProductDto> OnSelect { get; set; }
 }

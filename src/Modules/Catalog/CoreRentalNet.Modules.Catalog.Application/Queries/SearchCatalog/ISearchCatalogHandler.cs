@@ -12,5 +12,5 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 /// </remarks>
 public interface ISearchCatalogHandler
 {
-    IReadOnlyList<ProductView> Handle(SearchCatalogQuery query);
+    IReadOnlyList<ProductDto> Handle(SearchCatalogQuery query);
 }

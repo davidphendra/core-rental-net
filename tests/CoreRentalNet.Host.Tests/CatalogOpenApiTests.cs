@@ -36,17 +36,13 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
             .Select(parameter => parameter.GetProperty("name").GetString())
             .ToArray();
 
-        parameters.Should().BeEquivalentTo(["category", "subCategory", "search", "view", "limit"]);
+        parameters.Should().BeEquivalentTo(["category", "subCategory", "search", "limit"]);
 
-        // The compact projection cannot be a second schema on the same status and content type, so the
-        // parameter carries the vocabulary instead. This is what makes the projection discoverable.
         var described = operation.GetProperty("parameters").EnumerateArray()
             .Where(parameter => parameter.TryGetProperty("description", out _))
             .ToDictionary(
                 parameter => parameter.GetProperty("name").GetString()!,
                 parameter => parameter.GetProperty("description").GetString()!);
-
-        described["view"].Should().Contain("compact").And.Contain("full");
 
         // A caller cannot guess what leaving the cap out means, so the document says it.
         described["limit"].Should().Contain("matched").And.Contain(CatalogApiLimits.Default.ToString());
@@ -245,7 +241,7 @@ public sealed class CatalogOpenApiTests(CatalogOpenApiFactory factory) : IClassF
             .Select(parameter => parameter.GetProperty("name").GetString())
             .ToArray();
 
-        parameters.Should().BeEquivalentTo(["category", "subCategory", "query", "view", "limit"]);
+        parameters.Should().BeEquivalentTo(["category", "subCategory", "query", "limit"]);
 
         // Its own permission, not the catalogue's: a generated client would otherwise be made to ask for a
         // scope that does not entitle it to search by meaning.

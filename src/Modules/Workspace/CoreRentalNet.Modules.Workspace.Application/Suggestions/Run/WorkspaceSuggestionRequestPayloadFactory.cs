@@ -31,13 +31,9 @@ public sealed class WorkspaceSuggestionRequestPayloadFactory(
         => new(
             RunId: Guid.NewGuid().ToString("n"),
             Query: suggestionQuery.Query.Trim(),
-            Currency: CurrencyOf(productCatalogService.All),
+            Currency: productCatalogService.CurrencyAsync(CancellationToken.None).GetAwaiter().GetResult(),
             CeilingMonthly: suggestionQuery.CeilingMonthly,
             Slots: EverySlotRule());
-
-    /// <summary>The currency a run thinks in, read from the catalogue's own products.</summary>
-    private static string CurrencyOf(IReadOnlyList<ProductView> everyProduct)
-        => everyProduct.Count == 0 ? "IDR" : everyProduct[0].MonthlyPrice.Currency;
 
     /// <summary>Every slot the domain has, with the capacity configuration gives it.</summary>
     private IReadOnlyList<WorkspaceSuggestionRequestSlotRule> EverySlotRule()

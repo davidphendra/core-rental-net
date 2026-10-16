@@ -70,7 +70,7 @@ internal sealed class IngestionPipeline(
     /// A product with no chunks is refused rather than skipped: a table missing one product answers as though
     /// the catalogue never had it, which is a silent omission rather than a smaller result.
     /// </remarks>
-    private void RefuseUnusable(ProductView product, IReadOnlyList<float[]> vectors)
+    private void RefuseUnusable(ProductDto product, IReadOnlyList<float[]> vectors)
     {
         if (vectors.Count == 0)
         {

@@ -62,14 +62,13 @@ public sealed class CatalogBrowserTests
     [Fact] // STORE-08
     public void What_the_catalog_answers_is_what_the_surface_shows()
     {
-        var item = new ProductView(
+        var item = new ProductDto(
             "LMP0001",
             "Pererenan Clip Light",
             CatalogCategory.Accessory,
             CatalogSubCategory.Lamp,
             new Money(180000m, Currencies.Idr),
             "A lamp.",
-            new CatalogMetadata([], new Dictionary<string, string>(), [], []),
             "/images/lamp.svg",
             true,
             false);

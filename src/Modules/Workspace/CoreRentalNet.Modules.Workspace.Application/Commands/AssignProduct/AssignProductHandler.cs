@@ -20,7 +20,7 @@ public sealed class AssignProductHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var price = catalogService.Find(command.Sku)
+        var price = catalogService.FindAsync(command.Sku, CancellationToken.None).GetAwaiter().GetResult()
             ?? throw new DomainRuleViolationException($"The catalogService does not know the product '{command.Sku}'.");
 
         var slot = CatalogSlotMapping.SlotFor(price.Category, price.SubCategory);

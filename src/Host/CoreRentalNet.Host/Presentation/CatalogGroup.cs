@@ -6,4 +6,4 @@ namespace CoreRentalNet.Host.Presentation;
 public sealed record CatalogGroup(
     CatalogSubCategory? SubCategory,
     string Label,
-    IReadOnlyList<ProductView> Products);
+    IReadOnlyList<ProductDto> Products);

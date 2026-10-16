@@ -4,31 +4,29 @@ using CoreRentalNet.Modules.Catalog.Application.Contracts;
 namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 
 /// <summary>
-/// Answers <see cref="ISearchCatalogHandler"/>: the catalogue is narrowed, and then the name search ranks.
+/// Answers <see cref="ISearchCatalogHandler"/>: the catalogue is narrowed to a scope, and then the name
+/// search ranks.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>The filters narrow and the name search ranks, in that order</b> — the rule the similarity search already
+/// <b>The scope narrows and the name search ranks, in that order</b> — the rule the similarity search already
 /// follows. What a caller asked for never decides what is eligible, only how it is ordered, so a product the
-/// filters excluded cannot be brought back by a good match.
+/// scope excluded cannot be brought back by a good match.
 /// </para>
 /// <para>
-/// <b>Nothing typed is not the same as nothing found.</b> An empty search returns everything the filters
-/// allow, in catalogue order, because that is what browsing a category is — the store, the picker and the
-/// panel all open that way. Only a real search is handed to the ranker.
+/// <b>Nothing typed is not the same as nothing found.</b> An empty search returns the scope's page in
+/// catalogue order, because that is what browsing a category is. Only a real search is handed to the ranker.
 /// </para>
 /// <para>
-/// <b>Which of the two name searches applies is decided here, from which one the caller filled in, and a query
-/// that filled in both is refused.</b> The rules differ — a typed search requires every word, an expanded
-/// search requires any term — so a precedence here would be this class guessing at an intent the caller
-/// expressed twice.
+/// <b>The store read is asynchronous; the handler stays the operation the UI names.</b> The read is waited
+/// on here, exactly as the name search already was, so the pages that call this stay about what they show.
 /// </para>
 /// </remarks>
 public sealed class SearchCatalogHandler(
     IProductCatalogService catalogService,
     IProductNameSearchService catalogNameSearchService) : ISearchCatalogHandler
 {
-    public IReadOnlyList<ProductView> Handle(SearchCatalogQuery query)
+    public IReadOnlyList<ProductDto> Handle(SearchCatalogQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -39,12 +37,12 @@ public sealed class SearchCatalogHandler(
                 nameof(query));
         }
 
-        var productsMatchingTheFilters = catalogService.Search(
-            query.Category,
-            query.SubCategory,
-            query.MaximumMonthlyAmount);
+        var page = catalogService
+            .SearchPageAsync(query.Scope, query.MaximumMonthlyAmount, 0, query.Take, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
 
-        var rankedProducts = Rank(productsMatchingTheFilters, query);
+        var rankedProducts = Rank(page.Items, query);
 
         // Recorded at the boundary a customer crosses, not at the HTTP edge: an empty answer is a lost sale, and
         // this is the only place that can tell a real search from the catalogue simply being browsed.
@@ -55,22 +53,22 @@ public sealed class SearchCatalogHandler(
     }
 
     /// <summary>Which of the two name searches applies, decided from which one the caller filled in.</summary>
-    private IReadOnlyList<ProductView> Rank(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    private IReadOnlyList<ProductDto> Rank(
+        IReadOnlyList<ProductDto> productsMatchingTheScope,
         SearchCatalogQuery query)
     {
         if (query.ExpandedSearchTerms is { Count: > 0 } expandedSearchTerms)
         {
             return catalogNameSearchService
-                .FindBestMatchesForExpandedSearchTermsAsync(productsMatchingTheFilters, expandedSearchTerms)
+                .FindBestMatchesForExpandedSearchTermsAsync(productsMatchingTheScope, expandedSearchTerms)
                 .GetAwaiter()
                 .GetResult();
         }
 
         return string.IsNullOrWhiteSpace(query.TypedSearchText)
-            ? productsMatchingTheFilters
+            ? productsMatchingTheScope
             : catalogNameSearchService
-                .FindBestMatchesForTypedSearchWordsAsync(productsMatchingTheFilters, query.TypedSearchText)
+                .FindBestMatchesForTypedSearchWordsAsync(productsMatchingTheScope, query.TypedSearchText)
                 .GetAwaiter()
                 .GetResult();
     }

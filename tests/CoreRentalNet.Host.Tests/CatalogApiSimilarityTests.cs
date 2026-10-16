@@ -88,23 +88,6 @@ public sealed class CatalogApiSimilarityTests(CatalogApiSimilarityFactory factor
     }
 
     [Fact] // API-40
-    public async Task The_compact_projection_is_available_here_too()
-    {
-        var response = await SendAsync(
-            "searchsimilarity:aibuilder",
-            "/api/catalog/similarity?query=two+screens&view=compact");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var body = document.RootElement;
-
-        body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
-            ["value", "count", "total", "truncated", "currency"]);
-        body.GetProperty("currency").GetString().Should().Be("IDR");
-    }
-
-    [Fact] // API-40
     public async Task A_sentence_that_was_not_sent_is_a_400()
     {
         // A similarityService search with nothing to be similar to is not a search: refused by the framework before the

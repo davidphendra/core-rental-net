@@ -105,7 +105,7 @@
         await JS.InvokeVoidAsync(StoreCategoryPreference.RememberFunction, selected.ToString());
     }
 
-    private async Task AddAsync(ProductView product)
+    private async Task AddAsync(ProductDto product)
     {
         if (string.IsNullOrEmpty(DraftToken))
         {

@@ -40,34 +40,26 @@ public sealed class SearchSimilarityCatalogueTool(
     [Description("Find the catalogue products nearest a sentence in meaning. For a described need or a purpose.")]
     public async Task<CatalogueSearchToolAnswer> Search(
         [Description("A sentence describing what is wanted.")] string query,
-        [Description("Narrow to one category: desk, chair or accessory. Omit for all.")] string? category = null,
-        [Description("Narrow to one accessory sub-category: beanbag, coffee, lamp, monitor or plant. Omit for all.")] string? subCategory = null,
+        [Description("The category to search: desk, chair or accessory. Required.")] string category,
+        [Description("Narrow to one accessory sub-category: beanbag, coffee, lamp, monitor or plant. Required for accessories, omitted for desks and chairs.")] string? subCategory = null,
         [Description("The most a product may cost each month. A product above it is never returned. Omit for no ceiling.")] decimal? maximumMonthlyAmount = null,
         [Description("The most products to return.")] int limit = CatalogToolLimits.DefaultProductCount,
         CancellationToken cancellationToken = default)
     {
         CatalogToolFilters.CheckSearchText(query);
 
-        var parsedCategory = CatalogToolFilters.CatalogueCategoryFrom(category);
-        var parsedSubCategory = CatalogToolFilters.CatalogueSubCategoryFrom(subCategory);
+        var scope = CatalogToolFilters.ScopeFrom(category, subCategory);
+        var take = CatalogToolLimits.Clamp(limit);
 
         try
         {
             var matched = await handler.HandleAsync(
-                new SearchSimilarityCatalogQuery(
-                    parsedCategory,
-                    parsedSubCategory,
-                    query,
-                    maximumMonthlyAmount),
+                new SearchSimilarityCatalogQuery(scope, query, maximumMonthlyAmount, Take: take),
                 cancellationToken).ConfigureAwait(false);
 
             return new CatalogueSearchToolAnswer(
-                CatalogAnswer.CompactForTools(
-                    matched,
-                    CatalogToolLimits.Clamp(limit),
-                    catalogue.All,
-                    CatalogToolLimits.MaximumDescriptionCharacterCount),
-                CheapestProductExcludedByTheCeiling(matched, parsedCategory, parsedSubCategory, maximumMonthlyAmount));
+                CatalogAnswer.Of(CatalogAnswer.Cap(matched, take), matched.Count),
+                CheapestProductExcludedByTheCeiling(scope, matched, maximumMonthlyAmount));
         }
         catch (ProductSimilarityUnavailableException exception)
         {
@@ -81,9 +73,8 @@ public sealed class SearchSimilarityCatalogueTool(
     /// by the ceiling and an empty answer caused by the catalogue are the same absence and different problems.
     /// </remarks>
     private decimal? CheapestProductExcludedByTheCeiling(
-        IReadOnlyList<ProductView> matched,
-        CatalogCategory? category,
-        CatalogSubCategory? subCategory,
+        CatalogScope scope,
+        IReadOnlyList<ProductDto> matched,
         decimal? maximumMonthlyAmount)
     {
         if (matched.Count > 0 || maximumMonthlyAmount is null)
@@ -91,7 +82,11 @@ public sealed class SearchSimilarityCatalogueTool(
             return null;
         }
 
-        var productsIgnoringTheCeiling = catalogue.Search(category, subCategory);
+        var productsIgnoringTheCeiling = catalogue
+            .SearchPageAsync(scope, null, 0, CatalogPageLimits.Maximum, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult()
+            .Items;
 
         return productsIgnoringTheCeiling.Count == 0
             ? null

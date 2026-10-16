@@ -4,12 +4,12 @@ using CoreRentalNet.Modules.Catalog.Application.Contracts;
 namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchSimilarityCatalog;
 
 /// <summary>
-/// Answers a similarity search: the catalogue narrowed by its filters, then ordered by how near each product
+/// Answers a similarity search: the catalogue narrowed to its scope, then ordered by how near each product
 /// is to the sentence.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>The filters narrow before the search orders.</b> A request for desks asks which desks are nearest,
+/// <b>The scope narrows before the search orders.</b> A request for desks asks which desks are nearest,
 /// not which products are nearest and then happen to be desks; doing it the other way round would let a desk
 /// fall out of a top-N that had already been chosen from every category.
 /// </para>
@@ -35,14 +35,17 @@ public sealed class SearchSimilarityCatalogHandler(
     IProductSimilarityService productSimilarityService) : ISearchSimilarityCatalogHandler
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<ProductView>> HandleAsync(
+    public async Task<IReadOnlyList<ProductDto>> HandleAsync(
         SearchSimilarityCatalogQuery query,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
         ArgumentException.ThrowIfNullOrWhiteSpace(query.Query);
 
-        var eligible = catalogueService.Search(query.Category, query.SubCategory, query.MaximumMonthlyAmount);
+        var page = await catalogueService
+            .SearchPageAsync(query.Scope, query.MaximumMonthlyAmount, 0, query.Take, cancellationToken)
+            .ConfigureAwait(false);
+
         var queryVectors = await embeddingService.EmbedAsync([query.Query], cancellationToken);
         var nearestCatalogsVector = await productSimilarityService.NearestAsync(queryVectors[0], cancellationToken);
 
@@ -51,7 +54,7 @@ public sealed class SearchSimilarityCatalogHandler(
             product => product.Distance,
             StringComparer.OrdinalIgnoreCase);
 
-        var nearesCatalogs = eligible
+        var nearesCatalogs = page.Items
             .Where(product => bySku.ContainsKey(product.Sku))
             .OrderBy(product => bySku[product.Sku])
             .ThenBy(product => product.Sku, StringComparer.Ordinal);

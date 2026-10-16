@@ -25,7 +25,7 @@ public sealed class MappingTests
             IsFeatured: true,
             ImageAvailable: true);
 
-        var view = ProductViewMapper.ToView(product);
+        var view = ProductDtoMapper.ToDto(product);
 
         view.Sku.Should().Be(product.Sku);
         view.Name.Should().Be(product.Name);
@@ -33,9 +33,6 @@ public sealed class MappingTests
         view.SubCategory.Should().BeNull();
         view.MonthlyPrice.Should().Be(product.MonthlyPrice);
         view.Description.Should().Be(product.Description);
-        view.Metadata.Tags.Should().BeEquivalentTo(["desk", "standing"]);
-        view.Metadata.Attributes["type"].Should().Be("sit-stand");
-        view.Metadata.BestFor.Should().ContainSingle().Which.Should().Be("focused work");
         view.ImagePath.Should().Be(product.ImagePath);
         view.ImageAvailable.Should().Be(product.ImageAvailable);
         view.IsFeatured.Should().BeTrue();
@@ -56,7 +53,7 @@ public sealed class MappingTests
             IsFeatured: false,
             ImageAvailable: true);
 
-        var view = ProductViewMapper.ToView(product);
+        var view = ProductDtoMapper.ToDto(product);
 
         view.Category.Should().Be(CatalogCategory.Accessory);
         view.SubCategory.Should().Be(CatalogSubCategory.Lamp);
@@ -75,7 +72,7 @@ public sealed class MappingTests
         {
             var subCategory = category == ProductCategory.Accessory ? ProductSubCategory.Lamp : (ProductSubCategory?)null;
 
-            var view = ProductViewMapper.ToView(new Product(
+            var view = ProductDtoMapper.ToDto(new Product(
                 "AAA0001",
                 "A thing",
                 category,

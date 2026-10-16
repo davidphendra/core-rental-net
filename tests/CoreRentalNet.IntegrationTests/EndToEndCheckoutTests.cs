@@ -37,7 +37,7 @@ public sealed class EndToEndCheckoutTests
     private const string Monitor = "MONB000PB2KW";
 
     private static IProductCatalogService RealCatalog()
-        => new ProductCatalogService(
+        => new JsonCatalogSource(
             RepoRoot.Combine("src", "shared", "data", "products.json"),
             RepoRoot.Combine("src", "Host", "CoreRentalNet.Host", "wwwroot"));
 

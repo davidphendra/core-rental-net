@@ -105,11 +105,11 @@ public sealed class ExpandedSearchRecallTests
         found.Should().BeEmpty();
     }
 
-    private static (ProductCatalogService Catalogue, LiftiProductNameSearchService NameSearch) Build()
+    private static (JsonCatalogSource Catalogue, LiftiProductNameSearchService NameSearch) Build()
     {
-        var catalogue = new ProductCatalogService(ProductsJson, null);
+        var catalogue = new JsonCatalogSource(ProductsJson, null);
 
-        return (catalogue, new LiftiProductNameSearchService(catalogue));
+        return (catalogue, new LiftiProductNameSearchService());
     }
 
     /// <summary>One component of a described workspace, with both readings of the same need.</summary>

@@ -108,7 +108,7 @@ public sealed class NameFieldScoreBoostSweepTests(ITestOutputHelper output)
     {
         var measured = await MeasureEachWeight();
 
-        var asShipped = await MeasureEveryNeedAsync(new LiftiProductNameSearchService(TheCatalogue()));
+        var asShipped = await MeasureEveryNeedAsync(new LiftiProductNameSearchService());
 
         asShipped.Select(outcome => outcome.Position).Should().Equal(
             PositionsAt(measured, 5),
@@ -118,14 +118,14 @@ public sealed class NameFieldScoreBoostSweepTests(ITestOutputHelper output)
     [Fact] // and the search box: one field, one weight, so nothing a customer sees can move
     public async Task The_typed_search_box_answers_identically_at_every_weight()
     {
-        var catalogue = new ProductCatalogService(
+        var catalogue = new JsonCatalogSource(
             RepoRoot.Combine("src", "shared", "data", "products.json"), null);
 
         var answers = new List<IReadOnlyList<string>>();
 
         foreach (var weight in WeightsToMeasure)
         {
-            var nameSearch = new LiftiProductNameSearchService(catalogue, weight);
+            var nameSearch = new LiftiProductNameSearchService(weight);
 
             answers.Add([.. (await nameSearch.FindBestMatchesForTypedSearchWordsAsync(catalogue.All, "chair"))
                 .Select(product => product.Sku)]);
@@ -146,7 +146,7 @@ public sealed class NameFieldScoreBoostSweepTests(ITestOutputHelper output)
         {
             measured.Add(new MeasuredWeight(
                 weight,
-                await MeasureEveryNeedAsync(new LiftiProductNameSearchService(catalogue, weight))));
+                await MeasureEveryNeedAsync(new LiftiProductNameSearchService(weight))));
         }
 
         return measured;
@@ -180,7 +180,7 @@ public sealed class NameFieldScoreBoostSweepTests(ITestOutputHelper output)
         return outcomes;
     }
 
-    private static ProductCatalogService TheCatalogue()
+    private static JsonCatalogSource TheCatalogue()
         => new(RepoRoot.Combine("src", "shared", "data", "products.json"), null);
 
     private static IEnumerable<int> PositionsAt(IReadOnlyList<MeasuredWeight> measured, double weight)

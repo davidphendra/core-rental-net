@@ -34,24 +34,6 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
         body.GetProperty("count").GetInt32().Should().Be(205);
     }
 
-    [Fact] // API-30
-    public async Task Every_published_product_carries_its_metadata()
-    {
-        var products = await GetArrayAsync("/api/catalog?subCategory=monitor");
-
-        products.GetArrayLength().Should().Be(30);
-
-        // What the agent matches a request against: a caller that cannot read this can only match a
-        // product by its name, which is the problem the property exists to solve.
-        var readings = products.EnumerateArray()
-            .Select(product => product.GetProperty("metadata"))
-            .ToArray();
-
-        readings.Should().OnlyContain(metadata => metadata.GetProperty("tags").GetArrayLength() > 0);
-        readings.Select(metadata => metadata.GetRawText()).Distinct().Count()
-            .Should().BeGreaterThan(1, "two monitors in one slot must not read identically");
-    }
-
     [Fact] // API-03
     public async Task No_filter_returns_the_whole_catalogue_in_catalog_order()
     {

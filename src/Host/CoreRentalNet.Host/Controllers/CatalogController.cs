@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using CoreRentalNet.Host.Configs;
-using CoreRentalNet.Host.Enums;
 using CoreRentalNet.Host.Helper;
 using CoreRentalNet.Host.Helpers;
 using CoreRentalNet.Host.Infrastructure;
@@ -29,7 +28,6 @@ namespace CoreRentalNet.Host.Controllers;
 public sealed class CatalogController(
     ISearchCatalogHandler searchCatalogHandler,
     ISearchSimilarityCatalogHandler searchSimilarityCatalogHandler,
-    IProductCatalogService everyProduct,
     ILoggerFactory loggers) : ControllerBase
 {
     /// <summary>The content types the API actually answers with, named rather than left to the formatters.</summary>
@@ -50,20 +48,12 @@ public sealed class CatalogController(
     /// have worked rather than answered with an empty list, and no match is an empty list rather than a
     /// 404: "there are none of those" and "there is no such endpoint" are different answers.
     ///
-    /// <c>view</c> chooses how much of each product comes back. <c>full</c> is every field the module
-    /// publishes and is what a caller that says nothing gets; <c>compact</c> leaves out the image path
-    /// and the display flags, states the price as a number and the currency once on the envelope, and
-    /// keeps the description and the metadata - the fields a request is matched against.
-    ///
     /// <c>limit</c> caps how many rows come back. It is not paging: a caller that receives fewer rows
     /// than the answer says matched is told so, rather than left to assume it has all of them.
     /// </remarks>
     [HttpGet]
     [Authorize(Policy = CatalogApiPolicy.Name)]
-    [ProducesResponseType<ApiCollection<ProductView>>(StatusCodes.Status200OK, Json)]
-    // The compact projection is described in the remarks above rather than declared here as a second
-    // 200: a status code has one schema per content type, so a second declaration replaces the first
-    // and the document would describe the projection while claiming it is the default.
+    [ProducesResponseType<ApiCollection<ProductDto>>(StatusCodes.Status200OK, Json)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, ProblemJson)]
@@ -74,14 +64,15 @@ public sealed class CatalogController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status405MethodNotAllowed, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, ProblemJson)]
     public ActionResult Search(
-        [FromQuery] CatalogCategory? category,
+        [FromQuery] CatalogCategory category,
         [FromQuery] CatalogSubCategory? subCategory,
         [FromQuery] string? search,
-        [FromQuery] CatalogProjection? view,
         [FromQuery, Range(1, int.MaxValue)] int? limit)
     {
-        var matched = searchCatalogHandler.Handle(new SearchCatalogQuery(category, subCategory, TypedSearchText: NullIfBlank(search)));
-        var page = CatalogAnswer.Cap(matched, limit ?? CatalogApiLimits.Default);
+        var take = limit ?? CatalogApiLimits.Default;
+        var matched = searchCatalogHandler.Handle(new SearchCatalogQuery(
+            new CatalogScope(category, subCategory), TypedSearchText: NullIfBlank(search), Take: take));
+        var page = CatalogAnswer.Cap(matched, take);
 
         // Written after authorisation and after the answer: a refused call never reaches this line, and
         // the count is what actually came back rather than what was asked for. The filters are logged
@@ -96,7 +87,7 @@ public sealed class CatalogController(
 
         // A collection answer, not a bare array: the count travels with the items, and a page of them
         // can be added later without breaking the callers who read this shape today.
-        var response = CatalogAnswer.Of(page, matched.Count, view ?? CatalogProjection.Full, everyProduct.All);
+        var response = CatalogAnswer.Of(page, matched.Count);
 
         return Ok(response);
     }
@@ -124,26 +115,24 @@ public sealed class CatalogController(
     /// </remarks>
     [HttpGet(CatalogRoutes.CatalogueSimilarity)]
     [Authorize(Policy = SimilaritySearchPolicy.Name)]
-    [ProducesResponseType<ApiCollection<ProductView>>(StatusCodes.Status200OK, Json)]
-    // The compact projection is described in the remarks above rather than declared here as a second 200, for
-    // the reason the catalogue's own action gives: one status has one schema per content type.
+    [ProducesResponseType<ApiCollection<ProductDto>>(StatusCodes.Status200OK, Json)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden, ProblemJson)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable, ProblemJson)]
     public async Task<ActionResult> SearchSimilarity(
-        [FromQuery] CatalogCategory? category,
+        [FromQuery] CatalogCategory category,
         [FromQuery] CatalogSubCategory? subCategory,
         [FromQuery, Required] string query,
-        [FromQuery] CatalogProjection? view,
         [FromQuery, Range(1, int.MaxValue)] int? limit,
         CancellationToken cancellationToken)
     {
+        var take = limit ?? CatalogApiLimits.Default;
         var matched = await searchSimilarityCatalogHandler.HandleAsync(
-            new SearchSimilarityCatalogQuery(category, subCategory, query),
+            new SearchSimilarityCatalogQuery(new CatalogScope(category, subCategory), query, Take: take),
             cancellationToken);
 
-        var page = CatalogAnswer.Cap(matched, limit ?? CatalogApiLimits.Default);
+        var page = CatalogAnswer.Cap(matched, take);
 
         // Written after authorisation and after the answer, with the filters as the caller wrote them, exactly
         // as the published view's line is.
@@ -155,7 +144,7 @@ public sealed class CatalogController(
             AsAsked(nameof(query)),
             page.Count);
 
-        var response = CatalogAnswer.Of(page, matched.Count, view ?? CatalogProjection.Full, everyProduct.All);
+        var response = CatalogAnswer.Of(page, matched.Count);
 
         return Ok(response);
     }

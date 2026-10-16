@@ -12,7 +12,7 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchSimilarityCata
 public interface ISearchSimilarityCatalogHandler
 {
     /// <summary>The products nearest the sentence, nearest first.</summary>
-    Task<IReadOnlyList<ProductView>> HandleAsync(
+    Task<IReadOnlyList<ProductDto>> HandleAsync(
         SearchSimilarityCatalogQuery query,
         CancellationToken cancellationToken);
 }

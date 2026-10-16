@@ -17,7 +17,7 @@ public sealed class WorkspaceQuoteService(IMoneyService money, IProductCatalogSe
 
         foreach (var assignment in workspace.Assignments)
         {
-            var price = catalogService.Find(assignment.Sku);
+            var price = catalogService.FindAsync(assignment.Sku, CancellationToken.None).GetAwaiter().GetResult();
 
             lines.Add(price is null
                 ? new QuoteLine(assignment.Slot, assignment.Sku, "(no longer available)", assignment.Quantity, null, null, null, false)

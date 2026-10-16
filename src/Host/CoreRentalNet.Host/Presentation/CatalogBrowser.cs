@@ -36,7 +36,7 @@ public sealed class CatalogBrowser
     public string Query { get; private set; } = string.Empty;
 
     /// <summary>The catalogService's answer for the tab and the search.</summary>
-    public IReadOnlyList<ProductView> Items { get; private set; } = [];
+    public IReadOnlyList<ProductDto> Items { get; private set; } = [];
 
     /// <summary>
     /// Chooses a category and empties the search: a search that matched nothing in the last tab is
@@ -63,4 +63,4 @@ public sealed class CatalogBrowser
 }
 
 /// <summary>How the browser asks the catalogService for what one tab and one search describe.</summary>
-public delegate IReadOnlyList<ProductView> CatalogPageQuery(CatalogTab tab, string search);
+public delegate IReadOnlyList<ProductDto> CatalogPageQuery(CatalogTab tab, string search);

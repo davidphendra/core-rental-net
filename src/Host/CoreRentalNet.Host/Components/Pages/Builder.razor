@@ -84,7 +84,9 @@
         SelectionError = null;
         mobileTab = selected;
 
-        var request = new SearchCatalogQuery(Category: CatalogTabs.CategoryFor(selected));
+        var request = new SearchCatalogQuery(
+            new CatalogScope(CatalogTabs.CategoryFor(selected), null),
+            Take: CatalogPageLimits.Maximum);
         pickerTitle = CatalogTabs.LabelFor(selected);
 
         if (picker is null)
@@ -103,7 +105,7 @@
         await picker.ShowAsync(request);
     }
 
-    private async Task AssignAsync(ProductView product)
+    private async Task AssignAsync(ProductDto product)
     {
         if (string.IsNullOrEmpty(DraftToken))
         {

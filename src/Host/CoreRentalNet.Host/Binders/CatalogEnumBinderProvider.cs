@@ -1,5 +1,4 @@
 using CoreRentalNet.Host.Controllers;
-using CoreRentalNet.Host.Enums;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -22,7 +21,7 @@ internal sealed class CatalogEnumBinderProvider : IModelBinderProvider
 
         var type = Nullable.GetUnderlyingType(context.Metadata.ModelType) ?? context.Metadata.ModelType;
 
-        if (type != typeof(CatalogCategory) && type != typeof(CatalogSubCategory) && type != typeof(CatalogProjection))
+        if (type != typeof(CatalogCategory) && type != typeof(CatalogSubCategory))
         {
             return null;
         }

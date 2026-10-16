@@ -26,11 +26,11 @@
 </button>
 
 @code {
-    [Parameter, EditorRequired] public ProductView Product { get; set; } = default!;
+    [Parameter, EditorRequired] public ProductDto Product { get; set; } = default!;
 
     [Parameter] public bool IsSelected { get; set; }
 
-    [Parameter] public EventCallback<ProductView> OnSelect { get; set; }
+    [Parameter] public EventCallback<ProductDto> OnSelect { get; set; }
 
     private string Placement => IsSelected
         ? "bg-surface-container-lowest rounded-xl p-3 border-2 border-primary relative"

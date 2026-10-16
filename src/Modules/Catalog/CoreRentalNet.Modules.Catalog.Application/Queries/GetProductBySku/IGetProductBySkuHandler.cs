@@ -6,5 +6,5 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.GetProductBySku;
 public interface IGetProductBySkuHandler
 {
     /// <summary>Returns null for an unknown or malformed SKU rather than throwing.</summary>
-    ProductView? Handle(GetProductBySku query);
+    ProductDto? Handle(GetProductBySku query);
 }

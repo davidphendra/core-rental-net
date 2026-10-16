@@ -83,7 +83,7 @@ public sealed class ModuleBoundaryTests
         // Non-vacuity: the namespace holds the port, the view and the vocabulary. Without this
         // check the rule below would pass on an empty namespace.
         contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.IProductCatalogService));
-        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.ProductView));
+        contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.ProductDto));
         contracts.Should().Contain(typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory));
 
         contracts.Should().OnlyContain(type => type.IsPublic, "a published contract is public");
@@ -108,8 +108,11 @@ public sealed class ModuleBoundaryTests
         mentioned.Should().NotContain(typeof(CoreRentalNet.Modules.Catalog.Domain.ProductSubCategory));
 
         mentioned.Should().Contain(
-            typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory),
+            typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogScope),
             "otherwise this rule proves nothing");
+        typeof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogScope)
+            .GetProperty(nameof(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogScope.Category))!
+            .PropertyType.Should().Be(CoreRentalNet.Modules.Catalog.Application.Contracts.CatalogCategory);
     }
 
     private static IReadOnlyList<(string Module, Assembly Assembly)> ModuleAssemblies()

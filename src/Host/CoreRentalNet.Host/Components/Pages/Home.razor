@@ -138,7 +138,7 @@
 <div class="h-24 lg:hidden"></div>
 
 @code {
-    private IReadOnlyList<ProductView> featured = [];
+    private IReadOnlyList<ProductDto> featured = [];
 
     protected override void OnInitialized()
         => featured = FeaturedProducts.Handle(new GetFeaturedProducts());

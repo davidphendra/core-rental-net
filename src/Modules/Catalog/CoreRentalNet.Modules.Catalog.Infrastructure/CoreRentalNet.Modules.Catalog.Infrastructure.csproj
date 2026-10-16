@@ -5,15 +5,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The catalogue's store: its own SQLite context, with the shared opener and pragma settings. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CoreRentalNet.Modules.Catalog.Domain\CoreRentalNet.Modules.Catalog.Domain.csproj" />
     <!-- Outward reference: this project implements the port the application project declares. -->
     <ProjectReference Include="..\CoreRentalNet.Modules.Catalog.Application\CoreRentalNet.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreRentalNet.BuildingBlocks.Infrastructure\CoreRentalNet.BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- The record shape and the mapper that reads it are infrastructure-only. The rules the mapper
          enforces are tested from records alone, which needs the test project to see both. -->
     <InternalsVisibleTo Include="CoreRentalNet.Modules.Catalog.UnitTests" />
+    <InternalsVisibleTo Include="CoreRentalNet.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>

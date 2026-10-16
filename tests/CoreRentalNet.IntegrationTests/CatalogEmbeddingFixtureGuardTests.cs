@@ -50,7 +50,7 @@ public sealed class CatalogEmbeddingFixtureGuardTests
     [Fact]
     public void Every_fixture_product_still_matches_the_catalogue()
     {
-        var catalogue = new ProductCatalogService(ProductsJson, null);
+        var catalogue = new JsonCatalogSource(ProductsJson, null);
 
         foreach (var product in Fixture.Products)
         {

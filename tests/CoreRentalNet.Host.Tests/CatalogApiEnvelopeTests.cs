@@ -72,16 +72,6 @@ public sealed class CatalogApiEnvelopeTests(CatalogApiFactory factory) : IClassF
     }
 
     [Fact] // API-37
-    public async Task The_compact_answer_reports_the_same_two_numbers()
-    {
-        var body = await EnvelopeAsync("/api/catalog?view=compact&limit=3");
-
-        body.GetProperty("count").GetInt32().Should().Be(3);
-        body.GetProperty("total").GetInt32().Should().Be(205);
-        body.GetProperty("truncated").GetBoolean().Should().BeTrue();
-    }
-
-    [Fact] // API-37
     public async Task A_limit_that_could_not_return_anything_is_a_400()
     {
         // Refused rather than clamped: quietly turning a caller's zero into one row is the kind of

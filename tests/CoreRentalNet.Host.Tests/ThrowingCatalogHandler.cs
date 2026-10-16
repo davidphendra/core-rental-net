@@ -14,6 +14,6 @@ internal sealed class ThrowingCatalogHandler : ISearchCatalogHandler
 {
     public const string Message = "The catalogue failed while it was being read.";
 
-    public IReadOnlyList<ProductView> Handle(SearchCatalogQuery query)
+    public IReadOnlyList<ProductDto> Handle(SearchCatalogQuery query)
         => throw new InvalidOperationException(Message);
 }

@@ -28,7 +28,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
         similarityService = new StubProductSimilarityService(nearest);
 
         return new SearchSimilarityCatalogHandler(
-            new ProductCatalogService(file.Path, null),
+            new JsonCatalogSource(file.Path, null),
             embeddings,
             similarityService);
     }
@@ -42,15 +42,15 @@ public sealed class SearchSimilarityCatalogHandlerTests
             file,
             out _,
             out _,
-            new NearestProduct("CHA0001", 0.9),
-            new NearestProduct("DSK0001", 0.1),
-            new NearestProduct("MON0001", 0.5));
+            new NearestProduct("LMP0001", 0.9),
+            new NearestProduct("MON0001", 0.1),
+            new NearestProduct("PLT0001", 0.5));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, "something to work at"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "something to work at"),
             CancellationToken.None);
 
-        products.Select(product => product.Sku).Should().Equal("DSK0001", "MON0001", "CHA0001");
+        products.Select(product => product.Sku).Should().Equal("MON0001", "PLT0001", "LMP0001");
     }
 
     [Fact] // the ceiling is a filter like the category, so the meaning search cannot reach past it either
@@ -68,7 +68,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
             new NearestProduct("LMP0001", 0.2));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, "somewhere to sit", MaximumMonthlyAmount: 200_000m),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "somewhere to sit", MaximumMonthlyAmount: 200_000m),
             CancellationToken.None);
 
         products.Select(product => product.Sku).Should().Equal("LMP0001");
@@ -89,7 +89,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
             new NearestProduct("DSK0001", 0.8));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(CatalogCategory.Accessory, CatalogSubCategory.Monitor, "anything"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, CatalogSubCategory.Monitor), "anything"),
             CancellationToken.None);
 
         products.Should().ContainSingle().Which.Sku.Should().Be("MON0001");
@@ -114,7 +114,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
             new NearestProduct("BBG0001", 0.7));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(CatalogCategory.Accessory, null, "anything"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "anything"),
             CancellationToken.None);
 
         products.Select(product => product.Sku).Should().Equal("MON0001", "LMP0001", "PLT0001", "CFE0001", "BBG0001");
@@ -134,7 +134,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
             new NearestProduct("DSK0001", 0.2));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(CatalogCategory.Accessory, CatalogSubCategory.Monitor, "anything"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, CatalogSubCategory.Monitor), "anything"),
             CancellationToken.None);
 
         products.Should().BeEmpty();
@@ -149,14 +149,14 @@ public sealed class SearchSimilarityCatalogHandlerTests
             file,
             out _,
             out _,
-            new NearestProduct("DSK0001", 0.5),
-            new NearestProduct("CHA0001", 0.5));
+            new NearestProduct("MON0001", 0.5),
+            new NearestProduct("LMP0001", 0.5));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, "anything"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "anything"),
             CancellationToken.None);
 
-        products.Select(product => product.Sku).Should().Equal("CHA0001", "DSK0001");
+        products.Select(product => product.Sku).Should().Equal("LMP0001", "MON0001");
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
         var handler = Handler(file, out _, out _, new NearestProduct("PLT0001", 0.7));
 
         var products = await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, "anything"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "anything"),
             CancellationToken.None);
 
         products.Should().ContainSingle().Which.Sku.Should().Be("PLT0001");
@@ -181,7 +181,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
         var handler = Handler(file, out var embeddings, out _);
 
         await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, "  two screens, badly lit  "),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "  two screens, badly lit  "),
             CancellationToken.None);
 
         embeddings.Asked.Should().Equal("  two screens, badly lit  ");
@@ -196,7 +196,7 @@ public sealed class SearchSimilarityCatalogHandlerTests
         var handler = Handler(file, out _, out _);
 
         var act = () => handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, sentence),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), sentence),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ArgumentException>();
@@ -207,12 +207,12 @@ public sealed class SearchSimilarityCatalogHandlerTests
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
         var handler = new SearchSimilarityCatalogHandler(
-            new ProductCatalogService(file.Path, null),
+            new JsonCatalogSource(file.Path, null),
             new StubEmbeddingService(QueryVector),
             new StubProductSimilarityService { Failure = new ProductSimilarityUnavailableException("no vectors") });
 
         var act = () => handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(null, null, "anything"),
+            new SearchSimilarityCatalogQuery(new CatalogScope(CatalogCategory.Accessory, null), "anything"),
             CancellationToken.None);
 
         await act.Should().ThrowAsync<ProductSimilarityUnavailableException>();

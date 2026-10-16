@@ -31,8 +31,8 @@ public interface IProductNameSearchService
     /// An empty <paramref name="typedSearchText"/> is not an empty answer: it is every product the caller had
     /// already narrowed to, in catalogue order — which is how the store, the picker and the panel all open.
     /// </remarks>
-    Task<IReadOnlyList<ProductView>> FindBestMatchesForTypedSearchWordsAsync(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    Task<IReadOnlyList<ProductDto>> FindBestMatchesForTypedSearchWordsAsync(
+        IReadOnlyList<ProductDto> productsMatchingTheFilters,
         string typedSearchText);
 
     /// <summary>
@@ -50,7 +50,7 @@ public interface IProductNameSearchService
     /// it is every product the caller had already narrowed to.
     /// </para>
     /// </remarks>
-    Task<IReadOnlyList<ProductView>> FindBestMatchesForExpandedSearchTermsAsync(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    Task<IReadOnlyList<ProductDto>> FindBestMatchesForExpandedSearchTermsAsync(
+        IReadOnlyList<ProductDto> productsMatchingTheFilters,
         IReadOnlyList<string> expandedSearchTerms);
 }

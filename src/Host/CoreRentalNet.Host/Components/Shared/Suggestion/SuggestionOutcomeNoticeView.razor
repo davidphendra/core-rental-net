@@ -37,7 +37,7 @@
                     <div class="grid grid-cols-2 gap-3 flex-1 content-start" data-testid="suggestion-lines">
                         @foreach (var line in candidate.Lines)
                         {
-                            if (Catalog.Find(line.Sku) is { } product)
+                            if (Catalog.FindAsync(line.Sku, CancellationToken.None).GetAwaiter().GetResult() is { } product)
                             {
                                 <SuggestedProductCard Product="product" Quantity="line.Quantity" />
                             }

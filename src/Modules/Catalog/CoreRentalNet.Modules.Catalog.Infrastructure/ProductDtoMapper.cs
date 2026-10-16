@@ -9,28 +9,24 @@ namespace CoreRentalNet.Modules.Catalog.Infrastructure;
 /// <c>Catalog.Domain.ProductCategory</c> stays inside this module, and <c>CatalogCategory</c> is what
 /// callers see. A category added to one vocabulary without the other fails to compile here.
 /// </remarks>
-public static class ProductViewMapper
+public static class ProductDtoMapper
 {
-    /// <summary>The view a caller reads, translated from the record the loader built.</summary>
-    public static ProductView ToView(Product product)
+    /// <summary>The DTO a caller reads, translated from the record the loader built.</summary>
+    public static ProductDto ToDto(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
 
-        return new ProductView(
+        return new ProductDto(
             product.Sku,
             product.Name,
             Category(product.Category),
             product.SubCategory is { } subCategory ? SubCategory(subCategory) : null,
             product.MonthlyPrice,
             product.Description,
-            Metadata(product.Metadata),
             product.ImagePath,
             product.ImageAvailable,
             product.IsFeatured);
     }
-
-    private static CatalogMetadata Metadata(ProductMetadata metadata)
-        => new(metadata.Tags, metadata.Attributes, metadata.BestFor, metadata.NotFor);
 
     private static CatalogCategory Category(ProductCategory category)
         => category switch

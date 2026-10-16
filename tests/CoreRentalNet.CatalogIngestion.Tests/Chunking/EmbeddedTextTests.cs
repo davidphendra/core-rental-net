@@ -16,7 +16,7 @@ namespace CoreRentalNet.CatalogIngestion.Tests.Chunking;
 /// </remarks>
 public sealed class EmbeddedTextTests
 {
-    private static ProductView Product(IReadOnlyList<string>? notFor = null)
+    private static ProductDto Product(IReadOnlyList<string>? notFor = null)
         => new(
             Sku: "DSK0001",
             Name: "Desk DSK0001",

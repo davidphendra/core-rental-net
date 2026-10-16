@@ -11,7 +11,7 @@ public sealed class CatalogQueryTests
     public void Listing_a_category_returns_only_that_category()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         var page = catalog.ByCategory(CatalogCategory.Chair);
 
@@ -23,7 +23,7 @@ public sealed class CatalogQueryTests
     public void Listing_a_subcategory_returns_only_that_subcategory()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         var page = catalog.BySubCategory(CatalogSubCategory.Coffee);
 
@@ -35,7 +35,7 @@ public sealed class CatalogQueryTests
     public void The_accessory_category_is_every_subcategory_the_accessory_entry_shows()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         // One entry now carries all five kinds of accessory, which is the invariant the panel's
         // grouping rests on: a kind missing here would be missing from the tab as well.
@@ -56,7 +56,7 @@ public sealed class CatalogQueryTests
     public void Featured_products_come_from_the_popular_badge()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         var featured = catalog.Featured();
 
@@ -68,7 +68,7 @@ public sealed class CatalogQueryTests
     public void An_unknown_sku_returns_null_rather_than_throwing()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         catalog.Find("XXX0000").Should().BeNull();
         catalog.Find("cha0001")!.Name.Should().Be("Chair CHA0001");
@@ -78,7 +78,7 @@ public sealed class CatalogQueryTests
     public void A_search_stays_inside_the_category_it_was_asked_about()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         catalog.Search(CatalogCategory.Desk, null).Should()
             .OnlyContain(item => item.Category == CatalogCategory.Desk);
@@ -91,7 +91,7 @@ public sealed class CatalogQueryTests
     public void A_search_with_no_filters_returns_every_product()
     {
         using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        var catalog = new ProductCatalogService(file.Path, null);
+        var catalog = new JsonCatalogSource(file.Path, null);
 
         catalog.Search(null, null).Should().HaveCount(7);
     }

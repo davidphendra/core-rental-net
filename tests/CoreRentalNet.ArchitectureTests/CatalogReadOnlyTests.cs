@@ -34,28 +34,31 @@ public sealed class CatalogReadOnlyTests
     }
 
     [Fact] // CAT-13
-    public void The_catalog_has_no_persistence_layer()
+    public void The_catalog_persistence_is_not_published_to_callers()
     {
-        var catalogTypes = CatalogAssemblies().SelectMany(assembly => assembly.GetExportedTypes()).ToArray();
+        // There is a store now, and the rule is no longer "there is none" but "callers cannot reach it":
+        // the entity set and every other EF type stay internal, and the published surface is the port.
+        var offenders = CatalogAssemblies()
+            .SelectMany(assembly => assembly.GetExportedTypes())
+            .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            .Where(property => property.PropertyType.FullName?.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) == true)
+            .Select(property => $"{property.DeclaringType?.FullName}.{property.Name}")
+            .ToArray();
 
-        catalogTypes.Should().NotContain(
-            type => HasEfCoreBaseType(type),
-            "Catalog is an in-memory snapshot with no database");
+        offenders.Should().BeEmpty("no catalogue table is reachable from a published type");
     }
 
     [Fact] // CAT-13
     public void The_rule_is_about_a_catalog_module_that_exists()
     {
-        // NON-VACUITY, AND IT NOW MATTERS MORE THAN IT DID. Both rules above pass on an empty assembly, and
-        // e06 added a second module that owns a vector table and a mutable selection signal ON PURPOSE - so the
-        // pressure to give Catalog a persistence layer too is now real, and the tempting way to make these
-        // rules stop complaining is to loosen them. What they are about is asserted here rather than assumed,
-        // so a rule that has stopped scanning anything fails instead of passing quietly.
+        // NON-VACUITY. Both rules above pass on an empty assembly, so what they are about is asserted
+        // here rather than assumed.
         var types = CatalogAssemblies().SelectMany(assembly => assembly.GetExportedTypes()).ToArray();
 
         types.Should().Contain(typeof(Product), "otherwise the mutation rule has no type to inspect");
         types.Should().Contain(typeof(IProductCatalogService));
-        types.Should().Contain(typeof(ProductCatalogService), "otherwise the persistence rule has no type to inspect");
+        types.Should().Contain(typeof(SqliteProductCatalogService), "otherwise the persistence rule has no type to inspect");
+        types.Should().Contain(typeof(CatalogContext), "otherwise there is no persistence surface to police");
 
         var methods = types
             .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
@@ -68,20 +71,6 @@ public sealed class CatalogReadOnlyTests
     [
         typeof(Product).Assembly,
         typeof(IProductCatalogService).Assembly,
-        typeof(ProductCatalogService).Assembly,
+        typeof(SqliteProductCatalogService).Assembly,
     ];
-
-    /// <summary>Checked by name so this project needs no reference to EF Core.</summary>
-    private static bool HasEfCoreBaseType(Type type)
-    {
-        for (var candidate = type.BaseType; candidate is not null; candidate = candidate.BaseType)
-        {
-            if (candidate.FullName?.StartsWith("Microsoft.EntityFrameworkCore", StringComparison.Ordinal) == true)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

@@ -11,9 +11,9 @@ namespace CoreRentalNet.Host.Tests;
 /// </remarks>
 internal sealed class TestCatalogue : IProductCatalogService
 {
-    private readonly List<ProductView> _products = [];
+    private readonly List<ProductDto> _products = [];
 
-    public IReadOnlyList<ProductView> All => _products;
+    public IReadOnlyList<ProductDto> All => _products;
 
     public TestCatalogue Add(
         string sku,
@@ -21,14 +21,13 @@ internal sealed class TestCatalogue : IProductCatalogService
         CatalogCategory category = CatalogCategory.Desk,
         CatalogSubCategory? subCategory = null)
     {
-        _products.Add(new ProductView(
+        _products.Add(new ProductDto(
             sku,
             $"Product {sku}",
             category,
             subCategory,
             new Money(monthlyPrice, Currencies.Idr),
             "A description.",
-            new CatalogMetadata([], new Dictionary<string, string>(), [], []),
             "/images/test.svg",
             true,
             false));
@@ -36,19 +35,19 @@ internal sealed class TestCatalogue : IProductCatalogService
         return this;
     }
 
-    public ProductView? Find(string sku)
+    public ProductDto? Find(string sku)
         => _products.FirstOrDefault(product => string.Equals(product.Sku, sku, StringComparison.OrdinalIgnoreCase));
 
-    public IReadOnlyList<ProductView> ByCategory(CatalogCategory category)
+    public IReadOnlyList<ProductDto> ByCategory(CatalogCategory category)
         => [.. _products.Where(product => product.Category == category)];
 
-    public IReadOnlyList<ProductView> BySubCategory(CatalogSubCategory subCategory)
+    public IReadOnlyList<ProductDto> BySubCategory(CatalogSubCategory subCategory)
         => [.. _products.Where(product => product.SubCategory == subCategory)];
 
-    public IReadOnlyList<ProductView> Featured()
+    public IReadOnlyList<ProductDto> Featured()
         => [.. _products.Where(product => product.IsFeatured)];
 
-    public IReadOnlyList<ProductView> Search(
+    public IReadOnlyList<ProductDto> Search(
         CatalogCategory? category,
         CatalogSubCategory? subCategory,
         decimal? maximumMonthlyAmount = null)
@@ -56,4 +55,25 @@ internal sealed class TestCatalogue : IProductCatalogService
             (category is null || product.Category == category)
             && (subCategory is null || product.SubCategory == subCategory)
             && (maximumMonthlyAmount is null || product.MonthlyPrice.Amount <= maximumMonthlyAmount))];
+
+    public Task<ProductDto?> FindAsync(string sku, CancellationToken cancellationToken)
+        => Task.FromResult(Find(sku));
+
+    public Task<IReadOnlyList<ProductDto>> FeaturedAsync(CancellationToken cancellationToken)
+        => Task.FromResult(Featured());
+
+    public Task<CatalogPage> SearchPageAsync(
+        CatalogScope scope,
+        decimal? maximumMonthlyAmount,
+        int skip,
+        int take,
+        CancellationToken cancellationToken)
+    {
+        var matched = Search(scope.Category, scope.SubCategory, maximumMonthlyAmount);
+
+        return Task.FromResult(new CatalogPage([.. matched.Skip(skip).Take(take)], matched.Count));
+    }
+
+    public Task<string> CurrencyAsync(CancellationToken cancellationToken)
+        => Task.FromResult(_products.Count == 0 ? Currencies.Idr : _products[0].MonthlyPrice.Currency);
 }

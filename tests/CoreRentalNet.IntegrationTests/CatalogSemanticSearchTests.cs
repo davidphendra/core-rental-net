@@ -85,7 +85,7 @@ public sealed class CatalogSemanticSearchTests
     {
         var query = Fixture.Query(kind);
 
-        var products = await SearchAsync(query.Phrase);
+        var products = await SearchAcrossTheKindAsync(query);
 
         products.Should().NotBeEmpty();
         products.Take(3).Select(product => product.Sku).Should().Contain(
@@ -99,9 +99,9 @@ public sealed class CatalogSemanticSearchTests
         // The proof that this is semantic and not lexical: the same sentence, through the name search, matches
         // no product at all - and through the similarity search it finds the ergonomic chair first.
         var query = Fixture.Query("chair");
-        var catalogue = new ProductCatalogService(ProductsJson, null);
+        var catalogue = new JsonCatalogSource(ProductsJson, null);
 
-        (await new LiftiProductNameSearchService(catalogue).FindBestMatchesForTypedSearchWordsAsync(catalogue.All, query.Phrase))
+        (await new LiftiProductNameSearchService().FindBestMatchesForTypedSearchWordsAsync(catalogue.All, query.Phrase))
             .Should().BeEmpty("no product's name contains 'my back hurts after sitting all day'");
 
         var products = await SearchAsync(query);
@@ -128,7 +128,7 @@ public sealed class CatalogSemanticSearchTests
         // filter removed them.
         var query = Fixture.Query("monitor");
 
-        var order = (await SearchAsync(query.Phrase)).Select(product => product.Sku).ToList();
+        var order = (await SearchAcrossTheKindAsync(query)).Select(product => product.Sku).ToList();
         var monitor = order.IndexOf(query.ExpectedSku);
 
         monitor.Should().BeGreaterThanOrEqualTo(0);
@@ -154,7 +154,7 @@ public sealed class CatalogSemanticSearchTests
         // price synonyms.
         var dearest = Fixture.Products.MaxBy(product => product.PricePerMonth)!;
 
-        var products = await SearchAsync(phrase);
+        var products = await SearchAsync(phrase, CategoryForSku(dearest.Sku));
 
         products.Should().NotBeEmpty("the search still answers; it simply has no price to go on");
         products.Take(3).Select(product => product.Sku).Should().NotContain(
@@ -162,12 +162,23 @@ public sealed class CatalogSemanticSearchTests
             "the dearest product is not what a price word retrieves");
     }
 
-    private static Task<IReadOnlyList<ProductView>> SearchAsync(CatalogEmbeddingFixtureQuery query)
-        => SearchAsync(query.Phrase, CategoryOf(query.Category), SubCategoryOf(query.SubCategory));
+    private static Task<IReadOnlyList<ProductDto>> SearchAsync(CatalogEmbeddingFixtureQuery query)
+        => SearchAsync(query.Phrase, CategoryOfExpected(query), SubCategoryOf(query.SubCategory));
 
-    private static async Task<IReadOnlyList<ProductView>> SearchAsync(
+    /// <summary>The same phrase, scoped to the whole kind so a subcategory does not hide its sibling kinds.</summary>
+    private static Task<IReadOnlyList<ProductDto>> SearchAcrossTheKindAsync(CatalogEmbeddingFixtureQuery query)
+        => SearchAsync(query.Phrase, CategoryOfExpected(query), null);
+
+    /// <summary>The category a query narrows to, or the expected product's own when the query named none.</summary>
+    private static CatalogCategory CategoryOfExpected(CatalogEmbeddingFixtureQuery query)
+        => CategoryOf(query.Category) ?? CategoryForSku(query.ExpectedSku);
+
+    private static CatalogCategory CategoryForSku(string sku)
+        => Enum.Parse<CatalogCategory>(Fixture.Products.Single(product => product.Sku == sku).Category, ignoreCase: true);
+
+    private static async Task<IReadOnlyList<ProductDto>> SearchAsync(
         string phrase,
-        CatalogCategory? category = null,
+        CatalogCategory category,
         CatalogSubCategory? subCategory = null)
     {
         using var file = new IngestedVectorFile();
@@ -178,16 +189,16 @@ public sealed class CatalogSemanticSearchTests
         }
 
         var handler = new SearchSimilarityCatalogHandler(
-            new ProductCatalogService(ProductsJson, null),
+            new JsonCatalogSource(ProductsJson, null),
             new FixtureEmbeddingService(Fixture),
             new SqliteProductSimilarityService(file.Path));
 
         return await handler.HandleAsync(
-            new SearchSimilarityCatalogQuery(category, subCategory, phrase),
+            new SearchSimilarityCatalogQuery(new CatalogScope(category, subCategory), phrase),
             CancellationToken.None);
     }
 
-    private static bool Matches(ProductView product, CatalogEmbeddingFixtureQuery query)
+    private static bool Matches(ProductDto product, CatalogEmbeddingFixtureQuery query)
         => (query.Category is null || string.Equals(product.Category.ToString(), query.Category, StringComparison.OrdinalIgnoreCase))
            && (query.SubCategory is null || string.Equals(product.SubCategory?.ToString(), query.SubCategory, StringComparison.OrdinalIgnoreCase));
 

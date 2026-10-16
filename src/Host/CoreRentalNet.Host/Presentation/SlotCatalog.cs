@@ -8,7 +8,7 @@ namespace CoreRentalNet.Host.Presentation;
 /// <summary>Answers "what could go in this slot?" using the same total mapping the domain uses.</summary>
 public static class SlotCatalog
 {
-    public static IReadOnlyList<ProductView> ForSlot(IEnumerable<ProductView> products, SlotId slot)
+    public static IReadOnlyList<ProductDto> ForSlot(IEnumerable<ProductDto> products, SlotId slot)
         => products
             .Where(product => CatalogSlotMapping.SlotFor(product.Category, product.SubCategory) == slot)
             .ToArray();
@@ -24,16 +24,16 @@ public static class SlotCatalog
     /// </remarks>
     public static SearchCatalogQuery QueryFor(SlotId slot) => slot switch
     {
-        SlotId.Desk => new SearchCatalogQuery(Category: CatalogCategory.Desk),
-        SlotId.Chair => new SearchCatalogQuery(Category: CatalogCategory.Chair),
-        SlotId.Monitor => Accessories(CatalogSubCategory.Monitor),
-        SlotId.Lamp => Accessories(CatalogSubCategory.Lamp),
-        SlotId.Plant => Accessories(CatalogSubCategory.Plant),
-        SlotId.CoffeeStation => Accessories(CatalogSubCategory.Coffee),
-        SlotId.RelaxZone => Accessories(CatalogSubCategory.Beanbag),
+        SlotId.Desk => Query(CatalogCategory.Desk, null),
+        SlotId.Chair => Query(CatalogCategory.Chair, null),
+        SlotId.Monitor => Query(CatalogCategory.Accessory, CatalogSubCategory.Monitor),
+        SlotId.Lamp => Query(CatalogCategory.Accessory, CatalogSubCategory.Lamp),
+        SlotId.Plant => Query(CatalogCategory.Accessory, CatalogSubCategory.Plant),
+        SlotId.CoffeeStation => Query(CatalogCategory.Accessory, CatalogSubCategory.Coffee),
+        SlotId.RelaxZone => Query(CatalogCategory.Accessory, CatalogSubCategory.Beanbag),
         _ => throw new ArgumentOutOfRangeException(nameof(slot), slot, "No catalogService query answers for this slot."),
     };
 
-    private static SearchCatalogQuery Accessories(CatalogSubCategory subCategory)
-        => new(Category: CatalogCategory.Accessory, SubCategory: subCategory);
+    private static SearchCatalogQuery Query(CatalogCategory category, CatalogSubCategory? subCategory)
+        => new(new CatalogScope(category, subCategory));
 }

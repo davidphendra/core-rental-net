@@ -31,11 +31,11 @@ public sealed class LiftiProductNameSearchServiceTests
 {
     private static string ProductsJson => RepoRoot.Combine("src", "shared", "data", "products.json");
 
-    private static (ProductCatalogService Catalogue, LiftiProductNameSearchService NameSearch) Build()
+    private static (JsonCatalogSource Catalogue, LiftiProductNameSearchService NameSearch) Build()
     {
-        var catalogue = new ProductCatalogService(ProductsJson, null);
+        var catalogue = new JsonCatalogSource(ProductsJson, null);
 
-        return (catalogue, new LiftiProductNameSearchService(catalogue));
+        return (catalogue, new LiftiProductNameSearchService());
     }
 
     [Fact] // CAT-12

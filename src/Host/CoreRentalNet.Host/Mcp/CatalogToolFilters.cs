@@ -31,6 +31,17 @@ internal static class CatalogToolFilters
     public static CatalogSubCategory? CatalogueSubCategoryFrom(string? value)
         => Parse<CatalogSubCategory>(value, "subCategory");
 
+    /// <summary>The scope the caller named. A category is required and refused when it is not one of ours.</summary>
+    public static CatalogScope ScopeFrom(string? category, string? subCategory)
+    {
+        var parsedCategory = CatalogueCategoryFrom(category)
+            ?? throw new ArgumentException(
+                "A catalogue search needs a category: desk, chair or accessory.",
+                nameof(category));
+
+        return new CatalogScope(parsedCategory, CatalogueSubCategoryFrom(subCategory));
+    }
+
     /// <summary>Refuses a sentence that is blank or longer than the boundary allows.</summary>
     public static void CheckSearchText(string? query)
         => CheckLength(query, "query", CatalogToolLimits.MaximumSearchTextCharacterCount);

@@ -1,14 +1,15 @@
 using CoreRentalNet.Host.Presentation;
+using CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 namespace CoreRentalNet.Host.Mcp;
 
-/// <summary>What a catalogue search tool answers: the compact matches, and what a monthly ceiling excluded.</summary>
+/// <summary>What a catalogue search tool answers: the matches, and what a monthly ceiling excluded.</summary>
 /// <remarks>
 /// <para>
 /// <b>An envelope of its own rather than two more nullable fields on
-/// <see cref="CompactCatalogCollection"/>.</b> The fact belongs to the search boundary rather than to the
-/// products, and the compact view is the REST API's published answer — a field added for the tools would
-/// appear in the API's answer as well, which is the shape a page is written against.
+/// <see cref="ApiCollection{T}"/>.</b> The fact belongs to the search boundary rather than to the products,
+/// and the collection shape is the REST API's published answer — a field added for the tools would appear in
+/// the API's answer as well, which is the shape a page is written against.
 /// </para>
 /// <para>
 /// It lives beside the tools rather than in <c>Presentation</c> so that folder keeps holding published shapes
@@ -16,9 +17,9 @@ namespace CoreRentalNet.Host.Mcp;
 /// answer.
 /// </para>
 /// </remarks>
-/// <param name="Matches">The compact answer the catalogue's own API would give for the same search.</param>
+/// <param name="Matches">The answer the catalogue's own API would give for the same search.</param>
 /// <param name="CheapestProductIgnoringTheCeiling">The cheapest product the ceiling excluded, or null when the
 /// ceiling excluded nothing — which is also the answer when no ceiling was given.</param>
 public sealed record CatalogueSearchToolAnswer(
-    CompactCatalogCollection Matches,
+    ApiCollection<ProductDto> Matches,
     decimal? CheapestProductIgnoringTheCeiling);

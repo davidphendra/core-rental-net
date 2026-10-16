@@ -21,7 +21,7 @@ internal static class EmbeddedText
 {
     /// <summary>The text one product is chunked and embedded from.</summary>
     /// <param name="product">The catalogue's published view of a product.</param>
-    public static string Of(ProductView product)
+    public static string Of(ProductDto product)
     {
         ArgumentNullException.ThrowIfNull(product);
 

@@ -30,7 +30,7 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public ProductView Product { get; set; } = default!;
+    [Parameter, EditorRequired] public ProductDto Product { get; set; } = default!;
 
     /// <summary>How many of this product the setup line carries. The card shows one; the badge says how many.</summary>
     [Parameter] public int Quantity { get; set; } = 1;

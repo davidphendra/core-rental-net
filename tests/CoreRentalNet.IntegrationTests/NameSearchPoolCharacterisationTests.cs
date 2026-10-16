@@ -106,8 +106,8 @@ public sealed class NameSearchPoolCharacterisationTests
         IReadOnlyDictionary<string, string[]> termsForNeed)
     {
         var fixture = CatalogEmbeddingFixture.Load();
-        var catalogue = new ProductCatalogService(RepoRoot.Combine("src", "shared", "data", "products.json"), null);
-        var nameSearch = new LiftiProductNameSearchService(catalogue);
+        var catalogue = new JsonCatalogSource(RepoRoot.Combine("src", "shared", "data", "products.json"), null);
+        var nameSearch = new LiftiProductNameSearchService();
 
         var outcomes = new List<NeedSearchOutcome>();
 

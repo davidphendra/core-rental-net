@@ -1,47 +1,43 @@
-using CoreRentalNet.BuildingBlocks.Domain;
-
 namespace CoreRentalNet.Modules.Catalog.Application.Contracts;
 
 /// <summary>
 /// The catalogue read port: how this module's application and the other modules read the catalogue.
 /// </summary>
 /// <remarks>
-/// There is deliberately no write side: the catalogue is an immutable snapshot loaded from
-/// <c>products.json</c> once, at start-up. It lives in memory, so this port is synchronous; an
-/// adapter over a database or a network would need these operations to return a task, and would
-/// change this contract and its callers.
+/// <para>
+/// <b>There is deliberately no write side and no unscoped read.</b> The catalogue is read-only, and every
+/// query is scoped by a category (and, for an accessory, a subcategory), so no caller can ask for the whole
+/// catalogue and no query has to load one.
+/// </para>
+/// <para>
+/// <b>The operations are asynchronous because the store is a database, not a snapshot in memory.</b> A page
+/// is bounded by <see cref="CatalogPageLimits"/>, and the total travels with it so a caller can tell a
+/// complete answer from a truncated one.
+/// </para>
 /// </remarks>
 public interface IProductCatalogService
 {
-    /// <summary>Every product, in catalog order.</summary>
-    IReadOnlyList<ProductView> All { get; }
-
     /// <summary>One product by SKU, ignoring letter case, or null when the catalogue has none.</summary>
-    ProductView? Find(string sku);
-
-    /// <summary>Every product in one category, in catalog order.</summary>
-    IReadOnlyList<ProductView> ByCategory(CatalogCategory category);
-
-    /// <summary>Every product in one subcategory, in catalog order.</summary>
-    IReadOnlyList<ProductView> BySubCategory(CatalogSubCategory subCategory);
+    Task<ProductDto?> FindAsync(string sku, CancellationToken cancellationToken);
 
     /// <summary>The products carrying the popular badge.</summary>
-    IReadOnlyList<ProductView> Featured();
+    Task<IReadOnlyList<ProductDto>> FeaturedAsync(CancellationToken cancellationToken);
 
-    /// <summary>Every product the eligibility rules allow, in catalog order. What a caller typed does not narrow
-    /// here: it ranks the answer — see <see cref="IProductNameSearchService"/>.</summary>
-    /// <param name="category">The category to narrow to, or null for all of them.</param>
-    /// <param name="subCategory">The accessory subcategory to narrow to, or null for all of them.</param>
-    /// <param name="maximumMonthlyAmount">The most a product may cost each month, or null for no ceiling.
-    /// A product above it is not eligible, so a good name match can never bring it back.</param>
-    /// <remarks>
-    /// <b>The ceiling narrows rather than ranking.</b> It is here, beside the category, rather than beside
-    /// what was typed, because a product a caller cannot afford is not a product to be ordered lower — it is
-    /// not a product. Both name searches narrow through this one operation, which is what stops the two of
-    /// them disagreeing about what is eligible.
-    /// </remarks>
-    IReadOnlyList<ProductView> Search(
-        CatalogCategory? category,
-        CatalogSubCategory? subCategory,
-        decimal? maximumMonthlyAmount = null);
+    /// <summary>
+    /// One page of the products in a scope, in catalogue order, optionally under a monthly ceiling.
+    /// </summary>
+    /// <param name="scope">The category (and, for an accessory, the subcategory) to read.</param>
+    /// <param name="maximumMonthlyAmount">The most a product may cost each month, or null for no ceiling.</param>
+    /// <param name="skip">How many rows of the scope to pass over.</param>
+    /// <param name="take">How many rows to return; bounded by <see cref="CatalogPageLimits"/>.</param>
+    /// <param name="cancellationToken">The caller's cancellation token.</param>
+    Task<CatalogPage> SearchPageAsync(
+        CatalogScope scope,
+        decimal? maximumMonthlyAmount,
+        int skip,
+        int take,
+        CancellationToken cancellationToken);
+
+    /// <summary>The currency every price is stated in, read from the catalogue rather than its rows.</summary>
+    Task<string> CurrencyAsync(CancellationToken cancellationToken);
 }

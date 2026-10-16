@@ -13,10 +13,10 @@ namespace CoreRentalNet.Modules.Catalog.UnitTests;
 internal sealed class StubProductNameSearchService : IProductNameSearchService
 {
     /// <summary>The products the ranker will say matched, in the order it will say them.</summary>
-    public IReadOnlyList<ProductView> Matches { get; init; } = [];
+    public IReadOnlyList<ProductDto> Matches { get; init; } = [];
 
     /// <summary>The products the handler handed over, so a test can assert what was ranked.</summary>
-    public IReadOnlyList<ProductView>? ProductsItWasGiven { get; private set; }
+    public IReadOnlyList<ProductDto>? ProductsItWasGiven { get; private set; }
 
     /// <summary>What the handler searched for, or null when it never asked.</summary>
     public string? TypedSearchTextItWasGiven { get; private set; }
@@ -25,8 +25,8 @@ internal sealed class StubProductNameSearchService : IProductNameSearchService
     public IReadOnlyList<string>? ExpandedSearchTermsItWasGiven { get; private set; }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<ProductView>> FindBestMatchesForTypedSearchWordsAsync(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    public Task<IReadOnlyList<ProductDto>> FindBestMatchesForTypedSearchWordsAsync(
+        IReadOnlyList<ProductDto> productsMatchingTheFilters,
         string typedSearchText)
     {
         ProductsItWasGiven = productsMatchingTheFilters;
@@ -36,8 +36,8 @@ internal sealed class StubProductNameSearchService : IProductNameSearchService
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<ProductView>> FindBestMatchesForExpandedSearchTermsAsync(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    public Task<IReadOnlyList<ProductDto>> FindBestMatchesForExpandedSearchTermsAsync(
+        IReadOnlyList<ProductDto> productsMatchingTheFilters,
         IReadOnlyList<string> expandedSearchTerms)
     {
         ProductsItWasGiven = productsMatchingTheFilters;

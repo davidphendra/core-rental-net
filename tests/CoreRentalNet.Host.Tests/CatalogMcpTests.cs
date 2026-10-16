@@ -96,7 +96,7 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
     }
 
     [Fact] // MCP-04
-    public async Task The_name_tool_answers_with_the_compact_envelope_the_rest_api_publishes()
+    public async Task The_name_tool_answers_with_the_envelope_the_rest_api_publishes()
     {
         await using var client = await ConnectAsync(CatalogueRead);
 
@@ -118,10 +118,8 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
         // pins the case where there is something to report.
         body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(["matches"]);
         matches.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
-            ["value", "count", "total", "truncated", "currency"]);
-        matches.GetProperty("currency").GetString().Should().Be("IDR");
+            ["value", "count", "total", "truncated"]);
         matches.GetProperty("count").GetInt32().Should().BeLessThanOrEqualTo(2);
-        matches.GetProperty("value")[0].GetProperty("currency").GetString().Should().Be("IDR");
         matches.GetProperty("value")[0].TryGetProperty("metadata", out _).Should().BeFalse();
     }
 

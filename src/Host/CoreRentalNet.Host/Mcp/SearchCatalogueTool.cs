@@ -13,7 +13,7 @@ namespace CoreRentalNet.Host.Mcp;
 /// <remarks>
 /// <para>
 /// One operation per type, as every other service here. The tool is a projection of the handler the REST
-/// endpoint calls, so what it returns is what the compact REST view returns.
+/// endpoint calls, so what it returns is what the REST endpoint returns.
 /// </para>
 /// <para>
 /// <b>Several terms rather than one word, because that is what the stage before it produces.</b> A search that
@@ -45,29 +45,25 @@ public sealed class SearchCatalogueTool(
     [Description("Find the catalogue products whose name best matches any of several terms, best match first. For the terms a request was expanded into, not for a sentence describing a need.")]
     public CatalogueSearchToolAnswer Search(
         [Description("One or more terms or short phrases that appear in a product's name. A product needs to match only one of them.")] string[] terms,
-        [Description("Narrow to one category: desk, chair or accessory. Omit for all.")] string? category = null,
-        [Description("Narrow to one accessory sub-category: beanbag, coffee, lamp, monitor or plant. Omit for all.")] string? subCategory = null,
+        [Description("The category to search: desk, chair or accessory. Required.")] string category,
+        [Description("Narrow to one accessory sub-category: beanbag, coffee, lamp, monitor or plant. Required for accessories, omitted for desks and chairs.")] string? subCategory = null,
         [Description("The most a product may cost each month. A product above it is never returned. Omit for no ceiling.")] decimal? maximumMonthlyAmount = null,
         [Description("The most products to return.")] int limit = CatalogToolLimits.DefaultProductCount)
     {
         CatalogToolFilters.CheckSearchTerms(terms);
 
-        var parsedCategory = CatalogToolFilters.CatalogueCategoryFrom(category);
-        var parsedSubCategory = CatalogToolFilters.CatalogueSubCategoryFrom(subCategory);
+        var scope = CatalogToolFilters.ScopeFrom(category, subCategory);
+        var take = CatalogToolLimits.Clamp(limit);
 
         var matched = handler.Handle(new SearchCatalogQuery(
-            parsedCategory,
-            parsedSubCategory,
+            scope,
             ExpandedSearchTerms: terms,
-            MaximumMonthlyAmount: maximumMonthlyAmount));
+            MaximumMonthlyAmount: maximumMonthlyAmount,
+            Take: take));
 
         return new CatalogueSearchToolAnswer(
-            CatalogAnswer.CompactForTools(
-                matched,
-                CatalogToolLimits.Clamp(limit),
-                catalogue.All,
-                CatalogToolLimits.MaximumDescriptionCharacterCount),
-            CheapestProductExcludedByTheCeiling(matched, parsedCategory, parsedSubCategory, maximumMonthlyAmount));
+            CatalogAnswer.Of(CatalogAnswer.Cap(matched, take), matched.Count),
+            CheapestProductExcludedByTheCeiling(scope, matched, maximumMonthlyAmount));
     }
 
     /// <summary>The cheapest product a monthly ceiling excluded, or null when it excluded nothing.</summary>
@@ -78,9 +74,8 @@ public sealed class SearchCatalogueTool(
     /// already in memory — spent only when the answer is empty, which is the only time it can be wanted.
     /// </remarks>
     private decimal? CheapestProductExcludedByTheCeiling(
-        IReadOnlyList<ProductView> matched,
-        CatalogCategory? category,
-        CatalogSubCategory? subCategory,
+        CatalogScope scope,
+        IReadOnlyList<ProductDto> matched,
         decimal? maximumMonthlyAmount)
     {
         if (matched.Count > 0 || maximumMonthlyAmount is null)
@@ -88,7 +83,11 @@ public sealed class SearchCatalogueTool(
             return null;
         }
 
-        var productsIgnoringTheCeiling = catalogue.Search(category, subCategory);
+        var productsIgnoringTheCeiling = catalogue
+            .SearchPageAsync(scope, null, 0, CatalogPageLimits.Maximum, CancellationToken.None)
+            .GetAwaiter()
+            .GetResult()
+            .Items;
 
         return productsIgnoringTheCeiling.Count == 0
             ? null

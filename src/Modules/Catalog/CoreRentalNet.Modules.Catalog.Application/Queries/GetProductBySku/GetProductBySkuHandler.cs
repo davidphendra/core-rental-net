@@ -6,10 +6,10 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.GetProductBySku;
 public sealed class GetProductBySkuHandler(IProductCatalogService catalogService) : IGetProductBySkuHandler
 {
     /// <summary>Returns null for an unknown or malformed SKU rather than throwing.</summary>
-    public ProductView? Handle(GetProductBySku query)
+    public ProductDto? Handle(GetProductBySku query)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        return catalogService.Find(query.Sku);
+        return catalogService.FindAsync(query.Sku, CancellationToken.None).GetAwaiter().GetResult();
     }
 }

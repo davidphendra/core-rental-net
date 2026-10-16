@@ -1,3 +1,4 @@
+using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.Host.Helpers;
 using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Infrastructure;
@@ -10,7 +11,7 @@ using CoreRentalNet.Modules.Catalog.Application.Contracts;
 namespace CoreRentalNet.Host.Extentions;
 
 /// <summary>
-/// The catalogService: read-only, loaded once from its file. It has no database at all.
+/// The catalogService: its own SQLite store, read-only to callers.
 /// </summary>
 internal static class CatalogRegistrationExtentions
 {
@@ -18,10 +19,13 @@ internal static class CatalogRegistrationExtentions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        // The catalogue is an immutable snapshot, so one instance serves every request. The web root
-        // lets each product's image be resolved once, at load, rather than on every page.
-        builder.Services.AddSingleton<IProductCatalogService>(
-            new ProductCatalogService(CatalogPathHelper.Resolve(builder.Configuration), builder.Environment.WebRootPath));
+        AddCatalogueDatabase(builder);
+
+        // The store is the catalogue now, read through the bounded port. The web root lets each row's
+        // image be resolved as it is read, against this deployment's files.
+        builder.Services.AddScoped<IProductCatalogService>(services => new SqliteProductCatalogService(
+            services.GetRequiredService<CatalogContext>(),
+            services.GetRequiredService<IWebHostEnvironment>().WebRootPath));
 
         // Registered by the operation each one performs, not by its own type: the UI reaches the
         // application through the interface, so how the page is produced stays the application's
@@ -35,5 +39,30 @@ internal static class CatalogRegistrationExtentions
         // would make the panel's category and the store's the same category.
         builder.Services.AddTransient(services => new CatalogBrowser(
             (tab, query) => CatalogTabs.Load(tab, services.GetRequiredService<ISearchCatalogHandler>(), query)));
+    }
+
+    /// <summary>
+    /// The catalogue's own file. A second database rather than a slice of <c>corerental.db</c>, so the
+    /// catalogue can be regenerated without touching the drafts and orders beside it.
+    /// </summary>
+    private static void AddCatalogueDatabase(WebApplicationBuilder builder)
+    {
+        var configured = builder.Configuration["Catalog:DatabasePath"] ?? "App_Data/catalog.db";
+
+        var settings = new SqliteDatabaseSettings(
+            Path.IsPathRooted(configured)
+                ? configured
+                : Path.Combine(builder.Environment.ContentRootPath, configured));
+
+        // Opening once creates the directory and stamps the journal mode into the file.
+        using (SqliteDatabase.Open(settings))
+        {
+        }
+
+        builder.Services.AddDbContext<CatalogContext>((provider, options) =>
+        {
+            CatalogPersistence.Configure(options, settings);
+            options.AddInterceptors(provider.GetRequiredService<SqlitePragmaInterceptor>());
+        });
     }
 }

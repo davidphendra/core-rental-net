@@ -143,7 +143,7 @@ public sealed class CheckoutCommandHandler(
 
         foreach (var line in conversion.Lines)
         {
-            var price = catalogService.Find(line.Sku)
+            var price = catalogService.FindAsync(line.Sku, CancellationToken.None).GetAwaiter().GetResult()
                 ?? throw new DomainRuleViolationException(
                     $"'{line.Sku}' is no longer in the catalogService. Remove it from your workspace before renting.");
 

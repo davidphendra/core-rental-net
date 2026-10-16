@@ -54,13 +54,16 @@ public static class CatalogTabs
 
     /// <summary>Everything a tab shows, in one query for one category.</summary>
     /// <param name="search">What the customer typed, or null for the whole tab.</param>
-    public static IReadOnlyList<ProductView> Load(
+    public static IReadOnlyList<ProductDto> Load(
         CatalogTab tab,
         ISearchCatalogHandler handlerService,
         string? search = null)
     {
         ArgumentNullException.ThrowIfNull(handlerService);
 
-        return handlerService.Handle(new SearchCatalogQuery(Category: CategoryFor(tab), TypedSearchText: search));
+        return handlerService.Handle(new SearchCatalogQuery(
+            new CatalogScope(CategoryFor(tab), null),
+            TypedSearchText: search,
+            Take: CatalogPageLimits.Maximum));
     }
 }

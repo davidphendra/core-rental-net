@@ -16,7 +16,7 @@ namespace CoreRentalNet.Modules.Catalog.UnitTests;
 /// </remarks>
 public sealed class SearchCatalogHandlerTests
 {
-    private static ProductCatalogService Catalogue(TemporaryCatalogFile file)
+    private static JsonCatalogSource Catalogue(TemporaryCatalogFile file)
         => new(file.Path, null);
 
     [Fact] // CAT-14
@@ -27,7 +27,7 @@ public sealed class SearchCatalogHandlerTests
         var ranker = new StubProductNameSearchService();
         var handler = new SearchCatalogHandler(catalogue, ranker);
 
-        var products = handler.Handle(new SearchCatalogQuery(CatalogCategory.Chair));
+        var products = handler.Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null)));
 
         products.Should().Equal(catalogue.Search(CatalogCategory.Chair, null));
         ranker.TypedSearchTextItWasGiven.Should().BeNull("nothing typed is not a search");
@@ -43,7 +43,7 @@ public sealed class SearchCatalogHandlerTests
         var ranker = new StubProductNameSearchService { Matches = chairs };
         var handler = new SearchCatalogHandler(catalogue, ranker);
 
-        var products = handler.Handle(new SearchCatalogQuery(CatalogCategory.Chair, TypedSearchText: "chair"));
+        var products = handler.Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null), TypedSearchText: "chair"));
 
         products.Should().Equal(chairs);
         ranker.TypedSearchTextItWasGiven.Should().Be("chair");
@@ -57,10 +57,7 @@ public sealed class SearchCatalogHandlerTests
         var ranker = new StubProductNameSearchService();
         var handler = new SearchCatalogHandler(catalogue, ranker);
 
-        handler.Handle(new SearchCatalogQuery(
-            CatalogCategory.Accessory,
-            CatalogSubCategory.Lamp,
-            TypedSearchText: "chair"));
+        handler.Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Accessory, CatalogSubCategory.Lamp), TypedSearchText: "chair"));
 
         ranker.ProductsItWasGiven.Should().Equal(
             catalogue.Search(CatalogCategory.Accessory, CatalogSubCategory.Lamp));
@@ -74,7 +71,7 @@ public sealed class SearchCatalogHandlerTests
         var catalogue = Catalogue(file);
         var handler = new SearchCatalogHandler(catalogue, new StubProductNameSearchService());
 
-        handler.Handle(new SearchCatalogQuery(TypedSearchText: "chair")).Should().BeEmpty();
+        handler.Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null), TypedSearchText: "chair")).Should().BeEmpty();
     }
 
     [Fact] // an expanded search ranks with the other rule, and hands the terms over whole
@@ -88,9 +85,7 @@ public sealed class SearchCatalogHandlerTests
 
         string[] expandedSearchTerms = ["ergonomic chair", "task seating"];
 
-        var products = handler.Handle(new SearchCatalogQuery(
-            CatalogCategory.Chair,
-            ExpandedSearchTerms: expandedSearchTerms));
+        var products = handler.Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null), ExpandedSearchTerms: expandedSearchTerms));
 
         products.Should().Equal(chairs);
         ranker.ExpandedSearchTermsItWasGiven.Should().Equal(expandedSearchTerms);
@@ -104,9 +99,7 @@ public sealed class SearchCatalogHandlerTests
         var catalogue = Catalogue(file);
         var handler = new SearchCatalogHandler(catalogue, new StubProductNameSearchService());
 
-        var act = () => handler.Handle(new SearchCatalogQuery(
-            TypedSearchText: "chair",
-            ExpandedSearchTerms: ["chair"]));
+        var act = () => handler.Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null), TypedSearchText: "chair", ExpandedSearchTerms: ["chair"]));
 
         act.Should().Throw<ArgumentException>().WithParameterName("query");
     }
@@ -121,17 +114,13 @@ public sealed class SearchCatalogHandlerTests
         const decimal exactlyTheOnlyChair = 400_000m;
 
         var tooExpensive = new StubProductNameSearchService();
-        new SearchCatalogHandler(catalogue, tooExpensive).Handle(new SearchCatalogQuery(
-            CatalogCategory.Chair,
-            TypedSearchText: "chair",
+        new SearchCatalogHandler(catalogue, tooExpensive).Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null), TypedSearchText: "chair",
             MaximumMonthlyAmount: belowTheOnlyChair));
 
         tooExpensive.ProductsItWasGiven.Should().BeEmpty("no chair is affordable at that ceiling");
 
         var affordable = new StubProductNameSearchService();
-        new SearchCatalogHandler(catalogue, affordable).Handle(new SearchCatalogQuery(
-            CatalogCategory.Chair,
-            TypedSearchText: "chair",
+        new SearchCatalogHandler(catalogue, affordable).Handle(new SearchCatalogQuery(new CatalogScope(CatalogCategory.Chair, null), TypedSearchText: "chair",
             MaximumMonthlyAmount: exactlyTheOnlyChair));
 
         // The same query one rupiah higher, so what removed the chair was the ceiling and not the search: the

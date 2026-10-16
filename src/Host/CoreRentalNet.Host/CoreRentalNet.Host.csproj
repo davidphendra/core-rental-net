@@ -25,6 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The catalogue's migrations are authored with this project as the startup project, so the
+         design-time services must load from here. Development-only. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <!-- Auth0's wrapper is the integration point; the OpenID Connect handler it wraps
          is referenced directly because the session policy is applied on that handler. -->
     <PackageReference Include="Auth0.AspNetCore.Authentication" />

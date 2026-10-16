@@ -77,16 +77,10 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// </remarks>
     private const double MinimumNameFieldScoreBoost = 1;
 
-    private readonly IProductCatalogService _catalogService;
-
     private readonly double _nameFieldScoreBoost;
 
-    private IReadOnlyDictionary<string, ProductView> _productsBySku;
-
-    private IFullTextIndex<string>? _nameSearchIndex;
-
-    public LiftiProductNameSearchService(IProductCatalogService catalogueService)
-        : this(catalogueService, NameFieldScoreBoost)
+    public LiftiProductNameSearchService()
+        : this(NameFieldScoreBoost)
     {
     }
 
@@ -96,35 +90,34 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// can be changed in code but not measured in a test is a number nobody can defend, and the sweep that
     /// justifies this one has to be able to build the same index at other weights and compare the answers.
     /// </remarks>
-    public LiftiProductNameSearchService(IProductCatalogService catalogueService, double nameFieldScoreBoost)
+    public LiftiProductNameSearchService(double nameFieldScoreBoost)
     {
-        ArgumentNullException.ThrowIfNull(catalogueService);
-
         ArgumentOutOfRangeException.ThrowIfLessThan(nameFieldScoreBoost, MinimumNameFieldScoreBoost);
 
-        _catalogService = catalogueService;
         _nameFieldScoreBoost = nameFieldScoreBoost;
-
-        _productsBySku = _catalogService.All.ToDictionary(product => product.Sku, StringComparer.OrdinalIgnoreCase);
     }
 
-    private async Task InitializeProduct()
+    /// <summary>The index for one scoped page, built and discarded with the call.</summary>
+    /// <remarks>
+    /// <b>The index is scoped, not global.</b> It is built from the rows the caller already narrowed to, so a
+    /// ranking never holds the catalogue: the memory a search costs is the size of its scope, and nothing that
+    /// holds the catalogue survives the call.
+    /// </remarks>
+    private async Task<IFullTextIndex<string>> BuildIndexAsync(IReadOnlyList<ProductDto> scopedProducts)
     {
-        if (_nameSearchIndex == null)
-        {
-            _nameSearchIndex = new FullTextIndexBuilder<string>()
-                .WithObjectTokenization<ProductView>(product => product
-                    .WithKey(entry => entry.Sku)
-                    .WithField(NameField, entry => entry.Name, scoreBoost: _nameFieldScoreBoost)
-                    .WithField(DescriptionField, entry => entry.Description))
-                .Build();
+        var index = new FullTextIndexBuilder<string>()
+            .WithObjectTokenization<ProductDto>(product => product
+                .WithKey(entry => entry.Sku)
+                .WithField(NameField, entry => entry.Name, scoreBoost: _nameFieldScoreBoost)
+                .WithField(DescriptionField, entry => entry.Description))
+            .Build();
 
-            await _nameSearchIndex.AddRangeAsync(_catalogService.All);
-        }
+        await index.AddRangeAsync(scopedProducts);
+        return index;
     }
 
-    public async Task<IReadOnlyList<ProductView>> FindBestMatchesForTypedSearchWordsAsync(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    public async Task<IReadOnlyList<ProductDto>> FindBestMatchesForTypedSearchWordsAsync(
+        IReadOnlyList<ProductDto> productsMatchingTheFilters,
         string typedSearchText)
     {
         ArgumentNullException.ThrowIfNull(productsMatchingTheFilters);
@@ -134,20 +127,19 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
             return productsMatchingTheFilters;
         }
 
-        await InitializeProduct();
-
-        var skusMatchingTheFilters = productsMatchingTheFilters
-            .Select(product => product.Sku)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var index = await BuildIndexAsync(productsMatchingTheFilters);
+        var bySku = productsMatchingTheFilters.ToDictionary(product => product.Sku, StringComparer.OrdinalIgnoreCase);
 
         var words = SearchWordsIn(typedSearchText);
 
         var wholeWords = ProductsMatching(
-            SearchQueryForTypedWords(words, lastWordIsPrefix: false),
-            skusMatchingTheFilters);
+            index,
+            bySku,
+            SearchQueryForTypedWords(index, words, lastWordIsPrefix: false));
         var wordStarts = ProductsMatching(
-            SearchQueryForTypedWords(words, lastWordIsPrefix: true),
-            skusMatchingTheFilters);
+            index,
+            bySku,
+            SearchQueryForTypedWords(index, words, lastWordIsPrefix: true));
 
         var alreadyAnswered = wholeWords
             .Select(product => product.Sku)
@@ -169,8 +161,8 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// between terms, which is how a primary term's matches come to be answered before a synonym's.
     /// </para>
     /// </remarks>
-    public async Task<IReadOnlyList<ProductView>> FindBestMatchesForExpandedSearchTermsAsync(
-        IReadOnlyList<ProductView> productsMatchingTheFilters,
+    public async Task<IReadOnlyList<ProductDto>> FindBestMatchesForExpandedSearchTermsAsync(
+        IReadOnlyList<ProductDto> productsMatchingTheFilters,
         IReadOnlyList<string> expandedSearchTerms)
     {
         ArgumentNullException.ThrowIfNull(productsMatchingTheFilters);
@@ -181,20 +173,18 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
             return productsMatchingTheFilters;
         }
 
-        await InitializeProduct();
+        var index = await BuildIndexAsync(productsMatchingTheFilters);
+        var bySku = productsMatchingTheFilters.ToDictionary(product => product.Sku, StringComparer.OrdinalIgnoreCase);
 
-        var skusMatchingTheFilters = productsMatchingTheFilters
-            .Select(product => product.Sku)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var matchedProducts = new List<ProductView>();
+        var matchedProducts = new List<ProductDto>();
         var alreadyAnswered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var expandedSearchTerm in expandedSearchTerms)
         {
             var productsMatchingThisTerm = ProductsMatching(
-                SearchQueryForExpandedTerm(expandedSearchTerm),
-                skusMatchingTheFilters);
+                index,
+                bySku,
+                SearchQueryForExpandedTerm(index, expandedSearchTerm));
 
             foreach (var product in productsMatchingThisTerm.Where(product => alreadyAnswered.Add(product.Sku)))
             {
@@ -211,18 +201,16 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// would be depending on something nobody promised, and equal scores would come back differently between
     /// runs.
     /// </remarks>
-    private IReadOnlyList<ProductView> ProductsMatching(
-        IQuery query,
-        IReadOnlySet<string> skusMatchingTheFilters)
+    private static IReadOnlyList<ProductDto> ProductsMatching(
+        IFullTextIndex<string> index,
+        IReadOnlyDictionary<string, ProductDto> bySku,
+        IQuery query)
         =>
         [
-            .. _nameSearchIndex == null
-                ? []
-                : _nameSearchIndex.Search(query)
-                .Where(match => skusMatchingTheFilters.Contains(match.Key))
+            .. index.Search(query)
                 .OrderByDescending(match => match.Score)
                 .ThenBy(match => match.Key, StringComparer.Ordinal)
-                .Select(match => _productsBySku[match.Key]),
+                .Select(match => bySku[match.Key]),
         ];
 
     /// <summary>
@@ -235,8 +223,8 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// customer types is part of a name far more often than it is a characteristic, so the whole reading is wrapped
     /// in one field restriction, and the terms an expansion produces are the reading that is not.
     /// </remarks>
-    private IQuery SearchQueryForTypedWords(IReadOnlyList<string> words, bool lastWordIsPrefix)
-        => _nameSearchIndex!.Query()
+    private static IQuery SearchQueryForTypedWords(IFullTextIndex<string> index, IReadOnlyList<string> words, bool lastWordIsPrefix)
+        => index.Query()
             .InField(
                 NameField,
                 nameOnlyQuery => AddSearchWordsTo(nameOnlyQuery, words, position: 0, lastWordIsPrefix))
@@ -248,9 +236,9 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// chosen because a sentence implied them — <i>lumbar support</i>, <i>4K</i> — and a catalogue states those in
     /// prose. The term is asked as a phrase still: every word of it must appear in one product's text.
     /// </remarks>
-    private IQuery SearchQueryForExpandedTerm(string expandedSearchTerm)
+    private static IQuery SearchQueryForExpandedTerm(IFullTextIndex<string> index, string expandedSearchTerm)
         => AddSearchWordsTo(
-            _nameSearchIndex?.Query()!,
+            index.Query(),
             SearchWordsIn(expandedSearchTerm),
             position: 0,
             lastWordIsPrefix: false).Build();

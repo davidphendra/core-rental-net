@@ -5,12 +5,12 @@ using Xunit;
 
 namespace CoreRentalNet.Modules.Catalog.UnitTests;
 
-public sealed class ProductCatalogServiceTests
+public sealed class JsonCatalogSourceTests
 {
-    private static ProductCatalogService Repository(out TemporaryCatalogFile file)
+    private static JsonCatalogSource Repository(out TemporaryCatalogFile file)
     {
         file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
-        return new ProductCatalogService(file.Path, null);
+        return new JsonCatalogSource(file.Path, null);
     }
 
     [Fact]

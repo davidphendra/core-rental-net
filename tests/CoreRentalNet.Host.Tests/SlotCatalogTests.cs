@@ -23,8 +23,8 @@ public sealed class SlotCatalogTests
         {
             var query = SlotCatalog.QueryFor(slot);
 
-            CatalogSlotMapping.SlotFor(query.Category!.Value, query.SubCategory)
-                .Should().Be(slot, $"{slot} asks for {query.Category}/{query.SubCategory}");
+            CatalogSlotMapping.SlotFor(query.Scope.Category, query.Scope.SubCategory)
+                .Should().Be(slot, $"{slot} asks for {query.Scope.Category}/{query.Scope.SubCategory}");
         }
     }
 
@@ -33,25 +33,25 @@ public sealed class SlotCatalogTests
     {
         var lamp = SlotCatalog.QueryFor(SlotId.Lamp);
 
-        lamp.Category.Should().Be(CatalogCategory.Accessory);
-        lamp.SubCategory.Should().Be(CatalogSubCategory.Lamp);
+        lamp.Scope.Category.Should().Be(CatalogCategory.Accessory);
+        lamp.Scope.SubCategory.Should().Be(CatalogSubCategory.Lamp);
 
         // And the desk, having no subcategory, asks for its category alone.
         var desk = SlotCatalog.QueryFor(SlotId.Desk);
 
-        desk.Category.Should().Be(CatalogCategory.Desk);
-        desk.SubCategory.Should().BeNull();
+        desk.Scope.Category.Should().Be(CatalogCategory.Desk);
+        desk.Scope.SubCategory.Should().BeNull();
     }
 
     [Fact] // SLOT-13
     public void What_a_slot_asks_for_is_what_it_gets()
     {
-        var lamps = new ProductView("LMP0001", "Pererenan Clip Light", CatalogCategory.Accessory,
+        var lamps = new ProductDto("LMP0001", "Pererenan Clip Light", CatalogCategory.Accessory,
             CatalogSubCategory.Lamp, new Money(150000m, Currencies.Idr), "A clip light.",
-            new CatalogMetadata([], new Dictionary<string, string>(), [], []), "/images/vendored/one.png", true, false);
-        var desks = new ProductView("DSK0001", "Canggu Bamboo", CatalogCategory.Desk,
+            "/images/lamp.svg", true, false);
+        var desks = new ProductDto("DSK0001", "Canggu Bamboo", CatalogCategory.Desk,
             null, new Money(900000m, Currencies.Idr), "A desk.",
-            new CatalogMetadata([], new Dictionary<string, string>(), [], []), "/images/vendored/two.png", true, false);
+            "/images/desk.svg", true, false);
         var catalog = new[] { lamps, desks };
 
         SlotCatalog.ForSlot(catalog, SlotId.Lamp).Should().BeEquivalentTo([lamps]);

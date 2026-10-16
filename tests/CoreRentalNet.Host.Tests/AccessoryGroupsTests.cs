@@ -62,20 +62,19 @@ public sealed class AccessoryGroupsTests
         }
     }
 
-    private static ProductView Lamp => Product("LMP0001", "Pererenan Clip Light", CatalogSubCategory.Lamp);
-    private static ProductView Plant => Product("PLT0001", "Monstera Plant", CatalogSubCategory.Plant);
-    private static ProductView Monitor => Product("MON0001", "Nusa Dua Touch", CatalogSubCategory.Monitor);
-    private static ProductView Coffee => Product("COF0001", "Berawa Espresso Duo", CatalogSubCategory.Coffee);
-    private static ProductView Beanbag => Product("BEA0001", "Seminyak Floor Seat", CatalogSubCategory.Beanbag);
-    private static ProductView Desk => Product("DSK0001", "Canggu Bamboo", null, CatalogCategory.Desk);
-    private static ProductView Chair => Product("CHA0001", "Seminyak Lounge", null, CatalogCategory.Chair);
+    private static ProductDto Lamp => Product("LMP0001", "Pererenan Clip Light", CatalogSubCategory.Lamp);
+    private static ProductDto Plant => Product("PLT0001", "Monstera Plant", CatalogSubCategory.Plant);
+    private static ProductDto Monitor => Product("MON0001", "Nusa Dua Touch", CatalogSubCategory.Monitor);
+    private static ProductDto Coffee => Product("COF0001", "Berawa Espresso Duo", CatalogSubCategory.Coffee);
+    private static ProductDto Beanbag => Product("BEA0001", "Seminyak Floor Seat", CatalogSubCategory.Beanbag);
+    private static ProductDto Desk => Product("DSK0001", "Canggu Bamboo", null, CatalogCategory.Desk);
+    private static ProductDto Chair => Product("CHA0001", "Seminyak Lounge", null, CatalogCategory.Chair);
 
-    private static ProductView Product(
+    private static ProductDto Product(
         string sku,
         string name,
         CatalogSubCategory? subCategory,
         CatalogCategory category = CatalogCategory.Accessory)
         => new(sku, name, category, subCategory, new Money(100000m, Currencies.Idr), "A description.",
-            new CatalogMetadata([], new Dictionary<string, string>(), [], []),
             "/images/vendored/product.png", true, false);
 }

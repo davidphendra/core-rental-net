@@ -36,7 +36,7 @@ public static class AccessoryGroups
     /// caller can render groups unconditionally and never has to ask whether it should be grouping:
     /// a heading appears when there is a label, and only accessories have one.
     /// </remarks>
-    public static IReadOnlyList<CatalogGroup> Of(IReadOnlyList<ProductView> products)
+    public static IReadOnlyList<CatalogGroup> Of(IReadOnlyList<ProductDto> products)
     {
         ArgumentNullException.ThrowIfNull(products);
 
