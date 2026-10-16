@@ -11,6 +11,7 @@ using CoreRentalNet.CatalogIngestion.Seeding;
 using CoreRentalNet.CatalogIngestion.Storage;
 using CoreRentalNet.Modules.Catalog.Infrastructure.Contracts;
 using Microsoft.Extensions.Configuration;
+using Spectre.Console;
 
 // The catalogue ingestion: the one deliberate step that builds the vectors the suggester reads, and the
 // seed mode that lifts vectors already built into the Discovery module's migration.
@@ -40,9 +41,11 @@ var reporter = new SpectreProgressReporter();
 
 if (seed)
 {
+    AnsiConsole.MarkupLine("[bold]Seed[/]");
+
     try
     {
-        return Seed();
+        return await reporter.RunAsync(() => Task.FromResult(Seed()));
     }
     catch (Exception exception)
     {
@@ -64,9 +67,13 @@ catch (ArgumentException exception)
     return 2;
 }
 
+AnsiConsole.MarkupLine(
+    $"[bold]Ingest[/] · catalogue {Markup.Escape(settings.CataloguePath)} · "
+    + $"model {Markup.Escape(settings.EmbeddingModel)} · database {Markup.Escape(settings.DatabasePath)}");
+
 try
 {
-    return await Run();
+    return await reporter.RunAsync(() => Run());
 }
 catch (Exception exception)
 {
@@ -94,7 +101,7 @@ int Seed()
 
     SeedMigrationWriter.Write(file.Path, seed, reporter);
 
-    Console.WriteLine($"Wrote {seed.Vectors.Count} vectors from {source} into {file.Path}.");
+    reporter.Complete($"Wrote {seed.Vectors.Count} vectors from {source} into {file.Path}.");
     return 0;
 }
 
@@ -103,7 +110,9 @@ int Seed()
 async Task<int> Run()
 {
     // The same loader the application reads the file with, so what is embedded is what a caller would read.
+    reporter.Report(new ProgressUpdate("Reading catalogue", 0, 1, settings.CataloguePath));
     var catalogue = CatalogueFile.Read(settings.CataloguePath);
+    reporter.Report(new ProgressUpdate("Reading catalogue", 1, 1, $"{catalogue.Count} products"));
 
     var embeddings = OpenAiCompatibleEmbeddingService.Build(
         new Uri(settings.EmbeddingEndpoint),
@@ -123,7 +132,7 @@ async Task<int> Run()
         )
         .RunAsync(CancellationToken.None);
 
-    Console.WriteLine($"Wrote {written} vectors from {settings.CataloguePath} into {settings.DatabasePath}.");
+    reporter.Complete($"Wrote {written} vectors from {settings.CataloguePath} into {settings.DatabasePath}.");
     return 0;
 }
 
