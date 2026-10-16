@@ -57,8 +57,9 @@ internal static class DiscoveryRegistrationExtentions
 
         var store = AddEmbeddingStore(builder);
 
-        builder.Services.AddSingleton<ICatalogIndexFreshnessService>(
-            new CatalogIndexFreshnessService(store.DatabasePath));
+        // Scoped, because the recipe is read through the store's context, which is scoped. The start-up check
+        // resolves it from a scope of its own.
+        builder.Services.AddScoped<ICatalogIndexFreshnessService, CatalogIndexFreshnessService>();
 
         AddSimilaritySearch(builder, store.DatabasePath);
 

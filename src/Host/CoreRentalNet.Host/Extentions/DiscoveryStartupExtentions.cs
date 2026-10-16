@@ -30,7 +30,10 @@ internal static class DiscoveryStartupExtentions
 
         try
         {
-            var catalogIndexFreshnessService = app.Services.GetRequiredService<ICatalogIndexFreshnessService>();
+            // The freshness check reads the store through its context, which is scoped, so it is resolved from
+            // a scope of its own rather than from the root provider.
+            using var scope = app.Services.CreateScope();
+            var catalogIndexFreshnessService = scope.ServiceProvider.GetRequiredService<ICatalogIndexFreshnessService>();
             var verdict = catalogIndexFreshnessService.Check(
                 CatalogHash.OfFile(CatalogPathHelper.Resolve(app.Configuration)),
                 settings.Model,

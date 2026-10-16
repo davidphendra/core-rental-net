@@ -1,7 +1,10 @@
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 using CoreRentalNet.Modules.Discovery.Application.Indexing;
+using CoreRentalNet.Modules.Discovery.Infrastructure;
 using CoreRentalNet.Modules.Discovery.Infrastructure.Indexing;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace CoreRentalNet.IntegrationTests;
@@ -24,7 +27,21 @@ public sealed class CatalogIndexFreshnessServiceTests
     private const string Model = "all-MiniLM-L6-v2-embedding";
 
     private static CatalogIndexVerdict Check(string path, string hash = Hash, string model = Model, int width = Width)
-        => new CatalogIndexFreshnessService(path).Check(hash, model, width, ProductVectorContract.Composition);
+    {
+        using var context = Context(path);
+
+        return new CatalogIndexFreshnessService(context)
+            .Check(hash, model, width, ProductVectorContract.Composition);
+    }
+
+    /// <summary>A context over one vector file, built the way the application builds it.</summary>
+    private static EmbeddingContext Context(string path)
+    {
+        var options = new DbContextOptionsBuilder<EmbeddingContext>();
+        EmbeddingPersistence.Configure(options, SqliteDatabaseSettings.Local(path));
+
+        return new EmbeddingContext(options.Options);
+    }
 
     /// <summary>A file with a recipe in it, as the tool would leave it.</summary>
     private static IngestedVectorFile Built(int width = Width, string model = Model, string? composition = null, string hash = Hash)
