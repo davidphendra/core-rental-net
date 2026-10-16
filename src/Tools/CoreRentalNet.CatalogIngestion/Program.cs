@@ -6,6 +6,7 @@ using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 using CoreRentalNet.CatalogIngestion;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Embeddings;
+using CoreRentalNet.CatalogIngestion.Reporting;
 using CoreRentalNet.CatalogIngestion.Seeding;
 using CoreRentalNet.CatalogIngestion.Storage;
 using CoreRentalNet.Modules.Catalog.Infrastructure.Contracts;
@@ -34,6 +35,8 @@ if (unknown is not null)
         + Usage.Text);
     return 2;
 }
+
+var reporter = new SpectreProgressReporter();
 
 if (seed)
 {
@@ -114,6 +117,7 @@ async Task<int> Run()
             catalogue,
             semanticProductChunker,
             store,
+            reporter,
             Recipe(),
             TimeProvider.System
         )

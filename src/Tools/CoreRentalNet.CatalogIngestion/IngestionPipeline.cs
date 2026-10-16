@@ -1,5 +1,6 @@
 using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.CatalogIngestion.Chunking;
+using CoreRentalNet.CatalogIngestion.Reporting;
 using CoreRentalNet.CatalogIngestion.Storage;
 using CoreRentalNet.Modules.Catalog.Domain;
 
@@ -27,6 +28,7 @@ internal sealed class IngestionPipeline(
     IReadOnlyList<Product> catalogue,
     IProductChunker chunker,
     IProductEmbeddingStore store,
+    IProgressReporter reporter,
     EmbeddingRecipe recipe,
     TimeProvider clock)
 {
@@ -45,8 +47,15 @@ internal sealed class IngestionPipeline(
 
         var rows = new List<ProductEmbeddingRow>();
 
-        foreach (var product in products)
+        reporter.Report(new ProgressUpdate(
+            "Chunking and embedding", 0, products.Count, $"{products.Count} products"));
+
+        for (var index = 0; index < products.Count; index++)
         {
+            var product = products[index];
+            reporter.Report(new ProgressUpdate(
+                "Chunking and embedding", index, products.Count, $"{product.Sku} · {product.Name}"));
+
             var vectors = await chunker
                 .ChunkAsync(EmbeddedText.Of(product), cancellationToken)
                 .ConfigureAwait(false);
@@ -60,7 +69,12 @@ internal sealed class IngestionPipeline(
                 vector)));
         }
 
+        reporter.Report(new ProgressUpdate(
+            "Chunking and embedding", products.Count, products.Count, $"{rows.Count} vectors"));
+
+        reporter.Report(new ProgressUpdate("Writing vectors", 0, rows.Count));
         store.ReplaceAll(rows, recipe, clock.GetUtcNow());
+        reporter.Report(new ProgressUpdate("Writing vectors", rows.Count, rows.Count, $"{rows.Count} rows"));
 
         return rows.Count;
     }

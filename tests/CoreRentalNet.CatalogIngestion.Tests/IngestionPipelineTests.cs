@@ -28,11 +28,13 @@ public sealed class IngestionPipelineTests
     private static IngestionPipeline Pipeline(
         string cataloguePath,
         string databasePath,
-        IProductChunker chunker)
+        IProductChunker chunker,
+        RecordingProgressReporter? reporter = null)
         => new(
             CatalogueFile.Read(cataloguePath),
             chunker,
             new SqliteProductEmbeddingStore(databasePath),
+            reporter ?? new RecordingProgressReporter(),
             Recipe(cataloguePath),
             TimeProvider.System);
 
@@ -128,6 +130,24 @@ public sealed class IngestionPipelineTests
         recipe.Width.Should().Be(Width);
         recipe.Composition.Should().Be(ProductVectorContract.Composition);
         recipe.CatalogueHash.Should().Be(CatalogHash.OfFile(catalogue.Path));
+    }
+
+    [Fact]
+    public async Task The_run_reports_every_step_through_to_completion()
+    {
+        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var database = new TemporaryDatabase();
+        var reporter = new RecordingProgressReporter();
+
+        await Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width, chunksPerProduct: 2), reporter)
+            .RunAsync(CancellationToken.None);
+
+        reporter.Steps().Should().ContainInOrder("Chunking and embedding", "Writing vectors");
+
+        foreach (var step in reporter.Steps())
+        {
+            reporter.Last(step).Completed.Should().Be(reporter.Last(step).Total, $"step '{step}' must finish");
+        }
     }
 
     [Fact]
