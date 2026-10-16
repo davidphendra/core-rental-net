@@ -90,9 +90,9 @@ int Seed()
         baseDirectory);
 
     var file = SeedMigrationFile.In(migrations);
-    var seed = SqliteEmbeddingSeedReader.Read(source);
+    var seed = SqliteEmbeddingSeedReader.Read(source, reporter);
 
-    SeedMigrationWriter.Write(file.Path, seed);
+    SeedMigrationWriter.Write(file.Path, seed, reporter);
 
     Console.WriteLine($"Wrote {seed.Vectors.Count} vectors from {source} into {file.Path}.");
     return 0;

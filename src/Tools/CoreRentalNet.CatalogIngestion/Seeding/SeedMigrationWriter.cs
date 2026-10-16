@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using CoreRentalNet.CatalogIngestion.Reporting;
 
 namespace CoreRentalNet.CatalogIngestion.Seeding;
 
@@ -29,15 +30,16 @@ internal static class SeedMigrationWriter
     private const string RecipeTable = "Discovery_ProductVectorRecipe";
 
     /// <summary>Overwrites the shell with the recipe and every stored passage.</summary>
-    public static void Write(string migrationPath, EmbeddingSeed seed)
+    public static void Write(string migrationPath, EmbeddingSeed seed, IProgressReporter reporter)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(migrationPath);
         ArgumentNullException.ThrowIfNull(seed);
+        ArgumentNullException.ThrowIfNull(reporter);
 
-        File.WriteAllText(migrationPath, Render(seed));
+        File.WriteAllText(migrationPath, Render(seed, migrationPath, reporter));
     }
 
-    private static string Render(EmbeddingSeed seed)
+    private static string Render(EmbeddingSeed seed, string migrationPath, IProgressReporter reporter)
     {
         var builder = new StringBuilder();
 
@@ -51,7 +53,7 @@ internal static class SeedMigrationWriter
         builder.AppendLine("    public partial class SeedProductEmbeddings : Migration");
         builder.AppendLine("    {");
 
-        Up(builder, seed);
+        Up(builder, seed, migrationPath, reporter);
         Down(builder);
 
         builder.AppendLine("    }");
@@ -60,7 +62,7 @@ internal static class SeedMigrationWriter
         return builder.ToString();
     }
 
-    private static void Up(StringBuilder builder, EmbeddingSeed seed)
+    private static void Up(StringBuilder builder, EmbeddingSeed seed, string migrationPath, IProgressReporter reporter)
     {
         builder.AppendLine("        /// <inheritdoc />");
         builder.AppendLine("        protected override void Up(MigrationBuilder migrationBuilder)");
@@ -68,9 +70,14 @@ internal static class SeedMigrationWriter
 
         Recipe(builder, seed.Recipe);
 
+        var batches = (seed.Vectors.Count + VectorsPerStatement - 1) / VectorsPerStatement;
+        reporter.Report(new ProgressUpdate("Writing migration", 0, batches, migrationPath));
+
         for (var start = 0; start < seed.Vectors.Count; start += VectorsPerStatement)
         {
             Statement(builder, seed.Vectors.Skip(start).Take(VectorsPerStatement).ToArray());
+            reporter.Report(new ProgressUpdate(
+                "Writing migration", (start / VectorsPerStatement) + 1, batches, migrationPath));
         }
 
         builder.AppendLine("        }");

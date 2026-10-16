@@ -1,5 +1,6 @@
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
+using CoreRentalNet.CatalogIngestion.Reporting;
 using Microsoft.Data.Sqlite;
 
 namespace CoreRentalNet.CatalogIngestion.Seeding;
@@ -27,16 +28,19 @@ internal static class SqliteEmbeddingSeedReader
     private const string LegacyRecipeTable = "product_embedding_recipe";
 
     /// <summary>The recipe and every stored passage, in the order they were written.</summary>
-    public static EmbeddingSeed Read(string databasePath)
+    public static EmbeddingSeed Read(string databasePath, IProgressReporter reporter)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databasePath);
+        ArgumentNullException.ThrowIfNull(reporter);
 
         using var connection = SqliteDatabase.OpenWithVectors(SqliteDatabaseSettings.Local(databasePath));
 
         var vectorTable = Resolve(connection, ProductVectorContract.VectorTable, LegacyVectorTable);
         var recipeTable = Resolve(connection, ProductVectorContract.RecipeTable, LegacyRecipeTable);
 
-        return new EmbeddingSeed(ReadRecipe(connection, recipeTable), ReadVectors(connection, vectorTable));
+        return new EmbeddingSeed(
+            ReadRecipe(connection, recipeTable),
+            ReadVectors(connection, vectorTable, reporter));
     }
 
     /// <summary>Whichever of the two names the file actually holds.</summary>
@@ -81,8 +85,13 @@ internal static class SqliteEmbeddingSeedReader
     }
 
     /// <summary>Every stored passage, in the order the tool wrote it.</summary>
-    private static IReadOnlyList<SeedVector> ReadVectors(SqliteConnection connection, string table)
+    private static IReadOnlyList<SeedVector> ReadVectors(
+        SqliteConnection connection,
+        string table,
+        IProgressReporter reporter)
     {
+        var total = Count(connection, table);
+
         using var command = connection.CreateCommand();
         command.CommandText = $"SELECT skuNo, embedding, id, name, description, created_at FROM {table} ORDER BY rowid;";
 
@@ -99,6 +108,8 @@ internal static class SqliteEmbeddingSeedReader
                 reader.GetString(3),
                 reader.GetString(4),
                 reader.GetString(5)));
+
+            reporter.Report(new ProgressUpdate("Reading vectors", vectors.Count, total, reader.GetString(0)));
         }
 
         // An empty file would write a seed that fills nothing, which is a smaller store than the catalogue
@@ -106,5 +117,14 @@ internal static class SqliteEmbeddingSeedReader
         return vectors.Count > 0
             ? vectors
             : throw new InvalidOperationException($"'{table}' holds no vectors, so there is nothing to seed.");
+    }
+
+    /// <summary>How many passages the file holds, so the read can report a fraction rather than a count.</summary>
+    private static long Count(SqliteConnection connection, string table)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM {table};";
+
+        return Convert.ToInt64(command.ExecuteScalar());
     }
 }

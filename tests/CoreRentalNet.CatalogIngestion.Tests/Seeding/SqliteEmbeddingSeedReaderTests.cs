@@ -11,8 +11,9 @@ public sealed class SqliteEmbeddingSeedReaderTests
     public void It_reads_the_recipe_and_the_vectors_of_a_file_written_before_the_move()
     {
         using var database = new LegacyVectorFile();
+        var reporter = new RecordingProgressReporter();
 
-        var seed = SqliteEmbeddingSeedReader.Read(database.Path);
+        var seed = SqliteEmbeddingSeedReader.Read(database.Path, reporter);
 
         seed.Recipe.ModelId.Should().Be("text-embedding-3-small");
         seed.Recipe.Width.Should().Be(384);
@@ -23,5 +24,8 @@ public sealed class SqliteEmbeddingSeedReaderTests
         seed.Vectors[0].EmbeddingHex.Should().Be(
             Convert.ToHexString(LegacyVectorFile.Embedding),
             "the stored bytes are carried rather than decoded and re-encoded");
+
+        reporter.Last("Reading vectors").Completed.Should().Be(1);
+        reporter.Last("Reading vectors").Total.Should().Be(1);
     }
 }
