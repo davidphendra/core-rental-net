@@ -36,3 +36,5 @@ appsettings.*.local.json
 *.db-wal
 design-time.db
 src/Tools/CoreRentalNet.CatalogIngestion/App_Data/
+# The catalogue store is produced by the migrations at start-up, not committed.
+src/Host/CoreRentalNet.Host/App_Data/catalog.db
