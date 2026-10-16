@@ -19,7 +19,7 @@ internal static class StoredRecipes
 
         using var command = connection.CreateCommand();
         command.CommandText =
-            "SELECT modelId, width, composition, catalogueHash, created_at FROM product_embedding_recipe;";
+            "SELECT modelId, width, composition, catalogueHash, created_at FROM Discovery_ProductVectorRecipe;";
 
         using var reader = command.ExecuteReader();
 

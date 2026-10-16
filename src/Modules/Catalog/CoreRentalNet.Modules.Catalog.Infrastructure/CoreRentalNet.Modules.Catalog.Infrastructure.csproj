@@ -25,6 +25,9 @@
          enforces are tested from records alone, which needs the test project to see both. -->
     <InternalsVisibleTo Include="CoreRentalNet.Modules.Catalog.UnitTests" />
     <InternalsVisibleTo Include="CoreRentalNet.IntegrationTests" />
+    <!-- The ingestion tool embeds the same file the loader parses, so it reads it through the one
+         implementation of the file's shape rather than a second definition that could drift. -->
+    <InternalsVisibleTo Include="CoreRentalNet.CatalogIngestion" />
   </ItemGroup>
 
   <ItemGroup>

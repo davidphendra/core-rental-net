@@ -29,6 +29,10 @@
     <!-- The catalogue loader, so the tool reads products.json exactly as the application does. The
          Catalogue module is unchanged by this tool and owns that parsing. -->
     <ProjectReference Include="../../Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/CoreRentalNet.Modules.Catalog.Infrastructure.csproj" />
+    <!-- The Discovery module's store now owns the vector file's schema and its migration bookkeeping, which
+         this tool writes beside. It is referenced for the one constant that names that bookkeeping rather
+         than repeating the name here. -->
+    <ProjectReference Include="../../Modules/Discovery/CoreRentalNet.Modules.Discovery.Infrastructure/CoreRentalNet.Modules.Discovery.Infrastructure.csproj" />
     <!-- The SQLite plumbing, so the tool's database file is opened with the same journal mode and busy
          timeout the application uses, plus the shared vector contract, blob codec and embedding client
          that the application reads these same vectors with. -->

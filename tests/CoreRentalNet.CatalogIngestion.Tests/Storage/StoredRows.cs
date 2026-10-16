@@ -29,7 +29,7 @@ internal static class StoredRows
 
         using var command = connection.CreateCommand();
         command.CommandText =
-            "SELECT id, skuNo, name, description, embedding, created_at FROM product_embedding;";
+            "SELECT id, skuNo, name, description, embedding, created_at FROM Discovery_ProductVector;";
 
         var rows = new List<StoredRow>();
 
@@ -61,7 +61,7 @@ internal static class StoredRows
 
         using var command = connection.CreateCommand();
         command.CommandText =
-            "SELECT skuNo FROM product_embedding WHERE embedding MATCH vec_f32($query) AND k = 10 ORDER BY distance ASC;";
+            "SELECT skuNo FROM Discovery_ProductVector WHERE embedding MATCH vec_f32($query) AND k = 10 ORDER BY distance ASC;";
         command.Parameters.Add("$query", SqliteType.Blob).Value = VectorBlob.ToBytes(queryVector);
 
         var skus = new List<string>();

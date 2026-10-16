@@ -1,4 +1,5 @@
 using CoreRentalNet.Modules.Catalog.Infrastructure;
+using CoreRentalNet.Modules.Discovery.Infrastructure;
 using CoreRentalNet.Modules.Rentals.Infrastructure;
 using CoreRentalNet.Modules.Workspace.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ internal static class DatabaseStartupExtentions
         using var scope = app.Services.CreateScope();
 
         await scope.ServiceProvider.GetRequiredService<CatalogContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<EmbeddingContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<WorkspaceContext>().Database.MigrateAsync();
         await scope.ServiceProvider.GetRequiredService<RentalsContext>().Database.MigrateAsync();
     }

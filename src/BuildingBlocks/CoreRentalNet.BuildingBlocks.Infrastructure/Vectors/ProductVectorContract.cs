@@ -25,10 +25,10 @@ namespace CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 public static class ProductVectorContract
 {
     /// <summary>The table of product vectors: one row per chunk of a product's text.</summary>
-    public const string VectorTable = "product_embedding";
+    public const string VectorTable = "Discovery_ProductVector";
 
     /// <summary>The one-row table that records what the vectors were built from.</summary>
-    public const string RecipeTable = "product_embedding_recipe";
+    public const string RecipeTable = "Discovery_ProductVectorRecipe";
 
     /// <summary>Which fields a product's embedded text is made of, and the version of that rendering.</summary>
     public const string Composition = "name+description+metadata/1";

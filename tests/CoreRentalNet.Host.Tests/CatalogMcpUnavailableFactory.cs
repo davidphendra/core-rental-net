@@ -12,7 +12,7 @@ public sealed class CatalogMcpUnavailableFactory : CatalogMcpFactory
 {
     /// <summary>The operator's reason, which must never appear in a tool answer.</summary>
     public const string Reason =
-        "The vector file '/tmp/secret/product_embedding.db' does not exist, so the catalogue cannot be searched.";
+        "The vector file '/tmp/secret/discovery.db' does not exist, so the catalogue cannot be searched.";
 
     protected override IProductSimilarityService Similarity(IProductCatalogService catalogue)
         => new UnavailableProductSimilarityService(Reason);

@@ -6,16 +6,17 @@ using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
 using CoreRentalNet.CatalogIngestion;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Embeddings;
+using CoreRentalNet.CatalogIngestion.Seeding;
 using CoreRentalNet.CatalogIngestion.Storage;
-using CoreRentalNet.Modules.Catalog.Infrastructure;
 using CoreRentalNet.Modules.Catalog.Infrastructure.Contracts;
 using Microsoft.Extensions.Configuration;
 
-// The catalogue ingestion: the one deliberate step that builds the vector table the suggester reads.
+// The catalogue ingestion: the one deliberate step that builds the vectors the suggester reads, and the
+// seed mode that lifts vectors already built into the Discovery module's migration.
 //
 // It is a console host rather than a service, because it is an operator's action and not something that
 // happens while customers are being served. It is configured by appsettings.json beside it rather than by a
-// command line, so the only argument it understands is --help.
+// command line, so the only arguments it understands are --help and --seed.
 
 if (args.Contains("--help", StringComparer.Ordinal))
 {
@@ -23,12 +24,28 @@ if (args.Contains("--help", StringComparer.Ordinal))
     return 0;
 }
 
-if (args.Length > 0)
+var seed = args.Contains("--seed", StringComparer.Ordinal);
+var unknown = args.FirstOrDefault(argument => argument is not "--seed");
+
+if (unknown is not null)
 {
     Console.Error.WriteLine(
-        $"'{args[0]}' is not an option. This tool is configured by appsettings.json.{Environment.NewLine}"
+        $"'{unknown}' is not an option. This tool is configured by appsettings.json.{Environment.NewLine}"
         + Usage.Text);
     return 2;
+}
+
+if (seed)
+{
+    try
+    {
+        return Seed();
+    }
+    catch (Exception exception)
+    {
+        Console.Error.WriteLine(Describe(exception));
+        return 1;
+    }
 }
 
 IngestionSettings settings;
@@ -54,14 +71,36 @@ catch (Exception exception)
     return 1;
 }
 
+// The seed mode: no server, no key, no chunker. It lifts the vectors already in the tool's file into the
+// Discovery module's migration, so the store is carried by source control rather than by a binary beside the
+// application. The endpoint and the key have no part in a file that is already built.
+int Seed()
+{
+    var configuration = Configuration();
+    var baseDirectory = ProjectDirectory.Resolve();
+
+    var source = Resolve(configuration, "Database:Path", IngestionSettings.DefaultDatabasePath, baseDirectory);
+    var migrations = Resolve(
+        configuration,
+        "Seed:MigrationsDirectory",
+        "../../Modules/Discovery/CoreRentalNet.Modules.Discovery.Infrastructure/Migrations",
+        baseDirectory);
+
+    var file = SeedMigrationFile.In(migrations);
+    var seed = SqliteEmbeddingSeedReader.Read(source);
+
+    SeedMigrationWriter.Write(file.Path, seed);
+
+    Console.WriteLine($"Wrote {seed.Vectors.Count} vectors from {source} into {file.Path}.");
+    return 0;
+}
+
 // The one place every collaborator is built and handed to the run. It reads the settings from the enclosing
 // scope rather than being given them again, because this is the only code that composes the tool.
 async Task<int> Run()
 {
-    // The same loader the application uses, so what is embedded is what a caller would read. The web root is
-    // absent on purpose: this tool never draws an image, and passing one would only let image resolution fail
-    // for a reason that does not matter here.
-    var catalogue = new ProductCatalogService(settings.CataloguePath, webRootPath: null);
+    // The same loader the application reads the file with, so what is embedded is what a caller would read.
+    var catalogue = CatalogueFile.Read(settings.CataloguePath);
 
     var embeddings = OpenAiCompatibleEmbeddingService.Build(
         new Uri(settings.EmbeddingEndpoint),
@@ -94,6 +133,16 @@ EmbeddingRecipe Recipe()
         settings.Width,
         ProductVectorContract.Composition,
         CatalogHash.OfFile(settings.CataloguePath));
+
+// A seed mode path: as stated, or the fallback, resolved against the tool's project directory so a relative
+// value means the same thing however the program was launched.
+static string Resolve(IConfiguration configuration, string key, string fallback, string baseDirectory)
+{
+    var stated = configuration[key]?.Trim();
+    var value = string.IsNullOrEmpty(stated) ? fallback : stated;
+
+    return Path.IsPathRooted(value) ? value : Path.Combine(baseDirectory, value);
+}
 
 // The message is what an operator can act on: it names the file, the key or the server. Anything that is not
 // one of the failures this tool expects is a defect, and for a defect the stack trace is what says where it

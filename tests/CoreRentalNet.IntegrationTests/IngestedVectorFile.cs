@@ -39,7 +39,7 @@ internal sealed class IngestedVectorFile : IDisposable
         Directory.CreateDirectory(_directory);
 
         Execute($"""
-            CREATE VIRTUAL TABLE product_embedding USING vec0(
+            CREATE VIRTUAL TABLE Discovery_ProductVector USING vec0(
                 skuNo         TEXT,
                 embedding     float[{Width}] distance_metric=cosine,
                 +id           TEXT,
@@ -48,7 +48,7 @@ internal sealed class IngestedVectorFile : IDisposable
                 +created_at   TEXT
             );
 
-            CREATE TABLE product_embedding_recipe (
+            CREATE TABLE Discovery_ProductVectorRecipe (
                 modelId       TEXT NOT NULL,
                 width         INTEGER NOT NULL,
                 composition   TEXT NOT NULL,
@@ -68,7 +68,7 @@ internal sealed class IngestedVectorFile : IDisposable
         using var command = connection.CreateCommand();
 
         command.CommandText =
-            "INSERT INTO product_embedding (skuNo, embedding, id, name, description, created_at) "
+            "INSERT INTO Discovery_ProductVector (skuNo, embedding, id, name, description, created_at) "
             + "VALUES ($sku, $embedding, $id, $name, $description, $createdAt);";
 
         command.Parameters.AddWithValue("$sku", sku);
@@ -90,7 +90,7 @@ internal sealed class IngestedVectorFile : IDisposable
         using var command = connection.CreateCommand();
 
         command.CommandText =
-            "INSERT INTO product_embedding_recipe (modelId, width, composition, catalogueHash, created_at) "
+            "INSERT INTO Discovery_ProductVectorRecipe (modelId, width, composition, catalogueHash, created_at) "
             + "VALUES ($modelId, $width, $composition, $catalogueHash, $createdAt);";
 
         command.Parameters.AddWithValue("$modelId", modelId);

@@ -1,7 +1,7 @@
 using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Storage;
-using CoreRentalNet.Modules.Catalog.Application.Contracts;
+using CoreRentalNet.Modules.Catalog.Domain;
 
 namespace CoreRentalNet.CatalogIngestion;
 
@@ -17,14 +17,14 @@ namespace CoreRentalNet.CatalogIngestion;
 /// table and re-running the tool is idempotent.
 /// </para>
 /// <para>
-/// <b>It depends on the catalogue's published port and on a recipe, not on a loader and a configuration.</b>
-/// Reading the file is <see cref="IProductCatalogService"/>'s business, and what this run needs beyond that is what it
+/// <b>It depends on the catalogue records and on a recipe.</b>
+/// Reading the file is <see cref="CatalogueFile"/>'s business, and what this run needs beyond that is what it
 /// checks each vector against and what it records beside the vectors — which is the recipe, and nothing else
 /// out of the settings file.
 /// </para>
 /// </remarks>
 internal sealed class IngestionPipeline(
-    IProductCatalogService catalogue,
+    IReadOnlyList<Product> catalogue,
     IProductChunker chunker,
     IProductEmbeddingStore store,
     EmbeddingRecipe recipe,
@@ -33,7 +33,7 @@ internal sealed class IngestionPipeline(
     /// <summary>Writes the catalogue's vectors, and answers how many rows were written.</summary>
     public async Task<int> RunAsync(CancellationToken cancellationToken)
     {
-        var products = catalogue.All;
+        var products = catalogue;
 
         // Defence in depth rather than a state that can be reached: the loader refuses a file holding no
         // products, so the catalogue cannot be empty today. It is kept because writing an empty table would
@@ -70,7 +70,7 @@ internal sealed class IngestionPipeline(
     /// A product with no chunks is refused rather than skipped: a table missing one product answers as though
     /// the catalogue never had it, which is a silent omission rather than a smaller result.
     /// </remarks>
-    private void RefuseUnusable(ProductDto product, IReadOnlyList<float[]> vectors)
+    private void RefuseUnusable(Product product, IReadOnlyList<float[]> vectors)
     {
         if (vectors.Count == 0)
         {

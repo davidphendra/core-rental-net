@@ -1,7 +1,7 @@
 using AwesomeAssertions;
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.CatalogIngestion.Chunking;
-using CoreRentalNet.Modules.Catalog.Application.Contracts;
+using CoreRentalNet.Modules.Catalog.Domain;
 using Xunit;
 
 namespace CoreRentalNet.CatalogIngestion.Tests.Chunking;
@@ -16,22 +16,22 @@ namespace CoreRentalNet.CatalogIngestion.Tests.Chunking;
 /// </remarks>
 public sealed class EmbeddedTextTests
 {
-    private static ProductDto Product(IReadOnlyList<string>? notFor = null)
+    private static Product Product(IReadOnlyList<string>? notFor = null)
         => new(
             Sku: "DSK0001",
             Name: "Desk DSK0001",
-            Category: CatalogCategory.Desk,
+            Category: ProductCategory.Desk,
             SubCategory: null,
             MonthlyPrice: new Money(800000m, Currencies.Idr),
             Description: "A height-adjustable desk.",
-            Metadata: new CatalogMetadata(
+            Metadata: new ProductMetadata(
                 ["desk", "standing"],
                 new Dictionary<string, string> { ["type"] = "sit-stand", ["colour"] = "oak" },
                 ["all-day use"],
                 notFor ?? ["outdoor use"]),
             ImagePath: "/images/desk.svg",
-            ImageAvailable: true,
-            IsFeatured: false);
+            IsFeatured: false,
+            ImageAvailable: true);
 
     [Fact]
     public void The_text_is_the_name_the_description_and_every_metadata_value()

@@ -5,9 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The vectors live in the ingestion tool's own SQLite file, searched with raw Microsoft.Data.Sqlite and
-         the vec0 extension. There is no EF context any more: the module keeps no table of its own. -->
+    <!-- The vectors live in this module's own SQLite file, searched with raw Microsoft.Data.Sqlite and the
+         vec0 extension. The recipe beside them is an ordinary table, so the store has an EF context: EF owns
+         the relational table, and the vec0 table is created by explicit SQL in the migration. -->
     <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <!-- The catalogue's name search: an in-memory index built from the snapshot, ranked by the package's
          Okapi BM25. The module reads the catalogue and owns the index that ranks it. -->
     <PackageReference Include="Lifti.Core" />

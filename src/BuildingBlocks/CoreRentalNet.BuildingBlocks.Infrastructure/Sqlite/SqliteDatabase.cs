@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Globalization;
 using Microsoft.Data.Sqlite;
 
@@ -44,12 +45,33 @@ public static class SqliteDatabase
 
         if (loadVectorExtension)
         {
-            // Microsoft.Data.Sqlite enables extension loading for the call itself; the name resolves against
-            // the native folders the package copied vec0 into.
-            connection.LoadExtension(VectorExtension);
+            LoadVectorExtension(connection);
         }
 
         return connection;
+    }
+
+    /// <summary>
+    /// Loads the vec0 extension on an already-open connection.
+    /// </summary>
+    /// <remarks>
+    /// <b>The name is resolved here rather than typed by each caller.</b> The tool that writes the
+    /// vectors, the adapter that searches them and the interceptor that lets a migration create the
+    /// virtual table all need the same extension loaded; keeping the spelling in one place means a
+    /// renamed binary is one edit rather than three that must agree. A connection that is not a
+    /// SQLite one is left alone, because a caller may hold the abstraction rather than the concrete
+    /// type.
+    /// </remarks>
+    public static void LoadVectorExtension(DbConnection connection)
+    {
+        ArgumentNullException.ThrowIfNull(connection);
+
+        // Microsoft.Data.Sqlite enables extension loading for the call itself; the name resolves against
+        // the native folders the package copied vec0 into.
+        if (connection is SqliteConnection sqlite)
+        {
+            sqlite.LoadExtension(VectorExtension);
+        }
     }
 
     /// <summary>Runs the settings' pragma script against an already-open connection.</summary>

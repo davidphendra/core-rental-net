@@ -6,7 +6,6 @@ using CoreRentalNet.CatalogIngestion.Chunking;
 using CoreRentalNet.CatalogIngestion.Storage;
 using CoreRentalNet.CatalogIngestion.Tests.Chunking;
 using CoreRentalNet.CatalogIngestion.Tests.Storage;
-using CoreRentalNet.Modules.Catalog.Infrastructure;
 using Xunit;
 
 namespace CoreRentalNet.CatalogIngestion.Tests;
@@ -31,7 +30,7 @@ public sealed class IngestionPipelineTests
         string databasePath,
         IProductChunker chunker)
         => new(
-            new ProductCatalogService(cataloguePath, webRootPath: null),
+            CatalogueFile.Read(cataloguePath),
             chunker,
             new SqliteProductEmbeddingStore(databasePath),
             Recipe(cataloguePath),
@@ -138,7 +137,7 @@ public sealed class IngestionPipelineTests
         // the behaviour it depends on: no products is a failure, not an empty result.
         using var catalogue = new TemporaryCatalogFile(CatalogJson.NoRows);
 
-        var act = () => new ProductCatalogService(catalogue.Path, webRootPath: null);
+        var act = () => CatalogueFile.Read(catalogue.Path);
 
         act.Should().Throw<Exception>().WithMessage("*no products*");
     }

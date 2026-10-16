@@ -9,19 +9,26 @@ namespace CoreRentalNet.CatalogIngestion;
 internal static class Usage
 {
     public const string Text = """
-        Builds the catalogue's vector index from products.json.
+        Builds the catalogue's vector index from products.json, or lifts an already-built file into the
+        Discovery module's migration.
+
+        (no arguments)  read products.json, embed every product and write the vector file
+        --seed          read the vector file and write the *_SeedProductEmbeddings.cs migration
 
         Every value has a default; a key is only needed when it differs. A value that is set but
         unusable stops the run rather than falling back. The endpoint and the key have no default,
-        because there is nothing local to fall back to.
+        because there is nothing local to fall back to; seed mode does not read them, because a file
+        that is already built has nothing left to embed.
 
-        Embedding:Endpoint       the Azure OpenAI resource endpoint           (required)
-        Embedding:ApiKey         the embedding deployment's key               (required)
+        Embedding:Endpoint       the Azure OpenAI resource endpoint           (required to embed)
+        Embedding:ApiKey         the embedding deployment's key               (required to embed)
         Embedding:Model          the deployment name the resource serves      (default text-embedding-3-small)
         Embedding:Width          how many floats each vector holds            (default 384)
         Catalog:FilePath         path to products.json                        (default ../../shared/data/products.json)
-        Database:Path            the SQLite file written                      (default App_Data/product_embedding.db)
-        
+        Database:Path            the SQLite file written, or read by --seed   (default the Host's App_Data/discovery.db)
+        Seed:MigrationsDirectory the folder holding the *_SeedProductEmbeddings.cs shell
+                                                                              (default the Discovery module's Migrations)
+
         Chunker:TokenLimit       the most tokens one chunk may hold           (default 256)
         Chunker:BufferSize       sentences kept each side of a breakpoint     (default 1)
         Chunker:ThresholdType    Percentile, StandardDeviation, InterQuartile or Gradient (default Percentile)

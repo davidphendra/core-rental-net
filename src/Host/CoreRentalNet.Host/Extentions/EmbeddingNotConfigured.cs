@@ -21,9 +21,8 @@ namespace CoreRentalNet.Host.Extentions;
 internal sealed class EmbeddingNotConfigured : IEmbeddingService
 {
     private const string Reason =
-        "No embedding deployment is configured, so no search can be embedded. Set VectorEmbedding:Endpoint, "
-        + "VectorEmbedding:ApiKey and VectorEmbedding:EmbeddingDatabase, and run CoreRentalNet.CatalogIngestion to fill the "
-        + "vector file.";
+        "No embedding deployment is configured, so no search can be embedded. Set VectorEmbedding:Endpoint "
+        + "and VectorEmbedding:ApiKey, and run CoreRentalNet.CatalogIngestion to fill the vector store.";
 
     /// <inheritdoc />
     public Task<IReadOnlyList<float[]>> EmbedAsync(

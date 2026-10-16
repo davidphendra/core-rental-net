@@ -44,7 +44,7 @@ public sealed class CatalogMcpUnavailableTests(CatalogMcpUnavailableFactory fact
         catch (McpProtocolException exception)
         {
             // A transport that refuses the call outright still must not carry the path.
-            exception.Message.Should().NotContain("product_embedding").And.NotContain("/tmp/secret");
+            exception.Message.Should().NotContain("discovery").And.NotContain("/tmp/secret");
 
             return;
         }
@@ -55,7 +55,7 @@ public sealed class CatalogMcpUnavailableTests(CatalogMcpUnavailableFactory fact
         // so what matters is what must NOT be there: the operator's reason, path and all.
         var text = string.Concat(answer.Content.OfType<TextContentBlock>().Select(block => block.Text));
 
-        text.Should().NotContain("product_embedding");
+        text.Should().NotContain("discovery");
         text.Should().NotContain("/tmp/secret");
     }
 }

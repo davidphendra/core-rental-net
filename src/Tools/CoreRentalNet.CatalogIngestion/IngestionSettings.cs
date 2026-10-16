@@ -29,8 +29,12 @@ internal sealed record IngestionSettings(
     /// <summary>products.json, relative to the tool's project directory.</summary>
     public const string DefaultCataloguePath = "../../shared/data/products.json";
 
-    /// <summary>The vector file, relative to the tool's project directory.</summary>
-    public const string DefaultDatabasePath = "App_Data/product_embedding.db";
+    /// <summary>The Discovery store the application reads, relative to the tool's project directory.</summary>
+    /// <remarks>
+    /// The vectors live in this module's own database now, so a run writes where the application reads rather
+    /// than beside the tool for someone to copy across.
+    /// </remarks>
+    public const string DefaultDatabasePath = "../../Host/CoreRentalNet.Host/App_Data/discovery.db";
 
     /// <summary>The deployment name, which is the identifier the resource serves the model under.</summary>
     public const string DefaultEmbeddingModel = "text-embedding-3-small";

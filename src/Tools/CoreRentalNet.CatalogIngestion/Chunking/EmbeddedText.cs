@@ -1,4 +1,4 @@
-using CoreRentalNet.Modules.Catalog.Application.Contracts;
+using CoreRentalNet.Modules.Catalog.Domain;
 
 namespace CoreRentalNet.CatalogIngestion.Chunking;
 
@@ -20,8 +20,8 @@ namespace CoreRentalNet.CatalogIngestion.Chunking;
 internal static class EmbeddedText
 {
     /// <summary>The text one product is chunked and embedded from.</summary>
-    /// <param name="product">The catalogue's published view of a product.</param>
-    public static string Of(ProductDto product)
+    /// <param name="product">The catalogue record the loader built.</param>
+    public static string Of(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
 

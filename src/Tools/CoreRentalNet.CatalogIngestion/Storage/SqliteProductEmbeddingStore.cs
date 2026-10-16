@@ -2,6 +2,7 @@ using System.Globalization;
 using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Vectors;
+using CoreRentalNet.Modules.Discovery.Infrastructure;
 using Microsoft.Data.Sqlite;
 
 namespace CoreRentalNet.CatalogIngestion.Storage;
@@ -32,6 +33,9 @@ namespace CoreRentalNet.CatalogIngestion.Storage;
 /// </remarks>
 internal sealed class SqliteProductEmbeddingStore : IProductEmbeddingStore
 {
+    /// <summary>The lock table EF opens while a migration runs, which it leaves in the file afterwards.</summary>
+    private const string MigrationsLockTable = "__EFMigrationsLock";
+
     private readonly SqliteDatabaseSettings _settings;
 
     /// <summary>The store for one database file, which this type creates on first write.</summary>
@@ -125,10 +129,18 @@ internal sealed class SqliteProductEmbeddingStore : IProductEmbeddingStore
     }
 
     /// <summary>Whether a table in the file belongs to this tool's vector table family or its recipe.</summary>
+    /// <remarks>
+    /// <b>The application's migration bookkeeping is accepted too.</b> The Discovery context migrates this file
+    /// now, so its recipe and its migration history live beside the vector table; refusing the bookkeeping would
+    /// refuse the application's own store. Neither table holds anything this tool owns, so accepting them costs
+    /// nothing.
+    /// </remarks>
     private static bool IsOurs(string table)
         => string.Equals(table, ProductVectorContract.VectorTable, StringComparison.Ordinal)
             || string.Equals(table, ProductVectorContract.RecipeTable, StringComparison.Ordinal)
-            || table.StartsWith(ProductVectorContract.VectorTable + "_", StringComparison.Ordinal);
+            || table.StartsWith(ProductVectorContract.VectorTable + "_", StringComparison.Ordinal)
+            || string.Equals(table, EmbeddingPersistence.MigrationsHistoryTable, StringComparison.Ordinal)
+            || string.Equals(table, MigrationsLockTable, StringComparison.Ordinal);
 
     /// <summary>Empties the recipe, so the write replaces whatever the previous run left.</summary>
     private static void DeleteRecipe(SqliteConnection connection, SqliteTransaction transaction)
