@@ -5,7 +5,7 @@ internal sealed record CatalogPopulateSettings(
     Mode Mode,
     string CompactInputPath,
     string CompactOutputPath,
-    string CatalogPath,
+    string MigrationsDirectory,
     string VendoredImagesPath,
     string MetaOfficeProductsPath,
     string MetaElectronicsPath,
@@ -23,8 +23,9 @@ internal sealed record CatalogPopulateSettings(
     /// <summary>The compact input written by --extract and read when populating.</summary>
     public const string DefaultCompactPath = "App_Data/compact-catalogue.jsonl";
 
-    /// <summary>products.json, relative to the tool's project directory.</summary>
-    public const string DefaultCataloguePath = "../../shared/data/products.json";
+    /// <summary>The folder holding the SeedProducts migration shell, relative to the tool's project directory.</summary>
+    public const string DefaultMigrationsDirectory =
+        "../../Modules/Catalog/CoreRentalNet.Modules.Catalog.Infrastructure/Migrations";
 
     /// <summary>The application's vendored image directory, relative to the tool's project directory.</summary>
     public const string DefaultVendoredImagesPath = "../../Host/CoreRentalNet.Host/wwwroot/images/vendored";

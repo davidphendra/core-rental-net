@@ -8,7 +8,7 @@ using CoreRentalNet.CatalogPopulate.Writing;
 
 namespace CoreRentalNet.CatalogPopulate.Populating;
 
-/// <summary>Reads the compact input, asks the local model for each product's metadata, and writes the catalogue.</summary>
+/// <summary>Reads the compact input, asks the local model for each product's metadata, and writes the seed migration.</summary>
 /// <remarks>
 /// Every product is sent to the configured local model. There is no substitution here: the generator is the
 /// OpenAI-compatible client, and a run without a reachable model fails rather than writing a catalogue whose
@@ -42,7 +42,8 @@ internal sealed class Populator(CatalogPopulateSettings settings)
             .Select(row => row.Record)
             .ToList();
 
-        ProductCatalogWriter.Write(settings.CatalogPath, ordered);
+        var migrationFile = SeedMigrationFile.In(settings.MigrationsDirectory).Path;
+        SeedMigrationWriter.Write(migrationFile, ordered);
 
         using var images = new HttpClient();
         var vendored = await new ImageVendor(images, settings.VendoredImagesPath).VendorAsync(
@@ -50,7 +51,7 @@ internal sealed class Populator(CatalogPopulateSettings settings)
             CancellationToken.None);
 
         Console.WriteLine(
-            $"[populate] wrote {ordered.Count} products to {settings.CatalogPath}; "
+            $"[populate] wrote {ordered.Count} products to {migrationFile}; "
             + $"images {vendored.Downloaded} downloaded, {vendored.Kept} kept, {vendored.Removed} removed");
 
         return 0;

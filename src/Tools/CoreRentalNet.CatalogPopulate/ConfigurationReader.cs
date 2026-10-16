@@ -25,7 +25,7 @@ internal static class ConfigurationReader
             mode,
             Resolved(configuration, "Catalog:CompactInput", CatalogPopulateSettings.DefaultCompactPath, baseDirectory),
             Resolved(configuration, "Extract:Output", CatalogPopulateSettings.DefaultCompactPath, baseDirectory),
-            Resolved(configuration, "Catalog:FilePath", CatalogPopulateSettings.DefaultCataloguePath, baseDirectory),
+            Resolved(configuration, "Catalog:MigrationsDirectory", CatalogPopulateSettings.DefaultMigrationsDirectory, baseDirectory),
             Resolved(configuration, "Images:VendoredPath", CatalogPopulateSettings.DefaultVendoredImagesPath, baseDirectory),
             metaOffice,
             metaElectronics,

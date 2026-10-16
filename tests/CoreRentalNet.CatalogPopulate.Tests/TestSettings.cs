@@ -6,7 +6,7 @@ internal static class TestSettings
     public static CatalogPopulateSettings Build(
         Mode mode = Mode.Populate,
         string compactInput = "compact.jsonl",
-        string catalogPath = "products.json",
+        string migrationsDirectory = "Migrations",
         string vendoredImagesPath = "images",
         string metaPath = "meta.jsonl",
         string reviewPath = "reviews.jsonl",
@@ -16,7 +16,7 @@ internal static class TestSettings
             mode,
             compactInput,
             compactInput,
-            catalogPath,
+            migrationsDirectory,
             vendoredImagesPath,
             metaPath,
             metaPath,

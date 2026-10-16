@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 //
 //   --extract   scans the Hugging Face source files once and writes the compact input.
 //   (default)   reads the compact input, asks the local model for the generated metadata,
-//               and writes products.json plus the vendored images.
+//               and writes the SeedProducts migration plus the vendored images.
 //
 // It is a console host rather than a service, because it runs while customers are not being
 // served, and it is configured by appsettings.json beside it rather than by a command line.
