@@ -23,6 +23,7 @@
          itself is no longer the tool's own: it moved to BuildingBlocks.Infrastructure, because the
          application embeds through the same server and one adapter is what keeps the two comparable. -->
     <PackageReference Include="SemanticChunker.NET" />
+    <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
   <ItemGroup>
