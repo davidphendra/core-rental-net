@@ -12,6 +12,7 @@
 using CoreRentalNet.Agents.Features.EchoReverse;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Hosting;
+using CoreRentalNet.Agents.Shared.Evaluation;
 using CoreRentalNet.Agents.Shared.Mcp;
 using CoreRentalNet.Agents.Shared.Scoping;
 using Microsoft.Agents.AI.Foundry.Hosting;
@@ -39,6 +40,10 @@ builder.Services.AddSingleton<IRunScope, RunScope>();
 builder.Services.AddWorkspaceSuggestionFeature(
     builder.Configuration, settings.WorkspaceSuggestion, modelClient);
 builder.Services.AddEchoReverseFeature(settings.Echo);
+
+// Evaluation is an opt-in decorator around the feature's telemetry chat client. It is a no-op unless
+// EVALUATION_TRACE_PATH is set, and no feature knows it exists.
+builder.Services.AddEvaluationTrace(builder.Configuration);
 
 // A request that carries no name gets the agent this deployment is named for.
 builder.Services.AddDefaultAgent(settings.DefaultAgentName);

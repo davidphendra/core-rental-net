@@ -133,6 +133,7 @@ public sealed class AgentFoundryRegistrationTests
     {
         var catalog = new McpSetting(string.Empty);
         var recordedToolAnswers = new McpToolAnswerLedger();
+        var tokens = new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance);
         var modelCallTelemetry = new TelemetryChatClient(
             new GuardrailChatClient(new ScriptedChatClient("{}"), tokens),
             "gpt-4.1-mini",

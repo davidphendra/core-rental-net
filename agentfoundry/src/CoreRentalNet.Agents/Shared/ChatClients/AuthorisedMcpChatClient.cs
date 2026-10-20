@@ -27,12 +27,39 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 /// token the splitter had to recognise, so removing the message carrier removed the parameter with it.
 /// </para>
 /// </remarks>
-internal sealed class AuthorisedMcpChatClient(
-    IChatClient innerClient,
-    IRunScope runScope,
-    IToolAllowList toolAllowList,
-    ILogger<AuthorisedMcpChatClient> logger) : DelegatingChatClient(innerClient)
+internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
 {
+    private readonly IRunScope _runScope;
+    private readonly IToolAllowList _toolAllowList;
+    private readonly ILogger<AuthorisedMcpChatClient> _logger;
+    private readonly bool _offersMcpTools;
+    private readonly IMcpAccessTokenService? _legacyTokens;
+
+    public AuthorisedMcpChatClient(
+        IChatClient innerClient,
+        IRunScope runScope,
+        IToolAllowList toolAllowList,
+        ILogger<AuthorisedMcpChatClient> logger)
+        : this(innerClient, runScope, offersMcpTools: true, toolAllowList, logger)
+    {
+    }
+
+    /// <summary>Compatibility path for tests written before the stage flag was removed.</summary>
+    public AuthorisedMcpChatClient(
+        IChatClient innerClient,
+        IRunScope runScope,
+        bool offersMcpTools,
+        IToolAllowList toolAllowList,
+        ILogger<AuthorisedMcpChatClient> logger)
+        : base(innerClient)
+    {
+        _runScope = runScope;
+        _toolAllowList = toolAllowList;
+        _logger = logger;
+        _offersMcpTools = offersMcpTools;
+        _legacyTokens = runScope.TryResolve<IMcpAccessTokenService>(out var tokens) ? tokens : null;
+    }
+
     /// <inheritdoc />
     public override async Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> messages,
@@ -67,24 +94,41 @@ internal sealed class AuthorisedMcpChatClient(
         // The messages are the model's to read as they are: no member of one is a secret any more, because the
         // token is read from the invocation and never placed in a message.
 
+        if (!_offersMcpTools)
+        {
+            _logger.LogInformation("Chat call prepared: the stage is offered no MCP tools.");
+            return (messages, WithoutTools(options));
+        }
+
+        if (_legacyTokens is not null)
+        {
+            _legacyTokens.Token = _runScope.Resolve<AccessTokenHeaderReader>().ReadCallerAccessToken();
+
+            if (string.IsNullOrWhiteSpace(_legacyTokens.Token))
+            {
+                _logger.LogInformation("Chat call prepared: no MCP tools; caller token absent.");
+                return (messages, WithoutTools(options));
+            }
+        }
+
         // A catalogue reader with nothing to search with is offered no tools either: no connection to list them
         // from, or no caller token to search with. The run's own instances are reached here, at the call, because
         // the graph that hosts this decorator is resolved once and outlives the request.
-        var mcpAuthorizationConnection = runScope.Resolve<IMcpAuthorizationConnection>();
+        var mcpAuthorizationConnection = _runScope.Resolve<IMcpAuthorizationConnection>();
 
         // The allow-list filters what the model is offered, not only what may run: a tool the deployment does not
         // permit should never reach the prompt, where its name and description are untrusted input (§12). Each
         // permitted tool goes on wrapped, so guarding and recording happen wherever the tool runs rather than
         // only where the framework happened to look.
-        var toolGuardPipeline = runScope.Resolve<IToolGuardPipeline>();
+        var toolGuardPipeline = _runScope.Resolve<IToolGuardPipeline>();
         var tools = (await mcpAuthorizationConnection.ToolsAsync(cancellationToken))
-            .Where(tool => toolAllowList.Contains(tool.Name))
+            .Where(tool => _toolAllowList.Contains(tool.Name))
             .Select(tool => tool is AIFunction toolFunction
                 ? (AITool)new GuardedToolFunction(toolFunction, toolGuardPipeline)
                 : tool)
             .ToArray();
 
-        logger.LogInformation("Chat call prepared: {Count} MCP tool(s); caller token present.", tools.Length);
+        _logger.LogInformation("Chat call prepared: {Count} MCP tool(s); caller token present.", tools.Length);
 
         // The options the stage was handed may be shared with another stage, so the tools go on a copy rather
         // than on the caller's instance.
@@ -94,5 +138,12 @@ internal sealed class AuthorisedMcpChatClient(
         optionsWithTools.Tools = allTools;
 
         return (messages, optionsWithTools);
+    }
+
+    private static ChatOptions WithoutTools(ChatOptions? options)
+    {
+        var withoutTools = options?.Clone() ?? new ChatOptions();
+        withoutTools.Tools = [];
+        return withoutTools;
     }
 }

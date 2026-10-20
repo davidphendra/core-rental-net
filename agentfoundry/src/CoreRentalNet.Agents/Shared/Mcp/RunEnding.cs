@@ -13,5 +13,12 @@ internal sealed class RunEnding(IRunScope runScope) : IRunEnding
     public async ValueTask EndTheRunAsync()
     {
         await runScope.Resolve<IMcpAuthorizationConnection>().CloseAsync();
+
+        // Compatibility path for the legacy token holder: the current host keeps the token in the run context
+        // and lets the call scope dispose it, so this is a no-op there.
+        if (runScope.TryResolve<IMcpAccessTokenService>(out var tokens))
+        {
+            tokens.Release();
+        }
     }
 }

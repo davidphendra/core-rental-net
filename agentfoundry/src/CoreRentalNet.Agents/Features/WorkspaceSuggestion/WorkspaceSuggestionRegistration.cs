@@ -61,6 +61,8 @@ public static class WorkspaceSuggestionRegistration
         // forwards for names carrying its client prefix. Nothing carries one in a message any more, so there is
         // no splitter to register and no member on the request for a splitter to recognise.
         services.AddScoped<AccessTokenHeaderReader>();
+        services.AddScoped<IAccessTokenHeaderReader>(provider =>
+            provider.GetRequiredService<AccessTokenHeaderReader>());
 
         // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
         // stage's call, so the totals are the run's, and it names the stage from the options its agent set.

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Client;
 
 namespace CoreRentalNet.Agents.Shared.Mcp;
@@ -27,23 +28,46 @@ internal interface IMcpAuthorizationConnection : IAsyncDisposable
 /// between calls would present one customer's token to the server for another's run.
 /// </para>
 /// </remarks>
-internal sealed class McpAuthorizationConnection(
-    McpSetting mcpSetting,
-    IAccessTokenHeaderReader accessTokenHeaderReader,
-    ILoggerFactory loggerFactory,
-    ILogger<McpAuthorizationConnection> logger) : IMcpAuthorizationConnection
+internal sealed class McpAuthorizationConnection : IMcpAuthorizationConnection
 {
+    private readonly McpSetting _mcpSetting;
+    private readonly IAccessTokenHeaderReader _accessTokenHeaderReader;
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILogger<McpAuthorizationConnection> _logger;
     private McpClient? _client;
     private IReadOnlyList<AITool>? _tools;
     private bool _closed;
 
+    [ActivatorUtilitiesConstructor]
+    public McpAuthorizationConnection(
+        McpSetting mcpSetting,
+        IAccessTokenHeaderReader accessTokenHeaderReader,
+        ILoggerFactory loggerFactory,
+        ILogger<McpAuthorizationConnection> logger)
+    {
+        _mcpSetting = mcpSetting;
+        _accessTokenHeaderReader = accessTokenHeaderReader;
+        _loggerFactory = loggerFactory;
+        _logger = logger;
+    }
+
+    /// <summary>Compatibility path for tests written before the header reader replaced the token holder.</summary>
+    public McpAuthorizationConnection(
+        McpSetting mcpSetting,
+        IMcpAccessTokenService tokens,
+        ILoggerFactory loggerFactory,
+        ILogger<McpAuthorizationConnection> logger)
+        : this(mcpSetting, new TokenServiceHeaderReader(tokens), loggerFactory, logger)
+    {
+    }
+
     /// <summary>True when this deployment has been told where the server is.</summary>
-    public bool IsConfigured => mcpSetting.IsConfigured;
+    public bool IsConfigured => _mcpSetting.IsConfigured;
 
     /// <summary>The tools the call's own token entitles, discovered once and kept for the call.</summary>
     public async Task<IReadOnlyList<AITool>> ToolsAsync(CancellationToken cancellationToken)
     {
-        if (!mcpSetting.IsConfigured)
+        if (!_mcpSetting.IsConfigured)
         {
             return [];
         }
@@ -57,38 +81,38 @@ internal sealed class McpAuthorizationConnection(
 
         try
         {
-            var accessToken = accessTokenHeaderReader.ReadCallerAccessToken() ?? string.Empty;
+            var accessToken = _accessTokenHeaderReader.ReadCallerAccessToken() ?? string.Empty;
             McpRunScope.Current = new McpRunContext(AccessTokenHeader.Name, accessToken);
 
             _client = await McpAuthenticationHelper.ConnectAsync(
-                new Uri(mcpSetting.McpEndpoint, UriKind.Absolute),
+                new Uri(_mcpSetting.McpEndpoint, UriKind.Absolute),
                 // Built here rather than in the constructor: an unconfigured deployment has no endpoint to
                 // describe, and this is the point past which one is required.
-                new CatalogueServerRequestPolicy(mcpSetting),
-                loggerFactory,
+                new CatalogueServerRequestPolicy(_mcpSetting),
+                _loggerFactory,
                 cancellationToken);
 
             _tools = _client is null
                 ? []
                 : [.. (await _client.ListToolsAsync(cancellationToken: cancellationToken)).Cast<AITool>()];
 
-            logger.LogInformation(
+            _logger.LogInformation(
                 "MCP server {Endpoint}: {Count} tool(s) available to this call.",
-                mcpSetting.McpEndpoint,
+                _mcpSetting.McpEndpoint,
                 _tools.Count);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // The caller cannot see why a run ended, and the application deliberately drops the agent's reason,
             // so the one place it survives is here. The token is never logged, only the endpoint and the fault.
-            logger.LogWarning(
+            _logger.LogWarning(
                 exception,
                 "The MCP server at {Endpoint} refused this call's tools.",
-                mcpSetting.McpEndpoint);
+                _mcpSetting.McpEndpoint);
 
             // Typed rather than raw: the feature ends the run Unavailable when the catalogue refuses it, and a
             // transport exception would escape the workflow as a failed run instead.
-            throw new CatalogueUnavailableException(mcpSetting.McpEndpoint, exception);
+            throw new CatalogueUnavailableException(_mcpSetting.McpEndpoint, exception);
         }
         finally
         {

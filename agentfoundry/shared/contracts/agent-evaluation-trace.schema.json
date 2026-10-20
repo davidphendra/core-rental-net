@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://core-rental.local/contracts/agent-evaluation-trace.schema.json",
+  "title": "Agent evaluation trace",
+  "description": "One JSON object per line. Raw evidence only; the evaluator interprets it.",
+  "type": "object",
+  "required": ["kind", "runId", "sequence", "at"],
+  "properties": {
+    "kind": {
+      "enum": ["runStarted", "runCompleted", "stageModelCall", "toolExchange"]
+    },
+    "runId": { "type": "string" },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "at": { "type": "string", "format": "date-time" },
+    "model": { "type": ["string", "null"] },
+    "promptVersions": { "type": ["string", "null"] },
+    "runStatus": { "type": ["string", "null"] },
+    "stage": { "type": ["string", "null"] },
+    "attempt": { "type": ["integer", "null"] },
+    "responseText": { "type": ["string", "null"] },
+    "toolCalls": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": ["name", "arguments"],
+        "properties": {
+          "name": { "type": "string" },
+          "arguments": { "type": "object" }
+        }
+      }
+    },
+    "inputTokens": { "type": ["integer", "null"] },
+    "outputTokens": { "type": ["integer", "null"] },
+    "callId": { "type": ["string", "null"] },
+    "toolName": { "type": ["string", "null"] },
+    "arguments": { "type": ["object", "null"] },
+    "resultText": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

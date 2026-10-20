@@ -8,10 +8,38 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// the transport is wired somewhere the token was never meant to go, and letting it leave without the header would
 /// turn that into a confusing refusal at the other end while hiding the mis-wiring.
 /// </remarks>
-internal sealed class McpAccessTokenHandler(
-    CatalogueServerRequestPolicy catalogueServerRequestPolicy,
-    ILogger<McpAccessTokenHandler> logger) : DelegatingHandler
+internal sealed class McpAccessTokenHandler : DelegatingHandler
 {
+    private readonly CatalogueServerRequestPolicy _catalogueServerRequestPolicy;
+    private readonly ILogger<McpAccessTokenHandler> _logger;
+    private readonly IMcpAccessTokenService? _legacyTokens;
+
+    public McpAccessTokenHandler(
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILogger<McpAccessTokenHandler> logger)
+        : this(catalogueServerRequestPolicy, logger, null)
+    {
+    }
+
+    /// <summary>Compatibility path for tests written before the token moved to the run context.</summary>
+    public McpAccessTokenHandler(
+        IMcpAccessTokenService tokens,
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILogger<McpAccessTokenHandler> logger)
+        : this(catalogueServerRequestPolicy, logger, tokens)
+    {
+    }
+
+    private McpAccessTokenHandler(
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILogger<McpAccessTokenHandler> logger,
+        IMcpAccessTokenService? legacyTokens)
+    {
+        _legacyTokens = legacyTokens;
+        _catalogueServerRequestPolicy = catalogueServerRequestPolicy;
+        _logger = logger;
+    }
+
     /// <inheritdoc />
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage httpRequest,
@@ -20,24 +48,23 @@ internal sealed class McpAccessTokenHandler(
         ArgumentNullException.ThrowIfNull(httpRequest);
 
         if (httpRequest.RequestUri is not { } requestUri
-            || !catalogueServerRequestPolicy.MayCarryTheCallersCatalogueAccessToken(requestUri))
+            || !_catalogueServerRequestPolicy.MayCarryTheCallersCatalogueAccessToken(requestUri))
         {
             throw new InvalidOperationException(
                 $"An MCP request to '{httpRequest.RequestUri}' is not one the caller's token may be " +
                 "attached to.");
         }
 
-        McpRunContext? runContext = McpRunScope.Current;
+        var token = _legacyTokens?.Token ?? McpRunScope.Current?.Token;
 
-        logger.LogInformation(
+        _logger.LogInformation(
             "Chat call prepared: no MCP tools; caller token {Token}.",
-            string.IsNullOrEmpty(runContext?.Token) ? "absent" : "present");
+            string.IsNullOrEmpty(token) ? "absent" : "present");
 
-        httpRequest.Headers.Authorization = new AuthenticationHeaderValue(
-            "Bearer", runContext?.Token);
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         // The origin and the method are safe to record and the token is not, so only those two are named.
-        logger.LogDebug(
+        _logger.LogDebug(
             "Attached the caller's token to {Method} {Origin}.",
             httpRequest.Method,
             requestUri.GetLeftPart(UriPartial.Authority));

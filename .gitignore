@@ -39,3 +39,6 @@ src/Tools/CoreRentalNet.CatalogIngestion/App_Data/
 # The catalogue and vector stores are produced by their migrations at start-up, not committed.
 src/Host/CoreRentalNet.Host/App_Data/catalog.db
 src/Host/CoreRentalNet.Host/App_Data/discovery.db
+
+# Evaluation traces, run records and host data are large and regenerated, not source.
+artifacts/evaluation/

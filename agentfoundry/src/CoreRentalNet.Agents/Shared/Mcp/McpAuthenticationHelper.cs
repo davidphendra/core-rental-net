@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Client;
 
@@ -53,4 +54,39 @@ internal static class McpAuthenticationHelper
                 ownsHttpClient: true),
             cancellationToken: cancellationToken);
     }
+
+    /// <summary>Compatibility path for tests written before the header reader replaced the token holder.</summary>
+    internal static McpAccessTokenHandler BuildTheTokenAttachmentHandler(
+        IMcpAccessTokenService tokens,
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILoggerFactory loggerFactory)
+        => new(
+            tokens,
+            catalogueServerRequestPolicy,
+            loggerFactory.CreateLogger<McpAccessTokenHandler>())
+        {
+            InnerHandler = TerminalHandler(),
+        };
+
+    /// <summary>Compatibility path for tests written before the header reader replaced the token holder.</summary>
+    internal static HttpClient BuildTheClientThatPresentsTheCallersToken(
+        IMcpAccessTokenService tokens,
+        CatalogueServerRequestPolicy catalogueServerRequestPolicy,
+        ILoggerFactory loggerFactory)
+        => new(BuildTheTokenAttachmentHandler(tokens, catalogueServerRequestPolicy, loggerFactory))
+        {
+            Timeout = TimeSpan.FromMinutes(5),
+        };
+
+    private static SocketsHttpHandler TerminalHandler()
+        => new()
+        {
+            UseCookies = false,
+            AllowAutoRedirect = false,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+            SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+            {
+                CertificateRevocationCheckMode = X509RevocationMode.Online,
+            },
+        };
 }
