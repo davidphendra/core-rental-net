@@ -32,8 +32,14 @@ internal sealed record AgentHostSettings
     /// <summary>The model transport's budget, which is not a workflow's attempt count.</summary>
     public required ModelTransportRetryOptions ModelTransport { get; init; }
 
+    /// <summary>The model protocol this host serves.</summary>
+    public required ModelProvider ModelProvider { get; init; }
+
     /// <summary>The Foundry project endpoint, or null when nobody set it. Printed as presence, never as a value.</summary>
     public string? ProjectEndpoint { get; init; }
+
+    /// <summary>The local OpenAI-compatible endpoint, or null when this host uses Foundry.</summary>
+    public string? LocalModelEndpoint { get; init; }
 
     /// <summary>The model deployment every stage runs on, or null when nobody set it.</summary>
     public string? ModelDeployment { get; init; }
@@ -72,7 +78,9 @@ internal sealed record AgentHostSettings
             Echo = echo,
             ModelTransport = configuration.GetSection("ModelTransport").Get<ModelTransportRetryOptions>()
                 ?? new ModelTransportRetryOptions(),
+            ModelProvider = ModelProviderReader.Read(configuration),
             ProjectEndpoint = configuration[AgentFoundryRegistration.ProjectEndpointKey]?.Trim(),
+            LocalModelEndpoint = configuration[OpenAiCompatibleChatClientFactory.EndpointKey]?.Trim(),
             ModelDeployment = configuration[AgentFoundryRegistration.ModelKey]?.Trim(),
         };
     }

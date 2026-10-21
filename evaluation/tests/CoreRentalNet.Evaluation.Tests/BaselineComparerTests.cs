@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Evaluation;
 using CoreRentalNet.Evaluation.Reporting;
 using Xunit;
@@ -43,7 +44,23 @@ public sealed class BaselineComparerTests
         report.Regressions.Should().ContainSingle().Which.RowNumber.Should().Be(59);
     }
 
+    [Fact]
+    public void Reports_with_different_scopes_are_not_comparable()
+    {
+        var baseline = Report(EvaluationScope.Tiny, Case(1, pass: true));
+        var current = Report(EvaluationScope.All, Case(1, pass: true));
+
+        var report = new BaselineComparer().Compare(baseline, current);
+
+        report.Comparable.Should().BeFalse();
+    }
+
     private static EvaluationReport Report(params CaseResult[] cases)
+        => Report(EvaluationScope.All, cases);
+
+    private static EvaluationReport Report(
+        EvaluationScope scope,
+        params CaseResult[] cases)
         => new(
             Cases: cases,
             Metrics: [],
@@ -53,7 +70,11 @@ public sealed class BaselineComparerTests
                 CasePass: cases.Count(testCase => testCase.CasePass),
                 CasePassRate: cases.Length == 0 ? 0 : cases.Count(testCase => testCase.CasePass) / (double)cases.Length,
                 MetricPassRates: new Dictionary<string, double>(),
-                Stability: new Dictionary<string, int>()));
+                Stability: new Dictionary<string, int>()))
+        {
+            Scope = scope,
+            TotalRows = 200,
+        };
 
     private static CaseResult Case(int row, bool pass)
         => new(

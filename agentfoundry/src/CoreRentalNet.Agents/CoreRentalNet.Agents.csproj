@@ -79,6 +79,10 @@
     <!-- Foundry SDK: AIProjectClient and AsAIAgent -->
     <PackageReference Include="Azure.AI.Projects" Version="3.0.0-beta.2" />
     <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <!-- The OpenAI-compatible local path: OpenAIClient and the IChatClient adapter. Pinned to the
+         versions the Foundry graph already carries so one OpenAI client serves both providers. -->
+    <PackageReference Include="OpenAI" Version="2.12.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.6.0" />
     <!-- Local .env loading for development only -->
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
   </ItemGroup>

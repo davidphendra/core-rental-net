@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.CatalogIngestion.Chunking;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -20,6 +21,7 @@ public sealed class ConfigurationReaderTests
     {
         ["Catalog:FilePath"] = "/tmp/products.json",
         ["Database:Path"] = "/tmp/product_embedding.db",
+        ["Embedding:Provider"] = "AzureOpenAI",
         ["Embedding:Endpoint"] = "https://example.openai.azure.com/",
         ["Embedding:ApiKey"] = "key",
         ["Embedding:Model"] = "text-embedding-3-small",
@@ -44,10 +46,11 @@ public sealed class ConfigurationReaderTests
 
         settings.CataloguePath.Should().Be("/tmp/products.json");
         settings.DatabasePath.Should().Be("/tmp/product_embedding.db");
-        settings.EmbeddingEndpoint.Should().Be("https://example.openai.azure.com/");
-        settings.EmbeddingApiKey.Should().Be("key");
-        settings.EmbeddingModel.Should().Be("text-embedding-3-small");
-        settings.Width.Should().Be(384);
+        settings.Embedding.Provider.Should().Be(EmbeddingProvider.AzureOpenAI);
+        settings.Embedding.Endpoint.Should().Be(new Uri("https://example.openai.azure.com/"));
+        settings.Embedding.ApiKey.Should().Be("key");
+        settings.Embedding.Model.Should().Be("text-embedding-3-small");
+        settings.Embedding.Width.Should().Be(384);
         settings.Chunker.Should().Be(new ChunkerSettings(256, 1, "Percentile", 95, null, 1, 200));
     }
 
@@ -58,14 +61,15 @@ public sealed class ConfigurationReaderTests
         // file only has to say what differs from them.
         var values = new Dictionary<string, string?>
         {
+            ["Embedding:Provider"] = "AzureOpenAI",
             ["Embedding:Endpoint"] = "https://example.openai.azure.com/",
             ["Embedding:ApiKey"] = "key",
         };
 
         var settings = Read(values);
 
-        settings.EmbeddingModel.Should().Be(IngestionSettings.DefaultEmbeddingModel);
-        settings.Width.Should().Be(IngestionSettings.DefaultWidth);
+        settings.Embedding.Model.Should().Be(IngestionSettings.DefaultEmbeddingModel);
+        settings.Embedding.Width.Should().Be(IngestionSettings.DefaultWidth);
         settings.Chunker.TokenLimit.Should().Be(ChunkerSettings.DefaultTokenLimit);
         settings.Chunker.BufferSize.Should().Be(ChunkerSettings.DefaultBufferSize);
         settings.Chunker.ThresholdType.Should().Be(ChunkerSettings.DefaultThresholdType);
@@ -147,5 +151,31 @@ public sealed class ConfigurationReaderTests
         {
             Usage.Text.Should().Contain(key);
         }
+    }
+
+    [Fact]
+    public void A_local_provider_accepts_http_and_an_absent_key()
+    {
+        var values = EveryKey();
+        values["Embedding:Provider"] = "OpenAiCompatible";
+        values["Embedding:Endpoint"] = "http://localhost:8080/v1";
+        values["Embedding:ApiKey"] = "";
+
+        var settings = Read(values);
+
+        settings.Embedding.Provider.Should().Be(EmbeddingProvider.OpenAiCompatible);
+        settings.Embedding.Endpoint.Should().Be(new Uri("http://localhost:8080/v1"));
+        settings.Embedding.ApiKey.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void An_unknown_provider_is_refused_by_name()
+    {
+        var values = EveryKey();
+        values["Embedding:Provider"] = "Llama";
+
+        var act = () => Read(values);
+
+        act.Should().Throw<ArgumentException>().WithMessage("*Embedding:Provider*");
     }
 }

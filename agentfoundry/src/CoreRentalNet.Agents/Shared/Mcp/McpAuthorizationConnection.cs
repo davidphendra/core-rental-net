@@ -51,16 +51,6 @@ internal sealed class McpAuthorizationConnection : IMcpAuthorizationConnection
         _logger = logger;
     }
 
-    /// <summary>Compatibility path for tests written before the header reader replaced the token holder.</summary>
-    public McpAuthorizationConnection(
-        McpSetting mcpSetting,
-        IMcpAccessTokenService tokens,
-        ILoggerFactory loggerFactory,
-        ILogger<McpAuthorizationConnection> logger)
-        : this(mcpSetting, new TokenServiceHeaderReader(tokens), loggerFactory, logger)
-    {
-    }
-
     /// <summary>True when this deployment has been told where the server is.</summary>
     public bool IsConfigured => _mcpSetting.IsConfigured;
 

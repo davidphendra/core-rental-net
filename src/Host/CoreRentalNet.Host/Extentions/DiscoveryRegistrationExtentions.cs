@@ -48,11 +48,7 @@ internal static class DiscoveryRegistrationExtentions
 
         builder.Services.AddSingleton<IEmbeddingService>(
             settings.IsConfigured
-                ? OpenAiCompatibleEmbeddingService.Build(
-                    new Uri(settings.Endpoint),
-                    settings.ApiKey,
-                    settings.Model,
-                    settings.Width)
+                ? BuildEmbeddingService(settings)
                 : new EmbeddingNotConfigured());
 
         var store = AddEmbeddingStore(builder);
@@ -67,6 +63,12 @@ internal static class DiscoveryRegistrationExtentions
         // singleton because it holds the index, and the catalogService it is built from is a singleton too.
         builder.Services.AddSingleton<IProductNameSearchService, LiftiProductNameSearchService>();
     }
+
+    /// <summary>The adapter for the provider this deployment named.</summary>
+    private static IEmbeddingService BuildEmbeddingService(VectorEmbeddingSettings settings)
+        => EmbeddingServiceFactorySelector
+            .Select(settings.Provider)
+            .Create(settings.ToEmbeddingSettings());
 
     /// <summary>
     /// The vector store: this module's own file, its context, and the vec0 extension on its connections.

@@ -10,13 +10,13 @@ namespace CoreRentalNet.Evaluation.Execution;
 /// <summary>Talks to a locally running agent host over the Responses protocol.</summary>
 public sealed class AgentHttpClient(
     Uri endpoint,
-    string agentName,
-    string callerToken) : IAgentClient
+    string agentName) : IAgentClient
 {
     private const string PlaceholderKey = "not-needed";
 
     public async IAsyncEnumerable<string> RunAsync(
         string requestJson,
+        string callerToken,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var options = new OpenAIClientOptions

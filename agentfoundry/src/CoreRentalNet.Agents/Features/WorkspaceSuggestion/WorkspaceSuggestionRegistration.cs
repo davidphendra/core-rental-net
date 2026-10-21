@@ -64,6 +64,10 @@ public static class WorkspaceSuggestionRegistration
         services.AddScoped<IAccessTokenHeaderReader>(provider =>
             provider.GetRequiredService<AccessTokenHeaderReader>());
 
+        // The run's token holder, scoped like the request. The header reader fills it at the first tool call,
+        // and the run ending releases it while the catalogue session is still open.
+        services.AddScoped<IMcpAccessTokenService, McpAccessTokenService>();
+
         // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
         // stage's call, so the totals are the run's, and it names the stage from the options its agent set.
         services.AddScoped<ITelemetryChatClient>(provider => new TelemetryChatClient(

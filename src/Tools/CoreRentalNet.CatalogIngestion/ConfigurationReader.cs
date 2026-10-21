@@ -34,9 +34,6 @@ internal static class ConfigurationReader
     /// </remarks>
     private static readonly ImmutableHashSet<string> s_safeToRepeat = ImmutableHashSet.Create(
         StringComparer.Ordinal,
-        "Embedding:Endpoint",
-        "Embedding:Model",
-        "Embedding:Width",
         "Catalog:FilePath",
         "Database:Path",
         "Chunker:TokenLimit",
@@ -59,10 +56,7 @@ internal static class ConfigurationReader
         return new IngestionSettings(
             ResolvedPath(configuration, "Catalog:FilePath", IngestionSettings.DefaultCataloguePath, baseDirectory),
             ResolvedPath(configuration, "Database:Path", IngestionSettings.DefaultDatabasePath, baseDirectory),
-            Endpoint(configuration),
-            Required(configuration, "Embedding:ApiKey"),
-            Text(configuration, "Embedding:Model", IngestionSettings.DefaultEmbeddingModel),
-            Positive(configuration, "Embedding:Width", IngestionSettings.DefaultWidth),
+            EmbeddingSettingsReader.Read(configuration),
             Chunker(configuration));
     }
 
@@ -91,22 +85,6 @@ internal static class ConfigurationReader
             ? throw new ArgumentException($"{key} was set to a blank value. Remove it to take the default, or give it a value.")
             : stated.Trim();
     }
-
-    /// <summary>The Azure OpenAI resource endpoint, which has to be an absolute https URL.</summary>
-    private static string Endpoint(IConfiguration configuration)
-    {
-        var stated = Required(configuration, "Embedding:Endpoint");
-
-        return Uri.TryCreate(stated, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
-            ? stated
-            : throw new ArgumentException($"Embedding:Endpoint must be an absolute https URL, but was {Stated("Embedding:Endpoint", stated)}.");
-    }
-
-    /// <summary>A value this run cannot start without. There is no local server to fall back to.</summary>
-    private static string Required(IConfiguration configuration, string key)
-        => configuration[key]?.Trim() is { Length: > 0 } value
-            ? value
-            : throw new ArgumentException($"{key} is not configured. Set it in appsettings.Local.json or the environment.");
 
     /// <summary>A whole number greater than zero, or the default when the key is absent.</summary>
     private static int Positive(IConfiguration configuration, string key, int fallback)

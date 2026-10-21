@@ -69,7 +69,7 @@ catch (ArgumentException exception)
 
 AnsiConsole.MarkupLine(
     $"[bold]Ingest[/] · catalogue {Markup.Escape(settings.CataloguePath)} · "
-    + $"model {Markup.Escape(settings.EmbeddingModel)} · database {Markup.Escape(settings.DatabasePath)}");
+    + $"model {Markup.Escape(settings.Embedding.Model)} · database {Markup.Escape(settings.DatabasePath)}");
 
 try
 {
@@ -114,11 +114,9 @@ async Task<int> Run()
     var catalogue = CatalogueFile.Read(settings.CataloguePath);
     reporter.Report(new ProgressUpdate("Reading catalogue", 1, 1, $"{catalogue.Count} products"));
 
-    var embeddings = OpenAiCompatibleEmbeddingService.Build(
-        new Uri(settings.EmbeddingEndpoint),
-        settings.EmbeddingApiKey,
-        settings.EmbeddingModel,
-        settings.Width);
+    var embeddings = EmbeddingServiceFactorySelector
+        .Select(settings.Embedding.Provider)
+        .Create(settings.Embedding);
     var semanticProductChunker = new SemanticProductChunker(new ClientEmbeddingGenerator(embeddings), settings.Chunker);
     var store = new SqliteProductEmbeddingStore(settings.DatabasePath);
 
@@ -142,8 +140,8 @@ async Task<int> Run()
 // instead of ranking vectors that are not comparable.
 EmbeddingRecipe Recipe()
     => new(
-        settings.EmbeddingModel,
-        settings.Width,
+        settings.Embedding.Model,
+        settings.Embedding.Width,
         ProductVectorContract.Composition,
         CatalogHash.OfFile(settings.CataloguePath));
 

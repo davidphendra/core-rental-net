@@ -13,7 +13,8 @@ static int PrintUsage()
 {
     Console.WriteLine("Usage:");
     Console.WriteLine("  validate-cases [Test_Script.md] [products.json]");
-    Console.WriteLine("  run --agent-endpoint <uri> --caller-token <token> [--mcp-endpoint <uri>]");
+    Console.WriteLine("  run --agent-endpoint <uri> --mcp-endpoint <uri> [--auth-mode local|static]");
+    Console.WriteLine("      [--caller-token <token>] [--scope tiny|small|half|all] [--repetitions <n>]");
     Console.WriteLine("  compare <baseline.json> <current.json>");
     return 1;
 }

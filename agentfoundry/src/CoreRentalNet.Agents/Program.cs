@@ -29,7 +29,7 @@ var settings = AgentHostSettings.FromConfiguration(builder.Configuration);
 builder.AddHostTelemetry(settings.Build);
 
 // One model client, shared by every feature's stages.
-var modelClient = builder.BuildSharedModelClient(settings.ModelTransport);
+var modelClient = builder.BuildSharedModelClient(settings);
 builder.Services.AddSingleton(modelClient);
 
 // Shared plumbing: one token per call, read from the invocation's own header, and the run scope the served graph

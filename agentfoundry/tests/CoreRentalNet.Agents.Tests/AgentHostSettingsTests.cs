@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using CoreRentalNet.Agents.Features.EchoReverse;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Hosting;
+using CoreRentalNet.Agents.Shared.Model;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -82,6 +83,36 @@ public sealed class AgentHostSettingsTests
 
         settings.ProjectEndpoint.Should().BeNull();
         settings.ModelDeployment.Should().BeNull();
+    }
+
+    [Fact]
+    public void An_absent_model_provider_keeps_the_foundry_path()
+    {
+        var settings = Settings(Workspace(WorkspaceAgentName));
+
+        settings.ModelProvider.Should().Be(ModelProvider.Foundry);
+    }
+
+    [Fact]
+    public void A_local_provider_and_endpoint_are_carried_together()
+    {
+        var settings = Settings(
+            Workspace(WorkspaceAgentName),
+            (ModelProviderReader.Key, "OpenAiCompatible"),
+            (OpenAiCompatibleChatClientFactory.EndpointKey, "http://localhost:8080/v1"));
+
+        settings.ModelProvider.Should().Be(ModelProvider.OpenAiCompatible);
+        settings.LocalModelEndpoint.Should().Be("http://localhost:8080/v1");
+    }
+
+    [Fact]
+    public void An_unknown_provider_is_refused_by_name()
+    {
+        var act = () => Settings(
+            Workspace(WorkspaceAgentName),
+            (ModelProviderReader.Key, "Llama"));
+
+        act.Should().Throw<InvalidOperationException>().WithMessage($"*{ModelProviderReader.Key}*");
     }
 
     private static (string Key, string Value) Workspace(string name)

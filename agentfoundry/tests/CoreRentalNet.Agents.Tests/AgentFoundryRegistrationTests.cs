@@ -142,7 +142,7 @@ public sealed class AgentFoundryRegistrationTests
 
         var catalogue = new McpAuthorizationConnection(
             catalog,
-            tokens,
+            new TokenServiceHeaderReader(tokens),
             NullLoggerFactory.Instance,
             NullLogger<McpAuthorizationConnection>.Instance);
 

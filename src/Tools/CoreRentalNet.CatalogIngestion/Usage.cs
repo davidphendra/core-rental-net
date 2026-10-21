@@ -16,14 +16,14 @@ internal static class Usage
         --seed          read the vector file and write the *_SeedProductEmbeddings.cs migration
 
         Every value has a default; a key is only needed when it differs. A value that is set but
-        unusable stops the run rather than falling back. The endpoint and the key have no default,
-        because there is nothing local to fall back to; seed mode does not read them, because a file
-        that is already built has nothing left to embed.
+        unusable stops the run rather than falling back. The endpoint has no default; seed mode does
+        not read it, because a file that is already built has nothing left to embed.
 
-        Embedding:Endpoint       the Azure OpenAI resource endpoint           (required to embed)
-        Embedding:ApiKey         the embedding deployment's key               (required to embed)
-        Embedding:Model          the deployment name the resource serves      (default text-embedding-3-small)
-        Embedding:Width          how many floats each vector holds            (default 384)
+        Embedding:Provider       AzureOpenAI or OpenAiCompatible                (default AzureOpenAI)
+        Embedding:Endpoint       the embedding server's OpenAI-compatible URL   (required to embed)
+        Embedding:ApiKey         the server's key; a local server may omit it   (required for AzureOpenAI)
+        Embedding:Model          the model the server serves                    (default text-embedding-3-small)
+        Embedding:Width          how many floats each vector holds              (default 384)
         Catalog:FilePath         path to products.json                        (default ../../shared/data/products.json)
         Database:Path            the SQLite file written, or read by --seed   (default the Host's App_Data/discovery.db)
         Seed:MigrationsDirectory the folder holding the *_SeedProductEmbeddings.cs shell

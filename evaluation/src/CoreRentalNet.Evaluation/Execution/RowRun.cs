@@ -10,4 +10,8 @@ public sealed record RowRun(
     int Repetition,
     string RunId,
     IReadOnlyList<StreamEventDto> Events,
-    RunTrace Trace);
+    RunTrace Trace)
+{
+    /// <summary>True when the case was stopped by its own execution budget.</summary>
+    public bool TimedOut { get; init; }
+}

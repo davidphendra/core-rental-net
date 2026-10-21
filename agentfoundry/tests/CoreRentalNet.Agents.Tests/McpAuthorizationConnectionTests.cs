@@ -18,7 +18,7 @@ public sealed class McpAuthorizationConnectionTests
     {
         var connection = new McpAuthorizationConnection(
             new McpSetting(string.Empty),
-            new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance),
+            new TokenServiceHeaderReader(new McpAccessTokenService(NullLogger<McpAccessTokenService>.Instance)),
             NullLoggerFactory.Instance,
             NullLogger<McpAuthorizationConnection>.Instance);
 

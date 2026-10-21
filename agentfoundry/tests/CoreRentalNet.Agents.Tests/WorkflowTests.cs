@@ -511,7 +511,7 @@ public sealed class WorkflowTests
     {
         catalogue ??= new McpAuthorizationConnection(
             new McpSetting(string.Empty),
-            tokens,
+            new TokenServiceHeaderReader(tokens),
             NullLoggerFactory.Instance,
             NullLogger<McpAuthorizationConnection>.Instance);
 

@@ -23,6 +23,16 @@ public static class CompareBaselineCommand
         var current = await BaselineReader.ReadAsync(currentPath, cancellationToken);
         var report = new BaselineComparer().Compare(baseline, current);
 
+        if (!report.Comparable)
+        {
+            Console.Error.WriteLine(
+                $"Not comparable: baseline is {baseline.Scope} " +
+                $"({baseline.Summary.Rows}/{baseline.TotalRows}), current is " +
+                $"{current.Scope} ({current.Summary.Rows}/{current.TotalRows}).");
+
+            return 2;
+        }
+
         Console.WriteLine($"Baseline passing rows: {report.BaselinePassingRows}");
         Console.WriteLine($"Regressions:           {report.Regressions.Count}");
         Console.WriteLine($"Regression rate:       {report.RegressionRate.ToString("P1", CultureInfo.InvariantCulture)}");

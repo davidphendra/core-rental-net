@@ -7,6 +7,16 @@ public sealed class BaselineComparer
 {
     public RegressionReport Compare(EvaluationReport baseline, EvaluationReport current)
     {
+        if (baseline.Scope != current.Scope || baseline.TotalRows != current.TotalRows)
+        {
+            return new RegressionReport(
+                Comparable: false,
+                BaselinePassingRows: 0,
+                Regressions: [],
+                RegressionRate: 0,
+                NewlyPassing: []);
+        }
+
         var currentByRow = current.Cases.ToDictionary(testCase => testCase.RowNumber);
         var baselinePassing = baseline.Cases.Where(testCase => testCase.CasePass).ToArray();
 

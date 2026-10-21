@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using CoreRentalNet.Agents.Features.EchoReverse;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 using CoreRentalNet.Agents.Hosting;
+using CoreRentalNet.Agents.Shared.Model;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -53,6 +54,21 @@ public sealed class StartupReportTests
         report.Should().Contain("git sha");
         report.Should().Contain("build id");
         report.Should().Contain("environment");
+    }
+
+    [Fact]
+    public void The_report_names_the_model_protocol_and_the_local_endpoint()
+    {
+        var report = Report(
+            Settings(
+                (WorkspaceSuggestionAgentIdentity.ConfigurationKey, WorkspaceAgentName),
+                (ModelProviderReader.Key, "OpenAiCompatible"),
+                (OpenAiCompatibleChatClientFactory.EndpointKey, "http://localhost:8080/v1")),
+            hosted: false);
+
+        report.Should().Contain(ModelProviderReader.Key);
+        report.Should().Contain(nameof(ModelProvider.OpenAiCompatible));
+        report.Should().Contain(OpenAiCompatibleChatClientFactory.EndpointKey);
     }
 
     private static string Report(AgentHostSettings settings, bool hosted)

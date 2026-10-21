@@ -1,3 +1,4 @@
+using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Evidence;
 using CoreRentalNet.Evaluation.Execution;
 using Microsoft.Agents.AI;
@@ -12,7 +13,10 @@ public sealed class EvaluationReportFactory
     public EvaluationReport Create(
         IReadOnlyList<RowRun> runs,
         IReadOnlyList<EvalItem> items,
-        IReadOnlyList<AgentEvaluationResults> results)
+        IReadOnlyList<AgentEvaluationResults> results,
+        EvaluationScope scope,
+        int totalRows,
+        string? stopReason)
     {
         var metrics = ProjectMetrics(runs, results);
         var itemsByRunId = runs
@@ -28,7 +32,12 @@ public sealed class EvaluationReportFactory
         return new EvaluationReport(
             Cases: cases,
             Metrics: metrics,
-            Summary: Summarize(cases, runs.Count));
+            Summary: Summarize(cases, runs.Count))
+        {
+            Scope = scope,
+            TotalRows = totalRows,
+            StopReason = stopReason,
+        };
     }
 
     private static IReadOnlyList<MetricRow> ProjectMetrics(
@@ -108,6 +117,7 @@ public sealed class EvaluationReportFactory
             .SelectMany(metric => (metric.Reason ?? string.Empty)
                 .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .Where(code => code.Length > 0)
+            .Concat(run.TimedOut ? [FailureCodes.CaseTimeout] : [])
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 

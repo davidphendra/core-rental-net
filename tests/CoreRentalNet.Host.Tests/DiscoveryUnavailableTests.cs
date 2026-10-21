@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Extentions;
 using CoreRentalNet.Modules.Discovery.Application.Indexing;
@@ -20,10 +21,10 @@ namespace CoreRentalNet.Host.Tests;
 public sealed class DiscoveryUnavailableTests
 {
     private static VectorEmbeddingSettings Configured()
-        => new("https://example.openai.azure.com/", "key", "text-embedding-3-small", 384);
+        => new(EmbeddingProvider.AzureOpenAI, "https://example.openai.azure.com/", "key", "text-embedding-3-small", 384);
 
     private static VectorEmbeddingSettings Unconfigured()
-        => new(string.Empty, string.Empty, string.Empty, 384);
+        => new(EmbeddingProvider.AzureOpenAI, string.Empty, string.Empty, string.Empty, 384);
 
     /// <summary>An application with just enough registered to run the gate, and a log a test can read.</summary>
     private static (WebApplication App, StubCatalogIndexFreshnessService Freshness, CapturingLoggerProvider Logs) Host(

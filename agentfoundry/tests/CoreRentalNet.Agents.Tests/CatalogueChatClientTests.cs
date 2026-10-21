@@ -85,7 +85,7 @@ public sealed class CatalogueChatClientTests
         var mcpSettings = new McpSetting(endpoint);
         var catalogue = new McpAuthorizationConnection(
             mcpSettings,
-            tokens,
+            new TokenServiceHeaderReader(tokens),
             NullLoggerFactory.Instance,
             NullLogger<McpAuthorizationConnection>.Instance);
 

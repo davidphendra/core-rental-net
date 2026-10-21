@@ -1,3 +1,4 @@
+using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Execution;
 using Microsoft.Agents.AI;
 
@@ -11,9 +12,12 @@ public sealed class EvaluationPipeline(
 {
     public async Task<EvaluationReport> EvaluateAsync(
         IReadOnlyList<RowRun> runs,
+        EvaluationScope scope,
+        int totalRows,
+        string? stopReason,
         CancellationToken cancellationToken)
     {
-        var items = await itemFactory.CreateAsync(runs, cancellationToken);
+        var items = itemFactory.Create(runs);
         var results = new List<AgentEvaluationResults>(evaluators.Count);
 
         foreach (var evaluator in evaluators)
@@ -26,6 +30,6 @@ public sealed class EvaluationPipeline(
                 cancellationToken));
         }
 
-        return reportFactory.Create(runs, items, results);
+        return reportFactory.Create(runs, items, results, scope, totalRows, stopReason);
     }
 }

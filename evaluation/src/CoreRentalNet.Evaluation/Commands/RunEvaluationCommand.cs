@@ -7,26 +7,38 @@ using CoreRentalNet.Evaluation.Evidence;
 using CoreRentalNet.Evaluation.Execution;
 using CoreRentalNet.Evaluation.Reporting;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 
 namespace CoreRentalNet.Evaluation.Commands;
 
-/// <summary>Runs the 200 cases through the real agent and writes the report.</summary>
+/// <summary>Runs the selected cases through the real agent and writes the report.</summary>
 public static class RunEvaluationCommand
 {
     public static async Task<int> RunAsync(string[] args, CancellationToken cancellationToken = default)
     {
-        var options = Parse(args);
+        EvaluationOptions options;
+
+        try
+        {
+            options = RunEvaluationOptionsParser.Parse(args);
+        }
+        catch (ArgumentException exception)
+        {
+            Console.Error.WriteLine(exception.Message);
+            return 4;
+        }
 
         if (options.AgentEndpoint is null)
         {
             Console.Error.WriteLine("--agent-endpoint is required.");
-            return 1;
+            return 4;
         }
 
-        if (string.IsNullOrWhiteSpace(options.CallerToken))
+        if (options.AuthMode == EvaluationAuthMode.StaticToken
+            && string.IsNullOrWhiteSpace(options.CallerToken))
         {
-            Console.Error.WriteLine("--caller-token or EVALUATION_CALLER_TOKEN is required.");
-            return 1;
+            Console.Error.WriteLine("--caller-token is required when --auth-mode static is used.");
+            return 2;
         }
 
         var loaded = CaseSetLoader.Load(options.TestScriptPath, options.ProductsPath);
@@ -34,20 +46,55 @@ public static class RunEvaluationCommand
         if (!loaded.Validation.IsValid)
         {
             Console.Error.WriteLine("The fixture is invalid; run validate-cases first.");
-            return 1;
+            return 4;
         }
 
-        var agent = new AgentHttpClient(options.AgentEndpoint, options.AgentName, options.CallerToken);
-        var traceReader = new EvaluationTraceReader(options.TraceDirectory);
-        var runner = new EvaluationRunner(agent, traceReader);
+        // Validation covered the whole fixture; only now does the scope reduce what is run.
+        var selected = EvaluationCaseSetSelector.Select(loaded.Cases, options.Scope);
+
+        using var tokenHttpClient = new HttpClient(new HttpClientHandler
+        {
+            AllowAutoRedirect = false,
+            UseCookies = false,
+        });
+
+        ICallerTokenProvider tokenProvider = options.AuthMode switch
+        {
+            EvaluationAuthMode.LocalProvider => new LocalProviderTokenProvider(
+                options,
+                tokenHttpClient,
+                TimeProvider.System),
+            EvaluationAuthMode.StaticToken => new StaticCallerTokenProvider(options.CallerToken!),
+            _ => throw new ArgumentOutOfRangeException(nameof(options), options.AuthMode, null),
+        };
+
+        IReadOnlyList<AITool> tools;
+
+        try
+        {
+            var token = await tokenProvider.GetAsync(cancellationToken).ConfigureAwait(false);
+            IToolCatalog toolCatalog = options.McpEndpoint is null
+                ? new EmptyToolCatalog()
+                : new McpToolCatalog(options.McpEndpoint);
+
+            tools = await new AuthenticationPreflight(toolCatalog, TimeProvider.System)
+                .RunAsync(token, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (CallerTokenException exception)
+        {
+            Console.Error.WriteLine($"Authentication failed: {exception.Message}");
+            return 2;
+        }
+        catch (AuthenticationPreflightException exception)
+        {
+            Console.Error.WriteLine($"Authentication preflight failed: {exception.Message}");
+            return 2;
+        }
+
         var projector = new WorkspaceTraceProjector(options.MaximumSelectedProductsPerComponent);
         var contextFactory = new EvaluationContextFactory(projector, SlotCapacities.Default);
-
-        IToolCatalog toolCatalog = options.McpEndpoint is null || string.IsNullOrWhiteSpace(options.CallerToken)
-            ? new EmptyToolCatalog()
-            : new McpToolCatalog(options.McpEndpoint, options.CallerToken);
-
-        var itemFactory = new EvalItemFactory(toolCatalog, contextFactory);
+        var itemFactory = new EvalItemFactory(tools, contextFactory);
 
         var evaluators = new List<IAgentEvaluator>
         {
@@ -68,10 +115,41 @@ public static class RunEvaluationCommand
         }
 
         var pipeline = new EvaluationPipeline(itemFactory, evaluators, new EvaluationReportFactory());
+        var agent = new AgentHttpClient(options.AgentEndpoint, options.AgentName);
+        var traceReader = new EvaluationTraceReader(options.TraceDirectory);
+        var runner = new EvaluationRunner(agent, traceReader, tokenProvider, options.CaseTimeout);
 
-        Console.WriteLine($"Running {loaded.Cases.Cases.Count} cases x {options.Repetitions} repetitions...");
-        var runs = await runner.RunAsync(loaded.Cases, options.Repetitions, cancellationToken);
-        var report = await pipeline.EvaluateAsync(runs, cancellationToken);
+        Console.WriteLine(
+            $"Running {selected.Cases.Count}/{loaded.Cases.Cases.Count} cases " +
+            $"({options.Scope}) x {options.Repetitions} repetitions...");
+
+        IReadOnlyList<RowRun> runs;
+        string? stopReason = null;
+
+        try
+        {
+            runs = await runner.RunAsync(selected, options.Repetitions, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (CaseTimeoutException exception)
+        {
+            runs = exception.Runs;
+            stopReason = FailureCodes.CaseTimeout;
+            Console.Error.WriteLine($"Stopped: {exception.Message}");
+        }
+        catch (CallerTokenException exception)
+        {
+            Console.Error.WriteLine($"Authentication failed: {exception.Message}");
+            return 2;
+        }
+
+        var report = await pipeline.EvaluateAsync(
+                runs,
+                options.Scope,
+                loaded.Cases.Cases.Count,
+                stopReason,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var reportDirectory = Path.GetDirectoryName(options.ReportPath);
         if (!string.IsNullOrEmpty(reportDirectory))
@@ -79,84 +157,20 @@ public static class RunEvaluationCommand
             Directory.CreateDirectory(reportDirectory);
         }
 
-        await JsonReportWriter.WriteAsync(report, options.ReportPath, cancellationToken);
-        await MarkdownReportWriter.WriteAsync(report, Path.ChangeExtension(options.ReportPath, ".md"), cancellationToken);
+        await JsonReportWriter.WriteAsync(report, options.ReportPath, cancellationToken).ConfigureAwait(false);
+        await MarkdownReportWriter.WriteAsync(
+                report,
+                Path.ChangeExtension(options.ReportPath, ".md"),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         Console.WriteLine($"Rows: {report.Summary.Rows}");
         Console.WriteLine($"Executions: {report.Summary.Executions}");
         Console.WriteLine($"Case pass: {report.Summary.CasePass}/{report.Summary.Rows} ({report.Summary.CasePassRate:P1})");
         Console.WriteLine($"Report: {options.ReportPath}");
 
-        return report.Summary.CasePass == report.Summary.Rows ? 0 : 1;
-    }
-
-    private static EvaluationOptions Parse(string[] args)
-    {
-        var options = new EvaluationOptions
-        {
-            TestScriptPath = Path.Combine(AppContext.BaseDirectory, "Test_Script.md"),
-            ProductsPath = Path.Combine(AppContext.BaseDirectory, "products.json"),
-            JudgeEndpoint = Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT") is { Length: > 0 } endpoint
-                ? new Uri(endpoint)
-                : null,
-            JudgeModel = "gpt-4.1-mini",
-            CallerToken = Environment.GetEnvironmentVariable("EVALUATION_CALLER_TOKEN"),
-            ReportPath = "specs/evaluation/reports/latest.json",
-        };
-
-        for (var index = 0; index < args.Length; index++)
-        {
-            var value = args.ElementAtOrDefault(index + 1);
-
-            switch (args[index])
-            {
-                case "--repetitions" when value is not null && int.TryParse(value, out var repetitions):
-                    options = options with { Repetitions = repetitions };
-                    index++;
-                    break;
-
-                case "--agent-endpoint" when value is not null:
-                    options = options with { AgentEndpoint = new Uri(value) };
-                    index++;
-                    break;
-
-                case "--agent-name" when value is not null:
-                    options = options with { AgentName = value };
-                    index++;
-                    break;
-
-                case "--caller-token" when value is not null:
-                    options = options with { CallerToken = value };
-                    index++;
-                    break;
-
-                case "--mcp-endpoint" when value is not null:
-                    options = options with { McpEndpoint = new Uri(value) };
-                    index++;
-                    break;
-
-                case "--judge-endpoint" when value is not null:
-                    options = options with { JudgeEndpoint = new Uri(value) };
-                    index++;
-                    break;
-
-                case "--judge-model" when value is not null:
-                    options = options with { JudgeModel = value };
-                    index++;
-                    break;
-
-                case "--trace-directory" when value is not null:
-                    options = options with { TraceDirectory = value };
-                    index++;
-                    break;
-
-                case "--report" when value is not null:
-                    options = options with { ReportPath = value };
-                    index++;
-                    break;
-            }
-        }
-
-        return options;
+        return stopReason is not null
+            ? 3
+            : report.Summary.CasePass == report.Summary.Rows ? 0 : 1;
     }
 }

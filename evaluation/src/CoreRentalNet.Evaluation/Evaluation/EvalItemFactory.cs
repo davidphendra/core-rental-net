@@ -8,19 +8,13 @@ namespace CoreRentalNet.Evaluation.Evaluation;
 
 /// <summary>Builds the trace-enriched item the built-in evaluators score.</summary>
 public sealed class EvalItemFactory(
-    IToolCatalog toolCatalog,
+    IReadOnlyList<AITool> tools,
     EvaluationContextFactory contextFactory)
 {
-    public async Task<IReadOnlyList<EvalItem>> CreateAsync(
-        IReadOnlyList<RowRun> runs,
-        CancellationToken cancellationToken)
-    {
-        var tools = await toolCatalog.ListAsync(cancellationToken);
+    public IReadOnlyList<EvalItem> Create(IReadOnlyList<RowRun> runs)
+        => [.. runs.Select(Create)];
 
-        return [.. runs.Select(run => Create(run, tools))];
-    }
-
-    private EvalItem Create(RowRun run, IReadOnlyList<AITool> tools)
+    private EvalItem Create(RowRun run)
     {
         var context = contextFactory.Create(run);
         var conversation = EvalConversationFactory.Create(context, run.Case.Sentence);

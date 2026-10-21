@@ -16,6 +16,12 @@ public static class MarkdownReportWriter
 
         text.AppendLine("# Workspace Suggestion Evaluation");
         text.AppendLine();
+        text.AppendLine($"Scope: **{report.Scope}** ({report.Summary.Rows} of {report.TotalRows} rows)  ");
+        if (!string.IsNullOrWhiteSpace(report.StopReason))
+        {
+            text.AppendLine($"Stopped: **{report.StopReason}**  ");
+        }
+
         text.AppendLine($"Rows: **{report.Summary.Rows}**  ");
         text.AppendLine($"Executions: **{report.Summary.Executions}**  ");
         text.AppendLine($"Case pass: **{report.Summary.CasePass}/{report.Summary.Rows} " +

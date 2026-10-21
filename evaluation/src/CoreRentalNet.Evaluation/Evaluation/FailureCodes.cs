@@ -3,6 +3,7 @@ namespace CoreRentalNet.Evaluation.Evaluation;
 /// <summary>Stable failure codes, so a report can be grouped without parsing prose.</summary>
 public static class FailureCodes
 {
+    public const string CaseTimeout = "CASE_TIMEOUT";
     public const string NoCandidate = "NO_CANDIDATE";
     public const string AnswerMismatch = "ANSWER_MISMATCH";
     public const string WorkflowStatus = "WORKFLOW_STATUS";

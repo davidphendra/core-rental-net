@@ -14,19 +14,19 @@ internal static class SharedModelClient
     /// <summary>The model client, or a startup failure that names the setting nobody set.</summary>
     public static IChatClient BuildSharedModelClient(
         this AgentHostBuilder builder,
-        ModelTransportRetryOptions modelTransport)
+        AgentHostSettings settings)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(modelTransport);
+        ArgumentNullException.ThrowIfNull(settings);
 
         try
         {
-            var credential = FoundryCredential.Create(
-                builder.WebApplicationBuilder.Environment,
-                builder.Configuration
-            );
-
-            return AgentFoundryRegistration.BuildChatClient(builder.Configuration, credential, modelTransport);
+            return ModelClientFactorySelector
+                .Select(
+                    settings,
+                    builder.Configuration,
+                    builder.WebApplicationBuilder.Environment)
+                .Create();
         }
         catch (Exception exception)
         {
