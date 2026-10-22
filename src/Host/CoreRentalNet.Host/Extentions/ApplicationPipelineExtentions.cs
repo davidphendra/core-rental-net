@@ -22,6 +22,7 @@ internal static class ApplicationPipelineExtentions
 
         UseApiResponses(app);
         UseRevalidatingStaticFiles(app);
+        app.UseMiddleware<McpTimingMiddleware>();
         UseIdentity(app, identity);
         UseApplicationEndpoints(app);
 

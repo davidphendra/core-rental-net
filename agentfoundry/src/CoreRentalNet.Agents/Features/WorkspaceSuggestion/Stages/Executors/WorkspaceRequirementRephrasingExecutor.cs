@@ -18,6 +18,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 internal sealed class WorkspaceRequirementRephrasingExecutor(
     AIAgent stageAgent,
     WorkspaceComponentSearchVocabularyLimitPolicy vocabularyLimitPolicy,
+    WorkspaceRequirementBudgetInvariantPolicy budgetInvariantPolicy,
+    WorkspaceAccessoryRelevancePolicy accessoryRelevancePolicy,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger, modelBacked: true)
 {
@@ -40,7 +42,10 @@ internal sealed class WorkspaceRequirementRephrasingExecutor(
                     cancellationToken: stageCancellationToken);
 
                 workspaceSuggestionWorkflowState.RequirementExpansion =
-                    vocabularyLimitPolicy.ApplySearchVocabularyLimits(agentResponse.Result);
+                    accessoryRelevancePolicy.ApplyRequestedAccessories(
+                        budgetInvariantPolicy.ApplyBudgetInvariant(
+                            vocabularyLimitPolicy.ApplySearchVocabularyLimits(agentResponse.Result),
+                            workspaceSuggestionWorkflowState.CustomerStatedCeilingMonthly));
             },
             cancellationToken);
 

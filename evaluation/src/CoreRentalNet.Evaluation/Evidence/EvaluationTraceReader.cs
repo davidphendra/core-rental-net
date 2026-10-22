@@ -18,6 +18,7 @@ public sealed class EvaluationTraceReader(string traceDirectory) : ITraceReader
 
         var stageCalls = new List<TraceStageCall>();
         var toolExchanges = new List<TraceToolExchange>();
+        var spans = new List<TraceSpan>();
 
         foreach (var line in await File.ReadAllLinesAsync(path, cancellationToken))
         {
@@ -56,6 +57,29 @@ public sealed class EvaluationTraceReader(string traceDirectory) : ITraceReader
             }
         }
 
-        return new RunTrace(runId, stageCalls, toolExchanges);
+        var spansPath = Path.Combine(traceDirectory, "spans", $"{runId}.jsonl");
+
+        if (File.Exists(spansPath))
+        {
+            foreach (var line in await File.ReadAllLinesAsync(spansPath, cancellationToken))
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                var span = JsonSerializer.Deserialize<TraceSpan>(line, EvaluationJson.Options);
+
+                if (span is not null)
+                {
+                    spans.Add(span);
+                }
+            }
+        }
+
+        return new RunTrace(runId, stageCalls, toolExchanges)
+        {
+            Spans = spans,
+        };
     }
 }

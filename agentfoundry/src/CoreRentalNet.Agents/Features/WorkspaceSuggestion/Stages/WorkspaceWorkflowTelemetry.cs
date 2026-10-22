@@ -134,7 +134,7 @@ internal static class WorkspaceWorkflowTelemetry
     private static string BoundedIssueCodeOf(string issueCode)
         => issueCode switch
         {
-            "MISSING_SLOT" or "SLOT_PURPOSE_UNSATISFIED" or "MONTHLY_CEILING_EXCEEDED"
+            "MISSING_SLOT" or "UNREQUESTED_SLOT" or "SLOT_PURPOSE_UNSATISFIED" or "MONTHLY_CEILING_EXCEEDED"
                 or "SETUPS_NOT_DISTINCT" or "QUERY_MISMATCH" or "COMPONENT_BUDGET_EXCLUDES_ALL"
                 or "BUDGET_ALLOCATION_EXCEEDS_TOTAL" => issueCode,
             _ => "other",

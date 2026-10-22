@@ -1,5 +1,6 @@
 using CoreRentalNet.BuildingBlocks.Domain;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
+using CoreRentalNet.Modules.Catalog.Domain;
 using CoreRentalNet.Modules.Catalog.Infrastructure.Persistence;
 using CoreRentalNet.Modules.Catalog.Infrastructure.ProductImage;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,9 @@ public sealed class SqliteProductCatalogService(CatalogContext context, string? 
         ArgumentNullException.ThrowIfNull(scope);
 
         take = Math.Clamp(take, 1, CatalogPageLimits.Maximum);
-        var subCategory = (int?)scope.SubCategory;
+        var subCategory = scope.SubCategory is { } requestedSubCategory
+            ? (int?)ProductDtoMapper.ToProductSubCategory(requestedSubCategory)
+            : null;
 
         var rows = await context.Products
             .AsNoTracking()
@@ -110,7 +113,9 @@ public sealed class SqliteProductCatalogService(CatalogContext context, string? 
             row.Sku,
             row.Name,
             (CatalogCategory)row.Category,
-            row.SubCategory is { } subCategory ? (CatalogSubCategory)subCategory : null,
+            row.SubCategory is { } subCategory
+                ? ProductDtoMapper.ToCatalogSubCategory((ProductSubCategory)subCategory)
+                : null,
             new Money(row.Amount, row.Currency),
             row.Description,
             resolved.Path,

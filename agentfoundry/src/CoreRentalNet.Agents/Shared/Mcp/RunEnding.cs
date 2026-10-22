@@ -8,15 +8,15 @@ namespace CoreRentalNet.Agents.Shared.Mcp;
 /// caller's token, so releasing the token first makes the transport's own cleanup fail — the failure the log
 /// reports as "{Endpoint} shutdown failed." The token is given up only once nothing that presents it is open.
 /// </remarks>
-internal sealed class RunEnding(IRunScope runScope) : IRunEnding
+internal sealed class RunEnding(IRunScopedServiceResolver runScopedServiceResolver) : IRunEnding
 {
     public async ValueTask EndTheRunAsync()
     {
-        await runScope.Resolve<IMcpAuthorizationConnection>().CloseAsync();
+        await runScopedServiceResolver.Resolve<IMcpAuthorizationConnection>().CloseAsync();
 
         // Compatibility path for the legacy token holder: the current host keeps the token in the run context
         // and lets the call scope dispose it, so this is a no-op there.
-        if (runScope.TryResolve<IMcpAccessTokenService>(out var tokens))
+        if (runScopedServiceResolver.TryResolve<IMcpAccessTokenService>(out var tokens))
         {
             tokens.Release();
         }

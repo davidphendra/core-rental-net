@@ -15,7 +15,7 @@ namespace CoreRentalNet.Agents.Tests;
 /// run's token service and ledger. The graph-level accessor is built once here, exactly as the graph builds it,
 /// and must return each request's own instance.
 /// </remarks>
-public sealed class RunScopeTests
+public sealed class RunScopedServiceResolverTests
 {
     [Fact]
     public void Each_request_reaches_its_own_run_scoped_services()
@@ -25,7 +25,7 @@ public sealed class RunScopeTests
         services.AddHttpContextAccessor();
         services.AddScoped<IMcpAccessTokenService, McpAccessTokenService>();
         services.AddScoped<McpToolAnswerLedger>();
-        services.AddSingleton<IRunScope, RunScope>();
+        services.AddSingleton<IRunScopedServiceResolver, RunScopedServiceResolver>();
 
         using var provider = services.BuildServiceProvider(
             new ServiceProviderOptions { ValidateScopes = true });
@@ -33,7 +33,7 @@ public sealed class RunScopeTests
         var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
 
         // Built once, from the root, exactly as the served graph is.
-        var runScope = provider.GetRequiredService<IRunScope>();
+        var runScope = provider.GetRequiredService<IRunScopedServiceResolver>();
 
         using var firstRequest = provider.CreateScope();
         httpContextAccessor.HttpContext = new DefaultHttpContext { RequestServices = firstRequest.ServiceProvider };

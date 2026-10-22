@@ -27,7 +27,9 @@ public static class MarkdownReportWriter
         text.AppendLine($"Case pass: **{report.Summary.CasePass}/{report.Summary.Rows} " +
                         $"({Percentage(report.Summary.CasePassRate)})**");
         text.AppendLine();
+        AppendTiming(text, report);
 
+        text.AppendLine();
         text.AppendLine("## Metrics");
         text.AppendLine();
         text.AppendLine("| Metric | Case pass rate |");
@@ -84,6 +86,58 @@ public static class MarkdownReportWriter
 
         await File.WriteAllTextAsync(path, text.ToString(), cancellationToken);
     }
+
+    private static void AppendTiming(StringBuilder text, EvaluationReport report)
+    {
+        text.AppendLine("## Timing");
+        text.AppendLine();
+        text.AppendLine("| Case | Total | Model | Tool | Guardrail | Host | Unattributed | Slowest stage |");
+        text.AppendLine("|---|---:|---:|---:|---:|---:|---:|---|");
+
+        foreach (var testCase in report.Cases)
+        {
+            foreach (var repetition in testCase.Repetitions)
+            {
+                if (repetition.Timing is not { } timing)
+                {
+                    continue;
+                }
+
+                text.AppendLine(
+                    $"| {testCase.CaseId} | {Ms(timing.TotalMs)} | {Ms(timing.ModelMs)} | " +
+                    $"{Ms(timing.ToolMs)} | {Ms(timing.GuardrailMs)} | {Ms(timing.HostMs)} | " +
+                    $"{Ms(timing.UnattributedMs)} | {timing.SlowestStage ?? "-"} |");
+            }
+        }
+
+        text.AppendLine();
+        text.AppendLine("### Stage timing");
+        text.AppendLine();
+        text.AppendLine("| Case | Stage | Total | Model | Tool | Guardrail | Host | Unattributed |");
+        text.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|");
+
+        foreach (var testCase in report.Cases)
+        {
+            foreach (var repetition in testCase.Repetitions)
+            {
+                if (repetition.Timing is not { } timing)
+                {
+                    continue;
+                }
+
+                foreach (var stage in timing.Stages)
+                {
+                    text.AppendLine(
+                        $"| {testCase.CaseId} | {stage.Stage} | {Ms(stage.TotalMs)} | " +
+                        $"{Ms(stage.ModelMs)} | {Ms(stage.ToolMs)} | {Ms(stage.GuardrailMs)} | " +
+                        $"{Ms(stage.HostMs)} | {Ms(stage.UnattributedMs)} |");
+                }
+            }
+        }
+    }
+
+    private static string Ms(double value)
+        => $"{value.ToString("0.0", CultureInfo.InvariantCulture)} ms";
 
     private static string Percentage(double value)
         => value.ToString("P1", CultureInfo.InvariantCulture);

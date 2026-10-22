@@ -37,6 +37,29 @@ public sealed class McpAccessTokenHandlerTests
             .Which.Headers.Authorization.Should().Be(new AuthenticationHeaderValue("Bearer", TheCallersToken));
     }
 
+    [Fact]
+    public async Task The_production_handler_attaches_the_scoped_token()
+    {
+        using var tokenScope = McpRunScope.Enter(TheCallersToken);
+
+        var catalogueServer = new RecordingMcpRequestHandler();
+
+        var tokenHandler = new McpAccessTokenHandler(
+            PolicyFor(TheCatalogueServer),
+            NullLogger<McpAccessTokenHandler>.Instance)
+        {
+            InnerHandler = catalogueServer,
+        };
+
+        using var httpClient = new HttpClient(tokenHandler);
+
+        await SendAsync(httpClient, $"{TheCatalogueServer}/messages");
+
+        catalogueServer.Requests.Should().ContainSingle()
+            .Which.Headers.Authorization.Should().Be(
+                new AuthenticationHeaderValue("Bearer", TheCallersToken));
+    }
+
     [Fact] // the token is read from the provider per request, so the newest value is the one that is sent
     public async Task The_token_is_read_afresh_on_every_request()
     {

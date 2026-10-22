@@ -53,6 +53,13 @@ public sealed class EvaluationRunner(
                     timedOut = true;
                 }
 
+                if (timedOut)
+                {
+                    // The activity listener writes the stopped span as the node unwinds. Give it a moment to
+                    // flush before reading the trace, or the timing report loses the only evidence available.
+                    await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken).ConfigureAwait(false);
+                }
+
                 var trace = await traceReader.ReadAsync(runId, cancellationToken).ConfigureAwait(false);
 
                 runs.Add(new RowRun(testCase, repetition, runId, events, trace)

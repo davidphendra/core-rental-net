@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
@@ -34,7 +35,8 @@ namespace CoreRentalNet.Host.Mcp;
 [McpServerToolType]
 public sealed class SearchCatalogueTool(
     ISearchCatalogHandler handler,
-    IProductCatalogService catalogue)
+    IProductCatalogService catalogue,
+    HostRequestTiming timing)
 {
     /// <summary>The tool's name, as the model and a test both see it.</summary>
     public const string ToolName = "search_catalogue";
@@ -55,11 +57,13 @@ public sealed class SearchCatalogueTool(
         var scope = CatalogToolFilters.ScopeFrom(category, subCategory);
         var take = CatalogToolLimits.Clamp(limit);
 
+        var stopwatch = Stopwatch.StartNew();
         var matched = handler.Handle(new SearchCatalogQuery(
             scope,
             ExpandedSearchTerms: terms,
             MaximumMonthlyAmount: maximumMonthlyAmount,
             Take: take));
+        timing.Record("name-search", stopwatch.Elapsed);
 
         return new CatalogueSearchToolAnswer(
             CatalogAnswer.Of(CatalogAnswer.Cap(matched, take), matched.Count),

@@ -1,4 +1,7 @@
+using System.Diagnostics;
 using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
+using CoreRentalNet.Agents.Shared.Mcp;
+using CoreRentalNet.Agents.Shared.Telemetry;
 using Microsoft.Extensions.AI;
 
 namespace CoreRentalNet.Agents.Shared.Guardrails.Tools;
@@ -17,31 +20,40 @@ namespace CoreRentalNet.Agents.Shared.Guardrails.Tools;
 /// </para>
 /// </remarks>
 internal sealed class GuardedToolFunction(
-    AIFunction toolFunction,
-    IToolGuardPipeline pipeline) : DelegatingAIFunction(toolFunction)
+    AIFunction catalogueTool,
+    IToolGuardPipeline catalogueGuardPipeline,
+    IMcpAccessTokenService? accessTokenService) : DelegatingAIFunction(catalogueTool)
 {
     protected override async ValueTask<object?> InvokeCoreAsync(
         AIFunctionArguments arguments,
         CancellationToken cancellationToken)
     {
-        var invocation = new ToolInvocation(Name, arguments);
+        // The token is ambient only while this catalogue tool is running. The lease restores the previous
+        // context before control returns to the function loop.
+        using var tokenScope = McpRunScope.Enter(accessTokenService?.Token);
 
-        var decision = await pipeline.BeforeAsync(invocation, cancellationToken);
+        var toolInvocation = new ToolInvocation(Name, arguments);
+        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+        using var toolActivity = WorkspaceTelemetry.ActivitySource.StartActivity("tool.invoke");
+        toolActivity?.SetTag(WorkspaceTelemetry.ToolName, Name);
+        toolActivity?.SetTag(WorkspaceTelemetry.RunId, runId);
 
-        if (!decision.Allowed)
+        var guardrailDecision = await catalogueGuardPipeline.BeforeAsync(toolInvocation, cancellationToken);
+
+        if (!guardrailDecision.Allowed)
         {
             // Returned rather than thrown: the function loop hands the reason back to the model, which may
             // correct the call. A throw would fail the stage and give the model no chance to.
-            return decision.Reason ?? "The call was refused.";
+            return guardrailDecision.Reason ?? "The call was refused.";
         }
 
-        var result = await base.InvokeCoreAsync(arguments, cancellationToken);
+        var toolResult = await base.InvokeCoreAsync(arguments, cancellationToken);
 
-        var validated = await pipeline.AfterAsync(
-            invocation,
-            new UntrustedToolResult(invocation.ToolName, result),
+        var validatedToolResult = await catalogueGuardPipeline.AfterAsync(
+            toolInvocation,
+            new UntrustedToolResult(toolInvocation.ToolName, toolResult),
             cancellationToken);
 
-        return validated.Value;
+        return validatedToolResult.Value;
     }
 }

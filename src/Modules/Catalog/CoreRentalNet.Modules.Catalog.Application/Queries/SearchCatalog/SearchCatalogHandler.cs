@@ -38,16 +38,23 @@ public sealed class SearchCatalogHandler(
         }
 
         var page = catalogService
-            .SearchPageAsync(query.Scope, query.MaximumMonthlyAmount, 0, query.Take, CancellationToken.None)
+            .SearchPageAsync(
+                query.Scope,
+                query.MaximumMonthlyAmount,
+                0,
+                CatalogPageLimits.Maximum,
+                CancellationToken.None)
             .GetAwaiter()
             .GetResult();
 
-        var rankedProducts = Rank(page.Items, query);
+        var rankedProducts = Rank(page.Items, query)
+            .Take(query.Take)
+            .ToArray();
 
         // Recorded at the boundary a customer crosses, not at the HTTP edge: an empty answer is a lost sale, and
         // this is the only place that can tell a real search from the catalogue simply being browsed.
         BusinessTelemetry.CatalogSearches.Add(1);
-        BusinessTelemetry.CatalogSearchResults.Record(rankedProducts.Count);
+        BusinessTelemetry.CatalogSearchResults.Record(rankedProducts.Length);
 
         return rankedProducts;
     }

@@ -3,12 +3,16 @@ using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Decides whether the composed setups satisfy the request. Validity only; no orchestration.</summary>
-internal sealed class WorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogger logger)
+internal sealed class WorkspaceSetupReviewExecutor(
+    AIAgent stageAgent,
+    WorkspaceSetupReviewEvidencePolicy reviewEvidencePolicy,
+    ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reviewer, logger, modelBacked: true)
 {
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
@@ -29,7 +33,12 @@ internal sealed class WorkspaceSetupReviewExecutor(AIAgent stageAgent, ILogger l
                     WorkspaceStageInput.Review(workspaceSuggestionWorkflowState),
                     cancellationToken: stageCancellationToken);
 
-                workspaceSuggestionWorkflowState.WorkspaceSetupReview = agentResponse.Result;
+                workspaceSuggestionWorkflowState.WorkspaceSetupReview = reviewEvidencePolicy.Apply(
+                    agentResponse.Result,
+                    workspaceSuggestionWorkflowState.OriginalCustomerQuery,
+                    workspaceSuggestionWorkflowState.ProposedWorkspaceSetups,
+                    workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates,
+                    workspaceSuggestionWorkflowState.RequirementExpansion);
             },
             cancellationToken);
 

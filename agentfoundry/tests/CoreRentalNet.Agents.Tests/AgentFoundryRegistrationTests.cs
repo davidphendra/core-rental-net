@@ -112,7 +112,7 @@ public sealed class AgentFoundryRegistrationTests
         services.AddLogging();
         services.AddHttpContextAccessor();
         services.AddSingleton(configuration);
-        services.AddSingleton<IRunScope, RunScope>();
+        services.AddSingleton<IRunScopedServiceResolver, RunScopedServiceResolver>();
 
         var servedAgentName = services.AddWorkspaceSuggestionFeature(
             configuration,
@@ -146,7 +146,7 @@ public sealed class AgentFoundryRegistrationTests
             NullLoggerFactory.Instance,
             NullLogger<McpAuthorizationConnection>.Instance);
 
-        var runScope = new StubRunScope(
+        var runScope = new StubRunScopedServiceResolver(
             (typeof(IMcpAccessTokenService), tokens),
             (typeof(IMcpAuthorizationConnection), catalogue),
             (typeof(ITelemetryChatClient), modelCallTelemetry),

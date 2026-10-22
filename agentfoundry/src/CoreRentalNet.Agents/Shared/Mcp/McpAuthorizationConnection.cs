@@ -67,12 +67,10 @@ internal sealed class McpAuthorizationConnection : IMcpAuthorizationConnection
             return _tools;
         }
 
-        McpRunContext? previous = McpRunScope.Current;
-
         try
         {
-            var accessToken = _accessTokenHeaderReader.ReadCallerAccessToken() ?? string.Empty;
-            McpRunScope.Current = new McpRunContext(AccessTokenHeader.Name, accessToken);
+            var callerAccessToken = _accessTokenHeaderReader.ReadCallerAccessToken() ?? string.Empty;
+            using var tokenScope = McpRunScope.Enter(callerAccessToken);
 
             _client = await McpAuthenticationHelper.ConnectAsync(
                 new Uri(_mcpSetting.McpEndpoint, UriKind.Absolute),
@@ -103,10 +101,6 @@ internal sealed class McpAuthorizationConnection : IMcpAuthorizationConnection
             // Typed rather than raw: the feature ends the run Unavailable when the catalogue refuses it, and a
             // transport exception would escape the workflow as a failed run instead.
             throw new CatalogueUnavailableException(_mcpSetting.McpEndpoint, exception);
-        }
-        finally
-        {
-            McpRunScope.Current = previous;
         }
 
         return _tools;

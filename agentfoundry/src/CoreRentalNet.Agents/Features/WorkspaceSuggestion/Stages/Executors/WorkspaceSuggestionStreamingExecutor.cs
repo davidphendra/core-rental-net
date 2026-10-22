@@ -42,6 +42,8 @@ internal abstract class WorkspaceSuggestionStreamingExecutor(
     {
         using var activity = WorkspaceTelemetry.ActivitySource.StartActivity(Id);
         activity?.SetTag(WorkspaceTelemetry.NodeKind, NodeKind);
+        activity?.SetTag(WorkspaceTelemetry.Stage, Id);
+        activity?.SetTag(WorkspaceTelemetry.RunId, workspaceSuggestionWorkflowState.CustomerWorkflowIdentifier);
         activity?.SetTag(WorkspaceTelemetry.RunAttempts, workspaceSuggestionWorkflowState.NextAttemptNumber - 1);
 
         logger.LogInformation("Node {Node} started.", Id);

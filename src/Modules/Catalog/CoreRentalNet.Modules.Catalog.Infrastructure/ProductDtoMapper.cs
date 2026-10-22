@@ -20,7 +20,7 @@ public static class ProductDtoMapper
             product.Sku,
             product.Name,
             Category(product.Category),
-            product.SubCategory is { } subCategory ? SubCategory(subCategory) : null,
+            product.SubCategory is { } subCategory ? ToCatalogSubCategory(subCategory) : null,
             product.MonthlyPrice,
             product.Description,
             product.ImagePath,
@@ -37,7 +37,8 @@ public static class ProductDtoMapper
             _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unknown catalogService category."),
         };
 
-    private static CatalogSubCategory SubCategory(ProductSubCategory subCategory)
+    /// <summary>The published vocabulary for one stored subcategory.</summary>
+    public static CatalogSubCategory ToCatalogSubCategory(ProductSubCategory subCategory)
         => subCategory switch
         {
             ProductSubCategory.Beanbag => CatalogSubCategory.Beanbag,
@@ -46,5 +47,17 @@ public static class ProductDtoMapper
             ProductSubCategory.Monitor => CatalogSubCategory.Monitor,
             ProductSubCategory.Plant => CatalogSubCategory.Plant,
             _ => throw new ArgumentOutOfRangeException(nameof(subCategory), subCategory, "Unknown catalogService subcategory."),
+        };
+
+    /// <summary>The stored vocabulary for one published subcategory.</summary>
+    public static ProductSubCategory ToProductSubCategory(CatalogSubCategory subCategory)
+        => subCategory switch
+        {
+            CatalogSubCategory.Beanbag => ProductSubCategory.Beanbag,
+            CatalogSubCategory.Coffee => ProductSubCategory.Coffee,
+            CatalogSubCategory.Lamp => ProductSubCategory.Lamp,
+            CatalogSubCategory.Monitor => ProductSubCategory.Monitor,
+            CatalogSubCategory.Plant => ProductSubCategory.Plant,
+            _ => throw new ArgumentOutOfRangeException(nameof(subCategory), subCategory, "Unknown application subcategory."),
         };
 }

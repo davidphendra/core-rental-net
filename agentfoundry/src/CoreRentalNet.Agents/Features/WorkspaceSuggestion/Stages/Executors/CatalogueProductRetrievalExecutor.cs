@@ -13,7 +13,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// <summary>Searches the catalogue with the caller's own entitlement, and chooses nothing.</summary>
 internal sealed class CatalogueProductRetrievalExecutor(
     AIAgent stageAgent,
-    IRunScope runScope,
+    IRunScopedServiceResolver runScopedServiceResolver,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger, modelBacked: true)
 {
@@ -28,7 +28,7 @@ internal sealed class CatalogueProductRetrievalExecutor(
         // An attempt's searches are the only ones its reranker may consider, so the ledger starts empty: an
         // accumulating one would hand attempt two the products attempt one rejected. The ledger is the run's own,
         // reached through the run scope because this executor belongs to the graph and outlives the request.
-        runScope.Resolve<McpToolAnswerLedger>().ClearRecordedAnswers();
+        runScopedServiceResolver.Resolve<McpToolAnswerLedger>().ClearRecordedAnswers();
 
         await RunProcessingStageAsync(
             workspaceSuggestionWorkflowState,

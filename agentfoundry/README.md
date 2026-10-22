@@ -380,11 +380,11 @@ Six stage agents, each one prompt and one profile (`WorkspaceSuggestionAgentRost
 | Stage | Agent name | Prompt | Decides | Tools |
 |---|---|---|---|---|
 | Verifier | `workspace-request-verifier` | `workspace-request-verifier.v2.md` | Is this a workspace request at all? | none |
-| Rephraser | `workspace-requirement-rephraser` | `workspace-requirement-rephraser.v2.md` | What does the customer want, and what words will find it? | none |
+| Rephraser | `workspace-requirement-rephraser` | `workspace-requirement-rephraser.v3.md` | What does the customer want, and what words will find it? | none |
 | Retriever | `catalogue-product-retriever` | `catalogue-product-retriever.v2.md` | What does the catalogue offer? | the catalogue's MCP tools — **BM25** keyword and **semantic** vector search, as the caller's token allows |
 | Reranker | `catalogue-candidate-reranker` | `catalogue-candidate-reranker.v2.md` | Which of what it offered answers each component? | none |
 | Composer | `workspace-setup-composer` | `workspace-setup-composer.v2.md` | Which products form a setup? | none |
-| Reviewer | `workspace-setup-reviewer` | `workspace-setup-reviewer.v2.md` | Does the setup set satisfy the request? | none |
+| Reviewer | `workspace-setup-reviewer` | `workspace-setup-reviewer.v3.md` | Does the setup set satisfy the request? | none |
 
 ### 9.4 Deterministic policies
 

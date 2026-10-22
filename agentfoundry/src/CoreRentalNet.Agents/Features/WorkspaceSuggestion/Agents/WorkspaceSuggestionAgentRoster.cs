@@ -29,7 +29,7 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Rephraser { get; } = new(
         Name: "workspace-requirement-rephraser",
-        PromptFileName: "workspace-requirement-rephraser.v2.md",
+        PromptFileName: "workspace-requirement-rephraser.v3.md",
         Description: "Turns the sentence into what the workspace must be and the words that find each part of it.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansion>());
 
@@ -54,7 +54,7 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Reviewer { get; } = new(
         Name: "workspace-setup-reviewer",
-        PromptFileName: "workspace-setup-reviewer.v2.md",
+        PromptFileName: "workspace-setup-reviewer.v3.md",
         Description: "Decides whether the composed setups satisfy the customer's request.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceSetupReviewResult>());
 

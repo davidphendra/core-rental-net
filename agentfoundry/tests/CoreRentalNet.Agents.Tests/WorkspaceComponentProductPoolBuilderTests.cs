@@ -38,6 +38,18 @@ public sealed class WorkspaceComponentProductPoolBuilderTests
         pool[0].Slot.Should().Be(WorkspaceSlot.Desk);
     }
 
+    [Fact]
+    public void A_host_shaped_monthly_price_is_read_into_the_product_amount()
+    {
+        var ledger = new McpToolAnswerLedger();
+        ledger.Record(CatalogueSearchToolNames.NameSearch, SearchArguments("desk", null), DeskAnswer);
+
+        var pool = PoolBuilder.BuildPoolFrom(ledger);
+
+        pool.Should().ContainSingle();
+        pool[0].Amount.Should().Be(4_200_000);
+    }
+
     [Fact] // the component comes from the search's arguments, so an accessory is not a desk
     public void The_component_is_read_off_the_arguments_the_search_was_made_with()
     {
@@ -81,7 +93,7 @@ public sealed class WorkspaceComponentProductPoolBuilderTests
         { "matches": { "value": [ { "sku": "DSKB08XN4JDR", "category": "desk", "name": "Sit-Stand Desk",
                                     "subCategory": null,
                                     "description": "A height-adjustable sitting or standing desk.",
-                                    "pricePerMonth": 4200000 } ] },
+                                    "monthlyPrice": { "amount": 4200000, "currency": "IDR" } } ] },
           "cheapestProductIgnoringTheCeiling": null }
         """;
 }

@@ -26,12 +26,12 @@ public sealed class EmbeddedInstructionSourceTests
     [Fact]
     public void The_rephrasing_prompt_is_embedded_and_readable()
     {
-        var source = new EmbeddedInstructionSource("workspace-requirement-rephraser.v2.md");
+        var source = new EmbeddedInstructionSource("workspace-requirement-rephraser.v3.md");
 
         source.Text.Should().NotBeNullOrWhiteSpace();
         source.Text.Should().Contain("search_terms", "the output contract is part of the prompt");
         source.Text.Should().Contain("total_budget", "the budget rules are part of the prompt");
-        source.Version.Should().Be("workspace-requirement-rephraser.v2");
+        source.Version.Should().Be("workspace-requirement-rephraser.v3");
     }
 
     [Fact]

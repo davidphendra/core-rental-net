@@ -17,7 +17,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 internal sealed class WorkspaceComponentProductPoolExecutor(
     WorkspaceComponentProductPoolBuilder poolBuilder,
     WorkspaceComponentProductPoolPolicy poolPolicy,
-    IRunScope runScope,
+    IRunScopedServiceResolver runScopedServiceResolver,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.ProductPool, logger)
 {
@@ -30,7 +30,7 @@ internal sealed class WorkspaceComponentProductPoolExecutor(
         CancellationToken cancellationToken = default)
     {
         workspaceSuggestionWorkflowState.CandidatePool = poolPolicy.ApplyPoolBounds(
-            poolBuilder.BuildPoolFrom(runScope.Resolve<McpToolAnswerLedger>()));
+            poolBuilder.BuildPoolFrom(runScopedServiceResolver.Resolve<McpToolAnswerLedger>()));
 
         return ValueTask.FromResult(workspaceSuggestionWorkflowState);
     }

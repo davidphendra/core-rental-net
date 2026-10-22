@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Presentation;
@@ -29,7 +30,8 @@ namespace CoreRentalNet.Host.Mcp;
 public sealed class SearchSimilarityCatalogueTool(
     ISearchSimilarityCatalogHandler handler,
     IProductCatalogService catalogue,
-    ILogger<SearchSimilarityCatalogueTool> logger)
+    ILogger<SearchSimilarityCatalogueTool> logger,
+    HostRequestTiming timing)
 {
     /// <summary>The tool's name, as the model and a test both see it.</summary>
     public const string ToolName = "search_similarity_catalogue";
@@ -53,9 +55,11 @@ public sealed class SearchSimilarityCatalogueTool(
 
         try
         {
+            var stopwatch = Stopwatch.StartNew();
             var matched = await handler.HandleAsync(
                 new SearchSimilarityCatalogQuery(scope, query, maximumMonthlyAmount, Take: take),
                 cancellationToken).ConfigureAwait(false);
+            timing.Record("similarity", stopwatch.Elapsed);
 
             return new CatalogueSearchToolAnswer(
                 CatalogAnswer.Of(CatalogAnswer.Cap(matched, take), matched.Count),

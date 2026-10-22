@@ -91,7 +91,7 @@ public sealed class CatalogueChatClientTests
 
         return new(
             inner,
-            new StubRunScope(
+            new StubRunScopedServiceResolver(
                 (typeof(IMcpAccessTokenService), tokens),
                 (typeof(IMcpAuthorizationConnection), catalogue),
                 (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),

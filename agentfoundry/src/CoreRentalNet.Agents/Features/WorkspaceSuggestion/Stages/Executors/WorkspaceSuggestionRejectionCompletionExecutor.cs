@@ -11,7 +11,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Ends a run whose sentence was not about a workspace at all, with no downstream stage run.</summary>
 internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
-    IRunScope runScope,
+    IRunScopedServiceResolver runScopedServiceResolver,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RejectionCompletion, logger)
 {
@@ -27,9 +27,9 @@ internal sealed class WorkspaceSuggestionRejectionCompletionExecutor(
         // in that order, stated in RunEnding — before the ending is announced, and long before the call's scope
         // is disposed. A later stage that reached for the token would find nothing, which is the point: nothing
         // after an ending is entitled to the caller's authority.
-        var telemetryChatClient = runScope.Resolve<ITelemetryChatClient>();
+        var telemetryChatClient = runScopedServiceResolver.Resolve<ITelemetryChatClient>();
 
-        await runScope.Resolve<IRunEnding>().EndTheRunAsync();
+        await runScopedServiceResolver.Resolve<IRunEnding>().EndTheRunAsync();
 
         workspaceSuggestionWorkflowState.RunStatus = WorkspaceSuggestionRunStatus.Rejected;
 

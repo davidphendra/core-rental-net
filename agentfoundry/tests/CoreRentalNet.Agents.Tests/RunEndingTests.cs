@@ -23,7 +23,7 @@ public sealed class RunEndingTests
 
         var connection = new RecordingMcpAuthorizationConnection(tokens);
 
-        var runScope = new StubRunScope(
+        var runScope = new StubRunScopedServiceResolver(
             (typeof(IMcpAuthorizationConnection), connection),
             (typeof(IMcpAccessTokenService), tokens));
 

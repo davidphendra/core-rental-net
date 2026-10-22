@@ -26,7 +26,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceInputExecutor(
-    IRunScope runScope,
+    IRunScopedServiceResolver runScopedServiceResolver,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
     ILogger logger)
     : ChatEntryStageExecutor(WorkspaceWorkflowExecutorNames.Input)
@@ -43,7 +43,7 @@ internal sealed class WorkspaceInputExecutor(
         bool? emitEvents,
         CancellationToken cancellationToken = default)
     {
-        var telemetryChatClient = runScope.Resolve<ITelemetryChatClient>();
+        var telemetryChatClient = runScopedServiceResolver.Resolve<ITelemetryChatClient>();
         var suggestionRequest = Read(messages) ?? FromSentence(messages);
 
         // The run's span opens here, in the one stage still inside the HTTP request, so it is parented to the

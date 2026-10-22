@@ -14,12 +14,14 @@ public static class EvaluationSlot
     public static string Canonicalize(string label)
         => label.Trim() switch
         {
-            "Desk" => Desk,
-            "Chair" => Chair,
+            Desk => Desk,
+            Chair => Chair,
             "Monitor" or "Monitors" => Monitor,
-            "Lamp" => Lamp,
-            "Plant" => Plant,
+            Lamp => Lamp,
+            Plant => Plant,
+            CoffeeStation => CoffeeStation,
             "Coffee Machine" => CoffeeStation,
+            RelaxZone => RelaxZone,
             "Bean Bag" => RelaxZone,
             var unknown => throw new InvalidOperationException($"Unknown workspace slot '{unknown}'."),
         };

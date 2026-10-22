@@ -10,7 +10,7 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 /// totals and the run's span are recorded per run and not shared between concurrent runs. The request's scope
 /// owns and disposes that instance, which is why this one disposes nothing.
 /// </remarks>
-internal sealed class RunScopedChatClient(IRunScope runScope) : IChatClient
+internal sealed class RunScopedChatClient(IRunScopedServiceResolver runScopedServiceResolver) : IChatClient
 {
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(
@@ -28,7 +28,7 @@ internal sealed class RunScopedChatClient(IRunScope runScope) : IChatClient
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => runScope.TryResolve<ITelemetryChatClient>(out var client)
+        => runScopedServiceResolver.TryResolve<ITelemetryChatClient>(out var client)
             ? client.GetService(serviceType, serviceKey)
             : null;
 
@@ -38,5 +38,5 @@ internal sealed class RunScopedChatClient(IRunScope runScope) : IChatClient
         // The run's client belongs to the request's scope; this graph-level forwarder owns nothing to dispose.
     }
 
-    private ITelemetryChatClient Current => runScope.Resolve<ITelemetryChatClient>();
+    private ITelemetryChatClient Current => runScopedServiceResolver.Resolve<ITelemetryChatClient>();
 }

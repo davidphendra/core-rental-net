@@ -3,11 +3,11 @@ using CoreRentalNet.Agents.Shared.Scoping;
 namespace CoreRentalNet.Agents.Tests;
 
 /// <summary>A run scope whose services are the test's own, so a graph can be built and run without a host.</summary>
-internal sealed class StubRunScope : IRunScope
+internal sealed class StubRunScopedServiceResolver : IRunScopedServiceResolver
 {
     private readonly Dictionary<Type, object> _services = [];
 
-    public StubRunScope(params (Type Service, object Instance)[] services)
+    public StubRunScopedServiceResolver(params (Type Service, object Instance)[] services)
     {
         foreach (var (service, instance) in services)
         {
@@ -16,7 +16,7 @@ internal sealed class StubRunScope : IRunScope
     }
 
     /// <summary>Adds one more service, for a graph that has to name itself as a service to itself.</summary>
-    public StubRunScope With<T>(T instance) where T : notnull
+    public StubRunScopedServiceResolver With<T>(T instance) where T : notnull
     {
         _services[typeof(T)] = instance;
 

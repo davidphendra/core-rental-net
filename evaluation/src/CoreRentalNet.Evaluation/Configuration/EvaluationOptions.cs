@@ -16,7 +16,7 @@ public sealed record EvaluationOptions
     public int Repetitions { get; init; } = 3;
 
     /// <summary>How long one case execution may take before it is recorded as timed out.</summary>
-    public TimeSpan CaseTimeout { get; init; } = TimeSpan.FromSeconds(15);
+    public TimeSpan CaseTimeout { get; init; } = TimeSpan.FromSeconds(180);
 
     public int MaximumSelectedProductsPerComponent { get; init; } = 3;
 

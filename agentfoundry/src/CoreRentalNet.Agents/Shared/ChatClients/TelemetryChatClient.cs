@@ -29,7 +29,8 @@ internal sealed class TelemetryChatClient(
     string promptVersion,
     ILogger<TelemetryChatClient> logger) : DelegatingChatClient(innerClient), ITelemetryChatClient
 {
-    private static readonly ActivitySource StageModelCallActivitySource = new("CoreRentalNet.Agents.StageAgent");
+    private static readonly ActivitySource StageModelCallActivitySource =
+        new(WorkspaceTelemetry.StageModelCallSourceName);
 
     private int _modelCalls;
     private long _inputTokens;
@@ -78,8 +79,10 @@ internal sealed class TelemetryChatClient(
         CancellationToken cancellationToken = default)
     {
         var stageAgentName = StageAgentNameOf(options);
+        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
+        activity?.SetTag(WorkspaceTelemetry.RunId, runId);
 
         var response = await base.GetResponseAsync(messages, options, cancellationToken);
 
@@ -94,8 +97,10 @@ internal sealed class TelemetryChatClient(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var stageAgentName = StageAgentNameOf(options);
+        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
+        activity?.SetTag(WorkspaceTelemetry.RunId, runId);
 
         var tags = new TagList { { WorkspaceTelemetry.Stage, stageAgentName } };
         var sinceLastToken = Stopwatch.StartNew();

@@ -24,6 +24,9 @@ internal static class WorkspaceTelemetry
     /// <summary>The span a run's stages nest under. It is closed by whichever node ends the run.</summary>
     public const string RunSpanName = "workspace.suggestion.run";
 
+    /// <summary>The source of one stage agent's model call.</summary>
+    public const string StageModelCallSourceName = "CoreRentalNet.Agents.StageAgent";
+
     /// <summary>
     /// Whether message content is attached to spans. Read from configuration and defaulted on, because the
     /// decision to capture content is temporary and must be reversible without recompiling - and because a

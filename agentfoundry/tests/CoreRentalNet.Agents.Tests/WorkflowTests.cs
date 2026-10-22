@@ -56,7 +56,7 @@ public sealed class WorkflowTests
         """
         { "matches": { "value": [ { "sku": "DSKB08XN4JDR", "category": "desk", "name": "Sit-Stand Desk",
                                     "subCategory": null, "description": "A height-adjustable sitting or standing desk.",
-                                    "pricePerMonth": 420000 } ] },
+                                    "monthlyPrice": { "amount": 420000, "currency": "IDR" } } ] },
           "cheapestProductIgnoringTheCeiling": null }
         """;
 
@@ -394,7 +394,7 @@ public sealed class WorkflowTests
     [Fact]
     public async Task A_rejected_review_returns_to_rephrasing_and_the_third_rejection_ends_unavailable()
     {
-        const string Rejected = """{ "isAcceptable": false, "issues": [ { "issueCode": "SLOT_PURPOSE_UNSATISFIED", "requiredCorrectionDescription": "the desk purpose is not answered" } ], "summary": null }""";
+        const string Rejected = """{ "isAcceptable": false, "issues": [ { "issueCode": "SLOT_PURPOSE_UNSATISFIED", "requiredCorrectionDescription": "the desk purpose is not answered", "customerEvidence": "screen", "productEvidence": "Sit-Stand Desk" } ], "summary": null }""";
 
         // One attempt is rephraser, retriever, composer, reviewer; the verifier runs once.
         string[] replies =
@@ -534,7 +534,7 @@ public sealed class WorkflowTests
             "test-prompts",
             loggerFactory.CreateLogger<TelemetryChatClient>());
 
-        var runScope = new StubRunScope(
+        var runScope = new StubRunScopedServiceResolver(
             (typeof(IMcpAccessTokenService), tokens),
             (typeof(IMcpAuthorizationConnection), catalogue),
             (typeof(ITelemetryChatClient), modelCallTelemetry),

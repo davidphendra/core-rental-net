@@ -6,4 +6,8 @@ public sealed record WorkspaceSetupReviewIssue(
     [property: JsonPropertyName("issueCode")]
     string IssueCode,
     [property: JsonPropertyName("requiredCorrectionDescription")]
-    string RequiredCorrectionDescription);
+    string RequiredCorrectionDescription,
+    [property: JsonPropertyName("customerEvidence")]
+    string? CustomerEvidence = null,
+    [property: JsonPropertyName("productEvidence")]
+    string? ProductEvidence = null);

@@ -65,7 +65,7 @@ public sealed class WorkspaceSuggestionExecutorsTests
             NullLoggerFactory.Instance,
             NullLogger<McpAuthorizationConnection>.Instance);
 
-        var runScope = new StubRunScope(
+        var runScope = new StubRunScopedServiceResolver(
             (typeof(IMcpAccessTokenService), tokens),
             (typeof(IMcpAuthorizationConnection), catalogue),
             (typeof(ITelemetryChatClient), modelCallTelemetry),

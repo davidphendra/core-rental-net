@@ -34,7 +34,7 @@ builder.Services.AddSingleton(modelClient);
 
 // Shared plumbing: one token per call, read from the invocation's own header, and the run scope the served graph
 // reaches it through.
-builder.Services.AddSingleton<IRunScope, RunScope>();
+builder.Services.AddSingleton<IRunScopedServiceResolver, RunScopedServiceResolver>();
 
 // The features this deployable serves. A new feature is a new line here and a folder under Features/.
 builder.Services.AddWorkspaceSuggestionFeature(

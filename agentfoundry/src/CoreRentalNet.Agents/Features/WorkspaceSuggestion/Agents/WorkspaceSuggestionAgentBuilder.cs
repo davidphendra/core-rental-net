@@ -26,7 +26,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionAgentBuilder(
-    IRunScope runScope,
+    IRunScopedServiceResolver runScopedServiceResolver,
     IToolAllowList toolAllowList,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
@@ -45,14 +45,34 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
 
     private IChatClient StageChatClient(AgentProfile agentProfile)
         => new AuthorisedMcpChatClient(
-            RegularChatClient(agentProfile),
-            runScope,
+            CatalogueToolChatClient(agentProfile),
+            runScopedServiceResolver,
             toolAllowList,
             loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
         );
 
+    /// <summary>The tool-backed client for the one stage that searches the catalogue.</summary>
+    /// <remarks>
+    /// This chain is separate from <see cref="RegularChatClient"/> because its shape is different: the
+    /// tool-then-JSON decorator is only meaningful when a function loop can follow a tool call with a
+    /// structured answer. A stage that is offered no catalogue tools must not carry that decorator.
+    /// </remarks>
+    private IChatClient CatalogueToolChatClient(AgentProfile agentProfile)
+        => new FunctionInvokingChatClient(
+            new ToolThenJsonChatClient(
+                new RunScopedChatClient(runScopedServiceResolver),
+                agentProfile.Output,
+                loggerFactory.CreateLogger<ToolThenJsonChatClient>()),
+            loggerFactory)
+            .AsBuilder()
+            .UseOpenTelemetry(
+                loggerFactory,
+                WorkspaceTelemetry.Name,
+                configure: client => client.EnableSensitiveData = _captureContent)
+            .Build();
+
     private IChatClient RegularChatClient(AgentProfile agentProfile)
-        => new FunctionInvokingChatClient(new RunScopedChatClient(runScope), loggerFactory)
+        => new FunctionInvokingChatClient(new RunScopedChatClient(runScopedServiceResolver), loggerFactory)
             .AsBuilder()
             .UseOpenTelemetry(
                 loggerFactory,

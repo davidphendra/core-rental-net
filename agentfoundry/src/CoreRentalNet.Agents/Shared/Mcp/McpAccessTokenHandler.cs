@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Net.Http.Headers;
+using CoreRentalNet.Agents.Shared.Telemetry;
 
 namespace CoreRentalNet.Agents.Shared.Mcp;
 
@@ -69,6 +71,20 @@ internal sealed class McpAccessTokenHandler : DelegatingHandler
             httpRequest.Method,
             requestUri.GetLeftPart(UriPartial.Authority));
 
-        return await base.SendAsync(httpRequest, cancellationToken);
+        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+        using var activity = WorkspaceTelemetry.ActivitySource.StartActivity("mcp.http", ActivityKind.Client);
+        activity?.SetTag(WorkspaceTelemetry.RunId, runId);
+        activity?.SetTag("http.method", httpRequest.Method.Method);
+        activity?.SetTag("http.host", requestUri.Host);
+
+        var response = await base.SendAsync(httpRequest, cancellationToken);
+        activity?.SetTag("http.status_code", (int)response.StatusCode);
+
+        if (response.Headers.TryGetValues("Server-Timing", out var timings))
+        {
+            activity?.SetTag("mcp.server_timing", string.Join(",", timings));
+        }
+
+        return response;
     }
 }

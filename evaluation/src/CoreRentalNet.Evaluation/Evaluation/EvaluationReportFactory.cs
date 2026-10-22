@@ -87,7 +87,7 @@ public sealed class EvaluationReportFactory
             .ToArray();
 
         var passCount = repetitions.Count(repetition => repetition.CasePass);
-        var casePass = repetitions.Length > 0 && passCount >= 2;
+        var casePass = CasePassPolicy.Passed(passCount, repetitions.Length);
 
         return new CaseResult(
             RowNumber: runs[0].Case.RowNumber,
@@ -130,7 +130,10 @@ public sealed class EvaluationReportFactory
             Metrics: local,
             FailureCodes: failures,
             AnswerF1: answer.F1,
-            RetrievalRecall: retrieval.SelectedRecall);
+            RetrievalRecall: retrieval.SelectedRecall)
+        {
+            Timing = RunTimingFactory.Create(run.Trace),
+        };
     }
 
     private static EvaluationSummary Summarize(
@@ -139,8 +142,10 @@ public sealed class EvaluationReportFactory
     {
         var metricPassRates = MetricNames.All.ToDictionary(
             metric => metric,
-            metric => cases.Count(testCase => testCase.Repetitions.Count(repetition =>
-                repetition.Metrics.TryGetValue(metric, out var passed) && passed) >= 2)
+            metric => cases.Count(testCase =>
+                testCase.Repetitions.Count(repetition =>
+                    repetition.Metrics.TryGetValue(metric, out var passed) && passed)
+                >= Math.Min(2, testCase.Repetitions.Count))
                 / (double)Math.Max(cases.Count, 1),
             StringComparer.Ordinal);
 

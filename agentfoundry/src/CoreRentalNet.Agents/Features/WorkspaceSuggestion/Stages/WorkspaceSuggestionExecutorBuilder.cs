@@ -24,7 +24,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 /// </remarks>
 internal sealed class WorkspaceSuggestionExecutorBuilder(
     WorkspaceSuggestionAgentBuilder agentBuilder,
-    IRunScope runScope,
+    IRunScopedServiceResolver runScopedServiceResolver,
     WorkspaceSuggestionWorkflowOptions workflowOptions,
     ILoggerFactory loggerFactory)
 {
@@ -37,7 +37,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
         return new(
             Input: new WorkspaceInputExecutor(
-                runScope, workflowOptions, logger).BindExecutor(),
+                runScopedServiceResolver, workflowOptions, logger).BindExecutor(),
 
             Verifier: new WorkspaceRequestVerificationExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Verifier),
@@ -49,19 +49,21 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
                 new WorkspaceComponentSearchVocabularyLimitPolicy(
                     workflowOptions.MaximumSearchTermCountPerComponent,
                     workflowOptions.MaximumSearchTermCharacterCount),
+                new WorkspaceRequirementBudgetInvariantPolicy(),
+                new WorkspaceAccessoryRelevancePolicy(),
                 logger
             ).BindExecutor(),
 
             Retriever: new CatalogueProductRetrievalExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Retriever),
-                runScope, logger
+                runScopedServiceResolver, logger
             ).BindExecutor(),
 
             ProductPool: new WorkspaceComponentProductPoolExecutor(
                 new WorkspaceComponentProductPoolBuilder(CatalogueSearchToolNames.All),
                 new WorkspaceComponentProductPoolPolicy(
                     workflowOptions.MaximumRetrievedProductsPerComponentForReranking),
-                runScope, logger
+                runScopedServiceResolver, logger
             ).BindExecutor(),
 
             Reranker: new WorkspaceComponentProductRerankingExecutor(
@@ -83,6 +85,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
             Reviewer: new WorkspaceSetupReviewExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Reviewer),
+                new WorkspaceSetupReviewEvidencePolicy(),
                 logger
             ).BindExecutor(),
 
@@ -91,8 +94,8 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
                 logger
             ).BindExecutor(),
 
-            Success: new WorkspaceSuggestionSuccessCompletionExecutor(runScope, logger).BindExecutor(),
-            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(runScope, logger).BindExecutor(),
-            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(runScope, logger).BindExecutor());
+            Success: new WorkspaceSuggestionSuccessCompletionExecutor(runScopedServiceResolver, logger).BindExecutor(),
+            Rejected: new WorkspaceSuggestionRejectionCompletionExecutor(runScopedServiceResolver, logger).BindExecutor(),
+            Unavailable: new WorkspaceSuggestionUnavailableCompletionExecutor(runScopedServiceResolver, logger).BindExecutor());
     }
 }

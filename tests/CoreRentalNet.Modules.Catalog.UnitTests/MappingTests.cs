@@ -88,4 +88,15 @@ public sealed class MappingTests
             view.SubCategory?.ToString().Should().Be(subCategory?.ToString());
         }
     }
+    [Fact] // the stored and published enum values are not the same numbers
+    public void Every_subcategory_round_trips_between_the_two_vocabularies()
+    {
+        foreach (var stored in Enum.GetValues<ProductSubCategory>())
+        {
+            var published = ProductDtoMapper.ToCatalogSubCategory(stored);
+
+            ProductDtoMapper.ToProductSubCategory(published).Should().Be(stored);
+        }
+    }
+
 }

@@ -4,4 +4,8 @@ namespace CoreRentalNet.Evaluation.Evidence;
 public sealed record RunTrace(
     string RunId,
     IReadOnlyList<TraceStageCall> StageCalls,
-    IReadOnlyList<TraceToolExchange> ToolExchanges);
+    IReadOnlyList<TraceToolExchange> ToolExchanges)
+{
+    /// <summary>The activity spans the agent emitted, when span capture is enabled.</summary>
+    public IReadOnlyList<TraceSpan> Spans { get; init; } = [];
+}

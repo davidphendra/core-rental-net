@@ -91,7 +91,7 @@ internal static class WorkspaceStageInput
     /// more on prose than on everything else an attempt does. The cut is made at a word boundary, because a
     /// description cut mid-word reads as a typo and this stage is asked to judge what a product is from it.
     /// </remarks>
-    private const int MaximumDescriptionCharacterCountForReranking = 320;
+    private const int MaximumDescriptionCharacterCountForJudgement = 320;
 
     /// <summary>One entry per requested component: the need it must answer, and the products a search found.</summary>
     /// <remarks>
@@ -117,7 +117,7 @@ internal static class WorkspaceStageInput
                             {
                                 product.Sku,
                                 product.Name,
-                                description = DescriptionForReranking(product.Description),
+                                description = DescriptionForJudgement(product.Description),
                                 product.Amount,
                             }),
                     }),
@@ -148,17 +148,17 @@ internal static class WorkspaceStageInput
     }
 
     /// <summary>A description cut to what a relevance judgement needs, at a word boundary.</summary>
-    private static string DescriptionForReranking(string description)
+    private static string DescriptionForJudgement(string description)
     {
-        if (description.Length <= MaximumDescriptionCharacterCountForReranking)
+        if (description.Length <= MaximumDescriptionCharacterCountForJudgement)
         {
             return description;
         }
 
-        var lastWordBoundary = description.LastIndexOf(' ', MaximumDescriptionCharacterCountForReranking);
+        var lastWordBoundary = description.LastIndexOf(' ', MaximumDescriptionCharacterCountForJudgement);
 
         return lastWordBoundary <= 0
-            ? description[..MaximumDescriptionCharacterCountForReranking]
+            ? description[..MaximumDescriptionCharacterCountForJudgement]
             : description[..lastWordBoundary];
     }
 
@@ -168,6 +168,33 @@ internal static class WorkspaceStageInput
             query = state.OriginalCustomerQuery,
             requirement = state.RequirementExpansion,
             searched = state.CatalogueRetrieval?.ComponentSearchOutcomes ?? [],
-            setups = state.ProposedWorkspaceSetups,
+            setups = state.ProposedWorkspaceSetups.Select(setup => new
+            {
+                lines = setup.Lines.Select(line => new
+                {
+                    line.Slot,
+                    line.Sku,
+                    line.Name,
+                    line.Quantity,
+                    line.Amount,
+                    description = DescriptionForReview(state, line.Sku),
+                }),
+            }),
         });
+
+    /// <summary>The selected product's description, so the reviewer can judge the product it was given.</summary>
+    private static string? DescriptionForReview(
+        WorkspaceSuggestionWorkflowState state,
+        string sku)
+    {
+        var product = state.SelectedWorkspaceCandidates
+            .Select(selection => selection.RetrievedProduct)
+            .Concat(state.CandidatePool)
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate.Sku, sku, StringComparison.Ordinal));
+
+        return product is null
+            ? null
+            : DescriptionForJudgement(product.Description);
+    }
 }

@@ -2,6 +2,7 @@ using CoreRentalNet.BuildingBlocks.Application.Embeddings;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Embeddings;
 using CoreRentalNet.BuildingBlocks.Infrastructure.Sqlite;
 using CoreRentalNet.Host.Configs;
+using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Discovery.Application.Indexing;
 using CoreRentalNet.Modules.Discovery.Infrastructure;
@@ -46,10 +47,12 @@ internal static class DiscoveryRegistrationExtentions
 
         builder.Services.AddSingleton(settings);
 
-        builder.Services.AddSingleton<IEmbeddingService>(
-            settings.IsConfigured
-                ? BuildEmbeddingService(settings)
-                : new EmbeddingNotConfigured());
+        builder.Services.AddSingleton<IEmbeddingService>(provider =>
+            new MeasuredEmbeddingService(
+                settings.IsConfigured
+                    ? BuildEmbeddingService(settings)
+                    : new EmbeddingNotConfigured(),
+                provider.GetRequiredService<IHttpContextAccessor>()));
 
         var store = AddEmbeddingStore(builder);
 
@@ -114,8 +117,11 @@ internal static class DiscoveryRegistrationExtentions
     {
         builder.Services.AddSingleton<CatalogIndexAvailability>();
 
-        builder.Services.AddSingleton<IProductSimilarityService>(provider => new GuardedProductSimilarityService(
-            new SqliteProductSimilarityService(databasePath),
-            provider.GetRequiredService<CatalogIndexAvailability>()));
+        builder.Services.AddSingleton<IProductSimilarityService>(provider =>
+            new MeasuredProductSimilarityService(
+                new GuardedProductSimilarityService(
+                    new SqliteProductSimilarityService(databasePath),
+                    provider.GetRequiredService<CatalogIndexAvailability>()),
+                provider.GetRequiredService<IHttpContextAccessor>()));
     }
 }

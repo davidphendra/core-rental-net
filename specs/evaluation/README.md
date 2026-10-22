@@ -29,7 +29,7 @@ The agent host must be started with `EVALUATION_TRACE_PATH` pointing at the same
 `--trace-directory`. The trace is disabled when that variable is absent.
 
 Authentication preflight runs before any case: it checks the token, calls MCP `initialize`/`tools/list`,
-and requires both catalogue tools. A case has a **15-second budget**. The first timeout stops the whole
+and requires both catalogue tools. A case has a **180-second budget**. The first timeout stops the whole
 run, writes a partial report, and exits with code `3`.
 
 | Exit code | Meaning |
@@ -59,7 +59,7 @@ server for query embeddings.
 MODEL_PROVIDER=OpenAiCompatible \
 OPENAI_COMPATIBLE_ENDPOINT=http://localhost:8080/v1 \
 OPENAI_COMPATIBLE_API_KEY=local \
-AZURE_AI_MODEL_DEPLOYMENT_NAME=gpt-oss-20b \
+AZURE_AI_MODEL_DEPLOYMENT_NAME=Qwen3-Coder-30B-A3B-Instruct \
 CATALOGTOOLS__MCPENDPOINT=http://localhost:5199/mcp \
 EVALUATION_TRACE_PATH=artifacts/evaluation/traces \
 dotnet run --project agentfoundry/src/CoreRentalNet.Agents
@@ -98,7 +98,7 @@ evaluation locally to keep the deterministic checks and avoid a judge call.
 | `all` | all 200 |
 
 ```bash
-# Cheap smoke run: 5 cases, one repetition, 15 seconds per case
+# Cheap smoke run: 5 cases, one repetition, 180 seconds per case
 dotnet run --project evaluation/src/CoreRentalNet.Evaluation -- run \
   --auth-mode local --scope tiny --repetitions 1 ...
 
@@ -109,3 +109,20 @@ dotnet run --project evaluation/src/CoreRentalNet.Evaluation -- run --scope all 
 Fixture validation always checks all rows, regardless of scope. Reports record both the selected
 scope and the full fixture size. A baseline and a current report with different scopes are not
 comparable.
+
+## Timing report
+
+When `EVALUATION_TRACE_PATH` is set, the agent also writes one span file per run under `spans/`. The report
+combines those spans with the Host's `Server-Timing` response header.
+
+The report separates:
+
+- workflow-node total;
+- stage model-call time;
+- tool/MCP transport time;
+- guardrail time;
+- Host total, embedding and vector-search time;
+- unattributed executor/workflow time.
+
+A model-backed node whose model span did not stop before a timeout is attributed to model time; the report
+marks the case with `CASE_TIMEOUT` and keeps the measured node duration.

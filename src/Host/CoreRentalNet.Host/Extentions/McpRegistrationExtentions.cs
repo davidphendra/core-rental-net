@@ -1,3 +1,4 @@
+using CoreRentalNet.Host.Infrastructure;
 using CoreRentalNet.Host.Mcp;
 
 namespace CoreRentalNet.Host.Extentions;
@@ -20,6 +21,8 @@ internal static class McpRegistrationExtentions
     public static void AddCatalogMcp(this WebApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Services.AddScoped<HostRequestTiming>();
 
         builder.Services
             .AddMcpServer()

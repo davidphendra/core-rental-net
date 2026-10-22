@@ -7,7 +7,7 @@ namespace CoreRentalNet.Agents.Shared.Scoping;
 /// hosting is expected to resolve the keyed agent from <c>HttpContext.RequestServices</c> per request; until
 /// that ships this is the same scope, reached one hop later.
 /// </remarks>
-internal interface IRunScope
+internal interface IRunScopedServiceResolver
 {
     /// <summary>The run's own instance of a run-scoped service, or a failure when there is no run.</summary>
     T Resolve<T>() where T : notnull;

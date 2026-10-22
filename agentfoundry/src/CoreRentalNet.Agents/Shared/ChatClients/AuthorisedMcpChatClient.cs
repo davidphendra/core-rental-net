@@ -29,35 +29,35 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 /// </remarks>
 internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
 {
-    private readonly IRunScope _runScope;
+    private readonly IRunScopedServiceResolver _runScopedServiceResolver;
     private readonly IToolAllowList _toolAllowList;
     private readonly ILogger<AuthorisedMcpChatClient> _logger;
     private readonly bool _offersMcpTools;
-    private readonly IMcpAccessTokenService? _legacyTokens;
+    private readonly IMcpAccessTokenService? _accessTokenService;
 
     public AuthorisedMcpChatClient(
         IChatClient innerClient,
-        IRunScope runScope,
+        IRunScopedServiceResolver runScopedServiceResolver,
         IToolAllowList toolAllowList,
         ILogger<AuthorisedMcpChatClient> logger)
-        : this(innerClient, runScope, offersMcpTools: true, toolAllowList, logger)
+        : this(innerClient, runScopedServiceResolver, offersMcpTools: true, toolAllowList, logger)
     {
     }
 
     /// <summary>Compatibility path for tests written before the stage flag was removed.</summary>
     public AuthorisedMcpChatClient(
         IChatClient innerClient,
-        IRunScope runScope,
+        IRunScopedServiceResolver runScopedServiceResolver,
         bool offersMcpTools,
         IToolAllowList toolAllowList,
         ILogger<AuthorisedMcpChatClient> logger)
         : base(innerClient)
     {
-        _runScope = runScope;
+        _runScopedServiceResolver = runScopedServiceResolver;
         _toolAllowList = toolAllowList;
         _logger = logger;
         _offersMcpTools = offersMcpTools;
-        _legacyTokens = runScope.TryResolve<IMcpAccessTokenService>(out var tokens) ? tokens : null;
+        _accessTokenService = runScopedServiceResolver.TryResolve<IMcpAccessTokenService>(out var tokens) ? tokens : null;
     }
 
     /// <inheritdoc />
@@ -100,11 +100,11 @@ internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
             return (messages, WithoutTools(options));
         }
 
-        if (_legacyTokens is not null)
+        if (_accessTokenService is not null)
         {
-            _legacyTokens.Token = _runScope.Resolve<AccessTokenHeaderReader>().ReadCallerAccessToken();
+            _accessTokenService.Token = _runScopedServiceResolver.Resolve<AccessTokenHeaderReader>().ReadCallerAccessToken();
 
-            if (string.IsNullOrWhiteSpace(_legacyTokens.Token))
+            if (string.IsNullOrWhiteSpace(_accessTokenService.Token))
             {
                 _logger.LogInformation("Chat call prepared: no MCP tools; caller token absent.");
                 return (messages, WithoutTools(options));
@@ -114,17 +114,17 @@ internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
         // A catalogue reader with nothing to search with is offered no tools either: no connection to list them
         // from, or no caller token to search with. The run's own instances are reached here, at the call, because
         // the graph that hosts this decorator is resolved once and outlives the request.
-        var mcpAuthorizationConnection = _runScope.Resolve<IMcpAuthorizationConnection>();
+        var mcpAuthorizationConnection = _runScopedServiceResolver.Resolve<IMcpAuthorizationConnection>();
 
         // The allow-list filters what the model is offered, not only what may run: a tool the deployment does not
         // permit should never reach the prompt, where its name and description are untrusted input (§12). Each
         // permitted tool goes on wrapped, so guarding and recording happen wherever the tool runs rather than
         // only where the framework happened to look.
-        var toolGuardPipeline = _runScope.Resolve<IToolGuardPipeline>();
+        var toolGuardPipeline = _runScopedServiceResolver.Resolve<IToolGuardPipeline>();
         var tools = (await mcpAuthorizationConnection.ToolsAsync(cancellationToken))
             .Where(tool => _toolAllowList.Contains(tool.Name))
             .Select(tool => tool is AIFunction toolFunction
-                ? (AITool)new GuardedToolFunction(toolFunction, toolGuardPipeline)
+                ? (AITool)new GuardedToolFunction(toolFunction, toolGuardPipeline, _accessTokenService)
                 : tool)
             .ToArray();
 

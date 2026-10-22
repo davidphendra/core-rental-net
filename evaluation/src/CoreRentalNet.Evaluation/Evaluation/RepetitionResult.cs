@@ -8,6 +8,9 @@ public sealed record RepetitionResult(
     double AnswerF1,
     double RetrievalRecall)
 {
+    /// <summary>The measured timing tree for this execution.</summary>
+    public RunTiming? Timing { get; init; }
+
     public bool CasePass { get; } = MetricNames.All.All(metric =>
         Metrics.TryGetValue(metric, out var passed) && passed);
 }

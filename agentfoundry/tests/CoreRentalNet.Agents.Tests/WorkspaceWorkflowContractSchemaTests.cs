@@ -147,6 +147,24 @@ public sealed class WorkspaceWorkflowContractSchemaTests
     }
 
     [Fact]
+    public void A_semantic_review_issue_can_carry_both_sides_of_its_evidence()
+    {
+        var review = new WorkspaceSetupReviewResult(
+            IsAcceptable: false,
+            Issues:
+            [
+                new WorkspaceSetupReviewIssue(
+                    "SLOT_PURPOSE_UNSATISFIED",
+                    "the chair is not a racing chair",
+                    CustomerEvidence: "racing chair",
+                    ProductEvidence: "WorkPro Oceanic Mesh/Fabric Ergonomic High-Back Executive Chair"),
+            ],
+            Summary: "The chair does not match.");
+
+        Schemas.Evaluate("workspace-setup-review.schema.json", review).IsValid.Should().BeTrue();
+    }
+
+    [Fact]
     public void A_review_that_decides_the_next_step_is_rejected()
     {
         // Whether another attempt runs is deterministic code's decision, never the model's, so the contract

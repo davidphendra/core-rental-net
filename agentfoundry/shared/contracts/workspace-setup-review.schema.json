@@ -28,6 +28,7 @@
         "issueCode": {
           "enum": [
             "MISSING_SLOT",
+            "UNREQUESTED_SLOT",
             "SLOT_PURPOSE_UNSATISFIED",
             "MONTHLY_CEILING_EXCEEDED",
             "SETUPS_NOT_DISTINCT",
@@ -40,6 +41,14 @@
           "type": "string",
           "minLength": 1,
           "description": "What was not satisfied, in terms the rephraser can reinterpret. Never a replacement product."
+        },
+        "customerEvidence": {
+          "type": ["string", "null"],
+          "description": "The customer's own attribute words, quoted when a semantic rejection is made."
+        },
+        "productEvidence": {
+          "type": ["string", "null"],
+          "description": "The selected product's name or description, quoted when a semantic rejection is made."
         }
       }
     }

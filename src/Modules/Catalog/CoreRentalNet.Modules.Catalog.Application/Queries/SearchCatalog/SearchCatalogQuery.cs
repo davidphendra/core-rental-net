@@ -17,7 +17,7 @@ namespace CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 /// <param name="TypedSearchText">What a customer typed into a search box, or null when they typed nothing.</param>
 /// <param name="ExpandedSearchTerms">The terms a search was expanded into, or null when it was not expanded.</param>
 /// <param name="MaximumMonthlyAmount">The most a product may cost each month, or null for no ceiling.</param>
-/// <param name="Take">How many rows the scope supplies before ranking; bounded by the port.</param>
+/// <param name="Take">How many ranked rows are returned; the scope is read in full before ranking.</param>
 public sealed record SearchCatalogQuery(
     CatalogScope Scope,
     string? TypedSearchText = null,

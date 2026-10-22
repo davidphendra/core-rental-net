@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
+using CoreRentalNet.Agents.Shared.Telemetry;
 
 namespace CoreRentalNet.Agents.Shared.Guardrails.Pipeline;
 
@@ -23,7 +25,14 @@ internal sealed class ToolGuardPipeline(
     {
         foreach (var guard in argumentGuards)
         {
+            var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+            using var activity = WorkspaceTelemetry.ActivitySource.StartActivity("guardrail.before");
+            activity?.SetTag(WorkspaceTelemetry.ToolName, invocation.ToolName);
+            activity?.SetTag("guard", guard.GetType().Name);
+            activity?.SetTag(WorkspaceTelemetry.RunId, runId);
+
             var decision = await guard.BeforeAsync(invocation, cancellationToken);
+            activity?.SetTag("allowed", decision.Allowed);
 
             if (!decision.Allowed)
             {
@@ -43,6 +52,12 @@ internal sealed class ToolGuardPipeline(
 
         foreach (var guard in resultGuards)
         {
+            var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+            using var activity = WorkspaceTelemetry.ActivitySource.StartActivity("guardrail.after");
+            activity?.SetTag(WorkspaceTelemetry.ToolName, invocation.ToolName);
+            activity?.SetTag("guard", guard.GetType().Name);
+            activity?.SetTag(WorkspaceTelemetry.RunId, runId);
+
             value = await guard.InspectAsync(invocation, value, cancellationToken);
         }
 

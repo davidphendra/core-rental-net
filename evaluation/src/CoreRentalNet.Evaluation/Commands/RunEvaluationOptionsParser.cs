@@ -77,6 +77,16 @@ internal static class RunEvaluationOptionsParser
                     index++;
                     break;
 
+                case "--case-timeout" when value is not null && int.TryParse(value, out var seconds):
+                    if (seconds <= 0)
+                    {
+                        throw new ArgumentException("--case-timeout must be greater than zero seconds.");
+                    }
+
+                    options = options with { CaseTimeout = TimeSpan.FromSeconds(seconds) };
+                    index++;
+                    break;
+
                 case "--agent-endpoint" when value is not null:
                     options = options with { AgentEndpoint = new Uri(value) };
                     index++;

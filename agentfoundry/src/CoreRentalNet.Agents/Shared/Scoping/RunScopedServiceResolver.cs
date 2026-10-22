@@ -9,7 +9,7 @@ namespace CoreRentalNet.Agents.Shared.Scoping;
 /// caller and no request scope, and resolving from the root instead would hand it the process's own instance of
 /// a service the run is supposed to own — the exact captive state this type exists to prevent.
 /// </remarks>
-internal sealed class RunScope(IHttpContextAccessor httpContextAccessor) : IRunScope
+internal sealed class RunScopedServiceResolver(IHttpContextAccessor httpContextAccessor) : IRunScopedServiceResolver
 {
     public T Resolve<T>() where T : notnull
         => RequestServices().GetRequiredService<T>();

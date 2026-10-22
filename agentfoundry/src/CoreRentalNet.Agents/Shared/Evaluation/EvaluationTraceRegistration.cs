@@ -25,6 +25,10 @@ internal static class EvaluationTraceRegistration
         services.AddScoped<IEvaluationTraceSink>(_ =>
             new JsonlEvaluationTraceSink(new EvaluationTraceOptions(directory)));
 
+        // Construct the listener now: a lazily resolved singleton would never be created, and no spans would
+        // be captured. The container still owns it and disposes it with the host.
+        services.AddSingleton(new EvaluationSpanCollector(directory));
+
         services.Decorate<ITelemetryChatClient>((innerClient, provider) =>
             new EvaluationTraceChatClient(
                 innerClient,

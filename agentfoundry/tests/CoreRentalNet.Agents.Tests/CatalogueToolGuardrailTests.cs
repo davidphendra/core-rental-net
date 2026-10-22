@@ -28,7 +28,7 @@ public sealed class CatalogueToolGuardrailTests
         """
         { "matches": { "value": [ { "sku": "DSKB08XN4JDR", "category": "desk", "name": "Sit-Stand Desk",
                                     "subCategory": null, "description": "A height-adjustable desk.",
-                                    "pricePerMonth": 420000 } ] },
+                                    "monthlyPrice": { "amount": 420000, "currency": "IDR" } } ] },
           "cheapestProductIgnoringTheCeiling": null }
         """;
 
@@ -95,7 +95,7 @@ public sealed class CatalogueToolGuardrailTests
 
         return new AuthorisedMcpChatClient(
             new FunctionInvokingChatClient(new OneToolCallThenAnswer(), NullLoggerFactory.Instance),
-            new StubRunScope(
+            new StubRunScopedServiceResolver(
                 (typeof(IMcpAccessTokenService), tokens),
                 (typeof(IMcpAuthorizationConnection), new OfferingMcpAuthorizationConnection(tool)),
                 (typeof(IToolGuardPipeline), pipeline),

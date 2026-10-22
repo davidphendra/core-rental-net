@@ -92,6 +92,45 @@ public sealed class SearchCatalogHandlerTests
         ranker.TypedSearchTextItWasGiven.Should().BeNull("the typed rule was not the one asked for");
     }
 
+    [Fact] // the ranker must see the whole scope, not only the page that will be returned
+    public void A_small_take_does_not_hide_products_from_the_ranker()
+    {
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var catalogue = Catalogue(file);
+        var ranker = new StubProductNameSearchService
+        {
+            Matches = catalogue.Search(CatalogCategory.Accessory, null),
+        };
+        var handler = new SearchCatalogHandler(catalogue, ranker);
+
+        var products = handler.Handle(new SearchCatalogQuery(
+            new CatalogScope(CatalogCategory.Accessory, null),
+            ExpandedSearchTerms: ["plant"],
+            Take: 1));
+
+        ranker.ProductsItWasGiven.Should().HaveCount(5,
+            "ranking happens before the returned page is capped");
+        products.Should().ContainSingle();
+    }
+
+    [Fact] // the cap applies to the ranked answer, not to the scope the ranker sees
+    public void The_take_caps_the_ranked_answer()
+    {
+        using var file = new TemporaryCatalogFile(SampleCatalog.SevenRows);
+        var catalogue = Catalogue(file);
+        var chairs = catalogue.ByCategory(CatalogCategory.Chair);
+        var ranker = new StubProductNameSearchService { Matches = chairs };
+        var handler = new SearchCatalogHandler(catalogue, ranker);
+
+        var products = handler.Handle(new SearchCatalogQuery(
+            new CatalogScope(CatalogCategory.Chair, null),
+            TypedSearchText: "chair",
+            Take: 1));
+
+        products.Should().ContainSingle();
+        ranker.ProductsItWasGiven.Should().NotBeEmpty();
+    }
+
     [Fact] // a query that asks for both rules is refused rather than answered by one of them
     public void A_query_that_narrows_by_name_twice_is_refused()
     {
