@@ -70,13 +70,22 @@ public static class WorkspaceSuggestionRegistration
 
         // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
         // stage's call, so the totals are the run's, and it names the stage from the options its agent set.
-        services.AddScoped<ITelemetryChatClient>(provider => new TelemetryChatClient(
-            new GuardrailChatClient(
-                modelClient,
-                provider.GetRequiredService<IMcpAccessTokenService>()),
-            configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
-            WorkspaceSuggestionAgentRoster.PromptVersions,
-            provider.GetRequiredService<ILogger<TelemetryChatClient>>()));
+        // The description limiter is inside the telemetry client, so the evaluation trace and the ledger still
+        // see the full tool result while the retriever model receives the shortened copy.
+        services.AddScoped<ITelemetryChatClient>(provider =>
+        {
+            var modelFacingClient = new CatalogueToolDescriptionLimitChatClient(
+                new GuardrailChatClient(
+                    modelClient,
+                    provider.GetRequiredService<IMcpAccessTokenService>()),
+                provider.GetRequiredService<ILogger<CatalogueToolDescriptionLimitChatClient>>());
+
+            return new TelemetryChatClient(
+                modelFacingClient,
+                configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
+                WorkspaceSuggestionAgentRoster.PromptVersions,
+                provider.GetRequiredService<ILogger<TelemetryChatClient>>());
+        });
 
         // Scoped like the run, so the tools a call listed stay callable for as long as its token lives.
         services.AddScoped<IMcpAuthorizationConnection, McpAuthorizationConnection>();
@@ -92,8 +101,8 @@ public static class WorkspaceSuggestionRegistration
 
         // The guardrail policies. Registered by interface, so the pipeline below never names a concrete guard and
         // the order they run in is the order they are added.
-        services.AddSingleton<IToolAllowList, CatalogueToolAllowList>();
-        services.AddSingleton<IToolArgumentPolicy, CatalogueSearchArgumentPolicy>();
+        services.AddScoped<IToolAllowList, CatalogueToolAllowList>();
+        services.AddScoped<IToolArgumentPolicy, CatalogueSearchArgumentPolicy>();
         services.AddSingleton(new ToolArgumentLimits(
             MaximumArguments: 10,
             MaximumStringLength: workflowOptions.MaximumSearchTermCharacterCount,
@@ -101,10 +110,10 @@ public static class WorkspaceSuggestionRegistration
 
         // The order below IS the order they run: allow-list, then authorization, then the size ceiling, then the
         // catalogue's own vocabulary. A denied guard stops the call before the tool executes.
-        services.AddSingleton<IToolGuard, ToolAllowListGuard>();
+        services.AddScoped<IToolGuard, ToolAllowListGuard>();
         services.AddScoped<IToolGuard, ToolAuthorizationGuard>();
-        services.AddSingleton<IToolGuard, ArgumentCeilingGuard>();
-        services.AddSingleton<IToolGuard, ToolArgumentGuard>();
+        services.AddScoped<IToolGuard, ArgumentCeilingGuard>();
+        services.AddScoped<IToolGuard, ToolArgumentGuard>();
 
         // The result side, in order: size, then the tool's own contract, then untrusted content. Recording runs
         // last, so the ledger holds the sanitized answer and every later stage reads what the model read.
@@ -122,17 +131,17 @@ public static class WorkspaceSuggestionRegistration
             [.. provider.GetServices<IToolResultGuard>()]));
 
         // The stage agents - the one place the decorators' order is stated - and the executors built from them.
-        // Both belong to the graph, which the hosting resolves once from the root container and reuses, so they
-        // hold the run scope rather than the run's services and reach those at each call.
+        // These are stateless factories: they are shared, but the agent they produce is not. Each resolution
+        // builds a new workflow, which is what gives a concurrent request its own workflow owner.
         services.AddSingleton<WorkspaceSuggestionAgentBuilder>();
         services.AddSingleton<WorkspaceSuggestionExecutorBuilder>();
         services.AddSingleton<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();
 
-        // The served agent is the workflow agent itself, resolved per request and never wrapped: hosting can
-        // redirect a hosted workflow's checkpoints only when it can copy that agent. It is a singleton because
-        // that is what the root resolution hosting performs can honor; the run's own state is reached through the
-        // run scope, so one instance serves concurrent runs without sharing them.
-        services.AddKeyedSingleton<AIAgent>(workspaceSuggestionAgentIdentity.AgentName, (provider, _) =>
+        // The served agent is the workflow agent itself and is never wrapped: hosting can redirect a hosted
+        // workflow's checkpoints only when it can copy that agent. It is transient because a workflow has one
+        // owner; the host resolves a new agent for each request, and each resolution builds a new workflow. The
+        // run's own state is still reached through the run scope, never captured by the shared factories.
+        services.AddKeyedTransient<AIAgent>(workspaceSuggestionAgentIdentity.AgentName, (provider, _) =>
             provider.GetRequiredService<IWorkspaceSuggestionWorkflow>().AsAIAgent());
 
         return workspaceSuggestionAgentIdentity.AgentName;

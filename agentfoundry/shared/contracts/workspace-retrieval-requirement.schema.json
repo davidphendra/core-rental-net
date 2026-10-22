@@ -2,21 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://corerental/schemas/workspace-retrieval-requirement.schema.json",
   "title": "Workspace retrieval requirement",
-  "description": "The rephraser's output and the retriever's input: what the workspace must be, what it may cost, and the words that find each part of it. It carries NO SKU, NO PRICE of a product and NO PRODUCT NAME, because deciding what is wanted and how to look for it is a different stage from choosing which product supplies it. Every one of the seven categories is always present; `relevant` says whether the customer asked for it.",
+  "description": "The rephraser's compact output: what the workspace must be, what it may cost, and the words that find each requested part of it. Only relevant categories are present; an omitted category is irrelevant. It carries NO SKU, NO PRICE of a product and NO PRODUCT NAME, because deciding what is wanted and how to look for it is a different stage from choosing which product supplies it.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["original_query", "workspace_intent", "total_budget", "categories"],
+  "required": ["workspace_intent", "total_budget", "categories"],
   "properties": {
-    "original_query": {
-      "type": "string",
-      "minLength": 1,
-      "description": "The customer's sentence, echoed."
-    },
     "workspace_intent": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["purpose", "style", "experience", "usage"],
-      "description": "What the whole workspace is for. Never a search query: the reviewer holds a composed set against it.",
+      "description": "What the whole workspace is for. Empty lists are omitted. Never a search query: the reviewer holds a composed set against it.",
       "properties": {
         "purpose": { "$ref": "#/$defs/intentPhrases" },
         "style": { "$ref": "#/$defs/intentPhrases" },
@@ -38,47 +32,40 @@
         }
       }
     },
+    "allocations": {
+      "type": "array",
+      "description": "Optional component shares of a stated total. Omit entirely when no total exists. Every key must appear in categories, and the sum must not exceed the total.",
+      "items": { "$ref": "#/$defs/allocation" },
+      "uniqueItems": true
+    },
     "categories": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "desk",
-        "chair",
-        "monitor",
-        "lamp",
-        "plant",
-        "bean_bag",
-        "coffee_machine"
-      ],
-      "description": "All seven, always present. A category the customer did not ask for is `relevant: false` with empty words.",
-      "properties": {
-        "desk": { "$ref": "#/$defs/componentExpansion" },
-        "chair": { "$ref": "#/$defs/componentExpansion" },
-        "monitor": { "$ref": "#/$defs/componentExpansion" },
-        "lamp": { "$ref": "#/$defs/componentExpansion" },
-        "plant": { "$ref": "#/$defs/componentExpansion" },
-        "bean_bag": { "$ref": "#/$defs/componentExpansion" },
-        "coffee_machine": { "$ref": "#/$defs/componentExpansion" }
-      }
+      "type": "array",
+      "description": "Only the categories that are relevant. Presence means relevant; an omitted category is irrelevant.",
+      "items": { "$ref": "#/$defs/componentExpansion" },
+      "uniqueItems": true
     }
   },
   "$defs": {
+    "categoryKey": {
+      "type": "string",
+      "enum": ["desk", "chair", "monitor", "lamp", "plant", "bean_bag", "coffee_machine"],
+      "description": "A catalogue category, never a workspace slot."
+    },
     "intentPhrases": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
+      "maxItems": 4,
       "description": "At most four phrases. Never a product and never a category's search words."
     },
     "componentExpansion": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["relevant", "retrieval_query", "search_terms", "synonyms", "semantic_concepts", "budget"],
+      "required": ["key", "retrieval_query"],
       "properties": {
-        "relevant": {
-          "type": "boolean",
-          "description": "True when the customer asked for this or strongly implied it. An unasked-for category is refused by the composition, not by the rephraser."
-        },
+        "key": { "$ref": "#/$defs/categoryKey" },
         "retrieval_query": {
           "type": "string",
+          "minLength": 1,
           "description": "One concise sentence stating what the customer needs this thing to do. The slot's purpose, and never a product."
         },
         "search_terms": {
@@ -92,20 +79,18 @@
         "semantic_concepts": {
           "type": "array",
           "items": { "type": "string", "minLength": 1 },
+          "maxItems": 2,
           "description": "Short phrases about purpose, style or situation - uses rather than things."
-        },
-        "budget": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["max_amount", "currency", "is_explicit", "is_derived"],
-          "description": "The monthly ceiling on this component. Derived allocations are the rephraser's division of a total and are not to be confused with what a customer stated.",
-          "properties": {
-            "max_amount": { "type": ["integer", "null"], "minimum": 0 },
-            "currency": { "type": ["string", "null"] },
-            "is_explicit": { "type": "boolean" },
-            "is_derived": { "type": "boolean" }
-          }
         }
+      }
+    },
+    "allocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "amount"],
+      "properties": {
+        "key": { "$ref": "#/$defs/categoryKey" },
+        "amount": { "type": "integer", "minimum": 0 }
       }
     },
     "searchWords": {
@@ -116,7 +101,8 @@
         "maxLength": 80,
         "description": "One to three words a catalogue title could contain. Never a sentence and never a product name."
       },
-      "description": "At most eight words across search_terms and synonyms together, because more recall than eight buys nothing and costs the ranking."
+      "maxItems": 3,
+      "description": "At most three words in each list; the domain vocabulary limit still bounds the two lists together at eight."
     }
   }
 }

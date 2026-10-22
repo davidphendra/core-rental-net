@@ -17,9 +17,9 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 /// single source of what the bounds are.
 /// </para>
 /// <para>
-/// <b>The executors belong to the graph, and the graph outlives the request.</b> The token service, header reader,
-/// tool-answer ledger and model-call telemetry they need are the run's, so they are handed the run scope and reach
-/// the run's own instances as they run, rather than holding a root-captured copy of them.
+/// <b>The executors belong to one request's graph.</b> The token service, header reader, tool-answer ledger and
+/// model-call telemetry they need are the run's, so they are handed the run scope and reach the run's own instances
+/// as they run, rather than holding a root-captured copy of them. The builder itself is stateless and shared.
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionExecutorBuilder(

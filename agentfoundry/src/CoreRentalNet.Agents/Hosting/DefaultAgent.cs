@@ -5,9 +5,10 @@ namespace CoreRentalNet.Agents.Hosting;
 /// <summary>Registers the agent a request that carries no name is answered by.</summary>
 /// <remarks>
 /// Hosting falls back to a non-keyed <see cref="AIAgent"/> when the request names none — exactly what
-/// <c>azd ai agent invoke --local</c> sends — so the fallback needs a target. It is a singleton for the same
-/// reason the keyed agents are: hosting resolves it from the root container on every request, not only a nameless
-/// one, so a scoped registration is rejected by scope validation.
+/// <c>azd ai agent invoke --local</c> sends — so the fallback needs a target. It is transient because the keyed
+/// agent it resolves is transient: each request needs its own workflow owner, and a singleton here would cache
+/// the first keyed agent forever. Transient is still root-resolvable, which is what hosting uses; a scoped
+/// registration would be rejected by scope validation.
 /// </remarks>
 internal static class DefaultAgent
 {
@@ -17,7 +18,7 @@ internal static class DefaultAgent
         ArgumentNullException.ThrowIfNull(services);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultAgentName);
 
-        services.AddSingleton<AIAgent>(serviceProvider =>
+        services.AddTransient<AIAgent>(serviceProvider =>
             serviceProvider.GetRequiredKeyedService<AIAgent>(defaultAgentName));
 
         return services;

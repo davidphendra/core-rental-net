@@ -32,6 +32,21 @@ public static class EvaluationCaseSetSelector
         return new EvaluationCaseSet(selected);
     }
 
+    /// <summary>One named case from an already selected set.</summary>
+    public static EvaluationCaseSet SelectCase(EvaluationCaseSet cases, string caseId)
+    {
+        ArgumentNullException.ThrowIfNull(cases);
+        ArgumentException.ThrowIfNullOrWhiteSpace(caseId);
+
+        var selected = cases.Cases
+            .Where(testCase => string.Equals(testCase.CaseId, caseId, StringComparison.Ordinal))
+            .ToArray();
+
+        return selected.Length == 1
+            ? new EvaluationCaseSet(selected)
+            : throw new ArgumentException($"Case '{caseId}' was not found exactly once.", nameof(caseId));
+    }
+
     private static int TargetCount(EvaluationScope scope, int total)
         => scope switch
         {

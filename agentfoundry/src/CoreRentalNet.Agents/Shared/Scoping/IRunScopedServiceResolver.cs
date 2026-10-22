@@ -2,10 +2,9 @@ namespace CoreRentalNet.Agents.Shared.Scoping;
 
 /// <summary>Reaches the services that belong to one run, from a service that outlives it.</summary>
 /// <remarks>
-/// The hosting resolves a served agent from the root container, so the graph it serves outlives the request.
-/// What a run owns is scoped, so the graph reaches it through the request rather than holding it. Microsoft's
-/// hosting is expected to resolve the keyed agent from <c>HttpContext.RequestServices</c> per request; until
-/// that ships this is the same scope, reached one hop later.
+/// The hosted agent and its graph are created per request, but the run-scoped services they use still belong to
+/// that request. The graph reaches them through the request rather than capturing them, so the stateless factory,
+/// builder and guard registrations cannot create captive state.
 /// </remarks>
 internal interface IRunScopedServiceResolver
 {

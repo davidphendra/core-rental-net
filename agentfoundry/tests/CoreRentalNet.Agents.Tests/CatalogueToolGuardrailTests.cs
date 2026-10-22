@@ -99,10 +99,10 @@ public sealed class CatalogueToolGuardrailTests
                 (typeof(IMcpAccessTokenService), tokens),
                 (typeof(IMcpAuthorizationConnection), new OfferingMcpAuthorizationConnection(tool)),
                 (typeof(IToolGuardPipeline), pipeline),
+                (typeof(IToolAllowList), TestGuardrails.AllowList),
                 (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.Carrying(
                     AccessTokenHeader.Name, "the-callers-token"))),
             true,
-            TestGuardrails.AllowList,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 

@@ -70,12 +70,12 @@ public sealed class WorkspaceSuggestionExecutorsTests
             (typeof(IMcpAuthorizationConnection), catalogue),
             (typeof(ITelemetryChatClient), modelCallTelemetry),
             (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+            (typeof(IToolAllowList), TestGuardrails.AllowList),
             (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.CarryingNothing()),
             (typeof(McpToolAnswerLedger), recordedToolAnswers));
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
             runScope,
-            TestGuardrails.AllowList,
             new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 

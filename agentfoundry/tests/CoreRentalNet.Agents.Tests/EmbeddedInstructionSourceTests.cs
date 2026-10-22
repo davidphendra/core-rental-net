@@ -26,25 +26,25 @@ public sealed class EmbeddedInstructionSourceTests
     [Fact]
     public void The_rephrasing_prompt_is_embedded_and_readable()
     {
-        var source = new EmbeddedInstructionSource("workspace-requirement-rephraser.v3.md");
+        var source = new EmbeddedInstructionSource("workspace-requirement-rephraser.v5.md");
 
         source.Text.Should().NotBeNullOrWhiteSpace();
         source.Text.Should().Contain("search_terms", "the output contract is part of the prompt");
         source.Text.Should().Contain("total_budget", "the budget rules are part of the prompt");
-        source.Version.Should().Be("workspace-requirement-rephraser.v3");
+        source.Version.Should().Be("workspace-requirement-rephraser.v5");
     }
 
     [Fact]
     public void The_retrieval_prompt_is_embedded_and_names_no_product_of_its_own()
     {
-        var source = new EmbeddedInstructionSource("catalogue-product-retriever.v2.md");
+        var source = new EmbeddedInstructionSource("catalogue-product-retriever.v3.md");
 
         source.Text.Should().NotBeNullOrWhiteSpace();
         source.Text.Should().Contain("searches", "what each search came back with is what it reports");
         source.Text.Should().Contain(
             "do not list the products",
             "the products come from the recorded tool answers, so it is told not to restate them");
-        source.Version.Should().Be("catalogue-product-retriever.v2");
+        source.Version.Should().Be("catalogue-product-retriever.v3");
     }
 
     [Fact]

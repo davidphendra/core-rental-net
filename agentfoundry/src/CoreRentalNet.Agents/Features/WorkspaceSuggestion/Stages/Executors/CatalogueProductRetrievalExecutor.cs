@@ -27,7 +27,7 @@ internal sealed class CatalogueProductRetrievalExecutor(
     {
         // An attempt's searches are the only ones its reranker may consider, so the ledger starts empty: an
         // accumulating one would hand attempt two the products attempt one rejected. The ledger is the run's own,
-        // reached through the run scope because this executor belongs to the graph and outlives the request.
+        // reached through the run scope because this executor must not capture the request's scoped services.
         runScopedServiceResolver.Resolve<McpToolAnswerLedger>().ClearRecordedAnswers();
 
         await RunProcessingStageAsync(

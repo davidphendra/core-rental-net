@@ -37,14 +37,18 @@ internal sealed class WorkspaceRequirementRephrasingExecutor(
             WorkspaceProcessingStage.RephrasingRequirement,
             async stageCancellationToken =>
             {
-                var agentResponse = await stageAgent.RunAsync<WorkspaceRequirementExpansion>(
+                var agentResponse = await stageAgent.RunAsync<WorkspaceRequirementExpansionWire>(
                     WorkspaceStageInput.Rephrasing(workspaceSuggestionWorkflowState),
                     cancellationToken: stageCancellationToken);
+
+                var expansion = WorkspaceRequirementExpansionMapper.Map(
+                    agentResponse.Result,
+                    workspaceSuggestionWorkflowState.OriginalCustomerQuery);
 
                 workspaceSuggestionWorkflowState.RequirementExpansion =
                     accessoryRelevancePolicy.ApplyRequestedAccessories(
                         budgetInvariantPolicy.ApplyBudgetInvariant(
-                            vocabularyLimitPolicy.ApplySearchVocabularyLimits(agentResponse.Result),
+                            vocabularyLimitPolicy.ApplySearchVocabularyLimits(expansion),
                             workspaceSuggestionWorkflowState.CustomerStatedCeilingMonthly));
             },
             cancellationToken);

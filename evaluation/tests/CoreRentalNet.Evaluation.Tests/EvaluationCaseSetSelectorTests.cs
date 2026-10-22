@@ -55,6 +55,27 @@ public sealed class EvaluationCaseSetSelectorTests
             .And.OnlyHaveUniqueItems();
     }
 
+    [Fact]
+    public void A_named_case_selects_only_that_case()
+    {
+        var selected = EvaluationCaseSetSelector.SelectCase(
+            TestScriptManifest.LoadedSet.Cases,
+            "TS-041");
+
+        selected.Cases.Should().ContainSingle()
+            .Which.CaseId.Should().Be("TS-041");
+    }
+
+    [Fact]
+    public void An_unknown_case_is_refused()
+    {
+        var act = () => EvaluationCaseSetSelector.SelectCase(
+            TestScriptManifest.LoadedSet.Cases,
+            "TS-999");
+
+        act.Should().Throw<ArgumentException>();
+    }
+
     private static EvaluationCaseSet Select(EvaluationScope scope)
         => EvaluationCaseSetSelector.Select(TestScriptManifest.LoadedSet.Cases, scope);
 }

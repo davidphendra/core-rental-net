@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -105,6 +106,45 @@ public sealed class AgentFoundryRegistrationTests
     [Fact] // the resolution a request performs, under the scope validation Development turns on
     public void The_host_resolves_its_served_agent_from_the_root_provider()
     {
+        using var provider = BuildProviderWithServedAgent();
+
+        // Hosting resolves the keyed agent from the root provider, so this is exactly the resolution a request
+        // performs. Before the graph held the run scope instead of the run's own services, it threw here.
+        var agent = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(SuggestionAgentName);
+
+        agent.Name.Should().Be(SuggestionAgentName);
+    }
+
+    [Fact] // a workflow has one owner, so every root resolution must produce its own agent
+    public void The_host_resolves_a_fresh_workspace_agent_for_each_request()
+    {
+        using var provider = BuildProviderWithServedAgent();
+
+        var first = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(SuggestionAgentName);
+        var second = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(SuggestionAgentName);
+
+        first.Should().NotBeSameAs(second);
+    }
+
+    [Fact]
+    public async Task Two_resolved_workspace_agents_can_start_concurrently()
+    {
+        using var provider = BuildProviderWithServedAgent(
+            new FixedChatClient(
+                """{"isWorkspaceRequest": false, "refusalReason": "test run"}"""));
+
+        var first = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(SuggestionAgentName);
+        var second = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(SuggestionAgentName);
+
+        var responses = await Task.WhenAll(
+            first.RunAsync("a desk and a chair"),
+            second.RunAsync("a desk and a chair"));
+
+        responses.Should().HaveCount(2);
+    }
+
+    private static ServiceProvider BuildProviderWithServedAgent(IChatClient? modelClient = null)
+    {
         var configuration = Configuration(
             (WorkspaceSuggestionAgentIdentity.ConfigurationKey, SuggestionAgentName));
 
@@ -114,19 +154,13 @@ public sealed class AgentFoundryRegistrationTests
         services.AddSingleton(configuration);
         services.AddSingleton<IRunScopedServiceResolver, RunScopedServiceResolver>();
 
-        var servedAgentName = services.AddWorkspaceSuggestionFeature(
+        services.AddWorkspaceSuggestionFeature(
             configuration,
             WorkspaceSuggestionAgentIdentity.FromConfiguration(configuration),
-            new ScriptedChatClient("{}"));
+            modelClient ?? new ScriptedChatClient("{}"));
 
-        using var provider = services.BuildServiceProvider(
+        return services.BuildServiceProvider(
             new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
-
-        // Hosting resolves the keyed agent from the root provider, so this is exactly the resolution a request
-        // performs. Before the graph held the run scope instead of the run's own services, it threw here.
-        var agent = provider.GetRequiredKeyedService<Microsoft.Agents.AI.AIAgent>(servedAgentName);
-
-        agent.Name.Should().Be(SuggestionAgentName);
     }
 
     private static WorkspaceSuggestionWorkflow Workflow()
@@ -151,12 +185,12 @@ public sealed class AgentFoundryRegistrationTests
             (typeof(IMcpAuthorizationConnection), catalogue),
             (typeof(ITelemetryChatClient), modelCallTelemetry),
             (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+            (typeof(IToolAllowList), TestGuardrails.AllowList),
             (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.CarryingNothing()),
             (typeof(McpToolAnswerLedger), recordedToolAnswers));
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
             runScope,
-            TestGuardrails.AllowList,
             new ConfigurationBuilder().Build(),
             NullLoggerFactory.Instance);
 

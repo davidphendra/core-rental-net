@@ -29,13 +29,13 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Rephraser { get; } = new(
         Name: "workspace-requirement-rephraser",
-        PromptFileName: "workspace-requirement-rephraser.v3.md",
+        PromptFileName: "workspace-requirement-rephraser.v5.md",
         Description: "Turns the sentence into what the workspace must be and the words that find each part of it.",
-        Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansion>());
+        Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansionWire>());
 
     public static AgentProfile Retriever { get; } = new(
         Name: "catalogue-product-retriever",
-        PromptFileName: "catalogue-product-retriever.v2.md",
+        PromptFileName: "catalogue-product-retriever.v3.md",
         Description: "Finds the catalogue products that could satisfy the expansion, and composes nothing.",
         Output: ChatResponseFormat.ForJsonSchema<CatalogueProductRetrievalResult>(),
         UsesCatalogueTools: true);

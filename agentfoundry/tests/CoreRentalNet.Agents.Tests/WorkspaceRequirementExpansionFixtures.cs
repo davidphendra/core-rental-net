@@ -1,90 +1,69 @@
 using System.Text.Json;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
 using CoreRentalNet.Agents.Shared.Serialization;
 
 namespace CoreRentalNet.Agents.Tests;
 
-/// <summary>The expansion a stage answers with, as JSON, so a test can vary one part of it.</summary>
+/// <summary>The compact expansion a stage answers with, as JSON, so a test can vary one part of it.</summary>
 /// <remarks>
-/// Every category is present because the contract requires all seven, and the six a test does not care about are
-/// written once here rather than in each test. The desk is the one tests vary, because it is the one the desk
-/// budget and the desk words are about.
+/// The model-facing contract lists only relevant categories. The domain value built here still has all seven,
+/// because the mapper fills the omitted ones; that is the boundary these fixtures exercise.
 /// </remarks>
 internal static class WorkspaceRequirementExpansionFixtures
 {
-    /// <summary>One desk requirement, and the part of the document a test replaces when it needs another.</summary>
+    private const string Query = "a desk and a chair under 500000";
+
     public const string DeskExpansion =
         """
-        { "relevant": true, "retrieval_query": "a wide, stable surface for one screen",
+        { "key": "desk", "retrieval_query": "a wide, stable surface for one screen",
           "search_terms": ["computer desk", "writing desk"], "synonyms": ["workstation"],
-          "semantic_concepts": ["a compact home office surface"],
-          "budget": { "max_amount": 300000, "currency": "IDR", "is_explicit": false, "is_derived": true } }
+          "semantic_concepts": ["a compact home office surface"] }
         """;
 
-    /// <summary>The desk requirement for a category the customer did not ask for.</summary>
-    public const string DeskNotRequested =
+    public const string ChairExpansion =
         """
-        { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-          "semantic_concepts": [],
-          "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
+        { "key": "chair", "retrieval_query": "seating for a working day",
+          "search_terms": ["office chair"], "synonyms": ["task seating"],
+          "semantic_concepts": ["support through a long session"] }
         """;
 
-    /// <summary>A monitor requirement, for the one test that needs a category reached through a subcategory.</summary>
     public const string MonitorExpansion =
         """
-        { "relevant": true, "retrieval_query": "a screen for a small desk",
+        { "key": "monitor", "retrieval_query": "a screen for a small desk",
           "search_terms": ["monitor"], "synonyms": ["display"],
-          "semantic_concepts": ["a screen for one person"],
-          "budget": { "max_amount": 150000, "currency": "IDR", "is_explicit": false, "is_derived": true } }
+          "semantic_concepts": ["a screen for one person"] }
         """;
 
-    private const string MonitorNotRequested =
-        """
-        { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-          "semantic_concepts": [],
-          "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
-        """;
+    public static string Json(string? deskExpansion = null, string? monitorExpansion = null)
+    {
+        var monitorEntry = monitorExpansion is null ? string.Empty : $",\n    {monitorExpansion}";
 
-    /// <summary>The whole document, with the desk or monitor requirement replaced when one is supplied.</summary>
-    public static string Json(string? deskExpansion = null, string? monitorExpansion = null) => $$"""
-        {
-          "original_query": "a desk and a chair under 500000",
-          "workspace_intent": {
-            "purpose": ["computer work"],
-            "style": [],
-            "experience": [],
-            "usage": []
-          },
-          "total_budget": { "amount": 500000, "currency": "IDR", "is_explicit": true },
-          "categories": {
-            "desk": {{deskExpansion ?? DeskExpansion}},
-            "chair": { "relevant": true, "retrieval_query": "seating for a working day",
-                       "search_terms": ["office chair"], "synonyms": ["task seating"],
-                       "semantic_concepts": ["support through a long session"],
-                       "budget": { "max_amount": 200000, "currency": "IDR", "is_explicit": false, "is_derived": true } },
-            "monitor": {{monitorExpansion ?? MonitorNotRequested}},
-            "lamp": { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-                      "semantic_concepts": [],
-                      "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } },
-            "plant": { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-                       "semantic_concepts": [],
-                       "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } },
-            "bean_bag": { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-                          "semantic_concepts": [],
-                          "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } },
-            "coffee_machine": { "relevant": false, "retrieval_query": "", "search_terms": [], "synonyms": [],
-                                "semantic_concepts": [],
-                                "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
-          }
-        }
-        """;
+        return $$"""
+            {
+              "workspace_intent": {
+                "purpose": ["computer work"]
+              },
+              "total_budget": { "amount": 500000, "currency": "IDR", "is_explicit": true },
+              "allocations": [
+                { "key": "desk", "amount": 300000 },
+                { "key": "chair", "amount": 200000 }
+              ],
+              "categories": [
+                {{deskExpansion ?? DeskExpansion}},
+                {{ChairExpansion}}{{monitorEntry}}
+              ]
+            }
+            """;
+    }
 
-    /// <summary>The document as a value, for tests that assert what a stage kept rather than what it was given.</summary>
+    public static WorkspaceRequirementExpansionWire Wire() => DeserializeWire(Json());
+
     public static WorkspaceRequirementExpansion Valid() => Deserialize(Json());
 
     public static WorkspaceRequirementExpansion Deserialize(string json)
-        => JsonSerializer.Deserialize<WorkspaceRequirementExpansion>(json, ContractJson.Options)
-            ?? throw new InvalidOperationException("The fixture is not the contract.");
+        => WorkspaceRequirementExpansionMapper.Map(DeserializeWire(json), Query);
 
+    private static WorkspaceRequirementExpansionWire DeserializeWire(string json)
+        => JsonSerializer.Deserialize<WorkspaceRequirementExpansionWire>(json, ContractJson.Options)
+            ?? throw new InvalidOperationException("The fixture is not the contract.");
 }

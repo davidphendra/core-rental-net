@@ -23,24 +23,35 @@ public sealed class WorkspaceWorkflowContractSchemaTests
     [Fact]
     public void A_requirement_reading_serializes_to_something_its_schema_accepts()
     {
-        var requirementExpansion = WorkspaceRequirementExpansionFixtures.Valid();
+        var requirementExpansion = WorkspaceRequirementExpansionFixtures.Wire();
 
         Schemas.Evaluate("workspace-retrieval-requirement.schema.json", requirementExpansion).IsValid
             .Should().BeTrue();
     }
 
     [Fact]
+    public void A_requirement_reading_may_omit_an_irrelevant_category()
+    {
+        Schemas.EvaluateRaw("workspace-retrieval-requirement.schema.json", """
+            { "workspace_intent": { "purpose": ["computer work"] },
+              "total_budget": { "amount": null, "currency": "IDR", "is_explicit": false },
+              "categories": [
+                { "key": "desk", "retrieval_query": "a surface", "search_terms": ["desk"] }
+              ] }
+            """).IsValid.Should().BeTrue(
+                "the compact contract says relevance by presence, not by an empty category object");
+    }
+
+    [Fact]
     public void A_requirement_reading_carrying_a_product_is_rejected()
     {
         Schemas.EvaluateRaw("workspace-retrieval-requirement.schema.json", """
-            { "original_query": "a desk",
-              "workspace_intent": { "purpose": [], "style": [], "experience": [], "usage": [] },
+            { "workspace_intent": { "purpose": ["computer work"] },
               "total_budget": { "amount": null, "currency": null, "is_explicit": false },
-              "categories": {
-                "desk": { "relevant": true, "retrieval_query": "a surface", "search_terms": ["desk"],
-                          "synonyms": [], "semantic_concepts": [], "sku": "DSKB08XN4JDR",
-                          "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
-              } }
+              "categories": [
+                { "key": "desk", "retrieval_query": "a surface", "search_terms": ["desk"],
+                  "synonyms": [], "semantic_concepts": [], "sku": "DSKB08XN4JDR" }
+              ] }
             """).IsValid.Should().BeFalse(
                 "the reading decides what is wanted and how to find it, never which product supplies it");
     }

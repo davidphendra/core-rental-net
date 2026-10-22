@@ -27,6 +27,24 @@ public sealed class DefaultAgentTests
     }
 
     [Fact]
+    public void The_default_agent_is_resolved_fresh_for_each_request()
+    {
+        var services = new ServiceCollection();
+        services.AddKeyedTransient<AIAgent>(
+            EchoAgentIdentity.DefaultAgentName,
+            (_, _) => EchoAgent());
+
+        services.AddDefaultAgent(EchoAgentIdentity.DefaultAgentName);
+
+        using var provider = services.BuildServiceProvider();
+
+        var first = provider.GetRequiredService<AIAgent>();
+        var second = provider.GetRequiredService<AIAgent>();
+
+        first.Should().NotBeSameAs(second);
+    }
+
+    [Fact]
     public void A_default_name_that_is_served_by_nobody_fails_at_resolution()
     {
         // A name with no keyed registration is exactly the silent misroute this exists to surface.

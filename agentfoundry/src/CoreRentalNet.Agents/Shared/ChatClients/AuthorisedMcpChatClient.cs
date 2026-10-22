@@ -30,7 +30,6 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
 {
     private readonly IRunScopedServiceResolver _runScopedServiceResolver;
-    private readonly IToolAllowList _toolAllowList;
     private readonly ILogger<AuthorisedMcpChatClient> _logger;
     private readonly bool _offersMcpTools;
     private readonly IMcpAccessTokenService? _accessTokenService;
@@ -38,9 +37,8 @@ internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
     public AuthorisedMcpChatClient(
         IChatClient innerClient,
         IRunScopedServiceResolver runScopedServiceResolver,
-        IToolAllowList toolAllowList,
         ILogger<AuthorisedMcpChatClient> logger)
-        : this(innerClient, runScopedServiceResolver, offersMcpTools: true, toolAllowList, logger)
+        : this(innerClient, runScopedServiceResolver, offersMcpTools: true, logger)
     {
     }
 
@@ -49,12 +47,10 @@ internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
         IChatClient innerClient,
         IRunScopedServiceResolver runScopedServiceResolver,
         bool offersMcpTools,
-        IToolAllowList toolAllowList,
         ILogger<AuthorisedMcpChatClient> logger)
         : base(innerClient)
     {
         _runScopedServiceResolver = runScopedServiceResolver;
-        _toolAllowList = toolAllowList;
         _logger = logger;
         _offersMcpTools = offersMcpTools;
         _accessTokenService = runScopedServiceResolver.TryResolve<IMcpAccessTokenService>(out var tokens) ? tokens : null;
@@ -113,7 +109,7 @@ internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
 
         // A catalogue reader with nothing to search with is offered no tools either: no connection to list them
         // from, or no caller token to search with. The run's own instances are reached here, at the call, because
-        // the graph that hosts this decorator is resolved once and outlives the request.
+        // the graph that hosts this decorator must not capture the request's scoped services.
         var mcpAuthorizationConnection = _runScopedServiceResolver.Resolve<IMcpAuthorizationConnection>();
 
         // The allow-list filters what the model is offered, not only what may run: a tool the deployment does not
@@ -121,8 +117,9 @@ internal sealed class AuthorisedMcpChatClient : DelegatingChatClient
         // permitted tool goes on wrapped, so guarding and recording happen wherever the tool runs rather than
         // only where the framework happened to look.
         var toolGuardPipeline = _runScopedServiceResolver.Resolve<IToolGuardPipeline>();
+        var toolAllowList = _runScopedServiceResolver.Resolve<IToolAllowList>();
         var tools = (await mcpAuthorizationConnection.ToolsAsync(cancellationToken))
-            .Where(tool => _toolAllowList.Contains(tool.Name))
+            .Where(tool => toolAllowList.Contains(tool.Name))
             .Select(tool => tool is AIFunction toolFunction
                 ? (AITool)new GuardedToolFunction(toolFunction, toolGuardPipeline, _accessTokenService)
                 : tool)

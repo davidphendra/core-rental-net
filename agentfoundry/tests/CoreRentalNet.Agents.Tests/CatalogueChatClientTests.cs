@@ -95,9 +95,9 @@ public sealed class CatalogueChatClientTests
                 (typeof(IMcpAccessTokenService), tokens),
                 (typeof(IMcpAuthorizationConnection), catalogue),
                 (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+                (typeof(IToolAllowList), TestGuardrails.AllowList),
                 (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.CarryingNothing())),
             readsCatalogue,
-            TestGuardrails.AllowList,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 

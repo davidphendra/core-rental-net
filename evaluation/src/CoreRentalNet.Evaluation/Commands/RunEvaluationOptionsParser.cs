@@ -39,6 +39,21 @@ internal static class RunEvaluationOptionsParser
                     index++;
                     break;
 
+                case "--concurrency" when value is not null && int.TryParse(value, out var concurrency):
+                    if (concurrency <= 0)
+                    {
+                        throw new ArgumentException("--concurrency must be greater than zero.");
+                    }
+
+                    options = options with { MaximumConcurrentCases = concurrency };
+                    index++;
+                    break;
+
+                case "--case" when value is not null:
+                    options = options with { CaseId = value };
+                    index++;
+                    break;
+
                 case "--auth-mode":
                     if (value is null)
                     {

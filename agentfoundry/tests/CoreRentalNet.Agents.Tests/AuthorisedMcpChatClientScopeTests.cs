@@ -57,11 +57,11 @@ public sealed class AuthorisedMcpChatClientScopeTests
                 (typeof(IMcpAccessTokenService), accessTokenService),
                 (typeof(IMcpAuthorizationConnection), new EmptyCatalogueConnection()),
                 (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+                (typeof(IToolAllowList), TestGuardrails.AllowList),
                 (typeof(AccessTokenHeaderReader), TheInvocationARunArrivesIn.Carrying(
                     AccessTokenHeader.Name,
                     callerAccessToken))),
             offersMcpTools: true,
-            TestGuardrails.AllowList,
             NullLogger<AuthorisedMcpChatClient>.Instance);
     }
 

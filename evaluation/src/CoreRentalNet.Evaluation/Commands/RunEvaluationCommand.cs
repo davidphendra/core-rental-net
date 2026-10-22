@@ -52,6 +52,11 @@ public static class RunEvaluationCommand
         // Validation covered the whole fixture; only now does the scope reduce what is run.
         var selected = EvaluationCaseSetSelector.Select(loaded.Cases, options.Scope);
 
+        if (options.CaseId is { } caseId)
+        {
+            selected = EvaluationCaseSetSelector.SelectCase(selected, caseId);
+        }
+
         using var tokenHttpClient = new HttpClient(new HttpClientHandler
         {
             AllowAutoRedirect = false,
@@ -117,25 +122,23 @@ public static class RunEvaluationCommand
         var pipeline = new EvaluationPipeline(itemFactory, evaluators, new EvaluationReportFactory());
         var agent = new AgentHttpClient(options.AgentEndpoint, options.AgentName);
         var traceReader = new EvaluationTraceReader(options.TraceDirectory);
-        var runner = new EvaluationRunner(agent, traceReader, tokenProvider, options.CaseTimeout);
+        var runner = new EvaluationRunner(
+            agent,
+            traceReader,
+            tokenProvider,
+            options.CaseTimeout,
+            options.MaximumConcurrentCases);
 
         Console.WriteLine(
             $"Running {selected.Cases.Count}/{loaded.Cases.Cases.Count} cases " +
             $"({options.Scope}) x {options.Repetitions} repetitions...");
 
         IReadOnlyList<RowRun> runs;
-        string? stopReason = null;
 
         try
         {
             runs = await runner.RunAsync(selected, options.Repetitions, cancellationToken)
                 .ConfigureAwait(false);
-        }
-        catch (CaseTimeoutException exception)
-        {
-            runs = exception.Runs;
-            stopReason = FailureCodes.CaseTimeout;
-            Console.Error.WriteLine($"Stopped: {exception.Message}");
         }
         catch (CallerTokenException exception)
         {
@@ -147,7 +150,7 @@ public static class RunEvaluationCommand
                 runs,
                 options.Scope,
                 loaded.Cases.Cases.Count,
-                stopReason,
+                stopReason: null,
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -169,8 +172,6 @@ public static class RunEvaluationCommand
         Console.WriteLine($"Case pass: {report.Summary.CasePass}/{report.Summary.Rows} ({report.Summary.CasePassRate:P1})");
         Console.WriteLine($"Report: {options.ReportPath}");
 
-        return stopReason is not null
-            ? 3
-            : report.Summary.CasePass == report.Summary.Rows ? 0 : 1;
+        return report.Summary.CasePass == report.Summary.Rows ? 0 : 1;
     }
 }

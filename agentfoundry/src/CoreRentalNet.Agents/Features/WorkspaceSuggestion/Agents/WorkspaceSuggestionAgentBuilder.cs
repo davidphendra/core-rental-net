@@ -1,6 +1,5 @@
 using CoreRentalNet.Agents.Shared.Agents;
 using CoreRentalNet.Agents.Shared.ChatClients;
-using CoreRentalNet.Agents.Shared.Guardrails.Abstractions;
 using CoreRentalNet.Agents.Shared.Scoping;
 using CoreRentalNet.Agents.Shared.Telemetry;
 using Microsoft.Agents.AI;
@@ -20,14 +19,13 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 /// stage of it.
 /// </para>
 /// <para>
-/// <b>The stage agents belong to the graph, and the graph outlives the request.</b> Every decorator here that needs
-/// the run's token service, its connection or its model-call telemetry is handed the run scope instead, and reaches
-/// the run's own instance at the call. That is what lets the served agent be a singleton.
+/// <b>The stage agents belong to one request's graph.</b> Every decorator here that needs the run's token service,
+/// its connection or its model-call telemetry is handed the run scope instead, and reaches the run's own instance
+/// at the call. The builder is a stateless singleton; the agents it creates are not shared between requests.
 /// </para>
 /// </remarks>
 internal sealed class WorkspaceSuggestionAgentBuilder(
     IRunScopedServiceResolver runScopedServiceResolver,
-    IToolAllowList toolAllowList,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
 {
@@ -47,7 +45,6 @@ internal sealed class WorkspaceSuggestionAgentBuilder(
         => new AuthorisedMcpChatClient(
             CatalogueToolChatClient(agentProfile),
             runScopedServiceResolver,
-            toolAllowList,
             loggerFactory.CreateLogger<AuthorisedMcpChatClient>()
         );
 

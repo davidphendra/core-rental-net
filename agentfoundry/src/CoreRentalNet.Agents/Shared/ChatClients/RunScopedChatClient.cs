@@ -5,10 +5,10 @@ namespace CoreRentalNet.Agents.Shared.ChatClients;
 
 /// <summary>An <see cref="IChatClient"/> that belongs to the graph, not the run: every call reaches the run's own.</summary>
 /// <remarks>
-/// <b>The graph is resolved once, from the root container, so a stage agent built at that point cannot hold the
-/// run's telemetry.</b> This forwards each call to the request's own <see cref="ITelemetryChatClient"/>, so the
-/// totals and the run's span are recorded per run and not shared between concurrent runs. The request's scope
-/// owns and disposes that instance, which is why this one disposes nothing.
+/// <b>A stage agent is built by a stateless factory and must not hold the run's telemetry.</b> This forwards each
+/// call to the request's own <see cref="ITelemetryChatClient"/>, so the totals and the run's span are recorded per
+/// run and not shared between concurrent runs. The request's scope owns and disposes that instance, which is why
+/// this one disposes nothing.
 /// </remarks>
 internal sealed class RunScopedChatClient(IRunScopedServiceResolver runScopedServiceResolver) : IChatClient
 {

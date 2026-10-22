@@ -29,7 +29,7 @@ public sealed class WorkflowTests
 {
     private const string Request =
         """
-        { "runId": "run-1", "query": "a quiet corner for one screen", "currency": "IDR", "ceilingMonthly": 1500000,
+        { "runId": "run-1", "query": "a quiet corner with a desk and a chair", "currency": "IDR", "ceilingMonthly": 1500000,
           "slots": [ { "slot": "Desk", "capacity": 1 } ] }
         """;
 
@@ -394,7 +394,7 @@ public sealed class WorkflowTests
     [Fact]
     public async Task A_rejected_review_returns_to_rephrasing_and_the_third_rejection_ends_unavailable()
     {
-        const string Rejected = """{ "isAcceptable": false, "issues": [ { "issueCode": "SLOT_PURPOSE_UNSATISFIED", "requiredCorrectionDescription": "the desk purpose is not answered", "customerEvidence": "screen", "productEvidence": "Sit-Stand Desk" } ], "summary": null }""";
+        const string Rejected = """{ "isAcceptable": false, "issues": [ { "issueCode": "SLOT_PURPOSE_UNSATISFIED", "requiredCorrectionDescription": "the desk purpose is not answered", "customerEvidence": "chair", "productEvidence": "Sit-Stand Desk" } ], "summary": null }""";
 
         // One attempt is rephraser, retriever, composer, reviewer; the verifier runs once.
         string[] replies =
@@ -539,6 +539,7 @@ public sealed class WorkflowTests
             (typeof(IMcpAuthorizationConnection), catalogue),
             (typeof(ITelemetryChatClient), modelCallTelemetry),
             (typeof(IToolGuardPipeline), TestGuardrails.Pipeline),
+            (typeof(IToolAllowList), TestGuardrails.AllowList),
             (typeof(AccessTokenHeaderReader), callerAccessTokenHeaderReader ?? TheInvocationARunArrivesIn.CarryingNothing()),
             (typeof(McpToolAnswerLedger), recordedToolAnswers));
 
@@ -546,7 +547,7 @@ public sealed class WorkflowTests
         runScope.With<IRunEnding>(new RunEnding(runScope));
 
         var stageAgents = new WorkspaceSuggestionAgentBuilder(
-            runScope, TestGuardrails.AllowList, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
+            runScope, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build(), loggerFactory);
 
         var executorBuilder = new WorkspaceSuggestionExecutorBuilder(
             stageAgents,

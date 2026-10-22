@@ -13,10 +13,16 @@ public sealed record EvaluationOptions
 
     public EvaluationScope Scope { get; init; } = EvaluationScope.Tiny;
 
+    /// <summary>One case to run instead of the whole scope, when a targeted verification is wanted.</summary>
+    public string? CaseId { get; init; }
+
     public int Repetitions { get; init; } = 3;
 
     /// <summary>How long one case execution may take before it is recorded as timed out.</summary>
     public TimeSpan CaseTimeout { get; init; } = TimeSpan.FromSeconds(180);
+
+    /// <summary>The most cases one run may execute at the same time.</summary>
+    public int MaximumConcurrentCases { get; init; } = int.MaxValue;
 
     public int MaximumSelectedProductsPerComponent { get; init; } = 3;
 

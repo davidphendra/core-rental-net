@@ -10,14 +10,13 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Agents;
 namespace CoreRentalNet.Agents.Tests;
 
 /// <summary>
-/// The rephraser's contract: a reading that names only real components, carries no product, says how to look for
-/// each part of the workspace, and never invents a ceiling.
+/// The rephraser's contract: a compact reading that names only relevant components, carries no product, says how
+/// to look for each part of the workspace, and never invents a ceiling.
 /// </summary>
 /// <remarks>
 /// Run against the roster's own rephraser over a fake chat client, so the profile, its embedded prompt and its
-/// output format are the things under test — not the model's judgement, which the evaluation tier grades. The
-/// verdict that the sentence is not about a workspace is no longer this agent's: the verifier owns it, and its
-/// contract is asserted in <see cref="WorkspaceRequestVerificationContractTests"/>.
+/// output format are the things under test. The mapper is exercised too, because the model-facing answer is now
+/// sparse: an omitted category is a valid answer that must become an irrelevant domain category.
 /// </remarks>
 public sealed class RephraserSpecTests
 {
@@ -28,7 +27,7 @@ public sealed class RephraserSpecTests
 
         requirement.ComponentExpansions.Desk.IsRelevant.Should().BeTrue();
         requirement.ComponentExpansions.Chair.IsRelevant.Should().BeTrue();
-        requirement.ComponentExpansions.Every().Should().HaveCount(7, "all seven categories are always present");
+        requirement.ComponentExpansions.Every().Should().HaveCount(7, "the domain still has all seven categories");
         requirement.ComponentExpansions.Monitor.IsRelevant.Should().BeFalse();
     }
 
@@ -44,25 +43,23 @@ public sealed class RephraserSpecTests
         requirement.ComponentExpansions.Desk.SemanticConcepts.Should().ContainSingle();
     }
 
-    [Fact] // the guarantee the seven required properties exist for
-    public async Task A_reading_that_omits_a_category_is_refused_rather_than_defaulted()
+    [Fact] // an omitted category is a valid compact answer and becomes irrelevant in the domain
+    public async Task A_reading_that_omits_an_unnamed_category_is_mapped_as_irrelevant()
     {
-        const string withoutTheChair =
-            """
-            { "original_query": "a desk",
-              "workspace_intent": { "purpose": [], "style": [], "experience": [], "usage": [] },
-              "total_budget": { "amount": null, "currency": null, "is_explicit": false },
-              "categories": {
-                "desk": { "relevant": true, "retrieval_query": "a desk", "search_terms": ["desk"],
-                          "synonyms": [], "semantic_concepts": [],
-                          "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false } }
-              } }
-            """;
+        var requirement = await Requirement(OnlyDeskJson(), "a desk");
 
-        var act = async () => await Requirement(withoutTheChair);
+        requirement.ComponentExpansions.Desk.IsRelevant.Should().BeTrue();
+        requirement.ComponentExpansions.Chair.IsRelevant.Should().BeFalse(
+            "presence in the compact answer is relevance");
+    }
+
+    [Fact] // a category the customer named explicitly may not disappear through omission
+    public async Task A_reading_that_omits_an_explicitly_named_category_is_refused()
+    {
+        var act = async () => await Requirement(OnlyDeskJson(), "a desk and a chair");
 
         await act.Should().ThrowAsync<JsonException>(
-            "a missing category would otherwise default to not-requested and drop what the customer asked for");
+            "the customer named the chair, and omission now means irrelevant");
     }
 
     [Fact]
@@ -70,13 +67,10 @@ public sealed class RephraserSpecTests
     {
         const string withDeskWords =
             """
-            { "relevant": true, "retrieval_query": "a surface",
-              "search_terms": ["desk"], "synonyms": [], "semantic_concepts": [],
-              "budget": { "max_amount": null, "currency": null, "is_explicit": false, "is_derived": false }%EXTRA% }
+            { "key": "desk", "retrieval_query": "a surface",
+              "search_terms": ["desk"], "synonyms": [], "semantic_concepts": []%EXTRA% }
             """;
 
-        // The reading is about what the customer wants and how to look for it, never which product supplies it,
-        // so none of these properties exists on it and the schema refuses any of them outright.
         var document = WorkspaceRequirementExpansionFixtures.Json(withDeskWords.Replace("%EXTRA%", string.Empty));
 
         Schemas.EvaluateRaw("workspace-retrieval-requirement.schema.json", document).IsValid.Should().BeTrue();
@@ -102,16 +96,12 @@ public sealed class RephraserSpecTests
         stated.ComponentExpansions.Desk.MonthlyBudget.IsDerived.Should().BeTrue(
             "a component's share of a total was worked out, not stated");
 
-        var absent = await Requirement(WorkspaceRequirementExpansionFixtures.Json(
-            WorkspaceRequirementExpansionFixtures.DeskNotRequested)
-            .Replace(
-                """{ "amount": 500000, "currency": "IDR", "is_explicit": true }""",
-                """{ "amount": null, "currency": null, "is_explicit": false }""",
-                StringComparison.Ordinal));
+        var absent = await Requirement(NoBudgetJson(), "a desk and a chair");
 
         absent.TotalMonthlyBudget.Amount.Should().BeNull(
             "the agent must not invent a budget the customer never named");
-        absent.ComponentExpansions.Desk.IsRelevant.Should().BeFalse();
+        absent.ComponentExpansions.Every()
+            .Should().OnlyContain(component => component.Expansion.MonthlyBudget.MaximumAmount == null);
     }
 
     [Fact] // the intent is cross-category, and it is what the reviewer holds a composed set against
@@ -125,13 +115,32 @@ public sealed class RephraserSpecTests
         requirement.WorkspaceIntent.UsagePhrases.Should().BeEmpty();
     }
 
-    private static async Task<WorkspaceRequirementExpansion> Requirement(string reply)
+    private static async Task<WorkspaceRequirementExpansion> Requirement(
+        string reply,
+        string query = "a desk and a chair under 500000")
     {
         var agent = AgentFactory.Build(WorkspaceSuggestionAgentRoster.Rephraser, new FixedChatClient(reply));
 
-        AgentResponse<WorkspaceRequirementExpansion> response =
-            await agent.RunAsync<WorkspaceRequirementExpansion>("a quiet corner for two screens");
+        AgentResponse<WorkspaceRequirementExpansionWire> response =
+            await agent.RunAsync<WorkspaceRequirementExpansionWire>(query);
 
-        return response.Result;
+        return WorkspaceRequirementExpansionMapper.Map(response.Result, query);
     }
+
+    private static string OnlyDeskJson()
+        => $$"""
+            { "workspace_intent": { "purpose": ["computer work"] },
+              "total_budget": { "amount": null, "currency": "IDR", "is_explicit": false },
+              "categories": [ {{WorkspaceRequirementExpansionFixtures.DeskExpansion}} ] }
+            """;
+
+    private static string NoBudgetJson()
+        => $$"""
+            { "workspace_intent": { "purpose": ["computer work"] },
+              "total_budget": { "amount": null, "currency": "IDR", "is_explicit": false },
+              "categories": [
+                {{WorkspaceRequirementExpansionFixtures.DeskExpansion}},
+                {{WorkspaceRequirementExpansionFixtures.ChairExpansion}}
+              ] }
+            """;
 }

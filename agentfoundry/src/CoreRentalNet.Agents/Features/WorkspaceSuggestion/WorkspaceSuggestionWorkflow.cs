@@ -4,11 +4,12 @@ using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion;
 
-/// <summary>The pipeline this deployable serves, published as the one agent the host registers.</summary>
+/// <summary>The workspace agent factory the host resolves once per request.</summary>
 /// <remarks>
 /// A port rather than the graph itself, so the composition root names the pipeline without naming its shape. The
-/// graph is built per request by <see cref="WorkspaceSuggestionWorkflowFactory"/>, because the call's catalogue
-/// tools belong to the call and not to the process.
+/// graph is built per resolution by <see cref="WorkspaceSuggestionWorkflowFactory"/>, because the call's catalogue
+/// tools belong to the call and not to the process, and because a workflow has one owner at a time. The factory
+/// itself is stateless and remains a singleton.
 /// </remarks>
 internal sealed class WorkspaceSuggestionWorkflow(
     WorkspaceSuggestionExecutorBuilder workspaceSuggestionExecutorBuilder,
@@ -17,8 +18,9 @@ internal sealed class WorkspaceSuggestionWorkflow(
     /// <summary>The workflow as one agent, its yielded events made visible to the caller.</summary>
     /// <remarks>
     /// <b>The served agent is the workflow agent itself and is never wrapped.</b> Hosting can redirect a hosted
-    /// workflow's checkpoints only when it can copy that agent, and a wrapper cannot be copied. The per-call
-    /// token and catalogue tools are applied one layer down, at each stage's model call.
+    /// workflow's checkpoints only when it can copy that agent, and a wrapper cannot be copied. Every call creates
+    /// a new workflow, so two concurrent requests never share a workflow owner. The per-call token and catalogue
+    /// tools are applied one layer down, at each stage's model call.
     /// </remarks>
     public AIAgent AsAIAgent()
         => WorkspaceSuggestionWorkflowFactory.Create(workspaceSuggestionExecutorBuilder)
