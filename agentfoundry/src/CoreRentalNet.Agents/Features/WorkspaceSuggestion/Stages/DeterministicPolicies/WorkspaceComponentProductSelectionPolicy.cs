@@ -29,7 +29,8 @@ public sealed class WorkspaceComponentProductSelectionPolicy(int maximumSelected
     /// <summary>The products to compose from, ordered as the reranker ordered them.</summary>
     public IReadOnlyList<SelectedWorkspaceComponentProduct> SelectFromPool(
         IReadOnlyList<RetrievedWorkspaceComponentProduct> retrievedProductPool,
-        WorkspaceComponentProductRankingResult rankingResult)
+        WorkspaceComponentProductRankingResult rankingResult,
+        WorkspaceRequirementExpansion? requirementExpansion = null)
     {
         ArgumentNullException.ThrowIfNull(retrievedProductPool);
         ArgumentNullException.ThrowIfNull(rankingResult);
@@ -41,14 +42,54 @@ public sealed class WorkspaceComponentProductSelectionPolicy(int maximumSelected
             var slot = WorkspaceComponentVocabularyMapping.CompositionSlotFor(componentCategory);
             var productsRetrievedFor = ProductsRetrievedFor(retrievedProductPool, slot);
 
-            selectedProducts.AddRange(assessments
+            var exactMatches = ExactMatches(
+                productsRetrievedFor, componentCategory, requirementExpansion);
+
+            var ranked = assessments
                 .Select(assessment => ResolveToPooledProduct(assessment, productsRetrievedFor))
-                .OfType<SelectedWorkspaceComponentProduct>()
+                .OfType<SelectedWorkspaceComponentProduct>();
+
+            var candidates = exactMatches.Count > 0 ? exactMatches : ranked;
+
+            selectedProducts.AddRange(candidates
                 .DistinctBy(selection => selection.RetrievedProduct.Sku, StringComparer.OrdinalIgnoreCase)
                 .Take(_maximumSelectedProductsPerComponent));
         }
 
         return selectedProducts;
+    }
+
+    /// <summary>Products whose names carry a brand, model, or other distinctive customer term.</summary>
+    private static IReadOnlyList<SelectedWorkspaceComponentProduct> ExactMatches(
+        IReadOnlyList<RetrievedWorkspaceComponentProduct> productsRetrievedFor,
+        WorkspaceComponentCategory componentCategory,
+        WorkspaceRequirementExpansion? requirementExpansion)
+    {
+        if (requirementExpansion is null)
+        {
+            return [];
+        }
+
+        var distinctiveTerms = requirementExpansion.ComponentExpansions.Every()
+            .Single(component => component.ComponentCategory == componentCategory)
+            .Expansion
+            .SearchTerms
+            .Concat(requirementExpansion.ComponentExpansions.Every()
+                .Single(component => component.ComponentCategory == componentCategory)
+                .Expansion
+                .Synonyms)
+            .Where(term => term.Any(char.IsUpper))
+            .ToArray();
+
+        return [.. productsRetrievedFor
+            .Select(product => (
+                Product: product,
+                Matches: distinctiveTerms.Count(term =>
+                    product.Name.Contains(term, StringComparison.OrdinalIgnoreCase))))
+            .Where(candidate => candidate.Matches > 0)
+            .OrderByDescending(candidate => candidate.Matches)
+            .Select(candidate => new SelectedWorkspaceComponentProduct(
+                candidate.Product, ProductRelevanceLevel.High))];
     }
 
     /// <summary>The pool's own row for one assessment, or nothing when the product was not in the pool.</summary>

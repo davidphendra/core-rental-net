@@ -7,6 +7,42 @@ namespace CoreRentalNet.Evaluation.Tests;
 /// <summary>The sentence and the expected product must describe the same thing.</summary>
 public sealed class TestScriptFixtureTests
 {
+
+    [Theory]
+    [InlineData("TS-017", "ALFA FURNISHING white standing desk", "DSKB0BCJFQHQ")]
+    [InlineData("TS-025", "Oklahoma Sound mobile desk", "DSKB07GR57QN")]
+    [InlineData("TS-033", "POWERSTONE black standing desk", "DSKB09HHNGMY")]
+    [InlineData("TS-057", "VIVO mobile standing desk", "DSKB0BFT5Y9K")]
+    [InlineData("TS-065", "Larksilk Boxed Succulent Assortment", "PLTB09K242BX")]
+    [InlineData("TS-073", "3 Pack Mini Potted Fake Plants", "PLTB0BS12RH8")]
+    public void A_repaired_sentence_identifies_its_expected_product(
+        string caseId,
+        string sentenceFragment,
+        string expectedSku)
+    {
+        var testCase = Case(caseId);
+
+        testCase.Sentence.Should().Contain(sentenceFragment);
+        testCase.Variants.Should().ContainSingle();
+        testCase.Variants.Single().Skus.Should().Contain(expectedSku);
+    }
+
+
+    [Theory]
+    [InlineData("TS-009", "Dell 3007WFP-HC 30-inch monitor", "MONB000PB2KW")]
+    [InlineData("TS-089", "CIMOO black leather chair", "CHAB0BM998N7")]
+    [InlineData("TS-161", "CIMOO black leather chair", "CHAB0BM998N7")]
+    public void A_repaired_sentence_names_the_product_brand(
+        string caseId,
+        string sentenceFragment,
+        string expectedSku)
+    {
+        var testCase = Case(caseId);
+
+        testCase.Sentence.Should().Contain(sentenceFragment);
+        testCase.Variants.Single().Skus.Should().Contain(expectedSku);
+    }
+
     [Fact]
     public void Ts041_asks_for_the_dracaena_that_is_expected()
     {

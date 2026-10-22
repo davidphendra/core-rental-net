@@ -96,8 +96,52 @@ public sealed class WorkspaceComponentProductSelectionPolicyTests
             .Should().BeEmpty();
     }
 
+
+    [Fact]
+    public void An_exact_brand_match_is_kept_ahead_of_a_generic_reranker_choice()
+    {
+        var pool = new[]
+        {
+            Desk("DSK-1", "Winlyn 3 Pcs Assorted Small Potted Succulent Plants"),
+            Desk("DSK-2", "Prinaight 3 Pack Mini Plants"),
+        };
+
+        var selected = SelectionPolicy.SelectFromPool(
+            pool,
+            Ranking(desk: [("DSK-1", ProductRelevanceLevel.High)]),
+            ExpansionWithDeskTerms("Prinaight"));
+
+        selected.Select(selection => selection.RetrievedProduct.Sku)
+            .Should().Equal("DSK-2");
+    }
+
     private static RetrievedWorkspaceComponentProduct Desk(string sku, string name)
         => new(WorkspaceSlot.Desk, sku, name, "A desk.", 100m);
+
+    private static WorkspaceRequirementExpansion ExpansionWithDeskTerms(params string[] terms)
+    {
+        var relevant = new WorkspaceComponentExpansion(
+            IsRelevant: true,
+            RetrievalQuery: "a desk",
+            SearchTerms: terms,
+            Synonyms: [],
+            SemanticConcepts: [],
+            MonthlyBudget: new WorkspaceComponentMonthlyBudget(null, null, false, false));
+        var irrelevant = relevant with { IsRelevant = false, SearchTerms = [] };
+
+        return new WorkspaceRequirementExpansion(
+            OriginalCustomerQuery: "a desk",
+            WorkspaceIntent: new WorkspaceIntent([], [], [], []),
+            TotalMonthlyBudget: new WorkspaceTotalMonthlyBudget(null, null, false),
+            ComponentExpansions: new WorkspaceComponentExpansions(
+                Desk: relevant,
+                Chair: irrelevant,
+                Monitor: irrelevant,
+                Lamp: irrelevant,
+                Plant: irrelevant,
+                BeanBag: irrelevant,
+                CoffeeMachine: irrelevant));
+    }
 
     /// <summary>A reranker's answer with one component filled in and the other six empty.</summary>
     private static WorkspaceComponentProductRankingResult Ranking(

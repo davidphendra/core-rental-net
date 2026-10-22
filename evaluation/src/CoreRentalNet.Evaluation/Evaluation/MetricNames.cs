@@ -6,6 +6,7 @@ public static class MetricNames
     public const string AnswerExact = "answer_exact";
     public const string ConstraintCompliance = "constraint_compliance";
     public const string RetrievalQuality = "retrieval_quality";
+    public const string RawRetrievalRecall = "raw_retrieval_recall";
     public const string ToolCallAccuracy = "tool_call_accuracy";
     public const string WorkflowCorrectness = "workflow_correctness";
 
@@ -14,6 +15,7 @@ public static class MetricNames
         AnswerExact,
         ConstraintCompliance,
         RetrievalQuality,
+        RawRetrievalRecall,
         ToolCallAccuracy,
         WorkflowCorrectness,
     ];

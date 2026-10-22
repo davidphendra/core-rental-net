@@ -13,7 +13,7 @@ public sealed class TestScriptCaseParserTests
         var loaded = Load();
 
         loaded.Cases.Cases.Should().HaveCount(200);
-        loaded.Cases.UniqueSentenceCount.Should().Be(57);
+        loaded.Cases.UniqueSentenceCount.Should().Be(58);
         loaded.Cases.UniqueSetupCount.Should().Be(56);
     }
 

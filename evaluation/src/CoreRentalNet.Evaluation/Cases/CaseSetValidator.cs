@@ -59,9 +59,9 @@ public sealed class CaseSetValidator
             }
         }
 
-        if (caseSet.UniqueSentenceCount != 57)
+        if (caseSet.UniqueSentenceCount != 58)
         {
-            warnings.Add($"Expected 57 unique sentences, found {caseSet.UniqueSentenceCount}.");
+            warnings.Add($"Expected 58 unique sentences, found {caseSet.UniqueSentenceCount}.");
         }
 
         return new CaseSetValidation(errors.Count == 0, errors, warnings);

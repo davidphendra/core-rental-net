@@ -82,13 +82,17 @@ public sealed class WorkspaceSetupReviewEvidencePolicy
 
         if (string.IsNullOrWhiteSpace(customerEvidence)
             || string.IsNullOrWhiteSpace(productEvidence)
-            || !customerQuery.Contains(customerEvidence, StringComparison.OrdinalIgnoreCase)
-            || !productTexts.Any(text => text.Contains(productEvidence, StringComparison.OrdinalIgnoreCase)))
+            || !customerQuery.Contains(customerEvidence, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
-        return !ContainsEveryWord(productEvidence, customerEvidence);
+        if (!productTexts.Any(text => text.Contains(productEvidence, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        return !productTexts.Any(text => ContainsEveryWord(text, customerEvidence));
     }
 
     private static bool HasBudget(WorkspaceRequirementExpansion? requirementExpansion)

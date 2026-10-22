@@ -16,6 +16,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 /// </remarks>
 internal sealed class WorkspaceSetupRetryDecisionExecutor(
     WorkspaceSetupRetryDecisionPolicy retryDecisionPolicy,
+    WorkspaceRetryProgressPolicy retryProgressPolicy,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.RetryDecision, logger)
 {
@@ -34,14 +35,25 @@ internal sealed class WorkspaceSetupRetryDecisionExecutor(
         var reviewResult = workspaceSuggestionWorkflowState.WorkspaceSetupReview
             ?? new WorkspaceSetupReviewResult(IsAcceptable: false, [], "The setup set was not reviewed.");
 
+        var retryWouldChangeSearch = retryProgressPolicy.WouldChangeSearch(
+            workspaceSuggestionWorkflowState.PreviousRequirementExpansion,
+            workspaceSuggestionWorkflowState.RequirementExpansion,
+            workspaceSuggestionWorkflowState.PreviousCatalogueRetrieval);
+
         var retryDecision = retryDecisionPolicy.DecideRetryAfterReview(
-            workspaceSuggestionWorkflowState.CompletedAttemptCount, reviewResult);
+            workspaceSuggestionWorkflowState.CompletedAttemptCount,
+            reviewResult,
+            retryWouldChangeSearch);
 
         workspaceSuggestionWorkflowState.RetryDecision = retryDecision;
 
         if (retryDecision is WorkspaceSetupRetryDecision.RetryWithRephrasing)
         {
             workspaceSuggestionWorkflowState.PreviousAttemptIssues = reviewResult.Issues;
+            workspaceSuggestionWorkflowState.PreviousRequirementExpansion =
+                workspaceSuggestionWorkflowState.RequirementExpansion;
+            workspaceSuggestionWorkflowState.PreviousCatalogueRetrieval =
+                workspaceSuggestionWorkflowState.CatalogueRetrieval;
 
             await PublishStreamEventAsync(
                 workflowContext,

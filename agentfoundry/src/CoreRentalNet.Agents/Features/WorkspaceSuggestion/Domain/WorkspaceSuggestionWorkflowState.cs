@@ -95,6 +95,12 @@ public sealed class WorkspaceSuggestionWorkflowState
     /// <summary>The previous attempt's review issues, and only those: the feedback is bounded on purpose.</summary>
     public IReadOnlyList<WorkspaceSetupReviewIssue> PreviousAttemptIssues { get; set; } = [];
 
+    /// <summary>The previous attempt's search vocabulary, so a retry that repeats it can be stopped.</summary>
+    public WorkspaceRequirementExpansion? PreviousRequirementExpansion { get; set; }
+
+    /// <summary>What the previous attempt's catalogue searches returned, so a repeated empty search is visible.</summary>
+    public CatalogueProductRetrievalResult? PreviousCatalogueRetrieval { get; set; }
+
     /// <summary>Where the retry loop has got to, and one more than the attempts finished.</summary>
     [JsonIgnore]
     public int NextAttemptNumber => CompletedAttemptCount + 1;

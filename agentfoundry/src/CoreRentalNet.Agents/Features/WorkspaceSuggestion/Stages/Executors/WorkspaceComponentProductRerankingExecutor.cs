@@ -39,7 +39,9 @@ internal sealed class WorkspaceComponentProductRerankingExecutor(
                     cancellationToken: stageCancellationToken);
 
                 workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates = selectionPolicy.SelectFromPool(
-                    workspaceSuggestionWorkflowState.CandidatePool, agentResponse.Result);
+                    workspaceSuggestionWorkflowState.CandidatePool,
+                    agentResponse.Result,
+                    workspaceSuggestionWorkflowState.RequirementExpansion);
             },
             cancellationToken);
 

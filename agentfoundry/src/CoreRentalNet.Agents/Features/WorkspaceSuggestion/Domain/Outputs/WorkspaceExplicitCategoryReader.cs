@@ -33,6 +33,39 @@ internal static class WorkspaceExplicitCategoryReader
             .ToHashSet();
     }
 
+    public static WorkspaceComponentCategory? CategoryNearestTo(string customerQuery, int index)
+    {
+        ArgumentNullException.ThrowIfNull(customerQuery);
+
+        return ExplicitWords
+            .SelectMany(entry => entry.Words.Select(word => (
+                entry.Category,
+                Distance: DistanceTo(customerQuery, word, index))))
+            .Where(candidate => candidate.Distance >= 0)
+            .OrderBy(candidate => candidate.Distance)
+            .Select(candidate => (WorkspaceComponentCategory?)candidate.Category)
+            .FirstOrDefault();
+    }
+
+    private static int DistanceTo(string text, string word, int index)
+    {
+        var match = Regex.Match(
+            text,
+            $@"\b{Regex.Escape(word)}\b",
+            RegexOptions.IgnoreCase);
+
+        var best = -1;
+
+        while (match.Success)
+        {
+            var distance = Math.Abs(match.Index - index);
+            best = best < 0 ? distance : Math.Min(best, distance);
+            match = match.NextMatch();
+        }
+
+        return best;
+    }
+
     private static bool ContainsWord(string text, string word)
         => Regex.IsMatch(text, $@"\b{Regex.Escape(word)}\b", RegexOptions.IgnoreCase);
 }

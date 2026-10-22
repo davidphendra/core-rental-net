@@ -19,13 +19,14 @@ public sealed class WorkspaceSetupRetryDecisionPolicy(int maximumAttemptCount = 
     /// <summary>What happens next, from the verdict and how many attempts have finished.</summary>
     public WorkspaceSetupRetryDecision DecideRetryAfterReview(
         int completedAttemptCount,
-        WorkspaceSetupReviewResult workspaceSetupReviewResult)
+        WorkspaceSetupReviewResult workspaceSetupReviewResult,
+        bool retryWouldChangeSearch = true)
     {
         ArgumentNullException.ThrowIfNull(workspaceSetupReviewResult);
 
         return workspaceSetupReviewResult.IsAcceptable
             ? WorkspaceSetupRetryDecision.Accepted
-            : completedAttemptCount >= MaximumAttemptCount
+            : completedAttemptCount >= MaximumAttemptCount || !retryWouldChangeSearch
                 ? WorkspaceSetupRetryDecision.AttemptsExhausted
                 : WorkspaceSetupRetryDecision.RetryWithRephrasing;
     }

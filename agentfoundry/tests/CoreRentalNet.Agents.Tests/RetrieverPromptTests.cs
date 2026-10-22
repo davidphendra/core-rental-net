@@ -8,7 +8,7 @@ namespace CoreRentalNet.Agents.Tests;
 public sealed class RetrieverPromptTests
 {
     private static readonly string Prompt =
-        new EmbeddedInstructionSource("catalogue-product-retriever.v3.md").Text;
+        new EmbeddedInstructionSource("catalogue-product-retriever.v4.md").Text;
 
     [Fact]
     public void Every_component_is_searched_once_per_tool()
@@ -38,6 +38,14 @@ public sealed class RetrieverPromptTests
     {
         Prompt.Should().Contain("`category` is the entry's **component**");
         Prompt.Should().Contain("A monitor, lamp, plant, bean bag and coffee machine all use `category: accessory`");
+    }
+
+
+    [Fact]
+    public void A_stated_size_or_assortment_is_kept_in_the_terms()
+    {
+        Prompt.Should().Contain("Do not remove a size the customer stated.");
+        Prompt.Should().Contain("A named variety or assortment is never the only term");
     }
 
     [Fact]

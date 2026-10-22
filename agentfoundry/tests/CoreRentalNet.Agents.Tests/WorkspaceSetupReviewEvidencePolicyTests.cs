@@ -98,6 +98,53 @@ public sealed class WorkspaceSetupReviewEvidencePolicyTests
         result.Issues.Should().ContainSingle();
     }
 
+
+    [Fact]
+    public void An_exact_brand_and_type_quoted_by_the_reviewer_cannot_be_rejected()
+    {
+        var query = "I need a compact home office with a VIVO mobile standing desk, a ZSARTS small velvet chair, and a Prinaight 3 Pack Mini Plants.";
+        var productName = "VIVO White Electric Mobile Height Adjustable 36 inch Dual Platform Standing Desk with Wheels, Rolling Small Space Table, Sit Stand Workstation, DESK-V111VTW";
+        var result = Apply(
+            query,
+            productName,
+            new WorkspaceSetupReviewIssue(
+                "SLOT_PURPOSE_UNSATISFIED",
+                "the desk does not match",
+                CustomerEvidence: "VIVO mobile standing desk",
+                ProductEvidence: productName));
+
+        result.IsAcceptable.Should().BeTrue();
+    }
+
+
+    [Fact]
+    public void A_colour_the_description_supports_cannot_be_rejected_from_the_name_alone()
+    {
+        var product = new RetrievedWorkspaceComponentProduct(
+            WorkspaceSlot.Desk,
+            "CHA-1",
+            "Leather Guest Chair",
+            "Black leather chair with a padded seat.",
+            100_000);
+        var issue = new WorkspaceSetupReviewIssue(
+            "SLOT_PURPOSE_UNSATISFIED",
+            "the chair does not match",
+            CustomerEvidence: "black leather chair",
+            ProductEvidence: "Leather Guest Chair");
+
+        var result = _policy.Apply(
+            new WorkspaceSetupReviewResult(false, [issue], "rejected"),
+            "I need a black leather chair.",
+            [new WorkspaceSetupCandidate(
+            [
+                new WorkspaceSetupLine(WorkspaceSlot.Chair, product.Sku, product.Name, 1, product.Amount),
+            ])],
+            [new SelectedWorkspaceComponentProduct(product, ProductRelevanceLevel.High)],
+            requirementExpansion: null);
+
+        result.IsAcceptable.Should().BeTrue();
+    }
+
     private WorkspaceSetupReviewResult Apply(
         string query,
         string productName,

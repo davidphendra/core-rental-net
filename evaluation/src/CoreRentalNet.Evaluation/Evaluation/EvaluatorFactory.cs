@@ -22,6 +22,7 @@ public static class EvaluatorFactory
             AnswerExactCheck.Create(),
             new ConstraintComplianceCheck(catalogue).Create(),
             RetrievalQualityCheck.Create(),
+            RawRetrievalQualityCheck.Create(),
             ToolCallAccuracyCheck.Create(),
             WorkflowCorrectnessCheck.Create());
 

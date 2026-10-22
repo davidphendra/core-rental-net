@@ -29,20 +29,20 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Rephraser { get; } = new(
         Name: "workspace-requirement-rephraser",
-        PromptFileName: "workspace-requirement-rephraser.v5.md",
+        PromptFileName: "workspace-requirement-rephraser.v6.md",
         Description: "Turns the sentence into what the workspace must be and the words that find each part of it.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansionWire>());
 
     public static AgentProfile Retriever { get; } = new(
         Name: "catalogue-product-retriever",
-        PromptFileName: "catalogue-product-retriever.v3.md",
+        PromptFileName: "catalogue-product-retriever.v4.md",
         Description: "Finds the catalogue products that could satisfy the expansion, and composes nothing.",
         Output: ChatResponseFormat.ForJsonSchema<CatalogueProductRetrievalResult>(),
         UsesCatalogueTools: true);
 
     public static AgentProfile Reranker { get; } = new(
         Name: "catalogue-candidate-reranker",
-        PromptFileName: "catalogue-candidate-reranker.v2.md",
+        PromptFileName: "catalogue-candidate-reranker.v3.md",
         Description: "Orders each component's retrieved products against the need that component must answer.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceComponentProductRankingResult>());
 

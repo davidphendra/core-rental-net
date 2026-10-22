@@ -51,11 +51,13 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
                     workflowOptions.MaximumSearchTermCharacterCount),
                 new WorkspaceRequirementBudgetInvariantPolicy(),
                 new WorkspaceAccessoryRelevancePolicy(),
+                new WorkspaceExplicitModelTermPolicy(),
                 logger
             ).BindExecutor(),
 
             Retriever: new CatalogueProductRetrievalExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Retriever),
+                new CatalogueProductRetrievalNormalizer(),
                 runScopedServiceResolver, logger
             ).BindExecutor(),
 
@@ -91,6 +93,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
             RetryDecision: new WorkspaceSetupRetryDecisionExecutor(
                 new WorkspaceSetupRetryDecisionPolicy(workflowOptions.MaximumAttemptCount),
+                new WorkspaceRetryProgressPolicy(),
                 logger
             ).BindExecutor(),
 

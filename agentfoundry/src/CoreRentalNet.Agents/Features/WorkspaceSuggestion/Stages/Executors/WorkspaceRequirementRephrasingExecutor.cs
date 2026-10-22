@@ -20,6 +20,7 @@ internal sealed class WorkspaceRequirementRephrasingExecutor(
     WorkspaceComponentSearchVocabularyLimitPolicy vocabularyLimitPolicy,
     WorkspaceRequirementBudgetInvariantPolicy budgetInvariantPolicy,
     WorkspaceAccessoryRelevancePolicy accessoryRelevancePolicy,
+    WorkspaceExplicitModelTermPolicy explicitModelTermPolicy,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger, modelBacked: true)
 {
@@ -48,7 +49,8 @@ internal sealed class WorkspaceRequirementRephrasingExecutor(
                 workspaceSuggestionWorkflowState.RequirementExpansion =
                     accessoryRelevancePolicy.ApplyRequestedAccessories(
                         budgetInvariantPolicy.ApplyBudgetInvariant(
-                            vocabularyLimitPolicy.ApplySearchVocabularyLimits(expansion),
+                            vocabularyLimitPolicy.ApplySearchVocabularyLimits(
+                                explicitModelTermPolicy.Apply(expansion)),
                             workspaceSuggestionWorkflowState.CustomerStatedCeilingMonthly));
             },
             cancellationToken);

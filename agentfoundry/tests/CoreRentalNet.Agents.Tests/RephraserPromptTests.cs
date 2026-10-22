@@ -8,7 +8,7 @@ namespace CoreRentalNet.Agents.Tests;
 public sealed class RephraserPromptTests
 {
     private static readonly string Prompt =
-        new EmbeddedInstructionSource("workspace-requirement-rephraser.v5.md").Text;
+        new EmbeddedInstructionSource("workspace-requirement-rephraser.v6.md").Text;
 
     [Fact]
     public void Room_type_does_not_make_a_category_relevant()
@@ -102,6 +102,15 @@ public sealed class RephraserPromptTests
     {
         Prompt.Should().Contain("A component that either of its searches found a product for is answered.");
         Prompt.Should().Contain("The feedback is only ever the previous attempt's.");
+    }
+
+
+    [Fact]
+    public void A_retry_must_change_a_search_that_found_nothing()
+    {
+        Prompt.Should().Contain(
+            "Do not repeat the same search terms for a component whose previous searches found nothing.");
+        Prompt.Should().Contain("Repeating the same terms is not a correction; widen or change them.");
     }
 
     [Fact]
