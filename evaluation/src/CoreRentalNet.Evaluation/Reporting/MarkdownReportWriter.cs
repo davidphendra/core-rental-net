@@ -67,13 +67,15 @@ public static class MarkdownReportWriter
         text.AppendLine();
         text.AppendLine("## All rows");
         text.AppendLine();
-        text.AppendLine("| Row | Case | Stability | Case pass | Failure codes |");
-        text.AppendLine("|---:|---|---|---|---|");
+        text.AppendLine("| Row | Case | Stability | Reranker aligned | Case pass | Failure codes |");
+        text.AppendLine("|---:|---|---|---|---|---|");
 
         foreach (var testCase in report.Cases)
         {
+            var aligned = testCase.Repetitions.Any(repetition => repetition.RerankerAligned);
             text.AppendLine(
                 $"| {testCase.RowNumber} | {testCase.CaseId} | {testCase.Stability} | " +
+                $"{(aligned ? "YES" : "NO")} | " +
                 $"{(testCase.CasePass ? "PASS" : "FAIL")} | " +
                 $"{string.Join("<br>", testCase.FailureCodes)} |");
         }

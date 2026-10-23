@@ -11,6 +11,9 @@ public sealed record RepetitionResult(
     /// <summary>The measured timing tree for this execution.</summary>
     public RunTiming? Timing { get; init; }
 
-    public bool CasePass { get; } = MetricNames.All.All(metric =>
+    /// <summary>Whether the reranker returned a non-empty selection drawn from its input.</summary>
+    public bool RerankerAligned { get; init; }
+
+    public bool CasePass { get; init; } = MetricNames.CasePassMetrics.All(metric =>
         Metrics.TryGetValue(metric, out var passed) && passed);
 }

@@ -112,27 +112,31 @@ public sealed class EvaluationReportFactory
 
         var failures = metrics
             .Where(metric => metric.RunId == run.RunId
-                             && MetricNames.All.Contains(metric.Metric)
+                             && MetricNames.CasePassMetrics.Contains(metric.Metric)
                              && !metric.Passed)
             .SelectMany(metric => (metric.Reason ?? string.Empty)
                 .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .Where(code => code.Length > 0)
-            .Concat(run.TimedOut && !run.Completed ? [FailureCodes.CaseTimeout] : [])
+            .Concat(run.TimedOut ? [FailureCodes.CaseTimeout] : [])
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
         var context = WorkspaceContext.Parse(item.Context);
         var answer = AnswerComparison.Evaluate(context);
         var retrieval = RetrievalQuality.Evaluate(context);
+        var alignment = RerankerAlignment.Evaluate(context);
+        var casePass = CasePassPolicy.Passed(local, alignment.Aligned, run.TimedOut);
 
         return new RepetitionResult(
             Repetition: run.Repetition,
             Metrics: local,
-            FailureCodes: failures,
+            FailureCodes: casePass ? [] : failures,
             AnswerF1: answer.F1,
             RetrievalRecall: retrieval.SelectedRecall)
         {
             Timing = RunTimingFactory.Create(run.Trace, run.WallMs),
+            RerankerAligned = alignment.Aligned,
+            CasePass = casePass,
         };
     }
 

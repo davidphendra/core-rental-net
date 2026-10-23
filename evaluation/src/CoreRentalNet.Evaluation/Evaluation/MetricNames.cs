@@ -9,8 +9,20 @@ public static class MetricNames
     public const string RawRetrievalRecall = "raw_retrieval_recall";
     public const string ToolCallAccuracy = "tool_call_accuracy";
     public const string WorkflowCorrectness = "workflow_correctness";
+    public const string RerankerAligned = "reranker_aligned";
 
     public static IReadOnlyList<string> All { get; } =
+    [
+        AnswerExact,
+        ConstraintCompliance,
+        RetrievalQuality,
+        RawRetrievalRecall,
+        ToolCallAccuracy,
+        WorkflowCorrectness,
+        RerankerAligned,
+    ];
+
+    public static IReadOnlyList<string> CasePassMetrics { get; } =
     [
         AnswerExact,
         ConstraintCompliance,
