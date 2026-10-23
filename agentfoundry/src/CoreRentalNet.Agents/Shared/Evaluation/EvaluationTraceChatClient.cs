@@ -97,7 +97,8 @@ internal sealed class EvaluationTraceChatClient(
             ResponseText: responseText,
             ToolCalls: toolCalls,
             InputTokens: (int)(usage?.InputTokenCount ?? 0),
-            OutputTokens: (int)(usage?.OutputTokenCount ?? 0)));
+            OutputTokens: (int)(usage?.OutputTokenCount ?? 0),
+            Phase: PhaseOf(options)));
     }
 
     private void RecordStreamingCall(
@@ -189,5 +190,11 @@ internal sealed class EvaluationTraceChatClient(
     private static int? AttemptOf(Activity? activity)
         => activity?.GetTagItem(WorkspaceTelemetry.RunAttempts) is int attempt
             ? attempt
+            : null;
+
+    private static string? PhaseOf(ChatOptions? options)
+        => options?.AdditionalProperties?.TryGetValue(ChatCallPhase.Key, out var value) is true
+            && value is string phase
+            ? phase
             : null;
 }

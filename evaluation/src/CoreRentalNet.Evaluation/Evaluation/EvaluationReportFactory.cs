@@ -117,7 +117,7 @@ public sealed class EvaluationReportFactory
             .SelectMany(metric => (metric.Reason ?? string.Empty)
                 .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .Where(code => code.Length > 0)
-            .Concat(run.TimedOut ? [FailureCodes.CaseTimeout] : [])
+            .Concat(run.TimedOut && !run.Completed ? [FailureCodes.CaseTimeout] : [])
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
@@ -132,7 +132,7 @@ public sealed class EvaluationReportFactory
             AnswerF1: answer.F1,
             RetrievalRecall: retrieval.SelectedRecall)
         {
-            Timing = RunTimingFactory.Create(run.Trace),
+            Timing = RunTimingFactory.Create(run.Trace, run.WallMs),
         };
     }
 

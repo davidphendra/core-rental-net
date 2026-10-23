@@ -21,6 +21,14 @@ internal static class CatalogToolLimits
     /// <summary>The most rows a tool answer will carry, whatever the caller asks for.</summary>
     public const int MaximumProductCount = 25;
 
+    /// <summary>The longest description a catalogue tool publishes to a model.</summary>
+    /// <remarks>
+    /// A tool answer is model context, not a catalogue page. The REST answer keeps the full description; only
+    /// the MCP boundary publishes this bounded form. The rule lives beside the other tool-boundary bounds so a
+    /// reader finds every "what a tool may carry" number in one place.
+    /// </remarks>
+    public const int MaximumDescriptionCharacterCount = 150;
+
     /// <summary>The longest one search term may be.</summary>
     public const int MaximumSearchTermCharacterCount = 80;
 

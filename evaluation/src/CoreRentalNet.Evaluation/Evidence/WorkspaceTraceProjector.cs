@@ -95,12 +95,17 @@ public sealed class WorkspaceTraceProjector(int maximumSelectedProductsPerCompon
         return selections;
     }
 
-    private static IReadOnlyList<string> ReturnedSkus(string resultText)
+    private static IReadOnlyList<string> ReturnedSkus(string? resultText)
     {
+        if (string.IsNullOrWhiteSpace(resultText))
+        {
+            return [];
+        }
+
         try
         {
             return JsonSerializer.Deserialize<CatalogueAnswerDto>(resultText, EvaluationJson.Options)?
-                .Matches.Value
+                .Matches?.Value
                 .Select(item => item.Sku)
                 .ToArray() ?? [];
         }

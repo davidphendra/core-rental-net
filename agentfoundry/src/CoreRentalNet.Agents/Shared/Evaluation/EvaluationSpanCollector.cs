@@ -17,6 +17,7 @@ internal sealed class EvaluationSpanCollector : IDisposable
     private readonly ActivityListener _listener;
     private readonly Lock _gate = new();
     private readonly HashSet<string> _opened = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _runIdByTrace = new(StringComparer.Ordinal);
 
     public EvaluationSpanCollector(string directory)
     {
@@ -37,15 +38,20 @@ internal sealed class EvaluationSpanCollector : IDisposable
 
     private void Record(Activity activity)
     {
-        if (activity.GetTagItem(WorkspaceTelemetry.RunId) is not string runId
-            || string.IsNullOrWhiteSpace(runId))
+        var traceId = activity.TraceId.ToHexString();
+        var runId = RunIdResolver.Resolve(activity)
+            ?? _runIdByTrace.GetValueOrDefault(traceId);
+
+        if (string.IsNullOrWhiteSpace(runId))
         {
             return;
         }
 
+        _runIdByTrace[traceId] = runId;
+
         var record = new EvaluationSpanRecord(
             RunId: runId,
-            TraceId: activity.TraceId.ToHexString(),
+            TraceId: traceId,
             SpanId: activity.SpanId.ToHexString(),
             ParentSpanId: activity.ParentSpanId == default ? null : activity.ParentSpanId.ToHexString(),
             Name: activity.DisplayName,

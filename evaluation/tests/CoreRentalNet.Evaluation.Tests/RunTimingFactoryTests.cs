@@ -5,56 +5,57 @@ using Xunit;
 
 namespace CoreRentalNet.Evaluation.Tests;
 
+/// <summary>The timing tree separates tool execution from the two retriever model phases.</summary>
 public sealed class RunTimingFactoryTests
 {
     [Fact]
-    public void Node_model_tool_and_guardrail_time_are_separated()
+    public void A_retriever_node_exposes_tool_time_and_both_model_phases()
     {
-        var node = Span("node", "workspace-request-verifier", 100, null, new Dictionary<string, string?>
-        {
-            ["node.kind"] = "model",
-            ["stage"] = "workspace-request-verifier",
-        });
-        var model = Span("model", "stage-model-call", 70, "node", new Dictionary<string, string?>
-        {
-            ["stage.agent.name"] = "workspace-request-verifier",
-        });
-        var tool = Span("tool", "tool.invoke", 25, "node", new Dictionary<string, string?> { ["tool.name"] = "search_catalogue" });
-        var guard = Span("guard", "guardrail.before", 2, "tool", new Dictionary<string, string?> { ["guard"] = "ToolAllowListGuard" });
-        var mcp = Span("mcp", "mcp.http", 20, "tool", new Dictionary<string, string?>
-        {
-            ["mcp.server_timing"] = "mcp;dur=18, embedding;dur=8",
-        });
+        var node = Span("node", "catalogue-product-retriever", null, "model",
+            ("stage", "catalogue-product-retriever"), ("node.kind", "model"));
+        var tool = Span("tool", "tool.invoke", "node", "Client",
+            ("tool.name", "search_catalogue"));
+        var planning = Span("planning", "stage-model-call", "node", "Client",
+            ("stage.agent.name", "catalogue-product-retriever"),
+            ("chat.call.phase", "tool-planning"));
+        var final = Span("final", "stage-model-call", "node", "Client",
+            ("stage.agent.name", "catalogue-product-retriever"),
+            ("chat.call.phase", "final-structured"));
 
-        var timing = RunTimingFactory.Create(Trace(node, model, tool, guard, mcp));
+        var timing = RunTimingFactory.Create(
+            new RunTrace("run", [], []) { Spans = [node, tool, planning, final] },
+            wallMs: 5_000);
 
-        timing.Stages.Should().ContainSingle();
-        timing.Stages[0].TotalMs.Should().Be(100);
-        timing.Stages[0].ModelMs.Should().Be(70);
-        timing.Stages[0].ToolMs.Should().Be(25);
-        timing.Stages[0].GuardrailMs.Should().Be(2);
-        timing.Stages[0].HostMs.Should().Be(18);
-        timing.Stages[0].UnattributedMs.Should().Be(5);
-        timing.ToolCalls.Single().ServerTiming["embedding"].Should().Be(8);
+        var stage = timing.Stages.Single();
+        stage.ToolMs.Should().Be(150);
+        stage.ToolPlanningModelMs.Should().Be(1_000);
+        stage.FinalStructuredModelMs.Should().Be(2_000);
+        stage.ModelCallCount.Should().Be(2);
+        stage.ToolCallCount.Should().Be(1);
+        timing.WallMs.Should().Be(5_000);
+        timing.UnaccountedMs.Should().Be(5_000 - node.DurationMs);
     }
-
-    private static RunTrace Trace(params TraceSpan[] spans)
-        => new("run", [], []) { Spans = spans };
 
     private static TraceSpan Span(
         string id,
         string name,
-        double durationMs,
-        string? parent,
-        IReadOnlyDictionary<string, string?> tags)
+        string? parentId,
+        string kind,
+        params (string Key, string Value)[] tags)
         => new(
-            "run",
-            "trace",
-            id,
-            parent,
-            name,
-            "Internal",
-            DateTimeOffset.UnixEpoch,
-            durationMs,
-            tags);
+            RunId: "run",
+            TraceId: "trace",
+            SpanId: id,
+            ParentSpanId: parentId,
+            Name: name,
+            Kind: kind,
+            StartedAt: DateTimeOffset.UtcNow,
+            DurationMs: name switch
+            {
+                "tool.invoke" => 150,
+                "stage-model-call" when id == "planning" => 1_000,
+                "stage-model-call" => 2_000,
+                _ => 3_000,
+            },
+            Tags: tags.ToDictionary(tag => tag.Key, tag => (string?)tag.Value, StringComparer.Ordinal));
 }

@@ -33,7 +33,7 @@ internal sealed class GuardedToolFunction(
         using var tokenScope = McpRunScope.Enter(accessTokenService?.Token);
 
         var toolInvocation = new ToolInvocation(Name, arguments);
-        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+        var runId = RunIdResolver.Resolve(Activity.Current);
         using var toolActivity = WorkspaceTelemetry.ActivitySource.StartActivity("tool.invoke");
         toolActivity?.SetTag(WorkspaceTelemetry.ToolName, Name);
         toolActivity?.SetTag(WorkspaceTelemetry.RunId, runId);

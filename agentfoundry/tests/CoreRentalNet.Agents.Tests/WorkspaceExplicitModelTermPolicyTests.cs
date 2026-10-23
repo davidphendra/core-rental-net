@@ -20,6 +20,7 @@ public sealed class WorkspaceExplicitModelTermPolicyTests
 
         result.ComponentExpansions.Monitor.SearchTerms.Should().Contain("3007WFP-HC");
         result.ComponentExpansions.Desk.SearchTerms.Should().NotContain("3007WFP-HC");
+        result.ComponentExpansions.Chair.SearchTerms.Should().NotContain("3007WFP-HC");
     }
 
     [Fact]

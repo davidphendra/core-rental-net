@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Infrastructure;
-using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchCatalog;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +14,10 @@ namespace CoreRentalNet.Host.Mcp;
 /// <para>
 /// One operation per type, as every other service here. The tool is a projection of the handler the REST
 /// endpoint calls, so what it returns is what the REST endpoint returns.
+/// </para>
+/// <para>
+/// The product projection is the MCP read model rather than the REST DTO. Its descriptions are bounded by
+/// <see cref="CatalogueDescriptionPolicy"/>, so a model receives only the text the tool boundary allows.
 /// </para>
 /// <para>
 /// <b>Several terms rather than one word, because that is what the stage before it produces.</b> A search that
@@ -65,8 +68,9 @@ public sealed class SearchCatalogueTool(
             Take: take));
         timing.Record("name-search", stopwatch.Elapsed);
 
-        return new CatalogueSearchToolAnswer(
-            CatalogAnswer.Of(CatalogAnswer.Cap(matched, take), matched.Count),
+        return CatalogueSearchToolAnswer.From(
+            matched,
+            take,
             CheapestProductExcludedByTheCeiling(scope, matched, maximumMonthlyAmount));
     }
 

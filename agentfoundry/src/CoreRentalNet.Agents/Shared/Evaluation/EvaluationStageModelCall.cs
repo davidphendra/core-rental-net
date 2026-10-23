@@ -11,5 +11,6 @@ internal sealed record EvaluationStageModelCall(
     string ResponseText,
     IReadOnlyList<EvaluationToolCall> ToolCalls,
     int InputTokens,
-    int OutputTokens)
+    int OutputTokens,
+    string? Phase = null)
     : EvaluationTraceRecord(null, 0, default);

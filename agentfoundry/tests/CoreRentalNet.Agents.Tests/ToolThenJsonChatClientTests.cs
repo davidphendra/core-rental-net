@@ -30,6 +30,7 @@ public sealed class ToolThenJsonChatClientTests
         inner.LastOptions!.Tools.Should().ContainSingle();
         inner.LastOptions.ToolMode.Should().Be(ChatToolMode.Auto);
         inner.LastOptions.ResponseFormat.Should().BeNull();
+        inner.LastOptions.AdditionalProperties![ChatCallPhase.Key].Should().Be(ChatCallPhase.ToolPlanning);
     }
 
     [Fact]
@@ -44,6 +45,7 @@ public sealed class ToolThenJsonChatClientTests
         inner.LastOptions!.Tools.Should().BeEmpty();
         inner.LastOptions.ToolMode.Should().BeNull();
         inner.LastOptions.ResponseFormat.Should().BeSameAs(RetrievalFormat);
+        inner.LastOptions.AdditionalProperties![ChatCallPhase.Key].Should().Be(ChatCallPhase.FinalStructured);
     }
 
     [Fact]

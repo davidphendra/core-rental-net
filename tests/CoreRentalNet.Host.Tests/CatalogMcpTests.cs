@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using AwesomeAssertions;
 using CoreRentalNet.Host.Configs;
@@ -105,6 +106,7 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
             new Dictionary<string, object?>
             {
                 ["terms"] = new[] { "monitor" },
+                ["category"] = "accessory",
                 ["subCategory"] = "monitor",
                 ["limit"] = 2,
             });
@@ -130,7 +132,11 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
 
         var answer = await client.CallToolAsync(
             SearchCatalogueTool.ToolName,
-            new Dictionary<string, object?> { ["terms"] = new[] { "workstation", "computer table" } });
+            new Dictionary<string, object?>
+            {
+                ["terms"] = new[] { "workstation", "computer table" },
+                ["category"] = "desk",
+            });
 
         using var document = JsonDocument.Parse(Text(answer));
 
@@ -145,7 +151,11 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
 
         var answer = await client.CallToolAsync(
             SearchCatalogueTool.ToolName,
-            new Dictionary<string, object?> { ["terms"] = new[] { "workstation submarine" } });
+            new Dictionary<string, object?>
+            {
+                ["terms"] = new[] { "workstation submarine" },
+                ["category"] = "desk",
+            });
 
         using var document = JsonDocument.Parse(Text(answer));
 
@@ -164,7 +174,11 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
 
         var answer = await client.CallToolAsync(
             SearchCatalogueTool.ToolName,
-            new Dictionary<string, object?> { ["terms"] = tooManyTerms });
+            new Dictionary<string, object?>
+            {
+                ["terms"] = tooManyTerms,
+                ["category"] = "desk",
+            });
 
         // A tool's own refusal is an error answer rather than a protocol failure: the call reached the tool,
         // and the tool is the thing saying no. What matters is that it refuses instead of searching with eight.
@@ -181,7 +195,11 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
 
         var answer = await client.CallToolAsync(
             SearchCatalogueTool.ToolName,
-            new Dictionary<string, object?> { ["terms"] = Array.Empty<string>() });
+            new Dictionary<string, object?>
+            {
+                ["terms"] = Array.Empty<string>(),
+                ["category"] = "desk",
+            });
 
         answer.IsError.Should().Be(true);
     }
@@ -196,6 +214,7 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
             new Dictionary<string, object?>
             {
                 ["terms"] = new[] { "monitor" },
+                ["category"] = "accessory",
                 ["subCategory"] = "monitor",
                 ["maximumMonthlyAmount"] = BelowEveryMonitorPrice,
             });
@@ -214,6 +233,72 @@ public sealed class CatalogMcpTests(CatalogMcpFactory factory) : IClassFixture<C
         var act = () => ConnectAsync();
 
         await act.Should().ThrowAsync<Exception>("the MCP endpoint requires an authenticated caller");
+    }
+
+    [Fact]
+    public async Task The_name_tool_publishes_a_bounded_description_and_keeps_product_fields()
+    {
+        await using var client = await ConnectAsync(CatalogueRead);
+
+        var answer = await client.CallToolAsync(
+            SearchCatalogueTool.ToolName,
+            new Dictionary<string, object?>
+            {
+                ["terms"] = new[] { "monitor" },
+                ["category"] = "accessory",
+                ["subCategory"] = "monitor",
+                ["limit"] = 5,
+            });
+
+        using var document = JsonDocument.Parse(Text(answer));
+        var products = document.RootElement
+            .GetProperty("matches")
+            .GetProperty("value");
+
+        foreach (var product in products.EnumerateArray())
+        {
+            var description = product.GetProperty("description").GetString()!;
+            description.Length.Should().BeLessThanOrEqualTo(CatalogToolLimits.MaximumDescriptionCharacterCount);
+            new StringInfo(description).LengthInTextElements
+                .Should().BeLessThanOrEqualTo(CatalogToolLimits.MaximumDescriptionCharacterCount);
+            product.TryGetProperty("imagePath", out _).Should().BeTrue();
+            product.TryGetProperty("monthlyPrice", out _).Should().BeTrue();
+            product.TryGetProperty("imageAvailable", out _).Should().BeTrue();
+            product.TryGetProperty("isFeatured", out _).Should().BeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task The_similarity_tool_publishes_a_bounded_description_and_keeps_product_fields()
+    {
+        await using var client = await ConnectAsync(SimilaritySearch);
+
+        var answer = await client.CallToolAsync(
+            SearchSimilarityCatalogueTool.ToolName,
+            new Dictionary<string, object?>
+            {
+                ["query"] = "a monitor for a home office",
+                ["category"] = "accessory",
+                ["subCategory"] = "monitor",
+                ["limit"] = 5,
+            });
+
+        using var document = JsonDocument.Parse(Text(answer));
+        var products = document.RootElement
+            .GetProperty("matches")
+            .GetProperty("value");
+
+        foreach (var product in products.EnumerateArray())
+        {
+            var description = product.GetProperty("description").GetString()!;
+            description.Length.Should().BeLessThanOrEqualTo(CatalogToolLimits.MaximumDescriptionCharacterCount);
+            new StringInfo(description).LengthInTextElements
+                .Should().BeLessThanOrEqualTo(CatalogToolLimits.MaximumDescriptionCharacterCount);
+            product.TryGetProperty("imagePath", out _).Should().BeTrue();
+            product.TryGetProperty("monthlyPrice", out _).Should().BeTrue();
+            product.TryGetProperty("imageAvailable", out _).Should().BeTrue();
+            product.TryGetProperty("isFeatured", out _).Should().BeTrue();
+        }
     }
 
     private async Task<McpClient> ConnectAsync(params string[] permissions)

@@ -11,6 +11,8 @@ internal sealed class FakeTelemetryChatClient : ITelemetryChatClient
 
     public List<string> Lifecycle { get; } = [];
 
+    public IReadOnlyList<ChatMessage> LastMessages { get; private set; } = [];
+
     public void StartRun(string runId) => Lifecycle.Add($"start:{runId}");
 
     public void CompleteRun(string runStatus) => Lifecycle.Add($"complete:{runStatus}");
@@ -19,7 +21,11 @@ internal sealed class FakeTelemetryChatClient : ITelemetryChatClient
         IEnumerable<ChatMessage> messages,
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
-        => Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "answer")));
+    {
+        LastMessages = messages.ToArray();
+
+        return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "answer")));
+    }
 
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,

@@ -14,4 +14,10 @@ public sealed record RowRun(
 {
     /// <summary>True when the case was stopped by its own execution budget.</summary>
     public bool TimedOut { get; init; }
+
+    /// <summary>True when the agent response stream reached its terminal event.</summary>
+    public bool Completed { get; init; }
+
+    /// <summary>The actual case wall time measured by the runner.</summary>
+    public double WallMs { get; init; }
 }

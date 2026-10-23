@@ -19,6 +19,8 @@ internal sealed class CatalogueProductRetrievalExecutor(
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Retriever, logger, modelBacked: true)
 {
+    private readonly ILogger _logger = logger;
+
     protected override object? ResultOf(WorkspaceSuggestionWorkflowState workspaceSuggestionWorkflowState)
         => workspaceSuggestionWorkflowState.CatalogueRetrieval;
 
@@ -67,11 +69,14 @@ internal sealed class CatalogueProductRetrievalExecutor(
                         UnavailableReason: "The catalogue could not be reached.",
                         ComponentSearchOutcomes: []);
                 }
-                catch (Exception)
+                catch (Exception exception)
                 {
                     // Any other failure - a tool refusing an argument, the meaning search failing - is the same
                     // outcome to this run as an unreachable catalogue: nothing could be searched, and nothing is
                     // ever composed from memory.
+                    _logger.LogWarning(
+                        exception,
+                        "Catalogue retrieval failed before a search result could be recorded.");
                     workspaceSuggestionWorkflowState.CatalogueRetrieval = new CatalogueProductRetrievalResult(
                         IsAvailable: false,
                         UnavailableReason: "The catalogue could not be searched.",

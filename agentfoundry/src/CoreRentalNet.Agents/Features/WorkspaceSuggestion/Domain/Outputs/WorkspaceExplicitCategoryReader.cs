@@ -58,7 +58,9 @@ internal static class WorkspaceExplicitCategoryReader
 
         while (match.Success)
         {
-            var distance = Math.Abs(match.Index - index);
+            // A product name is followed by its category noun ("Dell ... monitor"). Prefer a following noun so a
+            // preceding category in a list ("chair, and a Dell ...") does not capture the model number.
+            var distance = Math.Abs(match.Index - index) + (match.Index < index ? 1_000 : 0);
             best = best < 0 ? distance : Math.Min(best, distance);
             match = match.NextMatch();
         }

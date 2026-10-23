@@ -79,9 +79,10 @@ internal sealed class TelemetryChatClient(
         CancellationToken cancellationToken = default)
     {
         var stageAgentName = StageAgentNameOf(options);
-        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+        var runId = RunIdResolver.Resolve(Activity.Current);
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
+        activity?.SetTag(ChatCallPhase.Key, PhaseOf(options));
         activity?.SetTag(WorkspaceTelemetry.RunId, runId);
 
         var response = await base.GetResponseAsync(messages, options, cancellationToken);
@@ -97,9 +98,10 @@ internal sealed class TelemetryChatClient(
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var stageAgentName = StageAgentNameOf(options);
-        var runId = Activity.Current?.GetTagItem(WorkspaceTelemetry.RunId) as string;
+        var runId = RunIdResolver.Resolve(Activity.Current);
         using var activity = StageModelCallActivitySource.StartActivity("stage-model-call", ActivityKind.Client);
         activity?.SetTag("stage.agent.name", stageAgentName);
+        activity?.SetTag(ChatCallPhase.Key, PhaseOf(options));
         activity?.SetTag(WorkspaceTelemetry.RunId, runId);
 
         var tags = new TagList { { WorkspaceTelemetry.Stage, stageAgentName } };
@@ -150,6 +152,12 @@ internal sealed class TelemetryChatClient(
             && value is string stageAgentName
             ? stageAgentName
             : "(unnamed stage)";
+
+    private static string? PhaseOf(ChatOptions? options)
+        => options?.AdditionalProperties?.TryGetValue(ChatCallPhase.Key, out var value) is true
+            && value is string phase
+            ? phase
+            : null;
 
     /// <summary>Puts the tokens on the span and in the log, never a prompt and never an answer.</summary>
     private void Record(Activity? activity, string stageAgentName, UsageDetails? usage)

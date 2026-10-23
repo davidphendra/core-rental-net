@@ -99,8 +99,8 @@ public sealed class AgentFoundryRegistrationTests
         using var scope = provider.CreateScope();
 
         scope.ServiceProvider.GetRequiredService<ITelemetryChatClient>()
-            .Should().BeOfType<TelemetryChatClient>(
-                "callers depend on the port and DI injects the sealed implementation");
+            .Should().BeOfType<CatalogueToolResultProjectionChatClient>(
+                "the retriever-facing port is the projection over the sealed telemetry implementation");
     }
 
     [Fact] // the resolution a request performs, under the scope validation Development turns on

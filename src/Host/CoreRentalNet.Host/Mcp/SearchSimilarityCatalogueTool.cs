@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using CoreRentalNet.Host.Configs;
 using CoreRentalNet.Host.Infrastructure;
-using CoreRentalNet.Host.Presentation;
 using CoreRentalNet.Modules.Catalog.Application.Contracts;
 using CoreRentalNet.Modules.Catalog.Application.Queries.SearchSimilarityCatalog;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +14,10 @@ namespace CoreRentalNet.Host.Mcp;
 /// <para>
 /// A different permission, a different handler and a different failure mode from the name search, which is why
 /// it is a type of its own rather than a second method: what is gated and what is offered stay one list.
+/// </para>
+/// <para>
+/// The product projection is the MCP read model rather than the REST DTO. Its descriptions are bounded by
+/// <see cref="CatalogueDescriptionPolicy"/>, so a model receives only the text the tool boundary allows.
 /// </para>
 /// <para>
 /// A failure to search is answered as a failure, never as the name search's answer. Turning "we could not
@@ -61,8 +64,9 @@ public sealed class SearchSimilarityCatalogueTool(
                 cancellationToken).ConfigureAwait(false);
             timing.Record("similarity", stopwatch.Elapsed);
 
-            return new CatalogueSearchToolAnswer(
-                CatalogAnswer.Of(CatalogAnswer.Cap(matched, take), matched.Count),
+            return CatalogueSearchToolAnswer.From(
+                matched,
+                take,
                 CheapestProductExcludedByTheCeiling(scope, matched, maximumMonthlyAmount));
         }
         catch (ProductSimilarityUnavailableException exception)

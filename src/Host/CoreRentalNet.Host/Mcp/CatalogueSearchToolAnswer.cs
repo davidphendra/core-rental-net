@@ -17,9 +17,30 @@ namespace CoreRentalNet.Host.Mcp;
 /// answer.
 /// </para>
 /// </remarks>
-/// <param name="Matches">The answer the catalogue's own API would give for the same search.</param>
+/// <param name="Matches">The MCP form of the search answer, with each description bounded for model context.</param>
 /// <param name="CheapestProductIgnoringTheCeiling">The cheapest product the ceiling excluded, or null when the
 /// ceiling excluded nothing — which is also the answer when no ceiling was given.</param>
 public sealed record CatalogueSearchToolAnswer(
-    ApiCollection<ProductDto> Matches,
-    decimal? CheapestProductIgnoringTheCeiling);
+    ApiCollection<CatalogueToolProduct> Matches,
+    decimal? CheapestProductIgnoringTheCeiling)
+{
+    /// <summary>Builds the MCP answer from the catalogue's raw matches.</summary>
+    /// <remarks>
+    /// The cap and the total are the catalogue answer's own; only the payload type changes. Keeping this here
+    /// means both tools compose their answer the same way, and the REST answer stays outside this rule.
+    /// </remarks>
+    public static CatalogueSearchToolAnswer From(
+        IReadOnlyList<ProductDto> matched,
+        int take,
+        decimal? cheapestProductIgnoringTheCeiling)
+    {
+        var page = CatalogAnswer
+            .Cap(matched, take)
+            .Select(CatalogueToolProduct.From)
+            .ToArray();
+
+        return new CatalogueSearchToolAnswer(
+            new ApiCollection<CatalogueToolProduct>(page, page.Length, matched.Count),
+            cheapestProductIgnoringTheCeiling);
+    }
+}

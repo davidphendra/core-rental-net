@@ -61,39 +61,37 @@ public static class WorkspaceSuggestionRegistration
         // forwards for names carrying its client prefix. Nothing carries one in a message any more, so there is
         // no splitter to register and no member on the request for a splitter to recognise.
         services.AddScoped<AccessTokenHeaderReader>();
-        services.AddScoped<IAccessTokenHeaderReader>(provider =>
+        services.AddTransient<IAccessTokenHeaderReader>(provider =>
             provider.GetRequiredService<AccessTokenHeaderReader>());
 
         // The run's token holder, scoped like the request. The header reader fills it at the first tool call,
         // and the run ending releases it while the catalogue session is still open.
-        services.AddScoped<IMcpAccessTokenService, McpAccessTokenService>();
+        services.AddTransient<IMcpAccessTokenService, McpAccessTokenService>();
 
-        // The run-scoped chain: the token-leak guardrail, then the model client. One instance records every
-        // stage's call, so the totals are the run's, and it names the stage from the options its agent set.
-        // The description limiter is inside the telemetry client, so the evaluation trace and the ledger still
-        // see the full tool result while the retriever model receives the shortened copy.
-        services.AddScoped<ITelemetryChatClient>(provider =>
+        // The run-scoped chain: the token-leak guardrail, then the telemetry client. One instance records every
+        // stage's call, so the totals are the run's, and it names the stage from the options its agent set. Tool
+        // descriptions are already bounded at the MCP boundary, so no agent-side description decorator exists.
+        services.AddTransient<ITelemetryChatClient>(provider =>
         {
-            var modelFacingClient = new CatalogueToolDescriptionLimitChatClient(
-                new GuardrailChatClient(
-                    modelClient,
-                    provider.GetRequiredService<IMcpAccessTokenService>()),
-                provider.GetRequiredService<ILogger<CatalogueToolDescriptionLimitChatClient>>());
+            var modelFacingClient = new GuardrailChatClient(
+                modelClient,
+                provider.GetRequiredService<IMcpAccessTokenService>());
 
-            return new TelemetryChatClient(
-                modelFacingClient,
-                configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
-                WorkspaceSuggestionAgentRoster.PromptVersions,
-                provider.GetRequiredService<ILogger<TelemetryChatClient>>());
+            return new CatalogueToolResultProjectionChatClient(
+                new TelemetryChatClient(
+                    modelFacingClient,
+                    configuration[AgentFoundryRegistration.ModelKey]?.Trim() ?? "(unconfigured)",
+                    WorkspaceSuggestionAgentRoster.PromptVersions,
+                    provider.GetRequiredService<ILogger<TelemetryChatClient>>()));
         });
 
         // Scoped like the run, so the tools a call listed stay callable for as long as its token lives.
-        services.AddScoped<IMcpAuthorizationConnection, McpAuthorizationConnection>();
+        services.AddTransient<IMcpAuthorizationConnection, McpAuthorizationConnection>();
 
         // The run's ending, stated once: the catalogue session a run opened is closed while the token it was
         // opened with is still held, and only then is the token given up. The transport's own session-termination
         // request is authenticated, so releasing first is what made shutdown fail.
-        services.AddScoped<IRunEnding, RunEnding>();
+        services.AddTransient<IRunEnding, RunEnding>();
 
         // One attempt's tool answers, recorded as they return and cleared when the next retrieval begins. Scoped
         // like the run, and read by the stage that ranks the products those answers carry.
@@ -101,8 +99,8 @@ public static class WorkspaceSuggestionRegistration
 
         // The guardrail policies. Registered by interface, so the pipeline below never names a concrete guard and
         // the order they run in is the order they are added.
-        services.AddScoped<IToolAllowList, CatalogueToolAllowList>();
-        services.AddScoped<IToolArgumentPolicy, CatalogueSearchArgumentPolicy>();
+        services.AddTransient<IToolAllowList, CatalogueToolAllowList>();
+        services.AddTransient<IToolArgumentPolicy, CatalogueSearchArgumentPolicy>();
         services.AddSingleton(new ToolArgumentLimits(
             MaximumArguments: 10,
             MaximumStringLength: workflowOptions.MaximumSearchTermCharacterCount,
@@ -133,9 +131,9 @@ public static class WorkspaceSuggestionRegistration
         // The stage agents - the one place the decorators' order is stated - and the executors built from them.
         // These are stateless factories: they are shared, but the agent they produce is not. Each resolution
         // builds a new workflow, which is what gives a concurrent request its own workflow owner.
-        services.AddSingleton<WorkspaceSuggestionAgentBuilder>();
-        services.AddSingleton<WorkspaceSuggestionExecutorBuilder>();
-        services.AddSingleton<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();
+        services.AddTransient<WorkspaceSuggestionAgentBuilder>();
+        services.AddTransient<WorkspaceSuggestionExecutorBuilder>();
+        services.AddTransient<IWorkspaceSuggestionWorkflow, WorkspaceSuggestionWorkflow>();
 
         // The served agent is the workflow agent itself and is never wrapped: hosting can redirect a hosted
         // workflow's checkpoints only when it can copy that agent. It is transient because a workflow has one

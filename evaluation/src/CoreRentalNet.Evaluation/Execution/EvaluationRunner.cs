@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Contracts;
 using CoreRentalNet.Evaluation.Evidence;
@@ -80,6 +81,8 @@ public sealed class EvaluationRunner(
         var request = RequestFactory.Create(testCase, runId);
         var events = new List<StreamEventDto>();
         var timedOut = false;
+        var completed = false;
+        var stopwatch = Stopwatch.StartNew();
 
         using var timeout = new CancellationTokenSource(_caseTimeout);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(
@@ -94,6 +97,8 @@ public sealed class EvaluationRunner(
             {
                 events.Add(StreamEventReader.Read(json));
             }
+
+            completed = true;
         }
         catch (OperationCanceledException) when (
             timeout.IsCancellationRequested
@@ -113,7 +118,9 @@ public sealed class EvaluationRunner(
 
         return new RowRun(testCase, repetition, runId, events, trace)
         {
-            TimedOut = timedOut,
+            TimedOut = timedOut && !completed,
+            Completed = completed,
+            WallMs = stopwatch.Elapsed.TotalMilliseconds,
         };
     }
 }

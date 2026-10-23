@@ -91,8 +91,8 @@ public static class MarkdownReportWriter
     {
         text.AppendLine("## Timing");
         text.AppendLine();
-        text.AppendLine("| Case | Total | Model | Tool | Guardrail | Host | Unattributed | Slowest stage |");
-        text.AppendLine("|---|---:|---:|---:|---:|---:|---:|---|");
+        text.AppendLine("| Case | Wall | Node total | Unaccounted | Model | Tool | Guardrail | Host | Slowest stage |");
+        text.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|---|");
 
         foreach (var testCase in report.Cases)
         {
@@ -104,17 +104,17 @@ public static class MarkdownReportWriter
                 }
 
                 text.AppendLine(
-                    $"| {testCase.CaseId} | {Ms(timing.TotalMs)} | {Ms(timing.ModelMs)} | " +
-                    $"{Ms(timing.ToolMs)} | {Ms(timing.GuardrailMs)} | {Ms(timing.HostMs)} | " +
-                    $"{Ms(timing.UnattributedMs)} | {timing.SlowestStage ?? "-"} |");
+                    $"| {testCase.CaseId} | {Ms(timing.WallMs)} | {Ms(timing.TotalMs)} | " +
+                    $"{Ms(timing.UnaccountedMs)} | {Ms(timing.ModelMs)} | {Ms(timing.ToolMs)} | " +
+                    $"{Ms(timing.GuardrailMs)} | {Ms(timing.HostMs)} | {timing.SlowestStage ?? "-"} |");
             }
         }
 
         text.AppendLine();
         text.AppendLine("### Stage timing");
         text.AppendLine();
-        text.AppendLine("| Case | Stage | Total | Model | Tool | Guardrail | Host | Unattributed |");
-        text.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|");
+        text.AppendLine("| Case | Stage | Total | Model calls | Tool planning | Final structured | Tool exec | Tool calls | Unattributed |");
+        text.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|---:|");
 
         foreach (var testCase in report.Cases)
         {
@@ -129,8 +129,9 @@ public static class MarkdownReportWriter
                 {
                     text.AppendLine(
                         $"| {testCase.CaseId} | {stage.Stage} | {Ms(stage.TotalMs)} | " +
-                        $"{Ms(stage.ModelMs)} | {Ms(stage.ToolMs)} | {Ms(stage.GuardrailMs)} | " +
-                        $"{Ms(stage.HostMs)} | {Ms(stage.UnattributedMs)} |");
+                        $"{stage.ModelCallCount} | {Ms(stage.ToolPlanningModelMs)} | " +
+                        $"{Ms(stage.FinalStructuredModelMs)} | {Ms(stage.ToolMs)} | " +
+                        $"{stage.ToolCallCount} | {Ms(stage.UnattributedMs)} |");
                 }
             }
         }

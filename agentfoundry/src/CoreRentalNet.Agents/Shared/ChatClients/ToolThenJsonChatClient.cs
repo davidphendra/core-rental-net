@@ -77,6 +77,8 @@ internal sealed class ToolThenJsonChatClient(
             prepared.Tools = [];
             prepared.ToolMode = null;
             prepared.ResponseFormat = _structuredOutput;
+            prepared.AdditionalProperties ??= new AdditionalPropertiesDictionary();
+            prepared.AdditionalProperties[ChatCallPhase.Key] = ChatCallPhase.FinalStructured;
 
             logger.LogInformation(
                 "Tool results present; structured output requested without catalogue tools.");
@@ -85,6 +87,8 @@ internal sealed class ToolThenJsonChatClient(
         {
             // The first turn is a tool-calling turn. Withhold the response grammar until the follow-up call.
             prepared.ResponseFormat = null;
+            prepared.AdditionalProperties ??= new AdditionalPropertiesDictionary();
+            prepared.AdditionalProperties[ChatCallPhase.Key] = ChatCallPhase.ToolPlanning;
 
             logger.LogInformation(
                 "Tool-calling turn; structured output withheld until tool results arrive.");

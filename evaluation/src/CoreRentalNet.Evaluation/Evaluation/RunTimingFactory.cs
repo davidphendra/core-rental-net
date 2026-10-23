@@ -8,6 +8,7 @@ public static class RunTimingFactory
     private const string NodeKindTag = "node.kind";
     private const string StageTag = "stage";
     private const string StageAgentTag = "stage.agent.name";
+    private const string PhaseTag = "chat.call.phase";
     private const string ToolNameTag = "tool.name";
     private const string GuardPrefix = "guardrail.";
     private const string ModelName = "stage-model-call";
@@ -15,7 +16,7 @@ public static class RunTimingFactory
     private const string McpName = "mcp.http";
     private const string ServerTimingTag = "mcp.server_timing";
 
-    public static RunTiming Create(RunTrace trace)
+    public static RunTiming Create(RunTrace trace, double wallMs = 0)
     {
         ArgumentNullException.ThrowIfNull(trace);
 
@@ -39,11 +40,16 @@ public static class RunTimingFactory
             .Select(tool => Tool(tool, spans, bySpan))
             .ToArray();
 
+        var totalMs = stages.Sum(stage => stage.TotalMs);
+
         return new RunTiming(
-            TotalMs: stages.Sum(stage => stage.TotalMs),
+            TotalMs: totalMs,
             Stages: stages,
             ModelCalls: modelCalls,
-            ToolCalls: toolCalls);
+            ToolCalls: toolCalls)
+        {
+            WallMs = wallMs > 0 ? wallMs : totalMs,
+        };
     }
 
     private static StageTiming Stage(
@@ -55,8 +61,21 @@ public static class RunTimingFactory
         var toolMs = descendants
             .Where(span => string.Equals(span.Name, ToolName, StringComparison.Ordinal))
             .Sum(span => span.DurationMs);
-        var modelMs = descendants
+        var modelCalls = descendants
             .Where(span => string.Equals(span.Name, ModelName, StringComparison.Ordinal))
+            .ToArray();
+        var modelMs = modelCalls.Sum(span => span.DurationMs);
+        var toolPlanningModelMs = modelCalls
+            .Where(span => string.Equals(
+                span.Tags.GetValueOrDefault(PhaseTag),
+                "tool-planning",
+                StringComparison.Ordinal))
+            .Sum(span => span.DurationMs);
+        var finalStructuredModelMs = modelCalls
+            .Where(span => string.Equals(
+                span.Tags.GetValueOrDefault(PhaseTag),
+                "final-structured",
+                StringComparison.Ordinal))
             .Sum(span => span.DurationMs);
 
         // A model-backed node whose model span never stopped, because the case timed out, still has a measured
@@ -80,12 +99,20 @@ public static class RunTimingFactory
             ToolMs: toolMs,
             GuardrailMs: guardrailMs,
             HostMs: hostMs,
-            UnattributedMs: Math.Max(0, node.DurationMs - modelMs - toolMs));
+            UnattributedMs: Math.Max(0, node.DurationMs - modelMs - toolMs))
+        {
+            ToolPlanningModelMs = toolPlanningModelMs,
+            FinalStructuredModelMs = finalStructuredModelMs,
+            ModelCallCount = modelCalls.Length,
+            ToolCallCount = descendants.Count(span =>
+                string.Equals(span.Name, ToolName, StringComparison.Ordinal)),
+        };
     }
 
     private static ModelCallTiming Model(TraceSpan span)
         => new(
             Stage: span.Tags.GetValueOrDefault(StageAgentTag) ?? "(unnamed stage)",
+            Phase: span.Tags.GetValueOrDefault(PhaseTag),
             DurationMs: span.DurationMs,
             InputTokens: Int(span, "gen_ai.usage.input_tokens"),
             OutputTokens: Int(span, "gen_ai.usage.output_tokens"),
