@@ -23,6 +23,9 @@ public sealed record RepetitionResult(
     /// <summary>The local judge's confidence, when it evaluated this repetition.</summary>
     public double? JudgeConfidence { get; init; }
 
+    /// <summary>The number of judge attempts, when it evaluated this repetition.</summary>
+    public int? JudgeAttempts { get; init; }
+
     /// <summary>The local judge's reason, when it evaluated this repetition.</summary>
     public string? JudgeReason { get; init; }
 

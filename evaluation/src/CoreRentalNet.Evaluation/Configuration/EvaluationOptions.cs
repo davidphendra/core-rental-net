@@ -55,5 +55,8 @@ public sealed record EvaluationOptions
 
     public TimeSpan JudgeTimeout { get; init; } = TimeSpan.FromSeconds(60);
 
+    /// <summary>The number of retries after a judge timeout or malformed response.</summary>
+    public int JudgeRetries { get; init; } = 1;
+
     public string ReportPath { get; init; } = "specs/evaluation/reports/latest.json";
 }

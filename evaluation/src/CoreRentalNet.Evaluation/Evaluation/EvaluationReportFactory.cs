@@ -135,6 +135,9 @@ public sealed class EvaluationReportFactory(
         var judgeConfidence = judge.TryGetValue(MetricNames.JudgeConfidence, out var confidenceRow)
             ? confidenceRow.Value
             : null;
+        var judgeAttempts = judge.TryGetValue(MetricNames.JudgeAttempts, out var attemptsRow)
+            ? (int?)attemptsRow.Value
+            : null;
         var judgeReason = passRow?.Reason;
 
         var failures = metrics
@@ -174,6 +177,7 @@ public sealed class EvaluationReportFactory(
             JudgeEvaluated = judgeEvaluated,
             JudgePass = judgePass,
             JudgeConfidence = judgeConfidence,
+            JudgeAttempts = judgeAttempts,
             JudgeReason = judgeReason,
             CasePass = casePass,
         };

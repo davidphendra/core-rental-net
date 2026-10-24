@@ -156,9 +156,9 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
     /// desk and finding half the catalogue's desks. Merging ranked answers is also what this class already does
     /// for the typed search, where whole-word matches are followed by the word-start matches that are new.
     /// <para>
-    /// The terms are asked in the order they were given, so the answer is: everything the first term found,
-    /// then whatever the second term found that is new, and so on. The caller's order is therefore the ranking
-    /// between terms, which is how a primary term's matches come to be answered before a synonym's.
+    /// Each term is searched independently, then the per-term rankings are fused with reciprocal rank fusion.
+    /// A broad term can no longer fill the caller's result window before a specific term is considered, and
+    /// scores from different term queries are not compared directly.
     /// </para>
     /// </remarks>
     public async Task<IReadOnlyList<ProductDto>> FindBestMatchesForExpandedSearchTermsAsync(
@@ -176,23 +176,21 @@ public sealed class LiftiProductNameSearchService : IProductNameSearchService
         var index = await BuildIndexAsync(productsMatchingTheFilters);
         var bySku = productsMatchingTheFilters.ToDictionary(product => product.Sku, StringComparer.OrdinalIgnoreCase);
 
-        var matchedProducts = new List<ProductDto>();
-        var alreadyAnswered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var perTermResults = new List<IReadOnlyList<ProductDto>>(expandedSearchTerms.Count);
 
         foreach (var expandedSearchTerm in expandedSearchTerms)
         {
-            var productsMatchingThisTerm = ProductsMatching(
-                index,
-                bySku,
-                SearchQueryForExpandedTerm(index, expandedSearchTerm));
-
-            foreach (var product in productsMatchingThisTerm.Where(product => alreadyAnswered.Add(product.Sku)))
-            {
-                matchedProducts.Add(product);
-            }
+            perTermResults.Add(
+            [
+                .. ProductsMatching(
+                        index,
+                        bySku,
+                        SearchQueryForExpandedTerm(index, expandedSearchTerm))
+                    .Take(RankedTermMerger.MaximumPerTerm),
+            ]);
         }
 
-        return matchedProducts;
+        return RankedTermMerger.Merge(perTermResults);
     }
 
     /// <summary>The products one query matched, best score first and ties by SKU.</summary>

@@ -13,12 +13,14 @@ public static class MetricNames
     public const string JudgeEvaluated = "judge_evaluated";
     public const string JudgePass = "judge_pass";
     public const string JudgeConfidence = "judge_confidence";
+    public const string JudgeAttempts = "judge_attempts";
 
     public static IReadOnlyList<string> JudgeMetrics { get; } =
     [
         JudgeEvaluated,
         JudgePass,
         JudgeConfidence,
+        JudgeAttempts,
     ];
 
     public static IReadOnlyList<string> All { get; } =

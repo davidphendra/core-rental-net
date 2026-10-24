@@ -40,10 +40,20 @@ internal static class WorkspaceStageInput
         {
             query = state.OriginalCustomerQuery,
             slots = state.SlotCapacityRules,
+            componentVocabulary = ComponentVocabulary(),
             currency = state.CatalogueCurrency,
             ceilingMonthly = state.CustomerStatedCeilingMonthly,
             previousIssues = state.PreviousAttemptIssues,
             previousSearches = state.CatalogueRetrieval?.ComponentSearchOutcomes ?? [],
+        });
+
+    private static IEnumerable<object> ComponentVocabulary()
+        => Enum.GetValues<WorkspaceComponentCategory>().Select(component => new
+        {
+            component,
+            catalogueCategory = WorkspaceComponentVocabularyMapping.CatalogueCategoryArgumentFor(component),
+            catalogueSubCategory = WorkspaceComponentVocabularyMapping.CatalogueSubCategoryArgumentFor(component),
+            compositionSlot = WorkspaceComponentVocabularyMapping.CompositionSlotFor(component),
         });
 
     /// <summary>One entry per relevant component: its words, and the tool arguments that carry them.</summary>
@@ -166,7 +176,6 @@ internal static class WorkspaceStageInput
         => ContractJson.Serialize(new
         {
             query = state.OriginalCustomerQuery,
-            requirement = state.RequirementExpansion,
             searched = state.CatalogueRetrieval?.ComponentSearchOutcomes ?? [],
             setups = state.ProposedWorkspaceSetups.Select(setup => new
             {

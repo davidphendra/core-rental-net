@@ -143,6 +143,16 @@ internal static class RunEvaluationOptionsParser
                     index++;
                     break;
 
+                case "--judge-retries" when value is not null && int.TryParse(value, out var judgeRetries):
+                    if (judgeRetries < 0)
+                    {
+                        throw new ArgumentException("--judge-retries must be zero or greater.");
+                    }
+
+                    options = options with { JudgeRetries = judgeRetries };
+                    index++;
+                    break;
+
                 case "--trace-directory" when value is not null:
                     options = options with { TraceDirectory = value };
                     index++;

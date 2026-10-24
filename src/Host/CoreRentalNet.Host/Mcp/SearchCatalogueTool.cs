@@ -50,7 +50,7 @@ public sealed class SearchCatalogueTool(
     [Description("Find the catalogue products whose name best matches any of several terms, best match first. For the terms a request was expanded into, not for a sentence describing a need.")]
     public CatalogueSearchToolAnswer Search(
         [Description("One or more terms or short phrases that appear in a product's name. A product needs to match only one of them.")] string[] terms,
-        [Description("The category to search: desk, chair or accessory. Required.")] string category,
+        [Description("The category to search: desk, chair or accessory. Required. A bean bag is category accessory with subCategory beanbag; there is no relaxzone category.")] string category,
         [Description("Narrow to one accessory sub-category: beanbag, coffee, lamp, monitor or plant. Required for accessories, omitted for desks and chairs.")] string? subCategory = null,
         [Description("The most a product may cost each month. A product above it is never returned. Omit for no ceiling.")] decimal? maximumMonthlyAmount = null,
         [Description("The most products to return.")] int limit = CatalogToolLimits.DefaultProductCount)

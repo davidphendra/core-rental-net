@@ -94,15 +94,18 @@ dotnet run --project evaluation/src/CoreRentalNet.Evaluation -- run \
   --judge-endpoint http://localhost:8080/v1 \
   --judge-model gpt-oss-20b \
   --judge-api-key local \
+  --judge-retries 1 \
   --agent-endpoint http://127.0.0.1:8088 \
   --mcp-endpoint http://127.0.0.1:5199/mcp \
   --trace-directory artifacts/evaluation/traces \
   --report specs/evaluation/reports/latest.json
 ```
 
-The judge is called only when `answer_exact` is false and `reranker_aligned` is true. A judge pass
-overrides the aligned result for that case. A judge failure, timeout, or malformed response fails the
-ambiguous case and records `JUDGE_ERROR`.
+The judge is called only when `answer_exact` is false and `reranker_aligned` is true. It receives
+the final line quantity, amount, name and bounded description, and treats the expected SKU as a
+diagnostic reference rather than a mandatory SKU. A judge pass overrides the aligned result for that
+case. A timeout or malformed response is retried once (configurable with `--judge-retries`) and then
+recorded as `JUDGE_ERROR`.
 
 ## Bias report
 

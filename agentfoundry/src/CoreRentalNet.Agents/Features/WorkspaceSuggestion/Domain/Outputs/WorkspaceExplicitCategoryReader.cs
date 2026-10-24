@@ -28,7 +28,9 @@ internal static class WorkspaceExplicitCategoryReader
         ArgumentNullException.ThrowIfNull(customerQuery);
 
         return ExplicitWords
-            .Where(entry => entry.Words.Any(word => ContainsWord(customerQuery, word)))
+            .Where(entry => entry.Category == WorkspaceComponentCategory.Chair
+                ? ContainsChair(customerQuery)
+                : entry.Words.Any(word => ContainsWord(customerQuery, word)))
             .Select(entry => entry.Category)
             .ToHashSet();
     }
@@ -40,7 +42,12 @@ internal static class WorkspaceExplicitCategoryReader
         return ExplicitWords
             .SelectMany(entry => entry.Words.Select(word => (
                 entry.Category,
-                Distance: DistanceTo(customerQuery, word, index))))
+                Distance: DistanceTo(
+                    entry.Category == WorkspaceComponentCategory.Chair
+                        ? WithoutBeanBagChairs(customerQuery)
+                        : customerQuery,
+                    word,
+                    index))))
             .Where(candidate => candidate.Distance >= 0)
             .OrderBy(candidate => candidate.Distance)
             .Select(candidate => (WorkspaceComponentCategory?)candidate.Category)
@@ -70,4 +77,17 @@ internal static class WorkspaceExplicitCategoryReader
 
     private static bool ContainsWord(string text, string word)
         => Regex.IsMatch(text, $@"\b{Regex.Escape(word)}\b", RegexOptions.IgnoreCase);
+
+    private static bool ContainsChair(string text)
+        => Regex.IsMatch(
+            WithoutBeanBagChairs(text),
+            @"\b(chair|stool)\b",
+            RegexOptions.IgnoreCase);
+
+    private static string WithoutBeanBagChairs(string text)
+        => Regex.Replace(
+            text,
+            @"\b(?:bean\s*bag|beanbag|bean-bag|pouf)\s+chairs?\b",
+            string.Empty,
+            RegexOptions.IgnoreCase);
 }

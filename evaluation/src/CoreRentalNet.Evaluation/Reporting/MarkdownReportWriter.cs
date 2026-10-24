@@ -110,8 +110,8 @@ public static class MarkdownReportWriter
         text.AppendLine();
         text.AppendLine("## Judge");
         text.AppendLine();
-        text.AppendLine("| Case | Pass | Confidence | Reason |");
-        text.AppendLine("|---|---|---:|---|");
+        text.AppendLine("| Case | Pass | Confidence | Attempts | Reason |");
+        text.AppendLine("|---|---|---:|---:|---|");
 
         foreach (var testCase in report.Cases)
         {
@@ -120,6 +120,7 @@ public static class MarkdownReportWriter
                 text.AppendLine(
                     $"| {testCase.CaseId} | {(repetition.JudgePass == true ? "PASS" : "FAIL")} | " +
                     $"{repetition.JudgeConfidence?.ToString("0.00", CultureInfo.InvariantCulture) ?? "-"} | " +
+                    $"{repetition.JudgeAttempts?.ToString(CultureInfo.InvariantCulture) ?? "-"} | " +
                     $"{Escape(repetition.JudgeReason)} |");
             }
         }

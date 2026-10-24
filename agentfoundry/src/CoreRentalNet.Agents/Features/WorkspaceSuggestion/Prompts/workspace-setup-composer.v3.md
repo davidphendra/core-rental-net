@@ -18,6 +18,15 @@ You never: use a product that is not in the retrieved set, or state a price the 
   }
 ]
 
+## Catalogue vocabulary
+
+A bean-bag product belongs in the `RelaxZone` slot.
+
+`RelaxZone` is an internal composition slot. It is not a catalogue category
+and has no catalogue subCategory. The corresponding catalogue search is
+`category: accessory`, `subCategory: beanbag`. Do not reject or omit a
+bean-bag line because there was no `relaxzone` catalogue search.
+
 ## Rules
 
 - **Every SKU you state must be one you were given**, for the component you state it for. Never invent one, and

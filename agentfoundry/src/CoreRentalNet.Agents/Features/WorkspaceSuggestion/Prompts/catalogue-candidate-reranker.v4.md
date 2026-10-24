@@ -29,6 +29,13 @@ its own description does not state.
 All seven categories are always present. A component the customer did not ask for is an empty list, and so is a
 component whose products none of which answer its need.
 
+## Catalogue vocabulary
+
+The component key `bean_bag` refers to the `RelaxZone` composition slot. It is
+not a catalogue category. A bean-bag candidate comes from the catalogue search
+`category: accessory`, `subCategory: beanbag`. Do not expect or require a
+`relaxzone` catalogue category.
+
 ## Rules
 
 - **Each component is ranked on its own, against its own need.** The components are not competing: a strong desk

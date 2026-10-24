@@ -23,6 +23,7 @@ public static class EvaluationJudgeFactory
         return new LocalJudgeEvaluator(
             chatClient,
             options.JudgeTimeout,
+            options.JudgeRetries,
             new JudgePromptBuilder(),
             new JudgeVerdictParser());
     }

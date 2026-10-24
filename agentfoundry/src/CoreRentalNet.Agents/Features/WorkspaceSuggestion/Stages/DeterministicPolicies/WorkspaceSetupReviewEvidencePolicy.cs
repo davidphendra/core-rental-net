@@ -7,13 +7,13 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Deterministic
 /// <remarks>
 /// <para>
 /// A model can reject a product whose name already contains the requested attribute. The reviewer is told to
-/// quote the customer's attribute and the product evidence; this policy checks both quotes against the text the
-/// reviewer was shown, and drops a rejection that is not grounded in it.
+/// quote the customer's attribute and the product evidence; this policy checks both quotes against the exact
+/// composed line the reviewer named, and drops a rejection that is not grounded in it.
 /// </para>
 /// <para>
 /// <b>`SLOT_PURPOSE_UNSATISFIED` and the budget codes are inspected.</b> A semantic rejection needs two
-/// grounded quotes. A budget rejection is kept only when the request actually carries a budget. Missing and
-/// unrequested slots are facts the workflow can carry without either check.
+/// grounded quotes on one line. A budget rejection is kept only when the request actually carries a budget.
+/// Missing and unrequested slots are facts the workflow can carry without either check.
 /// </para>
 /// </remarks>
 public sealed class WorkspaceSetupReviewEvidencePolicy
@@ -45,10 +45,10 @@ public sealed class WorkspaceSetupReviewEvidencePolicy
             return workspaceSetupReviewResult;
         }
 
-        var productTexts = ProductTexts(proposedWorkspaceSetups, selectedWorkspaceCandidates);
+        var lines = ReviewerLines(proposedWorkspaceSetups, selectedWorkspaceCandidates);
         var budgetExists = HasBudget(requirementExpansion);
         var groundedIssues = workspaceSetupReviewResult.Issues
-            .Where(issue => IsGrounded(issue, customerQuery, productTexts, budgetExists))
+            .Where(issue => IsGrounded(issue, customerQuery, lines, budgetExists))
             .ToArray();
 
         if (groundedIssues.Length == workspaceSetupReviewResult.Issues.Count)
@@ -64,7 +64,7 @@ public sealed class WorkspaceSetupReviewEvidencePolicy
     private static bool IsGrounded(
         WorkspaceSetupReviewIssue issue,
         string customerQuery,
-        IReadOnlyList<string> productTexts,
+        IReadOnlyList<(WorkspaceSetupLine Line, string Text)> lines,
         bool budgetExists)
     {
         if (s_budgetIssueCodes.Contains(issue.IssueCode, StringComparer.Ordinal))
@@ -87,12 +87,39 @@ public sealed class WorkspaceSetupReviewEvidencePolicy
             return false;
         }
 
-        if (!productTexts.Any(text => text.Contains(productEvidence, StringComparison.OrdinalIgnoreCase)))
+        var linesForTheIssue = issue.Slot is { } slot
+            ? lines.Where(line => line.Line.Slot == slot).ToArray()
+            : lines.Where(line => line.Text.Contains(productEvidence, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+        if (linesForTheIssue.Length == 0
+            || !linesForTheIssue.Any(line =>
+                line.Text.Contains(productEvidence, StringComparison.OrdinalIgnoreCase)))
         {
             return false;
         }
 
-        return !productTexts.Any(text => ContainsEveryWord(text, customerEvidence));
+        return !linesForTheIssue.Any(line => ContainsEveryWord(line.Text, customerEvidence));
+    }
+
+    private static IReadOnlyList<(WorkspaceSetupLine Line, string Text)> ReviewerLines(
+        IReadOnlyList<WorkspaceSetupCandidate> proposedWorkspaceSetups,
+        IReadOnlyList<SelectedWorkspaceComponentProduct> selectedWorkspaceCandidates)
+    {
+        var descriptions = selectedWorkspaceCandidates
+            .GroupBy(selection => selection.RetrievedProduct.Sku, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => group.First().RetrievedProduct.Description,
+                StringComparer.OrdinalIgnoreCase);
+
+        return [.. proposedWorkspaceSetups
+            .SelectMany(setup => setup.Lines)
+            .Select(line => (
+                line,
+                Text: string.Join(
+                    ' ',
+                    new[] { line.Name, descriptions.GetValueOrDefault(line.Sku) }
+                        .Where(text => !string.IsNullOrWhiteSpace(text)))))];
     }
 
     private static bool HasBudget(WorkspaceRequirementExpansion? requirementExpansion)
@@ -101,21 +128,7 @@ public sealed class WorkspaceSetupReviewEvidencePolicy
                 || requirementExpansion.ComponentExpansions.Every()
                     .Any(component => component.Expansion.MonthlyBudget.MaximumAmount is not null));
 
-    private static IReadOnlyList<string> ProductTexts(
-        IReadOnlyList<WorkspaceSetupCandidate> proposedWorkspaceSetups,
-        IReadOnlyList<SelectedWorkspaceComponentProduct> selectedWorkspaceCandidates)
-        => [.. proposedWorkspaceSetups
-                .SelectMany(setup => setup.Lines)
-                .Select(line => line.Name)
-                .Concat(selectedWorkspaceCandidates
-                    .SelectMany(selection => new[]
-                    {
-                        selection.RetrievedProduct.Name,
-                        selection.RetrievedProduct.Description,
-                    }))
-                .Where(text => !string.IsNullOrWhiteSpace(text))];
-
-    private static bool ContainsEveryWord(string productEvidence, string customerEvidence)
+    private static bool ContainsEveryWord(string productText, string customerEvidence)
     {
         var customerWords = customerEvidence
             .Split([' ', '-', '/', ',', '.', ';', ':', '(', ')'], StringSplitOptions.RemoveEmptyEntries)
@@ -123,6 +136,6 @@ public sealed class WorkspaceSetupReviewEvidencePolicy
             .ToArray();
 
         return customerWords.Length > 0
-            && customerWords.All(word => productEvidence.Contains(word, StringComparison.OrdinalIgnoreCase));
+            && customerWords.All(word => productText.Contains(word, StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -9,9 +9,19 @@ namespace CoreRentalNet.Evaluation.Evaluation;
 public sealed class LocalJudgeEvaluator(
     IChatClient chatClient,
     TimeSpan timeout,
+    int retries,
     JudgePromptBuilder promptBuilder,
     JudgeVerdictParser verdictParser) : IAgentEvaluator
 {
+    public LocalJudgeEvaluator(
+        IChatClient chatClient,
+        TimeSpan timeout,
+        JudgePromptBuilder promptBuilder,
+        JudgeVerdictParser verdictParser)
+        : this(chatClient, timeout, retries: 1, promptBuilder, verdictParser)
+    {
+    }
+
     public string Name => "local-llama-judge";
 
     public async Task<AgentEvaluationResults> EvaluateAsync(
@@ -45,27 +55,36 @@ public sealed class LocalJudgeEvaluator(
             return JudgeEvaluation.NotEvaluated;
         }
 
-        try
-        {
-            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutSource.CancelAfter(timeout);
+        var lastError = "The judge did not return a verdict.";
 
-            var response = await chatClient.GetResponseAsync(
-                    promptBuilder.Build(context, request),
-                    new ChatOptions { Temperature = 0 },
-                    timeoutSource.Token)
-                .ConfigureAwait(false);
+        for (var attempt = 1; attempt <= retries + 1; attempt++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return verdictParser.Parse(response.Text);
+            try
+            {
+                using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeoutSource.CancelAfter(timeout);
+
+                var response = await chatClient.GetResponseAsync(
+                        promptBuilder.Build(context, request),
+                        new ChatOptions { Temperature = 0 },
+                        timeoutSource.Token)
+                    .ConfigureAwait(false);
+
+                return verdictParser.Parse(response.Text) with { Attempts = attempt };
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                lastError = "The judge timed out.";
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                lastError = exception.Message;
+            }
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return JudgeEvaluation.Error("The judge timed out.");
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            return JudgeEvaluation.Error(exception.Message);
-        }
+
+        return JudgeEvaluation.Error(lastError) with { Attempts = retries + 1 };
     }
 
     private static bool ShouldEvaluate(WorkspaceContext context)
@@ -91,6 +110,10 @@ public sealed class LocalJudgeEvaluator(
             metrics.Add(new NumericMetric(
                 MetricNames.JudgeConfidence,
                 evaluation.Confidence,
+                evaluation.Reason));
+            metrics.Add(new NumericMetric(
+                MetricNames.JudgeAttempts,
+                evaluation.Attempts,
                 evaluation.Reason));
         }
 

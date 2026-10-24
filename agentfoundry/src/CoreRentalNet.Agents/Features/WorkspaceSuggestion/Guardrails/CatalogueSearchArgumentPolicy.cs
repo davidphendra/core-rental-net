@@ -19,13 +19,28 @@ internal sealed class CatalogueSearchArgumentPolicy : IToolArgumentPolicy
         var category = ArgumentAsText(invocation.Arguments, "category");
         var subCategory = ArgumentAsText(invocation.Arguments, "subCategory");
 
-        return WorkspaceComponentVocabularyMapping.CanBeSearchedBy(category, subCategory)
-            ? GuardrailDecision.Allow()
-            : GuardrailDecision.Deny(
-                "The call was refused: the catalogue has no category "
-                + $"'{category}'"
-                + (subCategory is null ? "." : $" with subcategory '{subCategory}'."));
+        if (WorkspaceComponentVocabularyMapping.CanBeSearchedBy(category, subCategory))
+        {
+            return GuardrailDecision.Allow();
+        }
+
+        var correction = IsBeanBagVocabulary(category, subCategory)
+            ? " A bean bag is category 'accessory' with subCategory 'beanbag'. There is no 'relaxzone' catalogue category."
+            : string.Empty;
+
+        return GuardrailDecision.Deny(
+            "The call was refused: the catalogue has no category "
+            + $"'{category}'"
+            + (subCategory is null ? "." : $" with subcategory '{subCategory}'.")
+            + correction);
     }
+
+    private static bool IsBeanBagVocabulary(string? category, string? subCategory)
+        => string.Equals(category, "relaxzone", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(category, "beanbag", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(subCategory, "relaxzone", StringComparison.OrdinalIgnoreCase)
+           || (string.Equals(category, "chair", StringComparison.OrdinalIgnoreCase)
+               && string.Equals(subCategory, "beanbag", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>One argument's text, whether the loop passed a string or already-parsed JSON.</summary>
     private static string? ArgumentAsText(IReadOnlyDictionary<string, object?> arguments, string name)

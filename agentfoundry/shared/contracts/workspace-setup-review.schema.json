@@ -5,7 +5,11 @@
   "description": "The reviewer's verdict on a composed setup set, and what a next attempt must satisfy when it is unacceptable. Validity only: whether another attempt runs is decided by deterministic code from this verdict and the attempt count, so there is no 'retry' value here and no SKU, product or price.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["isAcceptable", "issues", "summary"],
+  "required": [
+    "isAcceptable",
+    "issues",
+    "summary"
+  ],
   "properties": {
     "isAcceptable": {
       "type": "boolean",
@@ -15,15 +19,26 @@
       "type": "array",
       "maxItems": 4,
       "description": "One entry per ground, each an instruction the next attempt can reinterpret. Empty when acceptable.",
-      "items": { "$ref": "#/$defs/reviewIssue" }
+      "items": {
+        "$ref": "#/$defs/reviewIssue"
+      }
     },
-    "summary": { "type": ["string", "null"], "description": "One line, when there is one." }
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "One line, when there is one."
+    }
   },
   "$defs": {
     "reviewIssue": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["issueCode", "requiredCorrectionDescription"],
+      "required": [
+        "issueCode",
+        "requiredCorrectionDescription"
+      ],
       "properties": {
         "issueCode": {
           "enum": [
@@ -43,12 +58,35 @@
           "description": "What was not satisfied, in terms the rephraser can reinterpret. Never a replacement product."
         },
         "customerEvidence": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The customer's own attribute words, quoted when a semantic rejection is made."
         },
         "productEvidence": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "The selected product's name or description, quoted when a semantic rejection is made."
+        },
+        "slot": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "Desk",
+            "Chair",
+            "Monitor",
+            "Lamp",
+            "Plant",
+            "CoffeeStation",
+            "RelaxZone",
+            null
+          ],
+          "description": "The composed slot the issue refers to. Required for slot-specific issues; null for global issues."
         }
       }
     }
