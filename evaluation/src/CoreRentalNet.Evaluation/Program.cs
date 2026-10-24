@@ -15,6 +15,8 @@ static int PrintUsage()
     Console.WriteLine("  validate-cases [Test_Script.md] [products.json]");
     Console.WriteLine("  run --agent-endpoint <uri> --mcp-endpoint <uri> [--auth-mode local|static]");
     Console.WriteLine("      [--caller-token <token>] [--scope tiny|small|half|all] [--repetitions <n>]");
+    Console.WriteLine("      [--judge-endpoint <uri>] [--judge-model gpt-oss-20b] [--judge-api-key local]");
+    Console.WriteLine("      [--judge-timeout <seconds>]");
     Console.WriteLine("  compare <baseline.json> <current.json>");
     return 1;
 }

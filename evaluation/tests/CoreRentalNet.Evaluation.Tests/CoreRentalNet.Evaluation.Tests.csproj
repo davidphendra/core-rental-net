@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <!-- The evaluation test project must resolve the same Foundry preview as the console project. -->
+    <!-- The evaluation test project must resolve the same Microsoft.Agents.AI versions as the console project. -->
     <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
