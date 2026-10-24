@@ -2,13 +2,17 @@ using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Evidence;
 using CoreRentalNet.Evaluation.Execution;
 using Microsoft.Agents.AI;
+using CoreRentalNet.Evaluation.Reporting.Bias;
 using Microsoft.Extensions.AI.Evaluation;
 using WorkspaceContext = CoreRentalNet.Evaluation.Evidence.EvaluationContext;
 
 namespace CoreRentalNet.Evaluation.Evaluation;
 
 /// <summary>Projects built-in evaluator results into the 200-row report.</summary>
-public sealed class EvaluationReportFactory
+public sealed class EvaluationReportFactory(
+    IReadOnlyDictionary<string, ProductRecord>? catalogue = null,
+    BiasReportBuilder? biasReportBuilder = null,
+    bool judgeConfigured = false)
 {
     public EvaluationReport Create(
         IReadOnlyList<RowRun> runs,
@@ -29,14 +33,23 @@ public sealed class EvaluationReportFactory
             .OrderBy(testCase => testCase.RowNumber)
             .ToArray();
 
+        var bias = biasReportBuilder is null || catalogue is null
+            ? null
+            : biasReportBuilder.Build(new BiasInput(
+                cases,
+                runs.Select((run, index) => new BiasRun(run, WorkspaceContext.Parse(items[index].Context))).ToArray(),
+                metrics,
+                catalogue));
+
         return new EvaluationReport(
             Cases: cases,
             Metrics: metrics,
-            Summary: Summarize(cases, runs.Count))
+            Summary: Summarize(cases, runs.Count, judgeConfigured))
         {
             Scope = scope,
             TotalRows = totalRows,
             StopReason = stopReason,
+            Bias = bias,
         };
     }
 
@@ -110,6 +123,20 @@ public sealed class EvaluationReportFactory
             .Where(metric => metric.RunId == run.RunId && MetricNames.All.Contains(metric.Metric))
             .ToDictionary(metric => metric.Metric, metric => metric.Passed, StringComparer.Ordinal);
 
+        var judge = metrics
+            .Where(metric => metric.RunId == run.RunId && MetricNames.JudgeMetrics.Contains(metric.Metric))
+            .ToDictionary(metric => metric.Metric, metric => metric, StringComparer.Ordinal);
+        var judgeEvaluated = judge.TryGetValue(MetricNames.JudgeEvaluated, out var evaluatedRow)
+            ? evaluatedRow.Passed
+            : (bool?)null;
+        var judgePass = judge.TryGetValue(MetricNames.JudgePass, out var passRow)
+            ? passRow.Passed
+            : (bool?)null;
+        var judgeConfidence = judge.TryGetValue(MetricNames.JudgeConfidence, out var confidenceRow)
+            ? confidenceRow.Value
+            : null;
+        var judgeReason = passRow?.Reason;
+
         var failures = metrics
             .Where(metric => metric.RunId == run.RunId
                              && MetricNames.CasePassMetrics.Contains(metric.Metric)
@@ -118,6 +145,9 @@ public sealed class EvaluationReportFactory
                 .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             .Where(code => code.Length > 0)
             .Concat(run.TimedOut ? [FailureCodes.CaseTimeout] : [])
+            .Concat(judgeEvaluated == true && judgePass != true
+                ? [JudgeFailureCode(judgeReason)]
+                : [])
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
@@ -125,7 +155,12 @@ public sealed class EvaluationReportFactory
         var answer = AnswerComparison.Evaluate(context);
         var retrieval = RetrievalQuality.Evaluate(context);
         var alignment = RerankerAlignment.Evaluate(context);
-        var casePass = CasePassPolicy.Passed(local, alignment.Aligned, run.TimedOut);
+        var casePass = CasePassPolicy.Passed(
+            local,
+            alignment.Aligned,
+            run.TimedOut,
+            judgeEvaluated == true,
+            judgePass == true);
 
         return new RepetitionResult(
             Repetition: run.Repetition,
@@ -136,13 +171,18 @@ public sealed class EvaluationReportFactory
         {
             Timing = RunTimingFactory.Create(run.Trace, run.WallMs),
             RerankerAligned = alignment.Aligned,
+            JudgeEvaluated = judgeEvaluated,
+            JudgePass = judgePass,
+            JudgeConfidence = judgeConfidence,
+            JudgeReason = judgeReason,
             CasePass = casePass,
         };
     }
 
     private static EvaluationSummary Summarize(
         IReadOnlyList<CaseResult> cases,
-        int executions)
+        int executions,
+        bool judgeConfigured)
     {
         var metricPassRates = MetricNames.All.ToDictionary(
             metric => metric,
@@ -158,6 +198,10 @@ public sealed class EvaluationReportFactory
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
 
         var passed = cases.Count(testCase => testCase.CasePass);
+        var judged = cases.SelectMany(testCase => testCase.Repetitions)
+            .Count(repetition => repetition.JudgeEvaluated == true);
+        var judgePass = cases.SelectMany(testCase => testCase.Repetitions)
+            .Count(repetition => repetition.JudgePass == true);
 
         return new EvaluationSummary(
             Rows: cases.Count,
@@ -165,8 +209,19 @@ public sealed class EvaluationReportFactory
             CasePass: passed,
             CasePassRate: cases.Count == 0 ? 0 : passed / (double)cases.Count,
             MetricPassRates: metricPassRates,
-            Stability: stability);
+            Stability: stability)
+        {
+            JudgeConfigured = judgeConfigured,
+            JudgeEvaluated = judged,
+            JudgePass = judgePass,
+            JudgePassRate = judged == 0 ? null : judgePass / (double)judged,
+        };
     }
+
+    private static string JudgeFailureCode(string? reason)
+        => reason?.StartsWith("JUDGE_ERROR", StringComparison.Ordinal) == true
+            ? FailureCodes.JudgeError
+            : FailureCodes.JudgeRejected;
 
     private static bool Passed(EvaluationMetric metric)
         => metric switch

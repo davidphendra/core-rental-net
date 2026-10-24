@@ -1,11 +1,10 @@
-using Azure.AI.Projects;
-using Azure.Identity;
 using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Configuration;
 using CoreRentalNet.Evaluation.Evaluation;
 using CoreRentalNet.Evaluation.Evidence;
 using CoreRentalNet.Evaluation.Execution;
 using CoreRentalNet.Evaluation.Reporting;
+using CoreRentalNet.Evaluation.Reporting.Bias;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
@@ -106,20 +105,24 @@ public static class RunEvaluationCommand
             EvaluatorFactory.CreateLocal(loaded.Catalogue),
         };
 
-        if (options.JudgeEndpoint is not null)
-        {
-            var projectClient = new AIProjectClient(
-                options.JudgeEndpoint,
-                new AzureDeveloperCliCredential());
+        var judge = EvaluationJudgeFactory.Create(options);
 
-            evaluators.Add(EvaluatorFactory.CreateFoundry(projectClient, options.JudgeModel));
+        if (judge is not null)
+        {
+            evaluators.Add(judge);
         }
         else
         {
-            Console.WriteLine("Foundry judge not configured; running deterministic checks only.");
+            Console.WriteLine("Judge not configured; running deterministic checks only.");
         }
 
-        var pipeline = new EvaluationPipeline(itemFactory, evaluators, new EvaluationReportFactory());
+        var pipeline = new EvaluationPipeline(
+            itemFactory,
+            evaluators,
+            new EvaluationReportFactory(
+                loaded.Catalogue,
+                BiasReportBuilder.CreateDefault(),
+                judge is not null));
         var agent = new AgentHttpClient(options.AgentEndpoint, options.AgentName);
         var traceReader = new EvaluationTraceReader(options.TraceDirectory);
         var runner = new EvaluationRunner(

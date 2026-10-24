@@ -4,6 +4,8 @@ namespace CoreRentalNet.Evaluation.Evaluation;
 public static class FailureCodes
 {
     public const string CaseTimeout = "CASE_TIMEOUT";
+    public const string JudgeRejected = "JUDGE_REJECTED";
+    public const string JudgeError = "JUDGE_ERROR";
     public const string NoCandidate = "NO_CANDIDATE";
     public const string AnswerMismatch = "ANSWER_MISMATCH";
     public const string WorkflowStatus = "WORKFLOW_STATUS";

@@ -2,7 +2,7 @@ using CoreRentalNet.Evaluation.Cases;
 
 namespace CoreRentalNet.Evaluation.Evaluation;
 
-/// <summary>Renders the human-readable expected and actual summaries used by Foundry similarity.</summary>
+/// <summary>Renders the human-readable expected and actual summaries.</summary>
 public static class EvaluationText
 {
     public static string Expected(IReadOnlyList<ExpectedSetupVariant> variants)

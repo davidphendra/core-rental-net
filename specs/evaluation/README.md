@@ -47,12 +47,12 @@ diagnostic fallback; it is not refreshed.
 
 Primary gates: exact SKU answer correctness, constraint compliance, selected retrieval recall,
 tool-call accuracy, workflow correctness, and regression rate. The detailed report also carries
-diagnostics such as answer F1, pool recall, component recall, MRR, stability and Foundry judge scores.
+diagnostics such as answer F1, pool recall, component recall, MRR, stability and the optional local judge.
 
 ## Local model run
 
-The agent can use a local OpenAI-compatible server instead of Foundry. The Host can use the same kind of
-server for query embeddings.
+The agent can use a local OpenAI-compatible server instead of a hosted model provider. The Host can use
+the same kind of server for query embeddings.
 
 ```bash
 # Agent host — local chat model
@@ -83,8 +83,39 @@ The local agent path still requires the model and server to emit OpenAI `tool_ca
 `search_catalogue` and `search_similarity_catalogue`. A chat model that only answers in prose cannot run
 the retrieval stages.
 
-The Foundry judge is optional and cloud-only. Leave `FOUNDRY_PROJECT_ENDPOINT` unset when running the
-evaluation locally to keep the deterministic checks and avoid a judge call.
+## Optional local judge
+
+The judge is optional and runs only against a local OpenAI-compatible llama-server. It never calls Azure
+Foundry. Leave `--judge-endpoint` unset to run the deterministic checks only.
+
+```bash
+dotnet run --project evaluation/src/CoreRentalNet.Evaluation -- run \
+  --auth-mode local \
+  --judge-endpoint http://localhost:8080/v1 \
+  --judge-model gpt-oss-20b \
+  --judge-api-key local \
+  --agent-endpoint http://127.0.0.1:8088 \
+  --mcp-endpoint http://127.0.0.1:5199/mcp \
+  --trace-directory artifacts/evaluation/traces \
+  --report specs/evaluation/reports/latest.json
+```
+
+The judge is called only when `answer_exact` is false and `reranker_aligned` is true. A judge pass
+overrides the aligned result for that case. A judge failure, timeout, or malformed response fails the
+ambiguous case and records `JUDGE_ERROR`.
+
+## Bias report
+
+Every report contains sections A-D: fairness and outcome disparity, recommendation and retrieval bias,
+agent reasoning and decision bias, and language and content bias.
+
+Metrics that require protected-group labels, qualified labels, counterfactual pairs, or text classifiers
+are reported as `NotApplicable` with the missing input named. No group labels are inferred from request
+shape or catalogue category.
+
+Computable diagnostics include recommendation diversity, category exposure, retrieval coverage, decision
+consistency, unsupported assumptions, evidence grounding, tool selection, constraint violations, and
+reviewer disagreement. The reasoning section records the applicable stage for each metric.
 
 ## Scopes
 

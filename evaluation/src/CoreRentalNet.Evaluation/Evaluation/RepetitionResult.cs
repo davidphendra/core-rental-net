@@ -14,6 +14,18 @@ public sealed record RepetitionResult(
     /// <summary>Whether the reranker returned a non-empty selection drawn from its input.</summary>
     public bool RerankerAligned { get; init; }
 
+    /// <summary>Whether the local judge evaluated this repetition.</summary>
+    public bool? JudgeEvaluated { get; init; }
+
+    /// <summary>The local judge's verdict, when it evaluated this repetition.</summary>
+    public bool? JudgePass { get; init; }
+
+    /// <summary>The local judge's confidence, when it evaluated this repetition.</summary>
+    public double? JudgeConfidence { get; init; }
+
+    /// <summary>The local judge's reason, when it evaluated this repetition.</summary>
+    public string? JudgeReason { get; init; }
+
     public bool CasePass { get; init; } = MetricNames.CasePassMetrics.All(metric =>
         Metrics.TryGetValue(metric, out var passed) && passed);
 }

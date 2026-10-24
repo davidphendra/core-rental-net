@@ -10,9 +10,30 @@ public static class CasePassPolicy
     public static bool Passed(
         IReadOnlyDictionary<string, bool> metrics,
         bool rerankerAligned,
-        bool timedOut)
-        => !timedOut
-           && (rerankerAligned
-               || MetricNames.CasePassMetrics.All(metric =>
-                   metrics.TryGetValue(metric, out var passed) && passed));
+        bool timedOut,
+        bool judgeEvaluated = false,
+        bool judgePass = false)
+    {
+        if (timedOut)
+        {
+            return false;
+        }
+
+        if (!judgeEvaluated)
+        {
+            return rerankerAligned
+                   || MetricNames.CasePassMetrics.All(metric =>
+                       metrics.TryGetValue(metric, out var passed) && passed);
+        }
+
+        var hardGate =
+            Passed(metrics, MetricNames.ConstraintCompliance)
+            && Passed(metrics, MetricNames.ToolCallAccuracy)
+            && Passed(metrics, MetricNames.WorkflowCorrectness);
+
+        return hardGate && rerankerAligned && judgePass;
+    }
+
+    private static bool Passed(IReadOnlyDictionary<string, bool> metrics, string metric)
+        => metrics.TryGetValue(metric, out var passed) && passed;
 }

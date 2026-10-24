@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using CoreRentalNet.Evaluation.Evaluation;
+using CoreRentalNet.Evaluation.Reporting.Bias;
 
 namespace CoreRentalNet.Evaluation.Reporting;
 
@@ -25,7 +26,8 @@ public static class MarkdownReportWriter
         text.AppendLine($"Rows: **{report.Summary.Rows}**  ");
         text.AppendLine($"Executions: **{report.Summary.Executions}**  ");
         text.AppendLine($"Case pass: **{report.Summary.CasePass}/{report.Summary.Rows} " +
-                        $"({Percentage(report.Summary.CasePassRate)})**");
+                        $"({Percentage(report.Summary.CasePassRate)})**  ");
+        text.AppendLine($"Judge: **{JudgeSummary(report.Summary)}**");
         text.AppendLine();
         AppendTiming(text, report);
 
@@ -49,6 +51,9 @@ public static class MarkdownReportWriter
             text.AppendLine($"| {stability} | {count} |");
         }
 
+        AppendJudge(text, report);
+        AppendBias(text, report.Bias);
+
         text.AppendLine();
         text.AppendLine("## Failing rows");
         text.AppendLine();
@@ -67,8 +72,8 @@ public static class MarkdownReportWriter
         text.AppendLine();
         text.AppendLine("## All rows");
         text.AppendLine();
-        text.AppendLine("| Row | Case | Stability | Reranker aligned | Case pass | Failure codes |");
-        text.AppendLine("|---:|---|---|---|---|---|");
+        text.AppendLine("| Row | Case | Stability | Reranker aligned | Judge | Case pass | Failure codes |");
+        text.AppendLine("|---:|---|---|---|---|---|---|");
 
         foreach (var testCase in report.Cases)
         {
@@ -76,6 +81,7 @@ public static class MarkdownReportWriter
             text.AppendLine(
                 $"| {testCase.RowNumber} | {testCase.CaseId} | {testCase.Stability} | " +
                 $"{(aligned ? "YES" : "NO")} | " +
+                $"{JudgeCell(testCase)} | " +
                 $"{(testCase.CasePass ? "PASS" : "FAIL")} | " +
                 $"{string.Join("<br>", testCase.FailureCodes)} |");
         }
@@ -88,6 +94,121 @@ public static class MarkdownReportWriter
 
         await File.WriteAllTextAsync(path, text.ToString(), cancellationToken);
     }
+
+    private static void AppendJudge(StringBuilder text, EvaluationReport report)
+    {
+        var judged = report.Cases
+            .SelectMany(testCase => testCase.Repetitions)
+            .Where(repetition => repetition.JudgeEvaluated == true)
+            .ToArray();
+
+        if (judged.Length == 0)
+        {
+            return;
+        }
+
+        text.AppendLine();
+        text.AppendLine("## Judge");
+        text.AppendLine();
+        text.AppendLine("| Case | Pass | Confidence | Reason |");
+        text.AppendLine("|---|---|---:|---|");
+
+        foreach (var testCase in report.Cases)
+        {
+            foreach (var repetition in testCase.Repetitions.Where(repetition => repetition.JudgeEvaluated == true))
+            {
+                text.AppendLine(
+                    $"| {testCase.CaseId} | {(repetition.JudgePass == true ? "PASS" : "FAIL")} | " +
+                    $"{repetition.JudgeConfidence?.ToString("0.00", CultureInfo.InvariantCulture) ?? "-"} | " +
+                    $"{Escape(repetition.JudgeReason)} |");
+            }
+        }
+    }
+
+    private static void AppendBias(StringBuilder text, BiasReport? bias)
+    {
+        if (bias is null)
+        {
+            return;
+        }
+
+        foreach (var section in Enum.GetValues<BiasSectionName>())
+        {
+            text.AppendLine();
+            text.AppendLine($"## {Title(section)}");
+            text.AppendLine();
+            text.AppendLine("| Metric | Stage | Status | Value | n | Reason |");
+            text.AppendLine("|---|---|---|---:|---:|---|");
+
+            foreach (var metric in bias.Metrics.Where(metric => metric.Section == section))
+            {
+                text.AppendLine(
+                    $"| {metric.Name} | {metric.Stage ?? "-"} | {metric.Status} | " +
+                    $"{(metric.Value is { } value ? value.ToString("0.000", CultureInfo.InvariantCulture) : "-")} | " +
+                    $"{metric.SampleSize} | {Escape(metric.Reason)} |");
+            }
+
+            if (section == BiasSectionName.Reasoning)
+            {
+                AppendStageBreakdown(text, bias);
+            }
+        }
+    }
+
+    private static void AppendStageBreakdown(StringBuilder text, BiasReport bias)
+    {
+        var staged = bias.Metrics
+            .Where(metric => metric.Section == BiasSectionName.Reasoning && metric.Stage is not null)
+            .ToArray();
+
+        if (staged.Length == 0)
+        {
+            return;
+        }
+
+        text.AppendLine();
+        text.AppendLine("### C.1 Stage breakdown");
+        text.AppendLine();
+        text.AppendLine("| Stage | Metric | Status | Value | n |");
+        text.AppendLine("|---|---|---|---:|---:|");
+
+        foreach (var metric in staged)
+        {
+            text.AppendLine(
+                $"| {metric.Stage} | {metric.Name} | {metric.Status} | " +
+                $"{(metric.Value is { } value ? value.ToString("0.000", CultureInfo.InvariantCulture) : "-")} | " +
+                $"{metric.SampleSize} |");
+        }
+    }
+
+    private static string Title(BiasSectionName section)
+        => section switch
+        {
+            BiasSectionName.Fairness => "A. Fairness and outcome disparity",
+            BiasSectionName.Recommendation => "B. Recommendation and retrieval bias",
+            BiasSectionName.Reasoning => "C. Agent reasoning and decision bias",
+            BiasSectionName.Language => "D. Language and content bias",
+            _ => section.ToString(),
+        };
+
+    private static string JudgeSummary(EvaluationSummary summary)
+        => !summary.JudgeConfigured
+            ? "not configured"
+            : summary.JudgeEvaluated == 0
+                ? "configured; no eligible cases"
+                : $"{summary.JudgePass}/{summary.JudgeEvaluated} passed ({Percentage(summary.JudgePassRate ?? 0)})";
+
+    private static string JudgeCell(CaseResult testCase)
+    {
+        var judged = testCase.Repetitions.Where(repetition => repetition.JudgeEvaluated == true).ToArray();
+
+        return judged.Length == 0
+            ? "-"
+            : string.Join("<br>", judged.Select(repetition => repetition.JudgePass == true ? "PASS" : "FAIL"));
+    }
+
+    private static string Escape(string? value)
+        => (value ?? "-").Replace("|", "\\|", StringComparison.Ordinal);
 
     private static void AppendTiming(StringBuilder text, EvaluationReport report)
     {

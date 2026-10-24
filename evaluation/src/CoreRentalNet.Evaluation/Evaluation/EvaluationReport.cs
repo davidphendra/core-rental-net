@@ -1,4 +1,5 @@
 using CoreRentalNet.Evaluation.Cases;
+using CoreRentalNet.Evaluation.Reporting.Bias;
 
 namespace CoreRentalNet.Evaluation.Evaluation;
 
@@ -16,4 +17,7 @@ public sealed record EvaluationReport(
 
     /// <summary>The reason a run stopped before its scope was complete, or null when it completed.</summary>
     public string? StopReason { get; init; }
+
+    /// <summary>The A-D bias metrics, when the run was configured to produce them.</summary>
+    public BiasReport? Bias { get; init; }
 }

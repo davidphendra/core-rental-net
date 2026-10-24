@@ -46,9 +46,14 @@ public sealed record EvaluationOptions
 
     public Uri? McpEndpoint { get; init; }
 
+    /// <summary>The local llama-server OpenAI-compatible endpoint. Null disables the judge.</summary>
     public Uri? JudgeEndpoint { get; init; }
 
-    public string JudgeModel { get; init; } = "gpt-4.1-mini";
+    public string JudgeModel { get; init; } = "gpt-oss-20b";
+
+    public string JudgeApiKey { get; init; } = "local";
+
+    public TimeSpan JudgeTimeout { get; init; } = TimeSpan.FromSeconds(60);
 
     public string ReportPath { get; init; } = "specs/evaluation/reports/latest.json";
 }

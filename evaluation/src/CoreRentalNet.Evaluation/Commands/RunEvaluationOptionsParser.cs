@@ -12,10 +12,6 @@ internal static class RunEvaluationOptionsParser
         {
             TestScriptPath = Path.Combine(AppContext.BaseDirectory, "Test_Script.md"),
             ProductsPath = Path.Combine(AppContext.BaseDirectory, "products.json"),
-            JudgeEndpoint = Environment.GetEnvironmentVariable("FOUNDRY_PROJECT_ENDPOINT") is { Length: > 0 } endpoint
-                ? new Uri(endpoint)
-                : null,
-            JudgeModel = "gpt-4.1-mini",
             CallerToken = Environment.GetEnvironmentVariable("EVALUATION_CALLER_TOKEN"),
             ReportPath = "specs/evaluation/reports/latest.json",
         };
@@ -129,6 +125,21 @@ internal static class RunEvaluationOptionsParser
 
                 case "--judge-model" when value is not null:
                     options = options with { JudgeModel = value };
+                    index++;
+                    break;
+
+                case "--judge-api-key" when value is not null:
+                    options = options with { JudgeApiKey = value };
+                    index++;
+                    break;
+
+                case "--judge-timeout" when value is not null && int.TryParse(value, out var judgeSeconds):
+                    if (judgeSeconds <= 0)
+                    {
+                        throw new ArgumentException("--judge-timeout must be greater than zero seconds.");
+                    }
+
+                    options = options with { JudgeTimeout = TimeSpan.FromSeconds(judgeSeconds) };
                     index++;
                     break;
 

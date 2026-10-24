@@ -2,6 +2,7 @@ using System.Text.Json;
 using AwesomeAssertions;
 using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Evaluation;
+using CoreRentalNet.Evaluation.Reporting.Bias;
 using Xunit;
 
 namespace CoreRentalNet.Evaluation.Tests;
@@ -30,5 +31,22 @@ public sealed class EvaluationReportJsonTests
 
         json.Should().Contain("\"scope\":\"Tiny\"");
         json.Should().Contain("\"totalRows\":200");
+    }
+
+    [Fact]
+    public void The_report_records_a_bias_section_list()
+    {
+        var report = new EvaluationReport([], [], new EvaluationSummary(0, 0, 0, 0, new Dictionary<string, double>(), new Dictionary<string, int>()))
+        {
+            Bias = new BiasReport(
+            [
+                BiasMetric.NotApplicable(BiasSectionName.Fairness, "Demographic Parity Difference", "No labels."),
+            ]),
+        };
+
+        var json = JsonSerializer.Serialize(report, EvaluationJson.Options);
+
+        json.Should().Contain("\"bias\"");
+        json.Should().Contain("\"Demographic Parity Difference\"");
     }
 }
