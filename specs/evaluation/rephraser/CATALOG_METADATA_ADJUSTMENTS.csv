@@ -1,0 +1,27 @@
+sku,field,oldValue,newValue,searchChannel,evidence,decision
+MONB086Q776F,tags,[],["2-pack","dual monitor","two monitors"],semantic+description,rephraser term/catalogue match,accepted
+MONB086Q776F,attributes.packQuantity,,2,semantic,structured catalogue evidence,accepted
+MONB086Q776F,attributes.packType,,2-pack,semantic,structured catalogue evidence,accepted
+MONB086Q776F,attributes.screenCount,,2,semantic,structured catalogue evidence,accepted
+MONB086Q776F,description,appended,Sold as a 2-pack; suitable for a dual-monitor setup.,name+semantic,truthful product evidence,accepted
+PLTB0BPRTB7C,tags,[],["trio","set of 3","3-pack"],semantic+description,rephraser term/catalogue match,accepted
+PLTB0BPRTB7C,attributes.packQuantity,,3,semantic,structured catalogue evidence,accepted
+PLTB0BPRTB7C,attributes.setType,,succulent trio,semantic,structured catalogue evidence,accepted
+LMPB072R2M9K,tags,[],["tiffany","peony","stained glass","table lamp"],semantic+description,rephraser term/catalogue match,accepted
+LMPB072R2M9K,attributes.style,,Tiffany,semantic,structured catalogue evidence,accepted
+LMPB072R2M9K,attributes.pattern,,peony,semantic,structured catalogue evidence,accepted
+LMPB072R2M9K,attributes.lampType,,table lamp,semantic,structured catalogue evidence,accepted
+CHAB0BYXJBVW,tags,[],["big and tall","big & tall"],semantic+description,rephraser term/catalogue match,accepted
+CHAB0BYXJBVW,attributes.subtype,,big and tall,semantic,structured catalogue evidence,accepted
+DSKB07PFFFQ2,tags,[],["L-desk","corner desk"],semantic+description,rephraser term/catalogue match,accepted
+DSKB07PFFFQ2,attributes.shape,,L-desk,semantic,structured catalogue evidence,accepted
+DSKB004DOXP7,tags,[],["bow front","knee-hole desk"],semantic+description,rephraser term/catalogue match,accepted
+DSKB004DOXP7,attributes.desktype,,bow front,semantic,structured catalogue evidence,accepted
+DSKB09MDNYM3,tags,[],["round table","pneumatic table"],semantic+description,rephraser term/catalogue match,accepted
+DSKB09MDNYM3,attributes.shape,,round table,semantic,structured catalogue evidence,accepted
+CHAB0855B3K7,tags,[],["white leather","white"],semantic+description,rephraser term/catalogue match,accepted
+CHAB0855B3K7,attributes.material,,Leather,semantic,structured catalogue evidence,accepted
+LMPB0BGHVFD1,tags,[],["tiffany","stained glass","grape","table lamp"],semantic+description,rephraser term/catalogue match,accepted
+LMPB0BGHVFD1,attributes.style,,Tiffany,semantic,structured catalogue evidence,accepted
+LMPB0BGHVFD1,attributes.pattern,,grape,semantic,structured catalogue evidence,accepted
+LMPB0BGHVFD1,attributes.lampType,,table lamp,semantic,structured catalogue evidence,accepted

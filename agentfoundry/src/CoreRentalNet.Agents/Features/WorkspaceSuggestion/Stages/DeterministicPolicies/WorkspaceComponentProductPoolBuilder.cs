@@ -52,7 +52,8 @@ public sealed class WorkspaceComponentProductPoolBuilder(IReadOnlyList<string> c
                     catalogueSearchToolItem.Sku,
                     catalogueSearchToolItem.Name,
                     catalogueSearchToolItem.Description,
-                    catalogueSearchToolItem.MonthlyPrice.Amount));
+                    catalogueSearchToolItem.MonthlyPrice.Amount,
+                    catalogueSearchToolItem.Facts));
             }
         }
 

@@ -120,6 +120,7 @@ public sealed class SqliteProductCatalogService(CatalogContext context, string? 
             row.Description,
             resolved.Path,
             resolved.Available,
-            row.IsFeatured);
+            row.IsFeatured,
+            ProductFactsMapper.From(row));
     }
 }

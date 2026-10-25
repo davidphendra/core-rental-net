@@ -30,6 +30,7 @@ internal sealed class WorkspaceSetupCompositionExecutor(AIAgent stageAgent, ILog
                     cancellationToken: stageCancellationToken);
 
                 workspaceSuggestionWorkflowState.ProposedWorkspaceSetups = agentResponse.Result.Setups;
+                workspaceSuggestionWorkflowState.CompletedAttemptCount++;
             },
             cancellationToken);
 

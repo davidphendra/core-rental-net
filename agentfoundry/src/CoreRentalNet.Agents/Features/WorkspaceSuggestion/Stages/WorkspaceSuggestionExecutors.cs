@@ -32,6 +32,6 @@ internal sealed record WorkspaceSuggestionExecutors(
     public IReadOnlyList<ExecutorBinding> All { get; } =
     [
         Input, Verifier, Rephraser, Retriever, ProductPool, Reranker, Composer,
-        Validator, Reviewer, RetryDecision, Success, Rejected, Unavailable,
+        Success, Rejected, Unavailable,
     ];
 }

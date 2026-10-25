@@ -18,7 +18,8 @@ public sealed record CatalogueToolProduct(
     string Description,
     string ImagePath,
     bool ImageAvailable,
-    bool IsFeatured)
+    bool IsFeatured,
+    CatalogueToolFacts? Facts = null)
 {
     public static CatalogueToolProduct From(ProductDto product)
         => new(
@@ -30,5 +31,6 @@ public sealed record CatalogueToolProduct(
             CatalogueDescriptionPolicy.Truncate(product.Description),
             product.ImagePath,
             product.ImageAvailable,
-            product.IsFeatured);
+            product.IsFeatured,
+            product.Facts is null ? null : new CatalogueToolFacts(product.Facts.Values));
 }

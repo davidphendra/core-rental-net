@@ -1,0 +1,109 @@
+[
+  {
+    "sku": "MONB086Q776F",
+    "addTags": [
+      "2-pack",
+      "dual monitor",
+      "two monitors"
+    ],
+    "setAttributes": {
+      "packQuantity": "2",
+      "packType": "2-pack",
+      "screenCount": "2"
+    },
+    "addBestFor": [
+      "multi-monitor workstations"
+    ],
+    "appendDescription": " Sold as a 2-pack; suitable for a dual-monitor setup."
+  },
+  {
+    "sku": "PLTB0BPRTB7C",
+    "addTags": [
+      "trio",
+      "set of 3",
+      "3-pack"
+    ],
+    "setAttributes": {
+      "packQuantity": "3",
+      "setType": "succulent trio"
+    }
+  },
+  {
+    "sku": "LMPB072R2M9K",
+    "addTags": [
+      "tiffany",
+      "peony",
+      "stained glass",
+      "table lamp"
+    ],
+    "setAttributes": {
+      "style": "Tiffany",
+      "pattern": "peony",
+      "lampType": "table lamp"
+    }
+  },
+  {
+    "sku": "CHAB0BYXJBVW",
+    "addTags": [
+      "big and tall",
+      "big & tall"
+    ],
+    "setAttributes": {
+      "subtype": "big and tall"
+    }
+  },
+  {
+    "sku": "DSKB07PFFFQ2",
+    "addTags": [
+      "L-desk",
+      "corner desk"
+    ],
+    "setAttributes": {
+      "shape": "L-desk"
+    }
+  },
+  {
+    "sku": "DSKB004DOXP7",
+    "addTags": [
+      "bow front",
+      "knee-hole desk"
+    ],
+    "setAttributes": {
+      "desktype": "bow front"
+    }
+  },
+  {
+    "sku": "DSKB09MDNYM3",
+    "addTags": [
+      "round table",
+      "pneumatic table"
+    ],
+    "setAttributes": {
+      "shape": "round table"
+    }
+  },
+  {
+    "sku": "CHAB0855B3K7",
+    "addTags": [
+      "white leather",
+      "white"
+    ],
+    "setAttributes": {
+      "material": "Leather"
+    }
+  },
+  {
+    "sku": "LMPB0BGHVFD1",
+    "addTags": [
+      "tiffany",
+      "stained glass",
+      "grape",
+      "table lamp"
+    ],
+    "setAttributes": {
+      "style": "Tiffany",
+      "pattern": "grape",
+      "lampType": "table lamp"
+    }
+  }
+]

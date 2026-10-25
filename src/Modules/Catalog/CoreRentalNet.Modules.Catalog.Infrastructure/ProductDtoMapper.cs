@@ -25,7 +25,8 @@ public static class ProductDtoMapper
             product.Description,
             product.ImagePath,
             product.ImageAvailable,
-            product.IsFeatured);
+            product.IsFeatured,
+            ProductFactsMapper.From(product.Metadata));
     }
 
     private static CatalogCategory Category(ProductCategory category)

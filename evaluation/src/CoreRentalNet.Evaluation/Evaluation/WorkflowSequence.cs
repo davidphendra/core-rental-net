@@ -10,11 +10,9 @@ public static class WorkflowSequence
     private const string Retrieving = "retrievingCatalogueProducts";
     private const string Reranking = "rerankingWorkspaceCandidates";
     private const string Composing = "composingWorkspaceSetups";
-    private const string Validating = "validatingWorkspaceSetups";
-    private const string Reviewing = "reviewingWorkspaceSetups";
 
     private static readonly string[] AttemptPrefix =
-        [Rephrasing, Retrieving, Reranking, Composing, Validating];
+        [Rephrasing, Retrieving, Reranking, Composing];
 
     public static WorkflowResult Evaluate(EvaluationContext context)
     {
@@ -53,25 +51,14 @@ public static class WorkflowSequence
             var attempt = attempts[index];
             var isLast = index == attempts.Count - 1;
 
-            if (attempt.Length < AttemptPrefix.Length
-                || !attempt.Take(AttemptPrefix.Length).SequenceEqual(AttemptPrefix, StringComparer.Ordinal))
+            if (attempt.Length != AttemptPrefix.Length
+                || !attempt.SequenceEqual(AttemptPrefix, StringComparer.Ordinal))
             {
                 failures.Add(FailureCodes.WorkflowSequence);
                 continue;
             }
 
-            if (attempt.Length == AttemptPrefix.Length + 1
-                && !string.Equals(attempt[^1], Reviewing, StringComparison.Ordinal))
-            {
-                failures.Add(FailureCodes.WorkflowSequence);
-            }
-
-            if (attempt.Length > AttemptPrefix.Length + 1)
-            {
-                failures.Add(FailureCodes.WorkflowSequence);
-            }
-
-            if (isLast && attempt.Length != AttemptPrefix.Length + 1)
+            if (isLast && !string.Equals(attempt[^1], Composing, StringComparison.Ordinal))
             {
                 failures.Add(FailureCodes.WorkflowSequence);
             }

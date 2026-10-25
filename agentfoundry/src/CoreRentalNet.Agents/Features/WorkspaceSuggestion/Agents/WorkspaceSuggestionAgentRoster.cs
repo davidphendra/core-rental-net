@@ -29,7 +29,7 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Rephraser { get; } = new(
         Name: "workspace-requirement-rephraser",
-        PromptFileName: "workspace-requirement-rephraser.v8.md",
+        PromptFileName: "workspace-requirement-rephraser.v9.md",
         Description: "Turns the sentence into what the workspace must be and the words that find each part of it.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansionWire>());
 
@@ -42,19 +42,19 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Reranker { get; } = new(
         Name: "catalogue-candidate-reranker",
-        PromptFileName: "catalogue-candidate-reranker.v4.md",
+        PromptFileName: "catalogue-candidate-reranker.v5.md",
         Description: "Orders each component's retrieved products against the need that component must answer.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceComponentProductRankingResult>());
 
     public static AgentProfile Composer { get; } = new(
         Name: "workspace-setup-composer",
-        PromptFileName: "workspace-setup-composer.v3.md",
+        PromptFileName: "workspace-setup-composer.v4.md",
         Description: "Composes candidate setups from the retrieved products and the expansion.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceSetupCandidateSet>());
 
     public static AgentProfile Reviewer { get; } = new(
         Name: "workspace-setup-reviewer",
-        PromptFileName: "workspace-setup-reviewer.v5.md",
+        PromptFileName: "workspace-setup-reviewer.v6.md",
         Description: "Decides whether the composed setups satisfy the customer's request.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceSetupReviewResult>());
 

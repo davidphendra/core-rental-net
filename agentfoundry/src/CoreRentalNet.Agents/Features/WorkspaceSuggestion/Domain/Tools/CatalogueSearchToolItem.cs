@@ -24,4 +24,6 @@ public sealed record CatalogueSearchToolItem(
     string Description,
     [property: JsonPropertyName("monthlyPrice")]
     [property: JsonRequired]
-    CatalogueSearchToolPrice MonthlyPrice);
+    CatalogueSearchToolPrice MonthlyPrice,
+    [property: JsonPropertyName("facts")]
+    CatalogueSearchToolFacts? Facts);

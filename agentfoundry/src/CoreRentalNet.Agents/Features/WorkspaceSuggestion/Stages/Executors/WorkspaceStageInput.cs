@@ -129,6 +129,7 @@ internal static class WorkspaceStageInput
                                 product.Name,
                                 description = DescriptionForJudgement(product.Description),
                                 product.Amount,
+                                facts = product.Facts,
                             }),
                     }),
         });
@@ -143,6 +144,7 @@ internal static class WorkspaceStageInput
                 selection.RetrievedProduct.Sku,
                 selection.RetrievedProduct.Name,
                 amount = selection.RetrievedProduct.Amount,
+                facts = selection.RetrievedProduct.Facts,
                 selection.Relevance,
             }),
         });
@@ -186,6 +188,7 @@ internal static class WorkspaceStageInput
                     line.Name,
                     line.Quantity,
                     line.Amount,
+                    facts = FactsForReview(state, line.Sku),
                     description = DescriptionForReview(state, line.Sku),
                 }),
             }),
@@ -196,14 +199,22 @@ internal static class WorkspaceStageInput
         WorkspaceSuggestionWorkflowState state,
         string sku)
     {
-        var product = state.SelectedWorkspaceCandidates
-            .Select(selection => selection.RetrievedProduct)
-            .Concat(state.CandidatePool)
-            .FirstOrDefault(candidate =>
-                string.Equals(candidate.Sku, sku, StringComparison.Ordinal));
+        var product = ProductForReview(state, sku);
 
         return product is null
             ? null
             : DescriptionForJudgement(product.Description);
     }
+
+    private static object? FactsForReview(WorkspaceSuggestionWorkflowState state, string sku)
+        => ProductForReview(state, sku)?.Facts;
+
+    private static RetrievedWorkspaceComponentProduct? ProductForReview(
+        WorkspaceSuggestionWorkflowState state,
+        string sku)
+        => state.SelectedWorkspaceCandidates
+            .Select(selection => selection.RetrievedProduct)
+            .Concat(state.CandidatePool)
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate.Sku, sku, StringComparison.Ordinal));
 }

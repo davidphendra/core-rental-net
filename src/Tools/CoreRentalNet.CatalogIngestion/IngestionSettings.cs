@@ -17,13 +17,13 @@ namespace CoreRentalNet.CatalogIngestion;
 /// </para>
 /// </remarks>
 internal sealed record IngestionSettings(
-    string CataloguePath,
+    string CatalogueDatabasePath,
     string DatabasePath,
     EmbeddingSettings Embedding,
     ChunkerSettings Chunker)
 {
-    /// <summary>products.json, relative to the tool's project directory.</summary>
-    public const string DefaultCataloguePath = "../../shared/data/products.json";
+    /// <summary>catalog.db, relative to the tool's project directory.</summary>
+    public const string DefaultCatalogueDatabasePath = "../../Host/CoreRentalNet.Host/App_Data/catalog.db";
 
     /// <summary>The Discovery store the application reads, relative to the tool's project directory.</summary>
     /// <remarks>

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using CoreRentalNet.BuildingBlocks.Domain;
 
 namespace CoreRentalNet.Modules.Catalog.Application.Contracts;
@@ -17,4 +18,5 @@ public sealed record ProductDto(
     string Description,
     string ImagePath,
     bool ImageAvailable,
-    bool IsFeatured);
+    bool IsFeatured,
+    [property: JsonIgnore] ProductFacts? Facts = null);

@@ -68,7 +68,7 @@ catch (ArgumentException exception)
 }
 
 AnsiConsole.MarkupLine(
-    $"[bold]Ingest[/] · catalogue {Markup.Escape(settings.CataloguePath)} · "
+    $"[bold]Ingest[/] · catalogue {Markup.Escape(settings.CatalogueDatabasePath)} · "
     + $"model {Markup.Escape(settings.Embedding.Model)} · database {Markup.Escape(settings.DatabasePath)}");
 
 try
@@ -109,9 +109,9 @@ int Seed()
 // scope rather than being given them again, because this is the only code that composes the tool.
 async Task<int> Run()
 {
-    // The same loader the application reads the file with, so what is embedded is what a caller would read.
-    reporter.Report(new ProgressUpdate("Reading catalogue", 0, 1, settings.CataloguePath));
-    var catalogue = CatalogueFile.Read(settings.CataloguePath);
+    // The catalogue database is the input; the vector file is the output of this run.
+    reporter.Report(new ProgressUpdate("Reading catalogue", 0, 1, settings.CatalogueDatabasePath));
+    var catalogue = CatalogueDatabaseFile.Read(settings.CatalogueDatabasePath);
     reporter.Report(new ProgressUpdate("Reading catalogue", 1, 1, $"{catalogue.Count} products"));
 
     var embeddings = EmbeddingServiceFactorySelector
@@ -130,7 +130,7 @@ async Task<int> Run()
         )
         .RunAsync(CancellationToken.None);
 
-    reporter.Complete($"Wrote {written} vectors from {settings.CataloguePath} into {settings.DatabasePath}.");
+    reporter.Complete($"Wrote {written} vectors from {settings.CatalogueDatabasePath} into {settings.DatabasePath}.");
     return 0;
 }
 
@@ -143,7 +143,7 @@ EmbeddingRecipe Recipe()
         settings.Embedding.Model,
         settings.Embedding.Width,
         ProductVectorContract.Composition,
-        CatalogHash.OfFile(settings.CataloguePath));
+        CatalogHash.OfFile(settings.CatalogueDatabasePath));
 
 // A seed mode path: as stated, or the fallback, resolved against the tool's project directory so a relative
 // value means the same thing however the program was launched.

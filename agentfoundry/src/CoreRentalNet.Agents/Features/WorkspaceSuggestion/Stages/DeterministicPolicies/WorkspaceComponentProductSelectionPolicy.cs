@@ -42,65 +42,25 @@ public sealed class WorkspaceComponentProductSelectionPolicy(int maximumSelected
             var slot = WorkspaceComponentVocabularyMapping.CompositionSlotFor(componentCategory);
             var productsRetrievedFor = ProductsRetrievedFor(retrievedProductPool, slot);
 
-            var exactMatches = ExactMatches(
-                productsRetrievedFor, componentCategory, requirementExpansion);
-
             var ranked = assessments
-                .Select(assessment => ResolveToPooledProduct(assessment, productsRetrievedFor))
-                .OfType<SelectedWorkspaceComponentProduct>();
+                .Select(assessment => ResolveToPooledProduct(assessment, productsRetrievedFor));
 
-            var candidates = exactMatches.Count > 0 ? exactMatches : ranked;
-
-            selectedProducts.AddRange(candidates
-                .DistinctBy(selection => selection.RetrievedProduct.Sku, StringComparer.OrdinalIgnoreCase)
-                .Take(_maximumSelectedProductsPerComponent));
+            selectedProducts.AddRange(ranked);
         }
 
         return selectedProducts;
     }
 
-    /// <summary>Products whose names carry a brand, model, or other distinctive customer term.</summary>
-    private static IReadOnlyList<SelectedWorkspaceComponentProduct> ExactMatches(
-        IReadOnlyList<RetrievedWorkspaceComponentProduct> productsRetrievedFor,
-        WorkspaceComponentCategory componentCategory,
-        WorkspaceRequirementExpansion? requirementExpansion)
-    {
-        if (requirementExpansion is null)
-        {
-            return [];
-        }
-
-        var distinctiveTerms = requirementExpansion.ComponentExpansions.Every()
-            .Single(component => component.ComponentCategory == componentCategory)
-            .Expansion
-            .SearchTerms
-            .Concat(requirementExpansion.ComponentExpansions.Every()
-                .Single(component => component.ComponentCategory == componentCategory)
-                .Expansion
-                .Synonyms)
-            .Where(term => term.Any(char.IsUpper))
-            .ToArray();
-
-        return [.. productsRetrievedFor
-            .Select(product => (
-                Product: product,
-                Matches: distinctiveTerms.Count(term =>
-                    product.Name.Contains(term, StringComparison.OrdinalIgnoreCase))))
-            .Where(candidate => candidate.Matches > 0)
-            .OrderByDescending(candidate => candidate.Matches)
-            .Select(candidate => new SelectedWorkspaceComponentProduct(
-                candidate.Product, ProductRelevanceLevel.High))];
-    }
-
     /// <summary>The pool's own row for one assessment, or nothing when the product was not in the pool.</summary>
-    private static SelectedWorkspaceComponentProduct? ResolveToPooledProduct(
+    private static SelectedWorkspaceComponentProduct ResolveToPooledProduct(
         WorkspaceComponentProductAssessment assessment,
         IReadOnlyList<RetrievedWorkspaceComponentProduct> productsRetrievedFor)
         => productsRetrievedFor
             .FirstOrDefault(product => string.Equals(product.Sku, assessment.Sku, StringComparison.OrdinalIgnoreCase))
             is { } pooledProduct
                 ? new SelectedWorkspaceComponentProduct(pooledProduct, assessment.Relevance)
-                : null;
+                : throw new InvalidOperationException(
+                    $"The reranker selected SKU '{assessment.Sku}' for a component whose pool does not contain it.");
 
     /// <summary>The pool's products for one component.</summary>
     private static IReadOnlyList<RetrievedWorkspaceComponentProduct> ProductsRetrievedFor(

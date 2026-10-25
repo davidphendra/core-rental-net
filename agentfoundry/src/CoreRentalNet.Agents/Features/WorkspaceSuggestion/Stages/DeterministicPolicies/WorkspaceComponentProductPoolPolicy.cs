@@ -32,13 +32,12 @@ public sealed class WorkspaceComponentProductPoolPolicy(int maximumRetrievedProd
     {
         ArgumentNullException.ThrowIfNull(retrievedProducts);
 
-        var seenStockKeepingUnits = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var boundedPool = new List<RetrievedWorkspaceComponentProduct>();
 
         foreach (var componentGroup in retrievedProducts.GroupBy(product => product.Slot))
         {
             boundedPool.AddRange(componentGroup
-                .Where(product => seenStockKeepingUnits.Add(product.Sku))
+                .DistinctBy(product => product.Sku, StringComparer.OrdinalIgnoreCase)
                 .Take(_maximumRetrievedProductsPerComponent));
         }
 

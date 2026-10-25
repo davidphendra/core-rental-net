@@ -11,7 +11,7 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Streams the approved setups, one event each, and then ends the run.</summary>
 /// <remarks>
-/// The setups arrive here already reviewed, so publishing them is a copy and not a decision. One event per setup
+/// The setups arrive here already materialised from the reranker result, so publishing them is a copy and not a decision. One event per setup
 /// lets a caller render the first before the last has crossed the wire, and the ending is a separate event so a
 /// setup's arrival never implies a successful run.
 /// </remarks>

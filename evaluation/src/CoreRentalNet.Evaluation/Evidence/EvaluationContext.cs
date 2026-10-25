@@ -19,18 +19,24 @@ public sealed record EvaluationContext(
     IReadOnlyList<ToolAnswerEvidence> ToolAnswers,
     IReadOnlyList<RerankSelectionEvidence> RerankSelections)
 {
-    public IReadOnlyList<ToolAnswerEvidence> FinalToolAnswers { get; } = ToolAnswers
-        .Where(answer => answer.Attempt is null || answer.Attempt == FinalAttempt)
-        .ToArray();
+    public IReadOnlyList<ToolAnswerEvidence> FinalToolAnswers { get; } = FinalAttempt <= 0
+        ? []
+        : ToolAnswers
+            .Where(answer => answer.Attempt is null || answer.Attempt == FinalAttempt)
+            .ToArray();
 
-    public IReadOnlyList<RerankSelectionEvidence> FinalRerankSelections { get; } = RerankSelections
-        .Where(selection => selection.Attempt is null || selection.Attempt == FinalAttempt)
-        .ToArray();
+    public IReadOnlyList<RerankSelectionEvidence> FinalRerankSelections { get; } = FinalAttempt <= 0
+        ? []
+        : RerankSelections
+            .Where(selection => selection.Attempt is null || selection.Attempt == FinalAttempt)
+            .ToArray();
 
-    public IReadOnlySet<string> SelectedSkus { get; } = RerankSelections
-        .Where(selection => selection.Attempt is null || selection.Attempt == FinalAttempt)
-        .Select(selection => selection.Sku)
-        .ToHashSet(StringComparer.Ordinal);
+    public IReadOnlySet<string> SelectedSkus { get; } = FinalAttempt <= 0
+        ? new HashSet<string>(StringComparer.Ordinal)
+        : RerankSelections
+            .Where(selection => selection.Attempt is null || selection.Attempt == FinalAttempt)
+            .Select(selection => selection.Sku)
+            .ToHashSet(StringComparer.Ordinal);
 
     public static EvaluationContext Parse(string? json)
         => JsonSerializer.Deserialize<EvaluationContext>(json ?? string.Empty, EvaluationJson.Options)

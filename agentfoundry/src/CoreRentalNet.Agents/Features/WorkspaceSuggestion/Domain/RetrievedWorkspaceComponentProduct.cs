@@ -1,7 +1,7 @@
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Requests;
+using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Tools;
 
 /// <summary>One product a catalogue search returned for one component of the workspace.</summary>
 /// <remarks>
@@ -15,4 +15,5 @@ public sealed record RetrievedWorkspaceComponentProduct(
     string Sku,
     string Name,
     string Description,
-    decimal Amount);
+    decimal Amount,
+    CatalogueSearchToolFacts? Facts = null);

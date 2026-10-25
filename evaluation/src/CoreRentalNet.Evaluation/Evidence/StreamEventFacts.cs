@@ -32,7 +32,7 @@ public sealed record StreamEventFacts(
             Candidates: candidates,
             Stages: stages,
             RunStatus: completed?.RunStatus ?? "missing",
-            FinalAttempt: completed?.CompletedAttemptCount ?? 1,
+            FinalAttempt: completed?.CompletedAttemptCount ?? 0,
             CompletedIsLast: events.Count > 0
                              && string.Equals(events[^1].Type, "completed", StringComparison.Ordinal));
     }

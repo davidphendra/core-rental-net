@@ -53,7 +53,9 @@
         "computer",
         "desk",
         "desks",
-        "workstations"
+        "workstations",
+        "L-desk",
+        "corner desk"
       ],
       "attributes": {
         "brand": "Sauder",
@@ -69,7 +71,8 @@
         "desktype": "fixed corner",
         "assemblyrequired": "Yes",
         "reviewcount": "1",
-        "reviewsummary": "Good purchase."
+        "reviewsummary": "Good purchase.",
+        "shape": "L-desk"
       },
       "bestFor": [
         "home office",
@@ -484,7 +487,9 @@
       "tags": [
         "desk",
         "desks",
-        "workstations"
+        "workstations",
+        "bow front",
+        "knee-hole desk"
       ],
       "attributes": {
         "brand": "Hooker Furniture",
@@ -497,7 +502,7 @@
         "color": "Warm Brown Cherry",
         "weight": "223 Pounds",
         "categorypath": "Office Products > Office Furniture & Lighting > Desks & Workstations",
-        "desktype": "fixed",
+        "desktype": "bow front",
         "assemblyrequired": "Yes",
         "reviewcount": "1",
         "reviewsummary": "Hooker bow front desk"
@@ -1044,7 +1049,9 @@
         "desk",
         "desks",
         "standing",
-        "workstations"
+        "workstations",
+        "round table",
+        "pneumatic table"
       ],
       "attributes": {
         "brand": "DANMIN",
@@ -1060,7 +1067,8 @@
         "desktype": "standing",
         "assemblyrequired": "Yes",
         "reviewcount": "4",
-        "reviewsummary": "Easy to put together.; Love it so much; Nice table"
+        "reviewsummary": "Easy to put together.; Love it so much; Nice table",
+        "shape": "round table"
       },
       "bestFor": [
         "home office",
@@ -1180,7 +1188,9 @@
         "leather",
         "managerial",
         "sofas",
-        "swivel"
+        "swivel",
+        "big and tall",
+        "big & tall"
       ],
       "attributes": {
         "brand": "BOWTHY",
@@ -1196,7 +1206,8 @@
         "type": "chair",
         "assemblyrequired": "unspecified",
         "reviewcount": "6",
-        "reviewsummary": "Ok good; Gorgeous and Elegant; Not very good."
+        "reviewsummary": "Ok good; Gorgeous and Elegant; Not very good.",
+        "subtype": "big and tall"
       },
       "bestFor": [
         "focused work",
@@ -2324,7 +2335,9 @@
         "leather",
         "managerial",
         "reclining",
-        "sofas"
+        "sofas",
+        "white leather",
+        "white"
       ],
       "attributes": {
         "brand": "Zuri Furniture",
@@ -2333,7 +2346,7 @@
         "priceusd": "584.10",
         "priceidrpermonth": "779000",
         "dimensions": "30\"D x 27.5\"W x 45\"H",
-        "material": "unspecified",
+        "material": "Leather",
         "color": "White",
         "weight": "46 pounds",
         "categorypath": "Office Products > Office Furniture & Lighting > Chairs & Sofas > Managerial & Executive Chairs",
@@ -2466,7 +2479,7 @@
     "category": "accessory",
     "pricePerMonth": 572000,
     "currency": "IDR",
-    "description": "Lenovo D24-10 23.6 Inch FHD (1920 x 1080) LED Backlit LCD Monitor (61D4KCR1US) 2-Pack Display Quantity: 2 Interfaces Supported: 1 x HDMI, 1 x VGA, Headphones Standard Contrast Ratio: 1000:1 Dynamic Contrast Ratio: 3000000:1 Maximum Resolution Supported: 1920 x 1080 Response Time: 3 ms (typical) Screen Mode: FHD Brightness: 250 Nit Input Power: 100 - 230 VAC Dimensions: (W x D x H): 22.3 x 7.5 x 15.6 inch Display Features: Tilt, Vesa Mount Compatible, Anti-glare, LED Backlights, Energy Star Certified, Low Blue Light certification",
+    "description": "Lenovo D24-10 23.6 Inch FHD (1920 x 1080) LED Backlit LCD Monitor (61D4KCR1US) 2-Pack Display Quantity: 2 Interfaces Supported: 1 x HDMI, 1 x VGA, Headphones Standard Contrast Ratio: 1000:1 Dynamic Contrast Ratio: 3000000:1 Maximum Resolution Supported: 1920 x 1080 Response Time: 3 ms (typical) Screen Mode: FHD Brightness: 250 Nit Input Power: 100 - 230 VAC Dimensions: (W x D x H): 22.3 x 7.5 x 15.6 inch Display Features: Tilt, Vesa Mount Compatible, Anti-glare, LED Backlights, Energy Star Certified, Low Blue Light certification Sold as a 2-pack; suitable for a dual-monitor setup.",
     "subCategory": "monitor",
     "image": "https://m.media-amazon.com/images/I/51ltRRiB8lL._AC_.jpg",
     "metadata": {
@@ -2475,7 +2488,10 @@
         "hdmi",
         "led",
         "monitor",
-        "monitors"
+        "monitors",
+        "2-pack",
+        "dual monitor",
+        "two monitors"
       ],
       "attributes": {
         "brand": "Lenovo",
@@ -2491,11 +2507,15 @@
         "type": "monitor",
         "assemblyrequired": "unspecified",
         "reviewcount": "5",
-        "reviewsummary": "Good Monitors for a Great Price; Good product and good price; Great Monitors!!"
+        "reviewsummary": "Good Monitors for a Great Price; Good product and good price; Great Monitors!!",
+        "packQuantity": "2",
+        "packType": "2-pack",
+        "screenCount": "2"
       },
       "bestFor": [
         "detail work",
-        "dual-screen setups"
+        "dual-screen setups",
+        "multi-monitor workstations"
       ],
       "notFor": []
     }
@@ -4502,7 +4522,11 @@
         "led",
         "metal",
         "shades",
-        "table"
+        "table",
+        "tiffany",
+        "stained glass",
+        "grape",
+        "table lamp"
       ],
       "attributes": {
         "brand": "AVIVADIRECT",
@@ -4518,7 +4542,10 @@
         "type": "lamp",
         "assemblyrequired": "unspecified",
         "reviewcount": "1",
-        "reviewsummary": "High Quality & Superior Design"
+        "reviewsummary": "High Quality & Superior Design",
+        "style": "Tiffany",
+        "pattern": "grape",
+        "lampType": "table lamp"
       },
       "bestFor": [
         "task lighting",
@@ -4669,7 +4696,11 @@
         "lamps",
         "led",
         "shades",
-        "table"
+        "table",
+        "tiffany",
+        "peony",
+        "stained glass",
+        "table lamp"
       ],
       "attributes": {
         "brand": "Dale Tiffany Lamps",
@@ -4685,7 +4716,10 @@
         "type": "lamp",
         "assemblyrequired": "unspecified",
         "reviewcount": "3",
-        "reviewsummary": "NOT WHAT I'VE EXPECTED, BUT LOVE IT!  🙂; Gorgeous; Quality"
+        "reviewsummary": "NOT WHAT I'VE EXPECTED, BUT LOVE IT!  🙂; Gorgeous; Quality",
+        "style": "Tiffany",
+        "pattern": "peony",
+        "lampType": "table lamp"
       },
       "bestFor": [
         "task lighting",
@@ -4798,7 +4832,10 @@
         "plant",
         "plants",
         "potted",
-        "succulent"
+        "succulent",
+        "trio",
+        "set of 3",
+        "3-pack"
       ],
       "attributes": {
         "brand": "Winlyn",
@@ -4814,7 +4851,9 @@
         "type": "plant",
         "assemblyrequired": "unspecified",
         "reviewcount": "6",
-        "reviewsummary": "Absolutely Awesome; beautiful lil guys. i love them; A+ quality. These are CUTE!"
+        "reviewsummary": "Absolutely Awesome; beautiful lil guys. i love them; A+ quality. These are CUTE!",
+        "packQuantity": "3",
+        "setType": "succulent trio"
       },
       "bestFor": [
         "desk decor",

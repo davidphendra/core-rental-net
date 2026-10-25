@@ -1,11 +1,8 @@
 using System.Text.Json.Serialization;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
-/// <summary>Whether the reviewed setups satisfy the request, and what a next attempt must satisfy when they do not.</summary>
-/// <remarks>
-/// Validity only. The reviewer never decides what happens next: whether another attempt runs is decided by code,
-/// from this verdict and the attempt count.
-/// </remarks>
+/// <summary>Advisory observations about a composed setup.</summary>
+/// <remarks>The reranker result is authoritative. This object is a report and must not route or reject.</remarks>
 public sealed record WorkspaceSetupReviewResult(
     [property: JsonPropertyName("isAcceptable")]
     bool IsAcceptable,

@@ -43,23 +43,10 @@ internal sealed class WorkspaceSuggestionWorkflowFactory()
                     state => state?.CandidatePool.Count is 0, [executors.Unavailable])
                 .WithDefault([executors.Reranker]))
             .AddEdge(executors.Reranker, executors.Composer)
-            .AddEdge(executors.Composer, executors.Validator)
-            .AddSwitch(executors.Validator, validationSwitch => validationSwitch
-                .AddCase<WorkspaceSuggestionWorkflowState>(
-                    state => state?.IsWorkspaceSetupStructureValid is true, [executors.Reviewer])
-                .WithDefault([executors.RetryDecision]))
-            .AddSwitch(executors.Reviewer, reviewSwitch => reviewSwitch
-                .AddCase<WorkspaceSuggestionWorkflowState>(
-                    state => state?.WorkspaceSetupReview?.IsAcceptable is true, [executors.Success])
-                .WithDefault([executors.RetryDecision]))
-            .AddSwitch(executors.RetryDecision, retrySwitch => retrySwitch
-                .AddCase<WorkspaceSuggestionWorkflowState>(
-                    state => state?.RetryDecision is WorkspaceSetupRetryDecision.RetryWithRephrasing,
-                    [executors.Rephraser])
-                .WithDefault([executors.Unavailable]))
+            .AddEdge(executors.Composer, executors.Success)
 
-            // Every node is an output, and the list is the nodes' own: a node added to the record is published
-            // without a second edit here, and one cannot be published that the graph does not have.
+            // Reviewer, validator, and retry remain constructed for diagnostics only. They are not
+            // connected to the decision path: the composer materialises the reranker result directly.
             .WithOutputFrom(executors.All.ToArray())
             .WithName(WorkflowName)
             .Build();

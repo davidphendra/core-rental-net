@@ -34,7 +34,7 @@ internal static class ConfigurationReader
     /// </remarks>
     private static readonly ImmutableHashSet<string> s_safeToRepeat = ImmutableHashSet.Create(
         StringComparer.Ordinal,
-        "Catalog:FilePath",
+        "Catalog:DatabasePath",
         "Database:Path",
         "Chunker:TokenLimit",
         "Chunker:BufferSize",
@@ -54,7 +54,7 @@ internal static class ConfigurationReader
         ArgumentException.ThrowIfNullOrWhiteSpace(baseDirectory);
 
         return new IngestionSettings(
-            ResolvedPath(configuration, "Catalog:FilePath", IngestionSettings.DefaultCataloguePath, baseDirectory),
+            ResolvedPath(configuration, "Catalog:DatabasePath", IngestionSettings.DefaultCatalogueDatabasePath, baseDirectory),
             ResolvedPath(configuration, "Database:Path", IngestionSettings.DefaultDatabasePath, baseDirectory),
             EmbeddingSettingsReader.Read(configuration),
             Chunker(configuration));

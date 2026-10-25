@@ -1,0 +1,1705 @@
+caseId,rowNumber,category,kind,term,expectedName,expectedDescription,expectedTags,matchedFields
+TS-001,1,desk,retrieval_query,a classic mahogany desk for a home office,no,no,no,
+TS-001,1,desk,search_term,mahogany desk,no,no,no,token_overlap
+TS-001,1,desk,search_term,classic desk,no,no,no,
+TS-001,1,desk,synonym,workstation,no,yes,yes,description;tags
+TS-001,1,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-001,1,chair,retrieval_query,a green velvet armless chair for a home office,no,no,no,token_overlap
+TS-001,1,chair,search_term,green velvet chair,no,no,no,token_overlap
+TS-001,1,chair,search_term,armless chair,no,no,yes,tags
+TS-001,1,chair,synonym,office chair,yes,yes,no,name;description
+TS-001,1,chair,semantic_concept,seating for daily work,no,no,no,
+TS-001,1,desk,retrieval_query,a classic mahogany desk for a home office,no,no,no,
+TS-001,1,desk,search_term,mahogany desk,no,no,no,token_overlap
+TS-001,1,desk,search_term,classic desk,no,no,no,
+TS-001,1,desk,synonym,workstation,no,yes,yes,description;tags
+TS-001,1,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-001,1,chair,retrieval_query,a green velvet armless chair for a home office,no,no,no,token_overlap
+TS-001,1,chair,search_term,green velvet chair,no,no,no,token_overlap
+TS-001,1,chair,search_term,armless chair,no,no,yes,tags
+TS-001,1,chair,synonym,office chair,yes,yes,no,name;description
+TS-001,1,chair,semantic_concept,seating for daily work,no,no,no,
+TS-003,3,desk,retrieval_query,an electric standing desk for a home office,no,no,no,token_overlap
+TS-003,3,desk,search_term,electric standing desk,yes,yes,no,name;description
+TS-003,3,desk,search_term,adjustable desk,no,yes,no,description
+TS-003,3,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-003,3,desk,semantic_concept,a surface for multiple monitors and daily work,no,no,no,
+TS-003,3,chair,retrieval_query,a mesh ergonomic chair for a home office,no,no,no,token_overlap
+TS-003,3,chair,search_term,mesh ergonomic chair,no,no,no,token_overlap
+TS-003,3,chair,search_term,ergonomic chair,no,no,no,token_overlap
+TS-003,3,chair,synonym,office chair,yes,yes,no,name;description
+TS-003,3,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-003,3,chair,semantic_concept,seating for daily work with back support,no,no,no,
+TS-003,3,monitor,retrieval_query,a dual monitor setup for a home office,no,no,no,token_overlap
+TS-003,3,monitor,search_term,dual monitor,no,no,yes,tags
+TS-003,3,monitor,search_term,two monitors,no,no,yes,tags
+TS-003,3,monitor,synonym,monitor setup,no,yes,no,description
+TS-003,3,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-003,3,monitor,semantic_concept,a setup for productivity and multitasking,no,no,no,
+TS-005,5,desk,retrieval_query,a traditional executive desk for a home office,no,no,no,
+TS-005,5,desk,search_term,traditional desk,no,no,no,
+TS-005,5,desk,search_term,executive desk,no,no,no,token_overlap
+TS-005,5,desk,synonym,workstation,no,no,yes,tags
+TS-005,5,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-005,5,chair,retrieval_query,a high-back leather chair for a home office,no,no,no,token_overlap
+TS-005,5,chair,search_term,high-back chair,no,yes,no,description
+TS-005,5,chair,search_term,leather chair,no,no,no,token_overlap
+TS-005,5,chair,synonym,office chair,no,no,no,token_overlap
+TS-005,5,chair,semantic_concept,seating for daily work,no,no,no,
+TS-005,5,lamp,retrieval_query,a Tiffany dragonfly lamp for a home office,no,no,no,token_overlap
+TS-005,5,lamp,search_term,Tiffany lamp,no,yes,no,description
+TS-005,5,lamp,search_term,dragonfly lamp,no,no,no,token_overlap
+TS-005,5,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-005,5,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-005,5,desk,retrieval_query,a traditional executive desk for a home office,no,no,no,
+TS-005,5,desk,search_term,traditional desk,no,no,no,
+TS-005,5,desk,search_term,executive desk,no,no,no,token_overlap
+TS-005,5,desk,synonym,workstation,no,no,yes,tags
+TS-005,5,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-005,5,chair,retrieval_query,a high-back leather chair for a home office,no,no,no,token_overlap
+TS-005,5,chair,search_term,high-back chair,no,yes,no,description
+TS-005,5,chair,search_term,leather chair,no,no,no,token_overlap
+TS-005,5,chair,synonym,office chair,no,no,no,token_overlap
+TS-005,5,chair,semantic_concept,seating for daily work,no,no,no,
+TS-005,5,lamp,retrieval_query,a Tiffany dragonfly lamp for a home office,no,no,no,token_overlap
+TS-005,5,lamp,search_term,Tiffany lamp,no,yes,no,description
+TS-005,5,lamp,search_term,dragonfly lamp,no,no,no,token_overlap
+TS-005,5,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-005,5,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-007,7,desk,retrieval_query,a modern glass-top mobile desk for a home office,no,no,no,
+TS-007,7,desk,search_term,glass-top desk,no,no,no,
+TS-007,7,desk,search_term,mobile desk,no,yes,no,description
+TS-007,7,desk,search_term,modern desk,no,no,no,token_overlap
+TS-007,7,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-007,7,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-007,7,chair,retrieval_query,a gray mesh chair for a home office,no,no,no,token_overlap
+TS-007,7,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-007,7,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-007,7,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-007,7,chair,semantic_concept,seating for daily work,no,no,no,
+TS-007,7,monitor,retrieval_query,a curved 34-inch monitor for a home office,no,no,no,
+TS-007,7,monitor,search_term,curved monitor,no,no,no,token_overlap
+TS-007,7,monitor,search_term,34-inch monitor,no,no,no,
+TS-007,7,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-007,7,monitor,semantic_concept,display for computer work,no,no,no,token_overlap
+TS-007,7,desk,retrieval_query,a glass-top mobile desk for a home office,no,no,no,
+TS-007,7,desk,search_term,glass-top desk,no,no,no,
+TS-007,7,desk,search_term,mobile desk,no,yes,no,description
+TS-007,7,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-007,7,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-007,7,chair,retrieval_query,a gray mesh chair for a home office,no,no,no,token_overlap
+TS-007,7,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-007,7,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-007,7,chair,semantic_concept,seating for daily work,no,no,no,
+TS-007,7,monitor,retrieval_query,a curved 34-inch monitor for a home office,no,no,no,
+TS-007,7,monitor,search_term,curved 34-inch monitor,no,no,no,
+TS-007,7,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-007,7,monitor,semantic_concept,a screen for one workspace,no,no,no,token_overlap
+TS-009,9,desk,retrieval_query,a professional office desk,no,no,no,
+TS-009,9,desk,search_term,Alera Valencia cherry desk,no,no,no,token_overlap
+TS-009,9,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-009,9,chair,retrieval_query,a professional office chair,no,no,no,
+TS-009,9,chair,search_term,SertaPedic ergonomic chair,no,no,no,token_overlap
+TS-009,9,chair,synonym,chair,yes,no,yes,name;tags
+TS-009,9,monitor,retrieval_query,a professional office monitor,no,no,no,
+TS-009,9,monitor,search_term,Dell 3007WFP-HC 30-inch monitor,no,no,no,token_overlap
+TS-009,9,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-011,11,desk,retrieval_query,a white sit-stand desk for a rustic home office,no,no,no,token_overlap
+TS-011,11,desk,search_term,white desk,no,no,no,token_overlap
+TS-011,11,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-011,11,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-011,11,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-011,11,chair,retrieval_query,a cream leather chair for a rustic home office,no,no,no,token_overlap
+TS-011,11,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-011,11,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-011,11,chair,semantic_concept,seating for daily work,no,no,no,
+TS-011,11,lamp,retrieval_query,a Tiffany-style lamp for a rustic home office,no,no,no,token_overlap
+TS-011,11,lamp,search_term,Tiffany lamp,no,no,no,token_overlap
+TS-011,11,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-011,11,lamp,semantic_concept,lighting for workspace,no,no,no,token_overlap
+TS-013,13,desk,retrieval_query,a compact mobile standing desk for a home office,no,no,no,
+TS-013,13,desk,search_term,mobile standing desk,no,no,no,
+TS-013,13,desk,search_term,compact desk,no,no,no,
+TS-013,13,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-013,13,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-013,13,chair,retrieval_query,a small velvet chair for a home office,no,no,no,token_overlap
+TS-013,13,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-013,13,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-013,13,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-013,13,chair,semantic_concept,seating for daily work,no,no,no,
+TS-013,13,plant,retrieval_query,a mini succulent set for a home office,no,no,no,token_overlap
+TS-013,13,plant,search_term,mini succulent set,no,no,no,token_overlap
+TS-013,13,plant,search_term,succulent set,no,no,no,token_overlap
+TS-013,13,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-013,13,plant,semantic_concept,a small plant for a workspace,no,no,no,
+TS-013,13,desk,retrieval_query,a mobile standing desk for a compact home office,no,no,no,
+TS-013,13,desk,search_term,mobile standing desk,no,no,no,
+TS-013,13,desk,search_term,adjustable desk,no,no,no,token_overlap
+TS-013,13,desk,search_term,height adjustable desk,no,no,no,token_overlap
+TS-013,13,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-013,13,desk,semantic_concept,a surface for one screen and daily work that can be adjusted,no,no,no,
+TS-013,13,chair,retrieval_query,a small velvet chair for a compact home office,no,no,no,
+TS-013,13,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-013,13,chair,search_term,compact chair,no,no,no,
+TS-013,13,chair,search_term,velvet seating,no,no,no,
+TS-013,13,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-013,13,chair,semantic_concept,seating for daily work in a small space,no,no,no,
+TS-013,13,plant,retrieval_query,a mini succulent set for a compact home office,no,no,no,
+TS-013,13,plant,search_term,mini succulent set,no,no,no,token_overlap
+TS-013,13,plant,search_term,small succulent plant,no,no,no,token_overlap
+TS-013,13,plant,search_term,compact plant set,no,no,no,
+TS-013,13,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-013,13,plant,semantic_concept,a small collection of plants for a workspace,no,no,no,
+TS-015,15,desk,retrieval_query,an industrial-style grey standing desk for a home office,no,no,no,token_overlap
+TS-015,15,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-015,15,desk,search_term,industrial desk,no,no,no,token_overlap
+TS-015,15,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-015,15,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-015,15,chair,retrieval_query,an industrial-style mesh chair for a home office,no,no,no,token_overlap
+TS-015,15,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-015,15,chair,search_term,industrial chair,no,no,no,token_overlap
+TS-015,15,chair,synonym,office chair,yes,yes,no,name;description
+TS-015,15,chair,semantic_concept,seating for daily work,no,no,no,
+TS-015,15,lamp,retrieval_query,a steampunk pipe lamp for an industrial workspace,no,no,no,
+TS-015,15,lamp,search_term,steampunk pipe lamp,no,no,no,token_overlap
+TS-015,15,lamp,search_term,pipe lamp,no,no,no,token_overlap
+TS-015,15,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-015,15,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-017,17,desk,retrieval_query,a white standing desk for a minimalist workspace,no,no,no,
+TS-017,17,desk,search_term,ALFA FURNISHING,yes,yes,no,name;description
+TS-017,17,desk,search_term,white standing desk,no,no,no,token_overlap
+TS-017,17,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-017,17,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-017,17,chair,retrieval_query,a black mesh chair for a minimalist workspace,no,no,no,
+TS-017,17,chair,search_term,black mesh chair,no,no,no,token_overlap
+TS-017,17,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-017,17,chair,semantic_concept,seating for daily work,no,no,no,
+TS-017,17,lamp,retrieval_query,a white mushroom lamp for a minimalist workspace,no,no,no,
+TS-017,17,lamp,search_term,white mushroom lamp,no,no,no,token_overlap
+TS-017,17,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-017,17,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-019,19,desk,retrieval_query,a dual-motor standing desk for a productive workspace,no,no,no,
+TS-019,19,desk,search_term,dual-motor standing desk,no,no,no,token_overlap
+TS-019,19,desk,search_term,standing desk,no,no,no,token_overlap
+TS-019,19,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-019,19,desk,semantic_concept,adjustable height workstation,no,no,no,token_overlap
+TS-019,19,chair,retrieval_query,an ergonomic task chair for a productive workspace,no,no,no,
+TS-019,19,chair,search_term,ergonomic task chair,yes,no,no,name
+TS-019,19,chair,search_term,task chair,yes,no,no,name
+TS-019,19,chair,synonym,chair,yes,no,yes,name;tags
+TS-019,19,chair,semantic_concept,supportive seating for daily work,no,no,no,
+TS-019,19,monitor,retrieval_query,a 2-pack monitor setup for a productive workspace,no,no,no,
+TS-019,19,monitor,search_term,2-pack monitor,no,no,no,token_overlap
+TS-019,19,monitor,search_term,dual monitor,no,no,yes,tags
+TS-019,19,monitor,synonym,monitor setup,no,yes,no,description
+TS-019,19,monitor,semantic_concept,multi-screen work environment,no,no,no,
+TS-021,21,desk,retrieval_query,a black mobile desk for a modern office,no,no,no,token_overlap
+TS-021,21,desk,search_term,black desk,no,no,no,token_overlap
+TS-021,21,desk,search_term,mobile desk,no,yes,no,description
+TS-021,21,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-021,21,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-021,21,chair,retrieval_query,a gray mesh chair for a modern office,no,no,no,token_overlap
+TS-021,21,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-021,21,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-021,21,chair,semantic_concept,seating for daily work,no,no,no,
+TS-021,21,plant,retrieval_query,a succulent trio for a modern office,no,no,no,token_overlap
+TS-021,21,plant,search_term,succulent trio,no,no,yes,tags
+TS-021,21,plant,search_term,succulent plant,yes,yes,no,name;description
+TS-021,21,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-021,21,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-023,23,desk,retrieval_query,a classic office desk with a cherry desk shell,no,no,no,
+TS-023,23,desk,search_term,cherry desk shell,no,no,no,token_overlap
+TS-023,23,desk,search_term,classic desk,no,no,no,
+TS-023,23,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-023,23,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-023,23,chair,retrieval_query,a leather executive chair for an office,no,no,no,
+TS-023,23,chair,search_term,leather executive chair,no,no,no,token_overlap
+TS-023,23,chair,search_term,leather chair,no,no,no,token_overlap
+TS-023,23,chair,synonym,executive chair,yes,no,no,name
+TS-023,23,chair,synonym,office chair,no,no,no,
+TS-023,23,chair,semantic_concept,seating for daily work,no,no,no,
+TS-023,23,lamp,retrieval_query,a banker's lamp for an office,no,no,no,
+TS-023,23,lamp,search_term,banker's lamp,no,no,no,token_overlap
+TS-023,23,lamp,search_term,table lamp,yes,yes,no,name;description
+TS-023,23,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-023,23,lamp,semantic_concept,lighting for office work,no,no,no,
+TS-025,25,desk,retrieval_query,a small space mobile desk for a home office,no,no,no,token_overlap
+TS-025,25,desk,search_term,Oklahoma Sound mobile desk,no,no,no,token_overlap
+TS-025,25,desk,search_term,mobile desk,yes,no,no,name
+TS-025,25,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-025,25,desk,semantic_concept,a compact workspace surface,no,no,no,
+TS-025,25,chair,retrieval_query,a velvet chair for a home office,no,no,no,token_overlap
+TS-025,25,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-025,25,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-025,25,chair,semantic_concept,seating for daily work,no,no,no,
+TS-025,25,plant,retrieval_query,a small faux succulent for a home office,no,no,no,token_overlap
+TS-025,25,plant,search_term,DILATATA small faux succulent,no,no,no,token_overlap
+TS-025,25,plant,search_term,faux succulent,yes,yes,no,name;description
+TS-025,25,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-025,25,plant,semantic_concept,a low-maintenance decorative element,no,no,no,
+TS-025,25,desk,retrieval_query,a mobile desk for a small space,no,no,no,token_overlap
+TS-025,25,desk,search_term,Oklahoma Sound mobile desk,no,no,no,token_overlap
+TS-025,25,desk,search_term,mobile desk,yes,no,no,name
+TS-025,25,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-025,25,desk,semantic_concept,a portable workspace,no,no,no,
+TS-025,25,chair,retrieval_query,a velvet chair for a small space,no,no,no,token_overlap
+TS-025,25,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-025,25,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-025,25,chair,semantic_concept,comfortable seating,no,no,no,
+TS-025,25,plant,retrieval_query,a small faux succulent for a small space,no,no,no,token_overlap
+TS-025,25,plant,search_term,DILATATA small faux succulent,no,no,no,token_overlap
+TS-025,25,plant,search_term,faux succulent,yes,yes,no,name;description
+TS-025,25,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-025,25,plant,semantic_concept,a small decorative plant,no,no,no,token_overlap
+TS-027,27,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-027,27,desk,search_term,white desk,no,no,no,token_overlap
+TS-027,27,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-027,27,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-027,27,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-027,27,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-027,27,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-027,27,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-027,27,chair,semantic_concept,seating for daily work,no,no,no,
+TS-027,27,lamp,retrieval_query,a farmhouse jug lamp for a rustic workspace,no,no,no,token_overlap
+TS-027,27,lamp,search_term,farmhouse jug lamp,no,no,no,token_overlap
+TS-027,27,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-027,27,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-029,29,desk,retrieval_query,a corner workstation with a Sauder Cannery Bridge L-desk,no,no,no,token_overlap
+TS-029,29,desk,search_term,Sauder,yes,no,no,name
+TS-029,29,desk,search_term,Cannery Bridge,yes,yes,no,name;description
+TS-029,29,desk,search_term,L-desk,yes,no,yes,name;tags
+TS-029,29,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-029,29,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-029,29,chair,retrieval_query,a BOWTHY big and tall chair for a corner workstation,no,no,no,token_overlap
+TS-029,29,chair,search_term,BOWTHY,yes,no,no,name
+TS-029,29,chair,search_term,big and tall chair,no,no,no,token_overlap
+TS-029,29,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-029,29,chair,semantic_concept,seating for daily work,no,no,no,
+TS-029,29,plant,retrieval_query,a Larksilk Boxed Succulent Assortment for a corner workstation,no,no,no,
+TS-029,29,plant,search_term,Larksilk,no,no,no,
+TS-029,29,plant,search_term,Boxed Succulent Assortment,yes,no,no,name
+TS-029,29,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-029,29,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-031,31,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-031,31,desk,search_term,black desk,no,no,no,token_overlap
+TS-031,31,desk,search_term,mobile desk,no,yes,no,description
+TS-031,31,desk,synonym,workstation,no,no,yes,tags
+TS-031,31,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-031,31,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-031,31,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-031,31,chair,synonym,office chair,yes,yes,no,name;description
+TS-031,31,chair,semantic_concept,seating for creative work,no,no,no,
+TS-031,31,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-031,31,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-031,31,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-031,31,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-031,31,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-031,31,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-031,31,desk,search_term,black desk,no,no,no,token_overlap
+TS-031,31,desk,search_term,mobile desk,no,yes,no,description
+TS-031,31,desk,synonym,workstation,no,no,yes,tags
+TS-031,31,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-031,31,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-031,31,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-031,31,chair,synonym,office chair,yes,yes,no,name;description
+TS-031,31,chair,semantic_concept,seating for creative work,no,no,no,
+TS-031,31,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-031,31,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-031,31,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-031,31,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-031,31,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-033,33,desk,retrieval_query,a POWERSTONE black standing desk for a gaming den,no,no,no,token_overlap
+TS-033,33,desk,search_term,POWERSTONE,yes,no,no,name
+TS-033,33,desk,search_term,black standing desk,no,no,no,token_overlap
+TS-033,33,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-033,33,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-033,33,chair,search_term,CIMOO,yes,no,no,name
+TS-033,33,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-033,33,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-033,33,monitor,retrieval_query,a Lenovo ThinkVision T34w-20 curved monitor for a gaming den,no,no,no,token_overlap
+TS-033,33,monitor,search_term,Lenovo ThinkVision T34w-20,yes,yes,no,name;description
+TS-033,33,monitor,search_term,curved monitor,no,no,no,token_overlap
+TS-033,33,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-035,35,desk,retrieval_query,a modern executive desk for an office,no,no,no,token_overlap
+TS-035,35,desk,search_term,Hooker desk,no,no,no,token_overlap
+TS-035,35,desk,search_term,modern desk,no,no,no,token_overlap
+TS-035,35,desk,synonym,executive desk,no,no,no,token_overlap
+TS-035,35,desk,synonym,workstation,no,no,yes,tags
+TS-035,35,desk,semantic_concept,a surface for multiple monitors and daily work,no,no,no,
+TS-035,35,chair,retrieval_query,a white leather executive chair for an office,no,no,no,token_overlap
+TS-035,35,chair,search_term,white leather chair,no,no,no,token_overlap
+TS-035,35,chair,search_term,executive chair,yes,yes,no,name;description
+TS-035,35,chair,synonym,office chair,no,no,no,token_overlap
+TS-035,35,chair,semantic_concept,seating for daily work,no,no,no,
+TS-035,35,lamp,retrieval_query,a grape Tiffany lamp for an office,no,no,no,token_overlap
+TS-035,35,lamp,search_term,grape Tiffany lamp,no,no,no,token_overlap
+TS-035,35,lamp,search_term,Tiffany lamp,yes,no,no,name
+TS-035,35,lamp,synonym,table lamp,yes,yes,yes,name;description;tags
+TS-035,35,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-037,37,desk,retrieval_query,a compact mobile standing desk for a home office,no,no,no,
+TS-037,37,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-037,37,desk,search_term,compact desk,no,no,no,
+TS-037,37,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-037,37,desk,semantic_concept,adjustable height workspace,no,no,no,
+TS-037,37,chair,retrieval_query,a small velvet chair for a home office,no,no,no,token_overlap
+TS-037,37,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-037,37,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-037,37,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-037,37,chair,semantic_concept,comfortable seating,no,no,no,
+TS-037,37,plant,retrieval_query,a mini succulent set for a home office,no,no,no,token_overlap
+TS-037,37,plant,search_term,mini succulent set,no,no,no,token_overlap
+TS-037,37,plant,search_term,succulent set,no,no,no,token_overlap
+TS-037,37,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-037,37,plant,semantic_concept,small indoor greenery,no,no,no,token_overlap
+TS-037,37,desk,retrieval_query,a mobile standing desk for a compact home office,no,no,no,
+TS-037,37,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-037,37,desk,search_term,adjustable desk,no,no,no,token_overlap
+TS-037,37,desk,search_term,height adjustable desk,no,no,no,token_overlap
+TS-037,37,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-037,37,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-037,37,chair,retrieval_query,a small velvet chair for a compact home office,no,no,no,
+TS-037,37,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-037,37,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-037,37,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-037,37,chair,semantic_concept,seating for daily work,no,no,no,
+TS-037,37,plant,retrieval_query,a mini succulent set for a compact home office,no,no,no,
+TS-037,37,plant,search_term,mini succulent set,no,no,no,token_overlap
+TS-037,37,plant,search_term,succulent set,no,no,no,token_overlap
+TS-037,37,plant,search_term,potted plant,yes,no,no,name
+TS-037,37,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-037,37,plant,semantic_concept,a small plant for a workspace,no,no,no,
+TS-039,39,desk,retrieval_query,a grey standing desk for an industrial loft office,no,no,no,
+TS-039,39,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-039,39,desk,search_term,standing desk,no,no,no,token_overlap
+TS-039,39,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-039,39,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-039,39,chair,retrieval_query,a mesh chair for an industrial loft office,no,no,no,
+TS-039,39,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-039,39,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-039,39,chair,semantic_concept,seating for daily work,no,no,no,
+TS-039,39,lamp,retrieval_query,a concrete accent lamp for an industrial loft office,no,no,no,
+TS-039,39,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-039,39,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-039,39,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-039,39,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-041,41,desk,retrieval_query,a Slate Teak desk for a home office,no,no,no,token_overlap
+TS-041,41,desk,search_term,Slate Teak desk,no,no,no,token_overlap
+TS-041,41,desk,search_term,Slate desk,no,no,no,token_overlap
+TS-041,41,desk,search_term,Teak desk,no,no,no,token_overlap
+TS-041,41,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-041,41,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-041,41,chair,retrieval_query,a SertaPedic ergonomic chair for a home office,no,no,no,token_overlap
+TS-041,41,chair,search_term,SertaPedic chair,no,no,no,token_overlap
+TS-041,41,chair,search_term,ergonomic chair,no,no,no,token_overlap
+TS-041,41,chair,synonym,chair,yes,no,yes,name;tags
+TS-041,41,chair,semantic_concept,seating for daily work,no,no,no,
+TS-041,41,plant,retrieval_query,a Dracaena plant for a home office,no,no,no,token_overlap
+TS-041,41,plant,search_term,Dracaena plant,no,no,no,token_overlap
+TS-041,41,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-041,41,plant,semantic_concept,a living element for a workspace,no,no,no,
+TS-043,43,desk,retrieval_query,a round table for a cozy work corner,no,no,no,
+TS-043,43,desk,search_term,round table,yes,yes,no,name;description
+TS-043,43,desk,synonym,workstation,yes,yes,yes,name;description;tags
+TS-043,43,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-043,43,chair,retrieval_query,a bean bag chair for a cozy work corner,no,no,no,
+TS-043,43,chair,search_term,bean bag chair,yes,yes,no,name;description
+TS-043,43,chair,synonym,lounge seating,no,no,no,
+TS-043,43,chair,semantic_concept,seating for daily work,no,no,no,
+TS-043,43,lamp,retrieval_query,a mushroom lamp for a cozy work corner,no,no,no,
+TS-043,43,lamp,search_term,mushroom lamp,no,no,no,token_overlap
+TS-043,43,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-043,43,lamp,semantic_concept,lighting for a comfortable lounge area,no,no,no,
+TS-045,45,desk,retrieval_query,a VIVO 2-tier desk for a productive workspace,no,no,no,
+TS-045,45,desk,search_term,VIVO,yes,no,no,name
+TS-045,45,desk,search_term,2-tier desk,no,no,no,token_overlap
+TS-045,45,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-045,45,chair,retrieval_query,a gray mesh chair for a productive workspace,no,no,no,
+TS-045,45,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-045,45,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-045,45,plant,retrieval_query,a succulent trio for a productive workspace,no,no,no,
+TS-045,45,plant,search_term,succulent trio,no,no,yes,tags
+TS-045,45,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-047,47,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-047,47,desk,search_term,47-inch desk,no,no,no,
+TS-047,47,desk,search_term,electric desk,no,no,no,token_overlap
+TS-047,47,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-047,47,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-047,47,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-047,47,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-047,47,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-047,47,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-047,47,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-047,47,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-047,47,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-047,47,monitor,semantic_concept,a display for high-refresh-rate gaming,no,no,no,token_overlap
+TS-047,47,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-047,47,desk,search_term,47-inch electric desk,no,no,no,
+TS-047,47,desk,search_term,electric desk,no,no,no,token_overlap
+TS-047,47,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-047,47,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-047,47,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-047,47,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-047,47,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-047,47,chair,search_term,leather chair,no,no,no,token_overlap
+TS-047,47,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-047,47,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-047,47,chair,semantic_concept,seating for extended gaming sessions,no,no,no,
+TS-047,47,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-047,47,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-047,47,monitor,search_term,high refresh rate monitor,no,no,no,token_overlap
+TS-047,47,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-047,47,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-047,47,monitor,semantic_concept,a display for fast-paced gaming,no,no,no,
+TS-049,49,desk,retrieval_query,a black mobile desk for a modern workspace,no,no,no,
+TS-049,49,desk,search_term,black desk,no,no,no,token_overlap
+TS-049,49,desk,search_term,mobile desk,no,yes,no,description
+TS-049,49,desk,synonym,workstation,no,no,yes,tags
+TS-049,49,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-049,49,chair,retrieval_query,a mesh chair for a modern workspace,no,no,no,
+TS-049,49,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-049,49,chair,synonym,office chair,no,no,no,token_overlap
+TS-049,49,chair,semantic_concept,seating for daily work,no,no,no,
+TS-049,49,plant,retrieval_query,a Monstera plant for a modern workspace,no,no,no,
+TS-049,49,plant,search_term,Monstera plant,no,yes,no,description
+TS-049,49,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-049,49,plant,semantic_concept,a green plant for a workspace,no,no,no,token_overlap
+TS-049,49,desk,retrieval_query,a black mobile desk for a home office,no,no,no,token_overlap
+TS-049,49,desk,search_term,black mobile desk,no,no,no,token_overlap
+TS-049,49,desk,search_term,black desk,no,no,no,token_overlap
+TS-049,49,desk,search_term,mobile desk,no,yes,no,description
+TS-049,49,desk,synonym,workstation,no,no,yes,tags
+TS-049,49,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-049,49,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-049,49,chair,retrieval_query,a mesh chair for a home office,no,no,no,token_overlap
+TS-049,49,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-049,49,chair,search_term,chair,yes,yes,yes,name;description;tags
+TS-049,49,chair,synonym,office chair,no,no,no,token_overlap
+TS-049,49,chair,semantic_concept,seating for daily work,no,no,no,
+TS-049,49,plant,retrieval_query,a Monstera plant for a home office,no,no,no,token_overlap
+TS-049,49,plant,search_term,Monstera plant,no,yes,no,description
+TS-049,49,plant,search_term,Monstera,yes,yes,no,name;description
+TS-049,49,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-049,49,plant,semantic_concept,a green plant for a workspace,no,no,no,token_overlap
+TS-051,51,desk,retrieval_query,a white standing desk for a creative studio,no,no,no,
+TS-051,51,desk,search_term,white standing desk,no,no,no,
+TS-051,51,desk,search_term,standing desk,yes,yes,no,name;description
+TS-051,51,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-051,51,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-051,51,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-051,51,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-051,51,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-051,51,chair,semantic_concept,seating for creative work,no,no,no,
+TS-051,51,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-051,51,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-051,51,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-051,51,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-051,51,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-053,53,desk,retrieval_query,a grey standing desk for a gaming den,no,no,no,token_overlap
+TS-053,53,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-053,53,desk,search_term,standing desk,no,no,no,token_overlap
+TS-053,53,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-053,53,desk,semantic_concept,a surface for gaming setup,no,no,no,
+TS-053,53,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-053,53,chair,search_term,CIMOO,yes,no,no,name
+TS-053,53,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-053,53,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-053,53,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-053,53,monitor,retrieval_query,a 27-inch gaming monitor for a gaming den,no,no,no,token_overlap
+TS-053,53,monitor,search_term,27-inch gaming monitor,no,no,no,token_overlap
+TS-053,53,monitor,search_term,gaming monitor,no,yes,no,description
+TS-053,53,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-053,53,monitor,semantic_concept,display for gaming,no,no,no,token_overlap
+TS-055,55,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-055,55,desk,search_term,white desk,no,no,no,token_overlap
+TS-055,55,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-055,55,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-055,55,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-055,55,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-055,55,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-055,55,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-055,55,chair,semantic_concept,seating for daily work,no,no,no,
+TS-055,55,lamp,retrieval_query,a concrete accent lamp for a rustic workspace,no,no,no,token_overlap
+TS-055,55,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-055,55,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-055,55,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-055,55,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-057,57,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-057,57,desk,search_term,VIVO,yes,no,no,name
+TS-057,57,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-057,57,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-057,57,chair,retrieval_query,a compact home office ZSARTS small velvet chair,no,no,no,
+TS-057,57,chair,search_term,ZSARTS,yes,no,no,name
+TS-057,57,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-057,57,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-057,57,plant,retrieval_query,a compact home office DILATATA small faux succulent,no,no,no,
+TS-057,57,plant,search_term,DILATATA,yes,no,no,name
+TS-057,57,plant,search_term,small faux succulent,no,no,no,token_overlap
+TS-057,57,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-057,57,plant,synonym,succulent,yes,yes,yes,name;description;tags
+TS-059,59,desk,retrieval_query,a dual-motor standing desk for a productive workspace,no,no,no,
+TS-059,59,desk,search_term,dual-motor standing desk,no,no,no,token_overlap
+TS-059,59,desk,search_term,standing desk,no,no,no,token_overlap
+TS-059,59,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-059,59,desk,semantic_concept,adjustable height workstation,no,no,no,token_overlap
+TS-059,59,chair,retrieval_query,an ergonomic task chair for a productive workspace,no,no,no,
+TS-059,59,chair,search_term,ergonomic task chair,yes,no,no,name
+TS-059,59,chair,search_term,task chair,yes,no,no,name
+TS-059,59,chair,synonym,chair,yes,no,yes,name;tags
+TS-059,59,chair,semantic_concept,supportive seating for daily work,no,no,no,
+TS-059,59,monitor,retrieval_query,a 2-pack monitor setup for a productive workspace,no,no,no,
+TS-059,59,monitor,search_term,2-pack monitor,no,no,no,token_overlap
+TS-059,59,monitor,search_term,dual monitor,no,no,yes,tags
+TS-059,59,monitor,synonym,monitor setup,no,yes,no,description
+TS-059,59,monitor,semantic_concept,multi-screen work environment,no,no,no,
+TS-061,61,desk,retrieval_query,a black mobile desk for a modern office,no,no,no,token_overlap
+TS-061,61,desk,search_term,black desk,no,no,no,token_overlap
+TS-061,61,desk,search_term,mobile desk,no,yes,no,description
+TS-061,61,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-061,61,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-061,61,chair,retrieval_query,a gray mesh chair for a modern office,no,no,no,token_overlap
+TS-061,61,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-061,61,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-061,61,chair,semantic_concept,seating for daily work,no,no,no,
+TS-061,61,plant,retrieval_query,a succulent trio for a modern office,no,no,no,token_overlap
+TS-061,61,plant,search_term,succulent trio,no,no,yes,tags
+TS-061,61,plant,search_term,succulent plant,yes,yes,no,name;description
+TS-061,61,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-061,61,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-063,63,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-063,63,desk,search_term,white desk,no,no,no,token_overlap
+TS-063,63,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-063,63,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-063,63,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-063,63,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-063,63,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-063,63,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-063,63,chair,semantic_concept,seating for daily work,no,no,no,
+TS-063,63,lamp,retrieval_query,a farmhouse jug lamp for a rustic workspace,no,no,no,token_overlap
+TS-063,63,lamp,search_term,farmhouse jug lamp,no,no,no,token_overlap
+TS-063,63,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-063,63,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-065,65,desk,retrieval_query,a corner workstation with a Sauder Cannery Bridge L-desk,no,no,no,token_overlap
+TS-065,65,desk,search_term,Sauder,yes,no,no,name
+TS-065,65,desk,search_term,Cannery Bridge,yes,yes,no,name;description
+TS-065,65,desk,search_term,L-desk,yes,no,yes,name;tags
+TS-065,65,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-065,65,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-065,65,chair,retrieval_query,a BOWTHY big and tall chair for a corner workstation,no,no,no,token_overlap
+TS-065,65,chair,search_term,BOWTHY,yes,no,no,name
+TS-065,65,chair,search_term,big and tall chair,no,no,no,token_overlap
+TS-065,65,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-065,65,chair,semantic_concept,seating for daily work,no,no,no,
+TS-065,65,plant,retrieval_query,a Larksilk Boxed Succulent Assortment for a corner workstation,no,no,no,
+TS-065,65,plant,search_term,Larksilk,no,no,no,
+TS-065,65,plant,search_term,Boxed Succulent Assortment,yes,no,no,name
+TS-065,65,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-065,65,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-067,67,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-067,67,desk,search_term,black desk,no,no,no,token_overlap
+TS-067,67,desk,search_term,mobile desk,no,yes,no,description
+TS-067,67,desk,synonym,workstation,no,no,yes,tags
+TS-067,67,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-067,67,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-067,67,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-067,67,chair,synonym,office chair,yes,yes,no,name;description
+TS-067,67,chair,semantic_concept,seating for creative work,no,no,no,
+TS-067,67,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-067,67,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-067,67,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-067,67,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-067,67,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-067,67,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-067,67,desk,search_term,black desk,no,no,no,token_overlap
+TS-067,67,desk,search_term,mobile desk,no,yes,no,description
+TS-067,67,desk,synonym,workstation,no,no,yes,tags
+TS-067,67,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-067,67,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-067,67,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-067,67,chair,synonym,office chair,yes,yes,no,name;description
+TS-067,67,chair,semantic_concept,seating for creative work,no,no,no,
+TS-067,67,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-067,67,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-067,67,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-067,67,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-067,67,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-069,69,desk,retrieval_query,a POWERSTONE black standing desk for a gaming den,no,no,no,token_overlap
+TS-069,69,desk,search_term,POWERSTONE,yes,no,no,name
+TS-069,69,desk,search_term,black standing desk,no,no,no,token_overlap
+TS-069,69,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-069,69,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-069,69,chair,search_term,CIMOO,yes,no,no,name
+TS-069,69,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-069,69,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-069,69,monitor,retrieval_query,a Lenovo ThinkVision T34w-20 curved monitor for a gaming den,no,no,no,token_overlap
+TS-069,69,monitor,search_term,Lenovo ThinkVision T34w-20,yes,yes,no,name;description
+TS-069,69,monitor,search_term,curved monitor,no,no,no,token_overlap
+TS-069,69,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-071,71,desk,retrieval_query,a modern executive desk for an office,no,no,no,token_overlap
+TS-071,71,desk,search_term,Hooker desk,no,no,no,token_overlap
+TS-071,71,desk,search_term,modern desk,no,no,no,token_overlap
+TS-071,71,desk,synonym,executive desk,no,no,no,token_overlap
+TS-071,71,desk,synonym,workstation,no,no,yes,tags
+TS-071,71,desk,semantic_concept,a surface for multiple monitors and daily work,no,no,no,
+TS-071,71,chair,retrieval_query,a white leather executive chair for an office,no,no,no,token_overlap
+TS-071,71,chair,search_term,white leather chair,no,no,no,token_overlap
+TS-071,71,chair,search_term,executive chair,yes,yes,no,name;description
+TS-071,71,chair,synonym,office chair,no,no,no,token_overlap
+TS-071,71,chair,semantic_concept,seating for daily work,no,no,no,
+TS-071,71,lamp,retrieval_query,a grape Tiffany lamp for an office,no,no,no,token_overlap
+TS-071,71,lamp,search_term,grape Tiffany lamp,no,no,no,token_overlap
+TS-071,71,lamp,search_term,Tiffany lamp,yes,no,no,name
+TS-071,71,lamp,synonym,table lamp,yes,yes,yes,name;description;tags
+TS-071,71,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-073,73,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-073,73,desk,search_term,VIVO,yes,no,no,name
+TS-073,73,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-073,73,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-073,73,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-073,73,chair,retrieval_query,a compact home office small velvet ZSARTS chair,no,no,no,
+TS-073,73,chair,search_term,ZSARTS,yes,no,no,name
+TS-073,73,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-073,73,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-073,73,chair,semantic_concept,seating for daily work,no,no,no,
+TS-073,73,plant,retrieval_query,a compact home office 3 Pack Mini Potted Fake Plants set with white pots,no,no,no,
+TS-073,73,plant,search_term,3 Pack,yes,no,no,name
+TS-073,73,plant,search_term,Mini Potted Fake Plants,yes,no,no,name
+TS-073,73,plant,search_term,white pots,yes,no,no,name
+TS-073,73,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-073,73,plant,semantic_concept,decorative element for workspace,no,no,no,
+TS-075,75,desk,retrieval_query,a grey standing desk for an industrial loft office,no,no,no,
+TS-075,75,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-075,75,desk,search_term,standing desk,no,no,no,token_overlap
+TS-075,75,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-075,75,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-075,75,chair,retrieval_query,a mesh chair for an industrial loft office,no,no,no,
+TS-075,75,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-075,75,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-075,75,chair,semantic_concept,seating for daily work,no,no,no,
+TS-075,75,lamp,retrieval_query,a concrete accent lamp for an industrial loft office,no,no,no,
+TS-075,75,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-075,75,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-075,75,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-075,75,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-077,77,desk,retrieval_query,a Slate Teak desk for a home office,no,no,no,token_overlap
+TS-077,77,desk,search_term,Slate Teak desk,no,no,no,token_overlap
+TS-077,77,desk,search_term,Slate Teak,yes,yes,no,name;description
+TS-077,77,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-077,77,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-077,77,chair,retrieval_query,a SertaPedic ergonomic chair for a home office,no,no,no,token_overlap
+TS-077,77,chair,search_term,SertaPedic ergonomic chair,no,no,no,token_overlap
+TS-077,77,chair,search_term,SertaPedic,yes,yes,no,name;description
+TS-077,77,chair,search_term,ergonomic chair,no,no,no,token_overlap
+TS-077,77,chair,synonym,chair,yes,no,yes,name;tags
+TS-077,77,chair,semantic_concept,seating for daily work,no,no,no,
+TS-077,77,plant,retrieval_query,a Dracaena plant for a home office,no,no,no,token_overlap
+TS-077,77,plant,search_term,Dracaena plant,no,no,no,token_overlap
+TS-077,77,plant,search_term,Dracaena,yes,yes,no,name;description
+TS-077,77,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-077,77,plant,semantic_concept,a living element for a workspace,no,no,no,
+TS-079,79,desk,retrieval_query,a round table for a cozy work corner,no,no,no,
+TS-079,79,desk,search_term,round table,yes,yes,no,name;description
+TS-079,79,desk,synonym,workstation,yes,yes,yes,name;description;tags
+TS-079,79,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-079,79,chair,retrieval_query,a bean bag chair for a cozy work corner,no,no,no,
+TS-079,79,chair,search_term,bean bag chair,yes,yes,no,name;description
+TS-079,79,chair,synonym,lounge seating,no,no,no,
+TS-079,79,chair,semantic_concept,seating for daily work,no,no,no,
+TS-079,79,lamp,retrieval_query,a mushroom lamp for a cozy work corner,no,no,no,
+TS-079,79,lamp,search_term,mushroom lamp,no,no,no,token_overlap
+TS-079,79,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-079,79,lamp,semantic_concept,lighting for a comfortable lounge area,no,no,no,
+TS-081,81,desk,retrieval_query,a VIVO 2-tier desk for a productive workspace,no,no,no,
+TS-081,81,desk,search_term,VIVO,yes,no,no,name
+TS-081,81,desk,search_term,2-tier desk,no,no,no,token_overlap
+TS-081,81,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-081,81,chair,retrieval_query,a gray mesh chair for a productive workspace,no,no,no,
+TS-081,81,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-081,81,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-081,81,plant,retrieval_query,a succulent trio for a productive workspace,no,no,no,
+TS-081,81,plant,search_term,succulent,yes,yes,yes,name;description;tags
+TS-081,81,plant,search_term,trio,no,no,yes,tags
+TS-081,81,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-083,83,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-083,83,desk,search_term,47-inch desk,no,no,no,
+TS-083,83,desk,search_term,electric desk,no,no,no,token_overlap
+TS-083,83,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-083,83,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-083,83,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-083,83,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-083,83,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-083,83,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-083,83,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-083,83,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-083,83,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-083,83,monitor,semantic_concept,a display for high-refresh-rate gaming,no,no,no,token_overlap
+TS-083,83,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-083,83,desk,search_term,47-inch electric desk,no,no,no,
+TS-083,83,desk,search_term,electric desk,no,no,no,token_overlap
+TS-083,83,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-083,83,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-083,83,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-083,83,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-083,83,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-083,83,chair,search_term,leather chair,no,no,no,token_overlap
+TS-083,83,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-083,83,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-083,83,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-083,83,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-083,83,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-083,83,monitor,search_term,gaming monitor,no,no,no,token_overlap
+TS-083,83,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-083,83,monitor,semantic_concept,a display for high-refresh-rate gaming,no,no,no,token_overlap
+TS-085,85,desk,retrieval_query,a black mobile desk for a modern workspace,no,no,no,
+TS-085,85,desk,search_term,black desk,no,no,no,token_overlap
+TS-085,85,desk,search_term,mobile desk,no,yes,no,description
+TS-085,85,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-085,85,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-085,85,chair,retrieval_query,a mesh chair for a modern workspace,no,no,no,
+TS-085,85,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-085,85,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-085,85,chair,semantic_concept,seating for daily work,no,no,no,
+TS-085,85,plant,retrieval_query,a Monstera plant for a modern workspace,no,no,no,
+TS-085,85,plant,search_term,Monstera plant,no,yes,no,description
+TS-085,85,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-085,85,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-085,85,desk,retrieval_query,a black mobile desk for a home office,no,no,no,token_overlap
+TS-085,85,desk,search_term,black desk,no,no,no,token_overlap
+TS-085,85,desk,search_term,mobile desk,no,yes,no,description
+TS-085,85,desk,synonym,workstation,no,no,yes,tags
+TS-085,85,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-085,85,chair,retrieval_query,a mesh chair for a home office,no,no,no,token_overlap
+TS-085,85,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-085,85,chair,synonym,office chair,no,no,no,token_overlap
+TS-085,85,chair,semantic_concept,seating for daily work,no,no,no,
+TS-085,85,plant,retrieval_query,a Monstera plant for a home office,no,no,no,token_overlap
+TS-085,85,plant,search_term,Monstera plant,no,yes,no,description
+TS-085,85,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-085,85,plant,semantic_concept,a green plant for a workspace,no,no,no,token_overlap
+TS-087,87,desk,retrieval_query,a white standing desk for a creative studio,no,no,no,
+TS-087,87,desk,search_term,white standing desk,no,no,no,
+TS-087,87,desk,search_term,standing desk,yes,yes,no,name;description
+TS-087,87,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-087,87,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-087,87,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-087,87,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-087,87,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-087,87,chair,semantic_concept,seating for creative work,no,no,no,
+TS-087,87,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-087,87,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-087,87,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-087,87,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-087,87,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-089,89,desk,retrieval_query,a grey standing desk for a gaming den,no,no,no,token_overlap
+TS-089,89,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-089,89,desk,search_term,standing desk,no,no,no,token_overlap
+TS-089,89,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-089,89,desk,semantic_concept,a surface for gaming setup,no,no,no,
+TS-089,89,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-089,89,chair,search_term,CIMOO,yes,no,no,name
+TS-089,89,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-089,89,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-089,89,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-089,89,monitor,retrieval_query,a 27-inch gaming monitor for a gaming den,no,no,no,token_overlap
+TS-089,89,monitor,search_term,27-inch gaming monitor,no,no,no,token_overlap
+TS-089,89,monitor,search_term,gaming monitor,no,yes,no,description
+TS-089,89,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-089,89,monitor,semantic_concept,display for gaming,no,no,no,token_overlap
+TS-091,91,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-091,91,desk,search_term,white desk,no,no,no,token_overlap
+TS-091,91,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-091,91,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-091,91,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-091,91,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-091,91,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-091,91,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-091,91,chair,semantic_concept,seating for daily work,no,no,no,
+TS-091,91,lamp,retrieval_query,a concrete accent lamp for a rustic workspace,no,no,no,token_overlap
+TS-091,91,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-091,91,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-091,91,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-091,91,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-093,93,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-093,93,desk,search_term,VIVO,yes,no,no,name
+TS-093,93,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-093,93,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-093,93,chair,retrieval_query,a compact home office ZSARTS small velvet chair,no,no,no,
+TS-093,93,chair,search_term,ZSARTS,yes,no,no,name
+TS-093,93,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-093,93,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-093,93,plant,retrieval_query,a compact home office DILATATA small faux succulent,no,no,no,
+TS-093,93,plant,search_term,DILATATA,yes,no,no,name
+TS-093,93,plant,search_term,small faux succulent,no,no,no,token_overlap
+TS-093,93,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-093,93,plant,synonym,succulent,yes,yes,yes,name;description;tags
+TS-095,95,desk,retrieval_query,a dual-motor standing desk for a productive workspace,no,no,no,
+TS-095,95,desk,search_term,dual-motor standing desk,no,no,no,token_overlap
+TS-095,95,desk,search_term,standing desk,no,no,no,token_overlap
+TS-095,95,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-095,95,desk,semantic_concept,adjustable height workstation,no,no,no,token_overlap
+TS-095,95,chair,retrieval_query,an ergonomic task chair for a productive workspace,no,no,no,
+TS-095,95,chair,search_term,ergonomic task chair,yes,no,no,name
+TS-095,95,chair,search_term,task chair,yes,no,no,name
+TS-095,95,chair,synonym,chair,yes,no,yes,name;tags
+TS-095,95,chair,semantic_concept,supportive seating for daily work,no,no,no,
+TS-095,95,monitor,retrieval_query,a 2-pack monitor setup for a productive workspace,no,no,no,
+TS-095,95,monitor,search_term,2-pack monitor,no,no,no,token_overlap
+TS-095,95,monitor,search_term,dual monitor,no,no,yes,tags
+TS-095,95,monitor,synonym,monitor setup,no,yes,no,description
+TS-095,95,monitor,semantic_concept,multi-screen work environment,no,no,no,
+TS-097,97,desk,retrieval_query,a black mobile desk for a modern office,no,no,no,token_overlap
+TS-097,97,desk,search_term,black desk,no,no,no,token_overlap
+TS-097,97,desk,search_term,mobile desk,no,yes,no,description
+TS-097,97,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-097,97,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-097,97,chair,retrieval_query,a gray mesh chair for a modern office,no,no,no,token_overlap
+TS-097,97,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-097,97,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-097,97,chair,semantic_concept,seating for daily work,no,no,no,
+TS-097,97,plant,retrieval_query,a succulent trio for a modern office,no,no,no,token_overlap
+TS-097,97,plant,search_term,succulent trio,no,no,yes,tags
+TS-097,97,plant,search_term,succulent plant,yes,yes,no,name;description
+TS-097,97,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-097,97,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-099,99,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-099,99,desk,search_term,white desk,no,no,no,token_overlap
+TS-099,99,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-099,99,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-099,99,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-099,99,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-099,99,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-099,99,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-099,99,chair,semantic_concept,seating for daily work,no,no,no,
+TS-099,99,lamp,retrieval_query,a farmhouse jug lamp for a rustic workspace,no,no,no,token_overlap
+TS-099,99,lamp,search_term,farmhouse jug lamp,no,no,no,token_overlap
+TS-099,99,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-099,99,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-101,101,desk,retrieval_query,a corner workstation with a Sauder Cannery Bridge L-desk,no,no,no,token_overlap
+TS-101,101,desk,search_term,Sauder,yes,no,no,name
+TS-101,101,desk,search_term,Cannery Bridge,yes,yes,no,name;description
+TS-101,101,desk,search_term,L-desk,yes,no,yes,name;tags
+TS-101,101,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-101,101,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-101,101,chair,retrieval_query,a BOWTHY big and tall chair for a corner workstation,no,no,no,token_overlap
+TS-101,101,chair,search_term,BOWTHY,yes,no,no,name
+TS-101,101,chair,search_term,big and tall chair,no,no,no,token_overlap
+TS-101,101,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-101,101,chair,semantic_concept,seating for daily work,no,no,no,
+TS-101,101,plant,retrieval_query,a Larksilk Boxed Succulent Assortment for a corner workstation,no,no,no,
+TS-101,101,plant,search_term,Larksilk,no,no,no,
+TS-101,101,plant,search_term,Boxed Succulent Assortment,yes,no,no,name
+TS-101,101,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-101,101,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-103,103,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-103,103,desk,search_term,black desk,no,no,no,token_overlap
+TS-103,103,desk,search_term,mobile desk,no,yes,no,description
+TS-103,103,desk,synonym,workstation,no,no,yes,tags
+TS-103,103,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-103,103,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-103,103,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-103,103,chair,synonym,office chair,yes,yes,no,name;description
+TS-103,103,chair,semantic_concept,seating for creative work,no,no,no,
+TS-103,103,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-103,103,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-103,103,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-103,103,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-103,103,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-103,103,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-103,103,desk,search_term,black desk,no,no,no,token_overlap
+TS-103,103,desk,search_term,mobile desk,no,yes,no,description
+TS-103,103,desk,synonym,workstation,no,no,yes,tags
+TS-103,103,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-103,103,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-103,103,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-103,103,chair,synonym,office chair,yes,yes,no,name;description
+TS-103,103,chair,semantic_concept,seating for creative work,no,no,no,
+TS-103,103,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-103,103,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-103,103,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-103,103,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-103,103,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-105,105,desk,retrieval_query,a POWERSTONE black standing desk for a gaming den,no,no,no,token_overlap
+TS-105,105,desk,search_term,POWERSTONE,yes,no,no,name
+TS-105,105,desk,search_term,black standing desk,no,no,no,token_overlap
+TS-105,105,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-105,105,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-105,105,chair,search_term,CIMOO,yes,no,no,name
+TS-105,105,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-105,105,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-105,105,monitor,retrieval_query,a Lenovo ThinkVision T34w-20 curved monitor for a gaming den,no,no,no,token_overlap
+TS-105,105,monitor,search_term,Lenovo ThinkVision T34w-20,yes,yes,no,name;description
+TS-105,105,monitor,search_term,curved monitor,no,no,no,token_overlap
+TS-105,105,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-107,107,desk,retrieval_query,a modern executive desk for an office,no,no,no,token_overlap
+TS-107,107,desk,search_term,Hooker desk,no,no,no,token_overlap
+TS-107,107,desk,search_term,modern desk,no,no,no,token_overlap
+TS-107,107,desk,search_term,executive desk,no,no,no,token_overlap
+TS-107,107,desk,synonym,workstation,no,no,yes,tags
+TS-107,107,desk,semantic_concept,a surface for multiple monitors and daily work,no,no,no,
+TS-107,107,chair,retrieval_query,a white leather executive chair for an office,no,no,no,token_overlap
+TS-107,107,chair,search_term,white leather chair,no,no,no,token_overlap
+TS-107,107,chair,search_term,executive chair,yes,yes,no,name;description
+TS-107,107,chair,synonym,office chair,no,no,no,token_overlap
+TS-107,107,chair,semantic_concept,seating for daily work,no,no,no,
+TS-107,107,lamp,retrieval_query,a grape Tiffany lamp for an office,no,no,no,token_overlap
+TS-107,107,lamp,search_term,grape Tiffany lamp,no,no,no,token_overlap
+TS-107,107,lamp,search_term,Tiffany lamp,yes,no,no,name
+TS-107,107,lamp,synonym,table lamp,yes,yes,yes,name;description;tags
+TS-107,107,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-109,109,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-109,109,desk,search_term,VIVO,yes,no,no,name
+TS-109,109,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-109,109,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-109,109,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-109,109,chair,retrieval_query,a compact home office small velvet ZSARTS chair,no,no,no,
+TS-109,109,chair,search_term,ZSARTS,yes,no,no,name
+TS-109,109,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-109,109,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-109,109,chair,semantic_concept,seating for daily work,no,no,no,
+TS-109,109,plant,retrieval_query,a compact home office 3 Pack Mini Potted Fake Plants set with white pots,no,no,no,
+TS-109,109,plant,search_term,3 Pack,yes,no,no,name
+TS-109,109,plant,search_term,Mini Potted Fake Plants,yes,no,no,name
+TS-109,109,plant,search_term,white pots,yes,no,no,name
+TS-109,109,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-109,109,plant,semantic_concept,decorative element for workspace,no,no,no,
+TS-111,111,desk,retrieval_query,a grey standing desk for an industrial loft office,no,no,no,
+TS-111,111,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-111,111,desk,search_term,standing desk,no,no,no,token_overlap
+TS-111,111,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-111,111,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-111,111,chair,retrieval_query,a mesh chair for an industrial loft office,no,no,no,
+TS-111,111,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-111,111,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-111,111,chair,semantic_concept,seating for daily work,no,no,no,
+TS-111,111,lamp,retrieval_query,a concrete accent lamp for an industrial loft office,no,no,no,
+TS-111,111,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-111,111,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-111,111,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-111,111,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-113,113,desk,retrieval_query,a Slate Teak desk for a home office,no,no,no,token_overlap
+TS-113,113,desk,search_term,Slate Teak desk,no,no,no,token_overlap
+TS-113,113,desk,search_term,Slate Teak,yes,yes,no,name;description
+TS-113,113,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-113,113,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-113,113,chair,retrieval_query,a SertaPedic ergonomic chair for a home office,no,no,no,token_overlap
+TS-113,113,chair,search_term,SertaPedic ergonomic chair,no,no,no,token_overlap
+TS-113,113,chair,search_term,SertaPedic,yes,yes,no,name;description
+TS-113,113,chair,search_term,ergonomic chair,no,no,no,token_overlap
+TS-113,113,chair,synonym,chair,yes,no,yes,name;tags
+TS-113,113,chair,semantic_concept,seating for daily work,no,no,no,
+TS-113,113,plant,retrieval_query,a Dracaena plant for a home office,no,no,no,token_overlap
+TS-113,113,plant,search_term,Dracaena plant,no,no,no,token_overlap
+TS-113,113,plant,search_term,Dracaena,yes,yes,no,name;description
+TS-113,113,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-113,113,plant,semantic_concept,a living element for a workspace,no,no,no,
+TS-115,115,desk,retrieval_query,a round table for a cozy work corner,no,no,no,
+TS-115,115,desk,search_term,round table,yes,yes,no,name;description
+TS-115,115,desk,synonym,workstation,yes,yes,yes,name;description;tags
+TS-115,115,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-115,115,chair,retrieval_query,a bean bag chair for a cozy work corner,no,no,no,
+TS-115,115,chair,search_term,bean bag chair,yes,yes,no,name;description
+TS-115,115,chair,search_term,bean bag,yes,yes,no,name;description
+TS-115,115,chair,synonym,lounge seating,no,no,no,
+TS-115,115,chair,semantic_concept,seating for daily work,no,no,no,
+TS-115,115,lamp,retrieval_query,a mushroom lamp for a cozy work corner,no,no,no,
+TS-115,115,lamp,search_term,mushroom lamp,no,no,no,token_overlap
+TS-115,115,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-115,115,lamp,semantic_concept,lighting for a comfortable lounge area,no,no,no,
+TS-117,117,desk,retrieval_query,a VIVO 2-tier desk for a productive workspace,no,no,no,
+TS-117,117,desk,search_term,VIVO,yes,no,no,name
+TS-117,117,desk,search_term,2-tier desk,no,no,no,token_overlap
+TS-117,117,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-117,117,chair,retrieval_query,a gray mesh chair for a productive workspace,no,no,no,
+TS-117,117,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-117,117,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-117,117,plant,retrieval_query,a succulent trio for a productive workspace,no,no,no,
+TS-117,117,plant,search_term,succulent trio,no,no,yes,tags
+TS-117,117,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-119,119,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-119,119,desk,search_term,47-inch desk,no,no,no,
+TS-119,119,desk,search_term,electric desk,no,no,no,token_overlap
+TS-119,119,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-119,119,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-119,119,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-119,119,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-119,119,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-119,119,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-119,119,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-119,119,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-119,119,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-119,119,monitor,semantic_concept,a display for high-refresh-rate gaming,no,no,no,token_overlap
+TS-119,119,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-119,119,desk,search_term,47-inch electric desk,no,no,no,
+TS-119,119,desk,search_term,electric desk,no,no,no,token_overlap
+TS-119,119,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-119,119,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-119,119,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-119,119,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-119,119,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-119,119,chair,search_term,leather chair,no,no,no,token_overlap
+TS-119,119,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-119,119,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-119,119,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-119,119,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-119,119,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-119,119,monitor,search_term,high refresh rate monitor,no,no,no,token_overlap
+TS-119,119,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-119,119,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-119,119,monitor,semantic_concept,a display for fast-paced gaming,no,no,no,
+TS-121,121,desk,retrieval_query,a black mobile desk for a modern workspace,no,no,no,
+TS-121,121,desk,search_term,black desk,no,no,no,token_overlap
+TS-121,121,desk,search_term,mobile desk,no,yes,no,description
+TS-121,121,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-121,121,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-121,121,chair,retrieval_query,a mesh chair for a modern workspace,no,no,no,
+TS-121,121,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-121,121,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-121,121,chair,semantic_concept,seating for daily work,no,no,no,
+TS-121,121,plant,retrieval_query,a Monstera plant for a modern workspace,no,no,no,
+TS-121,121,plant,search_term,Monstera plant,no,yes,no,description
+TS-121,121,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-121,121,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-121,121,desk,retrieval_query,a black mobile desk for a home office,no,no,no,token_overlap
+TS-121,121,desk,search_term,black desk,no,no,no,token_overlap
+TS-121,121,desk,search_term,mobile desk,no,yes,no,description
+TS-121,121,desk,synonym,workstation,no,no,yes,tags
+TS-121,121,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-121,121,chair,retrieval_query,a mesh chair for a home office,no,no,no,token_overlap
+TS-121,121,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-121,121,chair,synonym,office chair,no,no,no,token_overlap
+TS-121,121,chair,semantic_concept,seating for daily work,no,no,no,
+TS-121,121,plant,retrieval_query,a Monstera plant for a home office,no,no,no,token_overlap
+TS-121,121,plant,search_term,Monstera plant,no,yes,no,description
+TS-121,121,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-121,121,plant,semantic_concept,a green plant for a workspace,no,no,no,token_overlap
+TS-123,123,desk,retrieval_query,a white standing desk for a creative studio,no,no,no,
+TS-123,123,desk,search_term,white standing desk,no,no,no,
+TS-123,123,desk,search_term,standing desk,yes,yes,no,name;description
+TS-123,123,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-123,123,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-123,123,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-123,123,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-123,123,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-123,123,chair,semantic_concept,seating for creative work,no,no,no,
+TS-123,123,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-123,123,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-123,123,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-123,123,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-123,123,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-125,125,desk,retrieval_query,a grey standing desk for a gaming den,no,no,no,token_overlap
+TS-125,125,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-125,125,desk,search_term,standing desk,no,no,no,token_overlap
+TS-125,125,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-125,125,desk,semantic_concept,a surface for gaming setup,no,no,no,
+TS-125,125,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-125,125,chair,search_term,CIMOO,yes,no,no,name
+TS-125,125,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-125,125,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-125,125,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-125,125,monitor,retrieval_query,a 27-inch gaming monitor for a gaming den,no,no,no,token_overlap
+TS-125,125,monitor,search_term,27-inch gaming monitor,no,no,no,token_overlap
+TS-125,125,monitor,search_term,gaming monitor,no,yes,no,description
+TS-125,125,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-125,125,monitor,semantic_concept,display for gaming,no,no,no,token_overlap
+TS-127,127,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-127,127,desk,search_term,white desk,no,no,no,token_overlap
+TS-127,127,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-127,127,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-127,127,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-127,127,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-127,127,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-127,127,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-127,127,chair,semantic_concept,seating for daily work,no,no,no,
+TS-127,127,lamp,retrieval_query,a concrete accent lamp for a rustic workspace,no,no,no,token_overlap
+TS-127,127,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-127,127,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-127,127,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-127,127,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-129,129,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-129,129,desk,search_term,VIVO,yes,no,no,name
+TS-129,129,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-129,129,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-129,129,chair,retrieval_query,a compact home office ZSARTS small velvet chair,no,no,no,
+TS-129,129,chair,search_term,ZSARTS,yes,no,no,name
+TS-129,129,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-129,129,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-129,129,plant,retrieval_query,a compact home office DILATATA small faux succulent,no,no,no,
+TS-129,129,plant,search_term,DILATATA,yes,no,no,name
+TS-129,129,plant,search_term,small faux succulent,no,no,no,token_overlap
+TS-129,129,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-129,129,plant,synonym,succulent,yes,yes,yes,name;description;tags
+TS-131,131,desk,retrieval_query,a dual-motor standing desk for a productive workspace,no,no,no,
+TS-131,131,desk,search_term,dual-motor standing desk,no,no,no,token_overlap
+TS-131,131,desk,search_term,standing desk,no,no,no,token_overlap
+TS-131,131,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-131,131,desk,semantic_concept,adjustable height workspace,no,no,no,
+TS-131,131,chair,retrieval_query,an ergonomic task chair for a productive workspace,no,no,no,
+TS-131,131,chair,search_term,ergonomic task chair,yes,no,no,name
+TS-131,131,chair,search_term,task chair,yes,no,no,name
+TS-131,131,chair,synonym,chair,yes,no,yes,name;tags
+TS-131,131,chair,semantic_concept,comfortable seating for daily work,no,no,no,token_overlap
+TS-131,131,monitor,retrieval_query,a 2-pack monitor setup for a productive workspace,no,no,no,
+TS-131,131,monitor,search_term,2-pack monitor,no,no,no,token_overlap
+TS-131,131,monitor,search_term,dual monitor,no,no,yes,tags
+TS-131,131,monitor,synonym,monitor setup,no,yes,no,description
+TS-131,131,monitor,semantic_concept,multiple screen workspace,no,no,no,
+TS-133,133,desk,retrieval_query,a black mobile desk for a modern office,no,no,no,token_overlap
+TS-133,133,desk,search_term,black desk,no,no,no,token_overlap
+TS-133,133,desk,search_term,mobile desk,no,yes,no,description
+TS-133,133,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-133,133,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-133,133,chair,retrieval_query,a gray mesh chair for a modern office,no,no,no,token_overlap
+TS-133,133,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-133,133,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-133,133,chair,semantic_concept,seating for daily work,no,no,no,
+TS-133,133,plant,retrieval_query,a succulent trio for a modern office,no,no,no,token_overlap
+TS-133,133,plant,search_term,succulent trio,no,no,yes,tags
+TS-133,133,plant,search_term,succulent plant,yes,yes,no,name;description
+TS-133,133,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-133,133,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-135,135,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-135,135,desk,search_term,white desk,no,no,no,token_overlap
+TS-135,135,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-135,135,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-135,135,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-135,135,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-135,135,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-135,135,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-135,135,chair,semantic_concept,seating for daily work,no,no,no,
+TS-135,135,lamp,retrieval_query,a farmhouse jug lamp for a rustic workspace,no,no,no,token_overlap
+TS-135,135,lamp,search_term,farmhouse jug lamp,no,no,no,token_overlap
+TS-135,135,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-135,135,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-137,137,desk,retrieval_query,a corner workstation with a Sauder Cannery Bridge L-desk,no,no,no,token_overlap
+TS-137,137,desk,search_term,Sauder,yes,no,no,name
+TS-137,137,desk,search_term,Cannery Bridge,yes,yes,no,name;description
+TS-137,137,desk,search_term,L-desk,yes,no,yes,name;tags
+TS-137,137,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-137,137,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-137,137,chair,retrieval_query,a BOWTHY big and tall chair for a corner workstation,no,no,no,token_overlap
+TS-137,137,chair,search_term,BOWTHY,yes,no,no,name
+TS-137,137,chair,search_term,big and tall chair,no,no,no,token_overlap
+TS-137,137,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-137,137,chair,semantic_concept,seating for daily work,no,no,no,
+TS-137,137,plant,retrieval_query,a Larksilk Boxed Succulent Assortment for a corner workstation,no,no,no,
+TS-137,137,plant,search_term,Larksilk,no,no,no,
+TS-137,137,plant,search_term,Boxed Succulent Assortment,yes,no,no,name
+TS-137,137,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-137,137,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-139,139,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-139,139,desk,search_term,black desk,no,no,no,token_overlap
+TS-139,139,desk,search_term,mobile desk,no,yes,no,description
+TS-139,139,desk,synonym,workstation,no,no,yes,tags
+TS-139,139,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-139,139,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-139,139,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-139,139,chair,synonym,office chair,yes,yes,no,name;description
+TS-139,139,chair,semantic_concept,seating for creative work,no,no,no,
+TS-139,139,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-139,139,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-139,139,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-139,139,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-139,139,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-139,139,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-139,139,desk,search_term,black desk,no,no,no,token_overlap
+TS-139,139,desk,search_term,mobile desk,no,yes,no,description
+TS-139,139,desk,synonym,workstation,no,no,yes,tags
+TS-139,139,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-139,139,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-139,139,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-139,139,chair,synonym,office chair,yes,yes,no,name;description
+TS-139,139,chair,semantic_concept,seating for creative work,no,no,no,
+TS-139,139,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-139,139,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-139,139,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-139,139,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-139,139,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-141,141,desk,retrieval_query,a POWERSTONE black standing desk for a gaming den,no,no,no,token_overlap
+TS-141,141,desk,search_term,POWERSTONE,yes,no,no,name
+TS-141,141,desk,search_term,black standing desk,no,no,no,token_overlap
+TS-141,141,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-141,141,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-141,141,chair,search_term,CIMOO,yes,no,no,name
+TS-141,141,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-141,141,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-141,141,monitor,retrieval_query,a Lenovo ThinkVision T34w-20 curved monitor for a gaming den,no,no,no,token_overlap
+TS-141,141,monitor,search_term,Lenovo ThinkVision T34w-20,yes,yes,no,name;description
+TS-141,141,monitor,search_term,curved monitor,no,no,no,token_overlap
+TS-141,141,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-143,143,desk,retrieval_query,a modern executive desk for an office,no,no,no,token_overlap
+TS-143,143,desk,search_term,Hooker desk,no,no,no,token_overlap
+TS-143,143,desk,search_term,modern desk,no,no,no,token_overlap
+TS-143,143,desk,synonym,executive desk,no,no,no,token_overlap
+TS-143,143,desk,synonym,workstation,no,no,yes,tags
+TS-143,143,desk,semantic_concept,a surface for multiple monitors and daily work,no,no,no,
+TS-143,143,chair,retrieval_query,a white leather executive chair for an office,no,no,no,token_overlap
+TS-143,143,chair,search_term,white leather chair,no,no,no,token_overlap
+TS-143,143,chair,search_term,executive chair,yes,yes,no,name;description
+TS-143,143,chair,synonym,office chair,no,no,no,token_overlap
+TS-143,143,chair,semantic_concept,seating for daily work,no,no,no,
+TS-143,143,lamp,retrieval_query,a grape Tiffany lamp for an office,no,no,no,token_overlap
+TS-143,143,lamp,search_term,grape Tiffany lamp,no,no,no,token_overlap
+TS-143,143,lamp,search_term,Tiffany lamp,yes,no,no,name
+TS-143,143,lamp,synonym,table lamp,yes,yes,yes,name;description;tags
+TS-143,143,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-145,145,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-145,145,desk,search_term,VIVO,yes,no,no,name
+TS-145,145,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-145,145,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-145,145,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-145,145,chair,retrieval_query,a compact home office small velvet ZSARTS chair,no,no,no,
+TS-145,145,chair,search_term,ZSARTS,yes,no,no,name
+TS-145,145,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-145,145,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-145,145,chair,semantic_concept,seating for daily work,no,no,no,
+TS-145,145,plant,retrieval_query,a compact home office 3 Pack Mini Potted Fake Plants set with white pots,no,no,no,
+TS-145,145,plant,search_term,3 Pack,yes,no,no,name
+TS-145,145,plant,search_term,Mini Potted Fake Plants,yes,no,no,name
+TS-145,145,plant,search_term,white pots,yes,no,no,name
+TS-145,145,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-145,145,plant,semantic_concept,decorative element for workspace,no,no,no,
+TS-147,147,desk,retrieval_query,a grey standing desk for an industrial loft office,no,no,no,
+TS-147,147,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-147,147,desk,search_term,standing desk,no,no,no,token_overlap
+TS-147,147,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-147,147,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-147,147,chair,retrieval_query,a mesh chair for an industrial loft office,no,no,no,
+TS-147,147,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-147,147,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-147,147,chair,semantic_concept,seating for daily work,no,no,no,
+TS-147,147,lamp,retrieval_query,a concrete accent lamp for an industrial loft office,no,no,no,
+TS-147,147,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-147,147,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-147,147,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-147,147,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-149,149,desk,retrieval_query,a Slate Teak desk for a home office,no,no,no,token_overlap
+TS-149,149,desk,search_term,Slate Teak desk,no,no,no,token_overlap
+TS-149,149,desk,search_term,Slate Teak,yes,yes,no,name;description
+TS-149,149,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-149,149,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-149,149,chair,retrieval_query,a SertaPedic ergonomic chair for a home office,no,no,no,token_overlap
+TS-149,149,chair,search_term,SertaPedic ergonomic chair,no,no,no,token_overlap
+TS-149,149,chair,search_term,SertaPedic,yes,yes,no,name;description
+TS-149,149,chair,search_term,ergonomic chair,no,no,no,token_overlap
+TS-149,149,chair,synonym,chair,yes,no,yes,name;tags
+TS-149,149,chair,semantic_concept,seating for daily work,no,no,no,
+TS-149,149,plant,retrieval_query,a Dracaena plant for a home office,no,no,no,token_overlap
+TS-149,149,plant,search_term,Dracaena plant,no,no,no,token_overlap
+TS-149,149,plant,search_term,Dracaena,yes,yes,no,name;description
+TS-149,149,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-149,149,plant,semantic_concept,a living element for a workspace,no,no,no,
+TS-151,151,desk,retrieval_query,a round table for a cozy work corner,no,no,no,
+TS-151,151,desk,search_term,round table,yes,yes,no,name;description
+TS-151,151,desk,synonym,workstation,yes,yes,yes,name;description;tags
+TS-151,151,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-151,151,chair,retrieval_query,a bean bag chair for a cozy work corner,no,no,no,
+TS-151,151,chair,search_term,bean bag chair,yes,yes,no,name;description
+TS-151,151,chair,synonym,lounge seating,no,no,no,
+TS-151,151,chair,semantic_concept,seating for daily work,no,no,no,
+TS-151,151,lamp,retrieval_query,a mushroom lamp for a cozy work corner,no,no,no,
+TS-151,151,lamp,search_term,mushroom lamp,no,no,no,token_overlap
+TS-151,151,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-151,151,lamp,semantic_concept,lighting for a comfortable lounge area,no,no,no,
+TS-153,153,desk,retrieval_query,a VIVO 2-tier desk for a productive workspace,no,no,no,
+TS-153,153,desk,search_term,VIVO,yes,no,no,name
+TS-153,153,desk,search_term,2-tier desk,no,no,no,token_overlap
+TS-153,153,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-153,153,chair,retrieval_query,a gray mesh chair for a productive workspace,no,no,no,
+TS-153,153,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-153,153,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-153,153,plant,retrieval_query,a succulent trio for a productive workspace,no,no,no,
+TS-153,153,plant,search_term,succulent trio,no,no,yes,tags
+TS-153,153,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-155,155,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-155,155,desk,search_term,47-inch desk,no,no,no,
+TS-155,155,desk,search_term,electric desk,no,no,no,token_overlap
+TS-155,155,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-155,155,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-155,155,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-155,155,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-155,155,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-155,155,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-155,155,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-155,155,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-155,155,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-155,155,monitor,semantic_concept,a display for high-refresh-rate gaming,no,no,no,token_overlap
+TS-155,155,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-155,155,desk,search_term,47-inch electric desk,no,no,no,
+TS-155,155,desk,search_term,electric desk,no,no,no,token_overlap
+TS-155,155,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-155,155,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-155,155,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-155,155,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-155,155,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-155,155,chair,search_term,leather chair,no,no,no,token_overlap
+TS-155,155,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-155,155,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-155,155,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-155,155,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-155,155,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-155,155,monitor,search_term,high refresh rate monitor,no,no,no,token_overlap
+TS-155,155,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-155,155,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-155,155,monitor,semantic_concept,a display for fast-paced gaming,no,no,no,
+TS-157,157,desk,retrieval_query,a black mobile desk for a modern workspace,no,no,no,
+TS-157,157,desk,search_term,black desk,no,no,no,token_overlap
+TS-157,157,desk,search_term,mobile desk,no,yes,no,description
+TS-157,157,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-157,157,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-157,157,chair,retrieval_query,a mesh chair for a modern workspace,no,no,no,
+TS-157,157,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-157,157,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-157,157,chair,semantic_concept,seating for daily work,no,no,no,
+TS-157,157,plant,retrieval_query,a Monstera plant for a modern workspace,no,no,no,
+TS-157,157,plant,search_term,Monstera plant,no,yes,no,description
+TS-157,157,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-157,157,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-157,157,desk,retrieval_query,a black mobile desk for a home office,no,no,no,token_overlap
+TS-157,157,desk,search_term,black desk,no,no,no,token_overlap
+TS-157,157,desk,search_term,mobile desk,no,yes,no,description
+TS-157,157,desk,synonym,workstation,no,no,yes,tags
+TS-157,157,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-157,157,chair,retrieval_query,a mesh chair for a home office,no,no,no,token_overlap
+TS-157,157,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-157,157,chair,synonym,office chair,no,no,no,token_overlap
+TS-157,157,chair,semantic_concept,seating for daily work,no,no,no,
+TS-157,157,plant,retrieval_query,a Monstera plant for a home office,no,no,no,token_overlap
+TS-157,157,plant,search_term,Monstera plant,no,yes,no,description
+TS-157,157,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-157,157,plant,semantic_concept,a green plant for a workspace,no,no,no,token_overlap
+TS-159,159,desk,retrieval_query,a white standing desk for a creative studio,no,no,no,
+TS-159,159,desk,search_term,white standing desk,no,no,no,
+TS-159,159,desk,search_term,standing desk,yes,yes,no,name;description
+TS-159,159,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-159,159,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-159,159,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-159,159,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-159,159,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-159,159,chair,semantic_concept,seating for creative work,no,no,no,
+TS-159,159,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-159,159,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-159,159,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-159,159,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-159,159,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-161,161,desk,retrieval_query,a grey standing desk for a gaming den,no,no,no,token_overlap
+TS-161,161,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-161,161,desk,search_term,standing desk,no,no,no,token_overlap
+TS-161,161,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-161,161,desk,semantic_concept,a surface for gaming setup,no,no,no,
+TS-161,161,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-161,161,chair,search_term,CIMOO,yes,no,no,name
+TS-161,161,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-161,161,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-161,161,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-161,161,monitor,retrieval_query,a 27-inch gaming monitor for a gaming den,no,no,no,token_overlap
+TS-161,161,monitor,search_term,27-inch gaming monitor,no,no,no,token_overlap
+TS-161,161,monitor,search_term,gaming monitor,no,yes,no,description
+TS-161,161,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-161,161,monitor,semantic_concept,display for gaming,no,no,no,token_overlap
+TS-163,163,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-163,163,desk,search_term,white desk,no,no,no,token_overlap
+TS-163,163,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-163,163,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-163,163,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-163,163,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-163,163,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-163,163,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-163,163,chair,semantic_concept,seating for daily work,no,no,no,
+TS-163,163,lamp,retrieval_query,a concrete accent lamp for a rustic workspace,no,no,no,token_overlap
+TS-163,163,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-163,163,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-163,163,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-163,163,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-165,165,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-165,165,desk,search_term,VIVO,yes,no,no,name
+TS-165,165,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-165,165,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-165,165,chair,retrieval_query,a compact home office ZSARTS small velvet chair,no,no,no,
+TS-165,165,chair,search_term,ZSARTS,yes,no,no,name
+TS-165,165,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-165,165,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-165,165,plant,retrieval_query,a compact home office DILATATA small faux succulent,no,no,no,
+TS-165,165,plant,search_term,DILATATA,yes,no,no,name
+TS-165,165,plant,search_term,small faux succulent,no,no,no,token_overlap
+TS-165,165,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-165,165,plant,synonym,succulent,yes,yes,yes,name;description;tags
+TS-167,167,desk,retrieval_query,a dual-motor standing desk for a productive workspace,no,no,no,
+TS-167,167,desk,search_term,dual-motor standing desk,no,no,no,token_overlap
+TS-167,167,desk,search_term,standing desk,no,no,no,token_overlap
+TS-167,167,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-167,167,desk,semantic_concept,adjustable height workstation,no,no,no,token_overlap
+TS-167,167,chair,retrieval_query,an ergonomic task chair for a productive workspace,no,no,no,
+TS-167,167,chair,search_term,ergonomic task chair,yes,no,no,name
+TS-167,167,chair,search_term,task chair,yes,no,no,name
+TS-167,167,chair,synonym,chair,yes,no,yes,name;tags
+TS-167,167,chair,semantic_concept,supportive seating for daily work,no,no,no,
+TS-167,167,monitor,retrieval_query,a 2-pack monitor setup for a productive workspace,no,no,no,
+TS-167,167,monitor,search_term,2-pack monitor,no,no,no,token_overlap
+TS-167,167,monitor,search_term,dual monitor,no,no,yes,tags
+TS-167,167,monitor,synonym,monitor setup,no,yes,no,description
+TS-167,167,monitor,semantic_concept,multi-screen work environment,no,no,no,
+TS-169,169,desk,retrieval_query,a black mobile desk for a modern office,no,no,no,token_overlap
+TS-169,169,desk,search_term,black desk,no,no,no,token_overlap
+TS-169,169,desk,search_term,mobile desk,no,yes,no,description
+TS-169,169,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-169,169,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-169,169,chair,retrieval_query,a gray mesh chair for a modern office,no,no,no,token_overlap
+TS-169,169,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-169,169,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-169,169,chair,semantic_concept,seating for daily work,no,no,no,
+TS-169,169,plant,retrieval_query,a succulent trio for a modern office,no,no,no,token_overlap
+TS-169,169,plant,search_term,succulent trio,no,no,yes,tags
+TS-169,169,plant,search_term,succulent plant,yes,yes,no,name;description
+TS-169,169,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-169,169,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-171,171,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-171,171,desk,search_term,white desk,no,no,no,token_overlap
+TS-171,171,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-171,171,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-171,171,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-171,171,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-171,171,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-171,171,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-171,171,chair,semantic_concept,seating for daily work,no,no,no,
+TS-171,171,lamp,retrieval_query,a farmhouse jug lamp for a rustic workspace,no,no,no,token_overlap
+TS-171,171,lamp,search_term,farmhouse jug lamp,no,no,no,token_overlap
+TS-171,171,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-171,171,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-173,173,desk,retrieval_query,a corner workstation with a Sauder Cannery Bridge L-desk,no,no,no,token_overlap
+TS-173,173,desk,search_term,Sauder,yes,no,no,name
+TS-173,173,desk,search_term,Cannery Bridge,yes,yes,no,name;description
+TS-173,173,desk,search_term,L-desk,yes,no,yes,name;tags
+TS-173,173,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-173,173,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-173,173,chair,retrieval_query,a BOWTHY big and tall chair for a corner workstation,no,no,no,token_overlap
+TS-173,173,chair,search_term,BOWTHY,yes,no,no,name
+TS-173,173,chair,search_term,big and tall chair,no,no,no,token_overlap
+TS-173,173,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-173,173,chair,semantic_concept,seating for daily work,no,no,no,
+TS-173,173,plant,retrieval_query,a Larksilk Boxed Succulent Assortment for a corner workstation,no,no,no,
+TS-173,173,plant,search_term,Larksilk,no,no,no,
+TS-173,173,plant,search_term,Boxed Succulent Assortment,yes,no,no,name
+TS-173,173,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-173,173,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-175,175,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-175,175,desk,search_term,black desk,no,no,no,token_overlap
+TS-175,175,desk,search_term,mobile desk,no,yes,no,description
+TS-175,175,desk,synonym,workstation,no,no,yes,tags
+TS-175,175,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-175,175,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-175,175,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-175,175,chair,synonym,office chair,yes,yes,no,name;description
+TS-175,175,chair,semantic_concept,seating for creative work,no,no,no,
+TS-175,175,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-175,175,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-175,175,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-175,175,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-175,175,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-175,175,desk,retrieval_query,a black mobile desk for a creative studio,no,no,no,
+TS-175,175,desk,search_term,black desk,no,no,no,token_overlap
+TS-175,175,desk,search_term,mobile desk,no,yes,no,description
+TS-175,175,desk,synonym,workstation,no,no,yes,tags
+TS-175,175,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-175,175,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-175,175,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-175,175,chair,synonym,office chair,yes,yes,no,name;description
+TS-175,175,chair,semantic_concept,seating for creative work,no,no,no,
+TS-175,175,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-175,175,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-175,175,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-175,175,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-175,175,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-177,177,desk,retrieval_query,a POWERSTONE black standing desk for a gaming den,no,no,no,token_overlap
+TS-177,177,desk,search_term,POWERSTONE,yes,no,no,name
+TS-177,177,desk,search_term,black standing desk,no,no,no,token_overlap
+TS-177,177,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-177,177,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-177,177,chair,search_term,CIMOO,yes,no,no,name
+TS-177,177,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-177,177,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-177,177,monitor,retrieval_query,a Lenovo ThinkVision T34w-20 curved monitor for a gaming den,no,no,no,token_overlap
+TS-177,177,monitor,search_term,Lenovo ThinkVision T34w-20,yes,yes,no,name;description
+TS-177,177,monitor,search_term,curved monitor,no,no,no,token_overlap
+TS-177,177,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-179,179,desk,retrieval_query,a modern executive desk for an office,no,no,no,token_overlap
+TS-179,179,desk,search_term,Hooker desk,no,no,no,token_overlap
+TS-179,179,desk,search_term,modern desk,no,no,no,token_overlap
+TS-179,179,desk,synonym,executive desk,no,no,no,token_overlap
+TS-179,179,desk,synonym,workstation,no,no,yes,tags
+TS-179,179,desk,semantic_concept,a surface for multiple monitors and daily work,no,no,no,
+TS-179,179,chair,retrieval_query,a white leather executive chair for an office,no,no,no,token_overlap
+TS-179,179,chair,search_term,white leather chair,no,no,no,token_overlap
+TS-179,179,chair,search_term,executive chair,yes,yes,no,name;description
+TS-179,179,chair,synonym,office chair,no,no,no,token_overlap
+TS-179,179,chair,semantic_concept,seating for daily work,no,no,no,
+TS-179,179,lamp,retrieval_query,a grape Tiffany lamp for an office,no,no,no,token_overlap
+TS-179,179,lamp,search_term,grape Tiffany lamp,no,no,no,token_overlap
+TS-179,179,lamp,search_term,Tiffany lamp,yes,no,no,name
+TS-179,179,lamp,synonym,table lamp,yes,yes,yes,name;description;tags
+TS-179,179,lamp,semantic_concept,lighting for a workspace,no,no,no,
+TS-181,181,desk,retrieval_query,a compact home office VIVO mobile standing desk,no,no,no,
+TS-181,181,desk,search_term,VIVO,yes,no,no,name
+TS-181,181,desk,search_term,mobile standing desk,no,no,no,token_overlap
+TS-181,181,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-181,181,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-181,181,chair,retrieval_query,a compact home office small velvet ZSARTS chair,no,no,no,
+TS-181,181,chair,search_term,ZSARTS,yes,no,no,name
+TS-181,181,chair,search_term,small velvet chair,no,no,no,token_overlap
+TS-181,181,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-181,181,chair,semantic_concept,seating for daily work,no,no,no,
+TS-181,181,plant,retrieval_query,a compact home office 3 Pack Mini Potted Fake Plants set with white pots,no,no,no,
+TS-181,181,plant,search_term,3 Pack,yes,no,no,name
+TS-181,181,plant,search_term,Mini Potted Fake Plants,yes,no,no,name
+TS-181,181,plant,search_term,white pots,yes,no,no,name
+TS-181,181,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-181,181,plant,semantic_concept,decorative element for workspace,no,no,no,
+TS-183,183,desk,retrieval_query,a grey standing desk for an industrial loft office,no,no,no,
+TS-183,183,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-183,183,desk,search_term,standing desk,no,no,no,token_overlap
+TS-183,183,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-183,183,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-183,183,chair,retrieval_query,a mesh chair for an industrial loft office,no,no,no,
+TS-183,183,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-183,183,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-183,183,chair,semantic_concept,seating for daily work,no,no,no,
+TS-183,183,lamp,retrieval_query,a concrete accent lamp for an industrial loft office,no,no,no,
+TS-183,183,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-183,183,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-183,183,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-183,183,lamp,semantic_concept,lighting for workspace,no,no,no,
+TS-185,185,desk,retrieval_query,a Slate Teak desk for a home office,no,no,no,token_overlap
+TS-185,185,desk,search_term,Slate Teak desk,no,no,no,token_overlap
+TS-185,185,desk,search_term,Slate desk,no,no,no,token_overlap
+TS-185,185,desk,search_term,Teak desk,no,no,no,token_overlap
+TS-185,185,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-185,185,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-185,185,chair,retrieval_query,a SertaPedic ergonomic chair for a home office,no,no,no,token_overlap
+TS-185,185,chair,search_term,SertaPedic chair,no,no,no,token_overlap
+TS-185,185,chair,search_term,ergonomic chair,no,no,no,token_overlap
+TS-185,185,chair,synonym,chair,yes,no,yes,name;tags
+TS-185,185,chair,semantic_concept,seating for daily work,no,no,no,
+TS-185,185,plant,retrieval_query,a Dracaena plant for a home office,no,no,no,token_overlap
+TS-185,185,plant,search_term,Dracaena plant,no,no,no,token_overlap
+TS-185,185,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-185,185,plant,semantic_concept,a living element for a workspace,no,no,no,
+TS-187,187,desk,retrieval_query,a round table for a cozy work corner,no,no,no,
+TS-187,187,desk,search_term,round table,yes,yes,no,name;description
+TS-187,187,desk,synonym,workstation,yes,yes,yes,name;description;tags
+TS-187,187,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-187,187,chair,retrieval_query,a bean bag chair for a cozy work corner,no,no,no,
+TS-187,187,chair,search_term,bean bag chair,yes,yes,no,name;description
+TS-187,187,chair,synonym,lounge seating,no,no,no,
+TS-187,187,chair,semantic_concept,seating for daily work,no,no,no,
+TS-187,187,lamp,retrieval_query,a mushroom lamp for a cozy work corner,no,no,no,
+TS-187,187,lamp,search_term,mushroom lamp,no,no,no,token_overlap
+TS-187,187,lamp,synonym,table lamp,yes,yes,no,name;description
+TS-187,187,lamp,semantic_concept,lighting for a comfortable lounge area,no,no,no,
+TS-189,189,desk,retrieval_query,a VIVO 2-tier desk for a productive workspace,no,no,no,
+TS-189,189,desk,search_term,VIVO,yes,no,no,name
+TS-189,189,desk,search_term,2-tier desk,no,no,no,token_overlap
+TS-189,189,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-189,189,chair,retrieval_query,a gray mesh chair for a productive workspace,no,no,no,
+TS-189,189,chair,search_term,gray mesh chair,no,no,no,token_overlap
+TS-189,189,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-189,189,plant,retrieval_query,a succulent trio for a productive workspace,no,no,no,
+TS-189,189,plant,search_term,succulent trio,no,no,yes,tags
+TS-189,189,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-191,191,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-191,191,desk,search_term,47-inch desk,no,no,no,
+TS-191,191,desk,search_term,electric desk,no,no,no,token_overlap
+TS-191,191,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-191,191,desk,semantic_concept,a surface for gaming equipment,no,no,no,
+TS-191,191,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-191,191,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-191,191,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-191,191,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-191,191,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-191,191,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-191,191,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-191,191,monitor,semantic_concept,a display for high-refresh-rate gaming,no,no,no,token_overlap
+TS-191,191,desk,retrieval_query,a 47-inch electric desk for a gaming setup,no,no,no,
+TS-191,191,desk,search_term,47-inch electric desk,no,no,no,
+TS-191,191,desk,search_term,electric desk,no,no,no,token_overlap
+TS-191,191,desk,synonym,gaming desk,no,no,no,token_overlap
+TS-191,191,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-191,191,desk,semantic_concept,a wide surface for gaming equipment,no,no,no,
+TS-191,191,chair,retrieval_query,a black leather chair for a gaming setup,no,no,no,
+TS-191,191,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-191,191,chair,search_term,leather chair,no,no,no,token_overlap
+TS-191,191,chair,synonym,gaming chair,no,no,no,token_overlap
+TS-191,191,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-191,191,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-191,191,monitor,retrieval_query,a 240Hz monitor for a gaming setup,no,no,no,
+TS-191,191,monitor,search_term,240Hz monitor,no,no,no,token_overlap
+TS-191,191,monitor,search_term,high refresh rate monitor,no,no,no,token_overlap
+TS-191,191,monitor,synonym,gaming monitor,no,no,no,token_overlap
+TS-191,191,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-191,191,monitor,semantic_concept,a display for fast-paced gaming,no,no,no,
+TS-193,193,desk,retrieval_query,a black mobile desk for a modern workspace,no,no,no,
+TS-193,193,desk,search_term,black desk,no,no,no,token_overlap
+TS-193,193,desk,search_term,mobile desk,no,yes,no,description
+TS-193,193,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-193,193,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-193,193,chair,retrieval_query,a mesh chair for a modern workspace,no,no,no,
+TS-193,193,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-193,193,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-193,193,chair,semantic_concept,seating for daily work,no,no,no,
+TS-193,193,plant,retrieval_query,a Monstera plant for a modern workspace,no,no,no,
+TS-193,193,plant,search_term,Monstera plant,no,yes,no,description
+TS-193,193,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-193,193,plant,semantic_concept,a decorative element for a workspace,no,no,no,
+TS-193,193,desk,retrieval_query,a black mobile desk for a home office,no,no,no,token_overlap
+TS-193,193,desk,search_term,black desk,no,no,no,token_overlap
+TS-193,193,desk,search_term,mobile desk,no,yes,no,description
+TS-193,193,desk,synonym,workstation,no,no,yes,tags
+TS-193,193,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-193,193,chair,retrieval_query,a mesh chair for a home office,no,no,no,token_overlap
+TS-193,193,chair,search_term,mesh chair,no,no,no,token_overlap
+TS-193,193,chair,synonym,office chair,no,no,no,token_overlap
+TS-193,193,chair,semantic_concept,seating for daily work,no,no,no,
+TS-193,193,plant,retrieval_query,a Monstera plant for a home office,no,no,no,token_overlap
+TS-193,193,plant,search_term,Monstera plant,no,yes,no,description
+TS-193,193,plant,synonym,plant,yes,yes,yes,name;description;tags
+TS-193,193,plant,semantic_concept,a green plant for a workspace,no,no,no,token_overlap
+TS-195,195,desk,retrieval_query,a white standing desk for a creative studio,no,no,no,
+TS-195,195,desk,search_term,white standing desk,no,no,no,
+TS-195,195,desk,search_term,standing desk,yes,yes,no,name;description
+TS-195,195,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-195,195,desk,semantic_concept,a surface for creative work,no,no,no,
+TS-195,195,chair,retrieval_query,a velvet chair for a creative studio,no,no,no,
+TS-195,195,chair,search_term,velvet chair,no,no,no,token_overlap
+TS-195,195,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-195,195,chair,semantic_concept,seating for creative work,no,no,no,
+TS-195,195,lamp,retrieval_query,a color-changing Saturn lamp for a creative studio,no,no,no,
+TS-195,195,lamp,search_term,color-changing lamp,no,no,no,token_overlap
+TS-195,195,lamp,search_term,Saturn lamp,no,no,no,token_overlap
+TS-195,195,lamp,synonym,lamp,yes,yes,yes,name;description;tags
+TS-195,195,lamp,semantic_concept,lighting for creative work,no,no,no,
+TS-197,197,desk,retrieval_query,a grey standing desk for a gaming den,no,no,no,token_overlap
+TS-197,197,desk,search_term,grey standing desk,no,no,no,token_overlap
+TS-197,197,desk,search_term,standing desk,no,no,no,token_overlap
+TS-197,197,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-197,197,desk,semantic_concept,a surface for gaming setup,no,no,no,
+TS-197,197,chair,retrieval_query,a CIMOO black leather chair for a gaming den,no,no,no,token_overlap
+TS-197,197,chair,search_term,CIMOO,yes,no,no,name
+TS-197,197,chair,search_term,black leather chair,no,no,no,token_overlap
+TS-197,197,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-197,197,chair,semantic_concept,seating for long gaming sessions,no,no,no,
+TS-197,197,monitor,retrieval_query,a 27-inch gaming monitor for a gaming den,no,no,no,token_overlap
+TS-197,197,monitor,search_term,27-inch gaming monitor,no,no,no,token_overlap
+TS-197,197,monitor,search_term,gaming monitor,no,yes,no,description
+TS-197,197,monitor,synonym,monitor,yes,yes,yes,name;description;tags
+TS-197,197,monitor,semantic_concept,display for gaming,no,no,no,token_overlap
+TS-199,199,desk,retrieval_query,a white sit-stand desk for a rustic workspace,no,no,no,token_overlap
+TS-199,199,desk,search_term,white desk,no,no,no,token_overlap
+TS-199,199,desk,search_term,sit-stand desk,no,no,no,token_overlap
+TS-199,199,desk,synonym,desk,yes,yes,yes,name;description;tags
+TS-199,199,desk,semantic_concept,a surface for one screen and daily work,no,no,no,
+TS-199,199,chair,retrieval_query,a cream leather chair for a rustic workspace,no,no,no,token_overlap
+TS-199,199,chair,search_term,cream leather chair,no,no,no,token_overlap
+TS-199,199,chair,synonym,chair,yes,yes,yes,name;description;tags
+TS-199,199,chair,semantic_concept,seating for daily work,no,no,no,
+TS-199,199,lamp,retrieval_query,a concrete accent lamp for a rustic workspace,no,no,no,token_overlap
+TS-199,199,lamp,search_term,concrete lamp,no,no,no,token_overlap
+TS-199,199,lamp,search_term,accent lamp,no,no,no,token_overlap
+TS-199,199,lamp,synonym,lamp,yes,no,yes,name;tags
+TS-199,199,lamp,semantic_concept,lighting for workspace,no,no,no,

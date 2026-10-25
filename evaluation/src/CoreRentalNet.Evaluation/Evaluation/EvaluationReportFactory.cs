@@ -100,7 +100,8 @@ public sealed class EvaluationReportFactory(
             .ToArray();
 
         var passCount = repetitions.Count(repetition => repetition.CasePass);
-        var casePass = CasePassPolicy.Passed(passCount, repetitions.Length);
+        var casePass = repetitions.Length > 0
+                       && repetitions.All(repetition => repetition.CasePass);
 
         return new CaseResult(
             RowNumber: runs[0].Case.RowNumber,
@@ -158,17 +159,12 @@ public sealed class EvaluationReportFactory(
         var answer = AnswerComparison.Evaluate(context);
         var retrieval = RetrievalQuality.Evaluate(context);
         var alignment = RerankerAlignment.Evaluate(context);
-        var casePass = CasePassPolicy.Passed(
-            local,
-            alignment.Aligned,
-            run.TimedOut,
-            judgeEvaluated == true,
-            judgePass == true);
+        var casePass = alignment.Aligned;
 
         return new RepetitionResult(
             Repetition: run.Repetition,
             Metrics: local,
-            FailureCodes: casePass ? [] : failures,
+            FailureCodes: failures,
             AnswerF1: answer.F1,
             RetrievalRecall: retrieval.SelectedRecall)
         {

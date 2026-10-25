@@ -9,10 +9,10 @@ namespace CoreRentalNet.CatalogIngestion;
 internal static class Usage
 {
     public const string Text = """
-        Builds the catalogue's vector index from products.json, or lifts an already-built file into the
+        Builds the catalogue's vector index from catalog.db, or lifts an already-built vector file into the
         Discovery module's migration.
 
-        (no arguments)  read products.json, embed every product and write the vector file
+        (no arguments)  read catalog.db, embed every product and write the vector file
         --seed          read the vector file and write the *_SeedProductEmbeddings.cs migration
 
         Every value has a default; a key is only needed when it differs. A value that is set but
@@ -24,8 +24,8 @@ internal static class Usage
         Embedding:ApiKey         the server's key; a local server may omit it   (required for AzureOpenAI)
         Embedding:Model          the model the server serves                    (default text-embedding-3-small)
         Embedding:Width          how many floats each vector holds              (default 384)
-        Catalog:FilePath         path to products.json                        (default ../../shared/data/products.json)
-        Database:Path            the SQLite file written, or read by --seed   (default the Host's App_Data/discovery.db)
+        Catalog:DatabasePath     path to catalog.db                         (default ../../Host/CoreRentalNet.Host/App_Data/catalog.db)
+        Database:Path            the vector SQLite file written, or read by --seed (default the Host's App_Data/discovery.db)
         Seed:MigrationsDirectory the folder holding the *_SeedProductEmbeddings.cs shell
                                                                               (default the Discovery module's Migrations)
 

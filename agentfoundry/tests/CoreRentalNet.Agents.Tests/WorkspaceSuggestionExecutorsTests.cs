@@ -32,9 +32,6 @@ public sealed class WorkspaceSuggestionExecutorsTests
             WorkspaceWorkflowExecutorNames.ProductPool,
             WorkspaceWorkflowExecutorNames.Reranker,
             WorkspaceWorkflowExecutorNames.Composer,
-            WorkspaceWorkflowExecutorNames.Validator,
-            WorkspaceWorkflowExecutorNames.Reviewer,
-            WorkspaceWorkflowExecutorNames.RetryDecision,
             WorkspaceWorkflowExecutorNames.SuccessCompletion,
             WorkspaceWorkflowExecutorNames.RejectionCompletion,
             WorkspaceWorkflowExecutorNames.UnavailableCompletion);
@@ -45,7 +42,7 @@ public sealed class WorkspaceSuggestionExecutorsTests
     {
         var executors = Build();
 
-        executors.All.Should().HaveCount(13);
+        executors.All.Should().HaveCount(10);
         executors.All.Select(binding => binding.Id).Should().OnlyHaveUniqueItems();
     }
 

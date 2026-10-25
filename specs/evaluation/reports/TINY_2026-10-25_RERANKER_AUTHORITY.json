@@ -1,0 +1,2065 @@
+{
+  "cases": [
+    {
+      "rowNumber": 1,
+      "caseId": "TS-001",
+      "sentence": "I want a classic mahogany desk with a matching green velvet armless chair for my home office.",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "answer_exact": false,
+            "reranker_aligned": true,
+            "constraint_compliance": true,
+            "retrieval_quality": true,
+            "raw_retrieval_recall": true,
+            "tool_call_accuracy": true,
+            "workflow_correctness": true
+          },
+          "failureCodes": [
+            "ANSWER_WRONG_SKU:Desk"
+          ],
+          "answerF1": 0.5,
+          "retrievalRecall": 1,
+          "timing": {
+            "totalMs": 20683.949999999997,
+            "stages": [
+              {
+                "stage": "workspace-request-verifier",
+                "totalMs": 520.433,
+                "modelMs": 487.294,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 33.13900000000001,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "totalMs": 3022.373,
+                "modelMs": 2992.591,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 29.782000000000153,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "totalMs": 5722.343,
+                "modelMs": 5458.287,
+                "toolMs": 174.25000000000003,
+                "guardrailMs": 1.8979999999999986,
+                "hostMs": 2.094,
+                "unattributedMs": 89.80599999999956,
+                "toolPlanningModelMs": 3165.355,
+                "finalStructuredModelMs": 2292.932,
+                "modelCallCount": 2,
+                "toolCallCount": 4
+              },
+              {
+                "stage": "build-candidate-product-pool",
+                "totalMs": 7.781,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 7.781,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "totalMs": 8047.834,
+                "modelMs": 8039.628,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 8.206000000000131,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "totalMs": 3350.938,
+                "modelMs": 3345.085,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 5.8530000000000655,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "complete-workspace-suggestion-success",
+                "totalMs": 12.248,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 12.248,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              }
+            ],
+            "modelCalls": [
+              {
+                "stage": "workspace-request-verifier",
+                "phase": null,
+                "durationMs": 487.294,
+                "inputTokens": 533,
+                "outputTokens": 16,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "phase": null,
+                "durationMs": 2992.591,
+                "inputTokens": 3089,
+                "outputTokens": 215,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "tool-planning",
+                "durationMs": 3165.355,
+                "inputTokens": 2233,
+                "outputTokens": 172,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "final-structured",
+                "durationMs": 2292.932,
+                "inputTokens": 1694,
+                "outputTokens": 162,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "phase": null,
+                "durationMs": 8039.628,
+                "inputTokens": 5454,
+                "outputTokens": 158,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "phase": null,
+                "durationMs": 3345.085,
+                "inputTokens": 1818,
+                "outputTokens": 207,
+                "finishReasonLength": null
+              }
+            ],
+            "toolCalls": [
+              {
+                "tool": "search_catalogue",
+                "durationMs": 27.996,
+                "guardrailMs": 1.65,
+                "hostMs": 0.306,
+                "serverTiming": {
+                  "mcp": 0.306
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 123.595,
+                "guardrailMs": 0.155,
+                "hostMs": 0.184,
+                "serverTiming": {
+                  "mcp": 0.184
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 15.555,
+                "guardrailMs": 0.056,
+                "hostMs": 0.47,
+                "serverTiming": {
+                  "mcp": 0.47
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 7.104,
+                "guardrailMs": 0.037000000000000005,
+                "hostMs": 0.184,
+                "serverTiming": {
+                  "mcp": 0.184
+                }
+              }
+            ],
+            "wallMs": 103578.47,
+            "modelMs": 20322.885,
+            "toolMs": 174.25000000000003,
+            "guardrailMs": 1.8979999999999986,
+            "hostMs": 2.094,
+            "unattributedMs": 186.8149999999999,
+            "unaccountedMs": 82894.52,
+            "slowestStage": "catalogue-candidate-reranker"
+          },
+          "rerankerAligned": true,
+          "judgeEvaluated": true,
+          "judgePass": true,
+          "judgeConfidence": 0.95,
+          "judgeAttempts": 1,
+          "judgeReason": "The final setup includes a mahogany desk (Alera VA216630MY Valencia Series Straight Front Desk Shell, Mahogany) and a green velvet armless chair (ZSARTS Velvet Armless Desk Chair, Green). Both items match the requested attributes\u2014mahogany finish for the desk and green velvet armless design for the chair\u2014satisfying the customer\u2019s explicit request. The quantities are correct, and all selected SKUs are within the provided candidate pool. No required attributes are missing.",
+          "casePass": true
+        }
+      ],
+      "casePass": true,
+      "stability": "1/1",
+      "failureCodes": [
+        "ANSWER_WRONG_SKU:Desk"
+      ],
+      "meanAnswerF1": 0.5,
+      "meanRetrievalRecall": 1
+    },
+    {
+      "rowNumber": 41,
+      "caseId": "TS-041",
+      "sentence": "I need a home office with a Slate Teak desk, a SertaPedic ergonomic chair, and a Dracaena plant.",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "answer_exact": true,
+            "reranker_aligned": true,
+            "constraint_compliance": true,
+            "retrieval_quality": true,
+            "raw_retrieval_recall": true,
+            "tool_call_accuracy": true,
+            "workflow_correctness": true
+          },
+          "failureCodes": [],
+          "answerF1": 1,
+          "retrievalRecall": 1,
+          "timing": {
+            "totalMs": 28658.493000000002,
+            "stages": [
+              {
+                "stage": "workspace-request-verifier",
+                "totalMs": 375.03,
+                "modelMs": 373.155,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.875,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "totalMs": 4614.887,
+                "modelMs": 4612.314,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.5729999999994106,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "totalMs": 8577.006,
+                "modelMs": 8315.48,
+                "toolMs": 248.69400000000002,
+                "guardrailMs": 0.41500000000000015,
+                "hostMs": 5.002000000000001,
+                "unattributedMs": 12.831999999999823,
+                "toolPlanningModelMs": 4436.924,
+                "finalStructuredModelMs": 3878.556,
+                "modelCallCount": 2,
+                "toolCallCount": 6
+              },
+              {
+                "stage": "build-candidate-product-pool",
+                "totalMs": 0.576,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 0.576,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "totalMs": 11250.647,
+                "modelMs": 11248.625,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.022000000000844,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "totalMs": 3833.359,
+                "modelMs": 3832.039,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.319999999999709,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "complete-workspace-suggestion-success",
+                "totalMs": 6.988,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 6.988,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              }
+            ],
+            "modelCalls": [
+              {
+                "stage": "workspace-request-verifier",
+                "phase": null,
+                "durationMs": 373.155,
+                "inputTokens": 540,
+                "outputTokens": 16,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "phase": null,
+                "durationMs": 4612.314,
+                "inputTokens": 3096,
+                "outputTokens": 345,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "tool-planning",
+                "durationMs": 4436.924,
+                "inputTokens": 2301,
+                "outputTokens": 284,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "final-structured",
+                "durationMs": 3878.556,
+                "inputTokens": 1936,
+                "outputTokens": 230,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "phase": null,
+                "durationMs": 11248.625,
+                "inputTokens": 6898,
+                "outputTokens": 123,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "phase": null,
+                "durationMs": 3832.039,
+                "inputTokens": 1716,
+                "outputTokens": 253,
+                "finishReasonLength": null
+              }
+            ],
+            "toolCalls": [
+              {
+                "tool": "search_catalogue",
+                "durationMs": 15.163,
+                "guardrailMs": 0.075,
+                "hostMs": 0.379,
+                "serverTiming": {
+                  "mcp": 0.379
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 185.663,
+                "guardrailMs": 0.126,
+                "hostMs": 0.157,
+                "serverTiming": {
+                  "mcp": 0.157
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 16.907,
+                "guardrailMs": 0.079,
+                "hostMs": 0.652,
+                "serverTiming": {
+                  "mcp": 0.652
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 8.243,
+                "guardrailMs": 0.042,
+                "hostMs": 0.171,
+                "serverTiming": {
+                  "mcp": 0.171
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 14.944,
+                "guardrailMs": 0.033,
+                "hostMs": 0.136,
+                "serverTiming": {
+                  "mcp": 0.136
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 7.774,
+                "guardrailMs": 0.060000000000000005,
+                "hostMs": 0.11,
+                "serverTiming": {
+                  "mcp": 0.11
+                }
+              }
+            ],
+            "wallMs": 107260.9752,
+            "modelMs": 28381.613,
+            "toolMs": 248.69400000000002,
+            "guardrailMs": 0.41500000000000015,
+            "hostMs": 5.002000000000001,
+            "unattributedMs": 28.185999999999787,
+            "unaccountedMs": 78602.4822,
+            "slowestStage": "catalogue-candidate-reranker"
+          },
+          "rerankerAligned": true,
+          "judgeEvaluated": false,
+          "judgePass": null,
+          "judgeConfidence": null,
+          "judgeAttempts": null,
+          "judgeReason": null,
+          "casePass": true
+        }
+      ],
+      "casePass": true,
+      "stability": "1/1",
+      "failureCodes": [],
+      "meanAnswerF1": 1,
+      "meanRetrievalRecall": 1
+    },
+    {
+      "rowNumber": 81,
+      "caseId": "TS-081",
+      "sentence": "I need a productive workspace with a VIVO 2-tier desk, a gray mesh chair, and a succulent trio.",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "answer_exact": true,
+            "reranker_aligned": true,
+            "constraint_compliance": true,
+            "retrieval_quality": true,
+            "raw_retrieval_recall": true,
+            "tool_call_accuracy": true,
+            "workflow_correctness": true
+          },
+          "failureCodes": [],
+          "answerF1": 1,
+          "retrievalRecall": 1,
+          "timing": {
+            "totalMs": 28014.338,
+            "stages": [
+              {
+                "stage": "workspace-request-verifier",
+                "totalMs": 343.655,
+                "modelMs": 342.582,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.072999999999979,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "totalMs": 3481.08,
+                "modelMs": 3473.427,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 7.652999999999793,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "totalMs": 8339.455,
+                "modelMs": 8151.787,
+                "toolMs": 176.313,
+                "guardrailMs": 0.5110000000000002,
+                "hostMs": 2.2460000000000004,
+                "unattributedMs": 11.354999999999677,
+                "toolPlanningModelMs": 4320.29,
+                "finalStructuredModelMs": 3831.497,
+                "modelCallCount": 2,
+                "toolCallCount": 6
+              },
+              {
+                "stage": "build-candidate-product-pool",
+                "totalMs": 1.154,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.154,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "totalMs": 11634.934,
+                "modelMs": 11632.297,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.6369999999988067,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "totalMs": 4203.935,
+                "modelMs": 4202.534,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.4010000000007494,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "complete-workspace-suggestion-success",
+                "totalMs": 10.125,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 10.125,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              }
+            ],
+            "modelCalls": [
+              {
+                "stage": "workspace-request-verifier",
+                "phase": null,
+                "durationMs": 342.582,
+                "inputTokens": 538,
+                "outputTokens": 15,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "phase": null,
+                "durationMs": 3473.427,
+                "inputTokens": 3094,
+                "outputTokens": 245,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "tool-planning",
+                "durationMs": 4320.29,
+                "inputTokens": 2269,
+                "outputTokens": 270,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "final-structured",
+                "durationMs": 3831.497,
+                "inputTokens": 1890,
+                "outputTokens": 230,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "phase": null,
+                "durationMs": 11632.297,
+                "inputTokens": 7407,
+                "outputTokens": 122,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "phase": null,
+                "durationMs": 4202.534,
+                "inputTokens": 1721,
+                "outputTokens": 285,
+                "finishReasonLength": null
+              }
+            ],
+            "toolCalls": [
+              {
+                "tool": "search_catalogue",
+                "durationMs": 13.65,
+                "guardrailMs": 0.072,
+                "hostMs": 0.262,
+                "serverTiming": {
+                  "mcp": 0.262
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 104.114,
+                "guardrailMs": 0.11400000000000002,
+                "hostMs": 0.183,
+                "serverTiming": {
+                  "mcp": 0.183
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 16.305,
+                "guardrailMs": 0.109,
+                "hostMs": 0.163,
+                "serverTiming": {
+                  "mcp": 0.163
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 14.468,
+                "guardrailMs": 0.086,
+                "hostMs": 0.145,
+                "serverTiming": {
+                  "mcp": 0.145
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 15.671,
+                "guardrailMs": 0.059000000000000004,
+                "hostMs": 0.122,
+                "serverTiming": {
+                  "mcp": 0.122
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 12.105,
+                "guardrailMs": 0.07100000000000001,
+                "hostMs": 0.273,
+                "serverTiming": {
+                  "mcp": 0.273
+                }
+              }
+            ],
+            "wallMs": 106386.2514,
+            "modelMs": 27802.627,
+            "toolMs": 176.313,
+            "guardrailMs": 0.5110000000000002,
+            "hostMs": 2.2460000000000004,
+            "unattributedMs": 35.397999999999,
+            "unaccountedMs": 78371.91339999999,
+            "slowestStage": "catalogue-candidate-reranker"
+          },
+          "rerankerAligned": true,
+          "judgeEvaluated": false,
+          "judgePass": null,
+          "judgeConfidence": null,
+          "judgeAttempts": null,
+          "judgeReason": null,
+          "casePass": true
+        }
+      ],
+      "casePass": true,
+      "stability": "1/1",
+      "failureCodes": [],
+      "meanAnswerF1": 1,
+      "meanRetrievalRecall": 1
+    },
+    {
+      "rowNumber": 121,
+      "caseId": "TS-121",
+      "sentence": "I need a modern workspace with a black mobile desk, a mesh chair, and a Monstera plant.",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "answer_exact": false,
+            "reranker_aligned": true,
+            "constraint_compliance": true,
+            "retrieval_quality": false,
+            "raw_retrieval_recall": true,
+            "tool_call_accuracy": true,
+            "workflow_correctness": true
+          },
+          "failureCodes": [
+            "ANSWER_WRONG_SKU:Desk",
+            "ANSWER_WRONG_SKU:Chair",
+            "RETRIEVAL_MISS:DSKB07Z74NMV",
+            "RETRIEVAL_MISS:CHAB09RLYPZ1",
+            "JUDGE_REJECTED"
+          ],
+          "answerF1": 0.3333333333333333,
+          "retrievalRecall": 0.3333333333333333,
+          "timing": {
+            "totalMs": 28144.782,
+            "stages": [
+              {
+                "stage": "workspace-request-verifier",
+                "totalMs": 325.239,
+                "modelMs": 323.998,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.2409999999999854,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "totalMs": 3631.392,
+                "modelMs": 3629.315,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.076999999999771,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "totalMs": 8682.703,
+                "modelMs": 8542.728,
+                "toolMs": 122.361,
+                "guardrailMs": 0.5390000000000003,
+                "hostMs": 3.2099999999999995,
+                "unattributedMs": 17.61400000000036,
+                "toolPlanningModelMs": 4132.68,
+                "finalStructuredModelMs": 4410.048,
+                "modelCallCount": 2,
+                "toolCallCount": 6
+              },
+              {
+                "stage": "build-candidate-product-pool",
+                "totalMs": 0.331,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 0.331,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "totalMs": 11515.187,
+                "modelMs": 11513.629,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.5579999999990832,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "totalMs": 3981.809,
+                "modelMs": 3979.652,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.157000000000153,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "complete-workspace-suggestion-success",
+                "totalMs": 8.121,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 8.121,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              }
+            ],
+            "modelCalls": [
+              {
+                "stage": "workspace-request-verifier",
+                "phase": null,
+                "durationMs": 323.998,
+                "inputTokens": 535,
+                "outputTokens": 16,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "phase": null,
+                "durationMs": 3629.315,
+                "inputTokens": 3091,
+                "outputTokens": 266,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "tool-planning",
+                "durationMs": 4132.68,
+                "inputTokens": 2283,
+                "outputTokens": 264,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "final-structured",
+                "durationMs": 4410.048,
+                "inputTokens": 1898,
+                "outputTokens": 230,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "phase": null,
+                "durationMs": 11513.629,
+                "inputTokens": 7342,
+                "outputTokens": 124,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "phase": null,
+                "durationMs": 3979.652,
+                "inputTokens": 1722,
+                "outputTokens": 272,
+                "finishReasonLength": null
+              }
+            ],
+            "toolCalls": [
+              {
+                "tool": "search_catalogue",
+                "durationMs": 13.445,
+                "guardrailMs": 0.05999999999999999,
+                "hostMs": 0.296,
+                "serverTiming": {
+                  "mcp": 0.296
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 33.728,
+                "guardrailMs": 0.07799999999999999,
+                "hostMs": 0.126,
+                "serverTiming": {
+                  "mcp": 0.126
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 21.684,
+                "guardrailMs": 0.08399999999999999,
+                "hostMs": 0.19,
+                "serverTiming": {
+                  "mcp": 0.19
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 12.257,
+                "guardrailMs": 0.094,
+                "hostMs": 0.162,
+                "serverTiming": {
+                  "mcp": 0.162
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 23.227,
+                "guardrailMs": 0.085,
+                "hostMs": 0.365,
+                "serverTiming": {
+                  "mcp": 0.365
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 18.02,
+                "guardrailMs": 0.138,
+                "hostMs": 0.485,
+                "serverTiming": {
+                  "mcp": 0.485
+                }
+              }
+            ],
+            "wallMs": 106269.6472,
+            "modelMs": 27989.322,
+            "toolMs": 122.361,
+            "guardrailMs": 0.5390000000000003,
+            "hostMs": 3.2099999999999995,
+            "unattributedMs": 33.09899999999935,
+            "unaccountedMs": 78124.8652,
+            "slowestStage": "catalogue-candidate-reranker"
+          },
+          "rerankerAligned": true,
+          "judgeEvaluated": true,
+          "judgePass": false,
+          "judgeConfidence": 0.95,
+          "judgeAttempts": 1,
+          "judgeReason": "The final desk is a HON Mod Desk Shell in Mahogany, which is not black and is not a mobile desk. The customer explicitly requested a black mobile desk, so the desk requirement is not satisfied.",
+          "casePass": true
+        }
+      ],
+      "casePass": true,
+      "stability": "1/1",
+      "failureCodes": [
+        "ANSWER_WRONG_SKU:Desk",
+        "ANSWER_WRONG_SKU:Chair",
+        "RETRIEVAL_MISS:DSKB07Z74NMV",
+        "RETRIEVAL_MISS:CHAB09RLYPZ1",
+        "JUDGE_REJECTED"
+      ],
+      "meanAnswerF1": 0.3333333333333333,
+      "meanRetrievalRecall": 0.3333333333333333
+    },
+    {
+      "rowNumber": 161,
+      "caseId": "TS-161",
+      "sentence": "I need a gaming den with a grey standing desk, a CIMOO black leather chair, and a 27-inch gaming monitor.",
+      "repetitions": [
+        {
+          "repetition": 1,
+          "metrics": {
+            "answer_exact": true,
+            "reranker_aligned": true,
+            "constraint_compliance": true,
+            "retrieval_quality": true,
+            "raw_retrieval_recall": true,
+            "tool_call_accuracy": true,
+            "workflow_correctness": true
+          },
+          "failureCodes": [],
+          "answerF1": 1,
+          "retrievalRecall": 1,
+          "timing": {
+            "totalMs": 28713.938,
+            "stages": [
+              {
+                "stage": "workspace-request-verifier",
+                "totalMs": 372.672,
+                "modelMs": 371.314,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 1.358000000000004,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "totalMs": 4513.336,
+                "modelMs": 4511.316,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.0200000000004366,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "totalMs": 8734.844,
+                "modelMs": 8534.285,
+                "toolMs": 188.742,
+                "guardrailMs": 0.4050000000000002,
+                "hostMs": 2.8040000000000003,
+                "unattributedMs": 11.816999999999297,
+                "toolPlanningModelMs": 4551.073,
+                "finalStructuredModelMs": 3983.212,
+                "modelCallCount": 2,
+                "toolCallCount": 6
+              },
+              {
+                "stage": "build-candidate-product-pool",
+                "totalMs": 0.35,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 0.35,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "totalMs": 10720.652,
+                "modelMs": 10718.318,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.334000000000742,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "totalMs": 4371.746,
+                "modelMs": 4369.495,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 2.2510000000002037,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 1,
+                "toolCallCount": 0
+              },
+              {
+                "stage": "complete-workspace-suggestion-success",
+                "totalMs": 0.338,
+                "modelMs": 0,
+                "toolMs": 0,
+                "guardrailMs": 0,
+                "hostMs": 0,
+                "unattributedMs": 0.338,
+                "toolPlanningModelMs": 0,
+                "finalStructuredModelMs": 0,
+                "modelCallCount": 0,
+                "toolCallCount": 0
+              }
+            ],
+            "modelCalls": [
+              {
+                "stage": "workspace-request-verifier",
+                "phase": null,
+                "durationMs": 371.314,
+                "inputTokens": 540,
+                "outputTokens": 16,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-requirement-rephraser",
+                "phase": null,
+                "durationMs": 4511.316,
+                "inputTokens": 3096,
+                "outputTokens": 339,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "tool-planning",
+                "durationMs": 4551.073,
+                "inputTokens": 2296,
+                "outputTokens": 285,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-product-retriever",
+                "phase": "final-structured",
+                "durationMs": 3983.212,
+                "inputTokens": 1932,
+                "outputTokens": 230,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "catalogue-candidate-reranker",
+                "phase": null,
+                "durationMs": 10718.318,
+                "inputTokens": 7014,
+                "outputTokens": 125,
+                "finishReasonLength": null
+              },
+              {
+                "stage": "workspace-setup-composer",
+                "phase": null,
+                "durationMs": 4369.495,
+                "inputTokens": 1693,
+                "outputTokens": 290,
+                "finishReasonLength": null
+              }
+            ],
+            "toolCalls": [
+              {
+                "tool": "search_catalogue",
+                "durationMs": 14.552,
+                "guardrailMs": 0.055,
+                "hostMs": 0.209,
+                "serverTiming": {
+                  "mcp": 0.209
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 128.435,
+                "guardrailMs": 0.10299999999999998,
+                "hostMs": 0.199,
+                "serverTiming": {
+                  "mcp": 0.199
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 16.082,
+                "guardrailMs": 0.073,
+                "hostMs": 0.487,
+                "serverTiming": {
+                  "mcp": 0.487
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 8.93,
+                "guardrailMs": 0.073,
+                "hostMs": 0.297,
+                "serverTiming": {
+                  "mcp": 0.297
+                }
+              },
+              {
+                "tool": "search_catalogue",
+                "durationMs": 11.542,
+                "guardrailMs": 0.05299999999999999,
+                "hostMs": 0.174,
+                "serverTiming": {
+                  "mcp": 0.174
+                }
+              },
+              {
+                "tool": "search_similarity_catalogue",
+                "durationMs": 9.201,
+                "guardrailMs": 0.048,
+                "hostMs": 0.116,
+                "serverTiming": {
+                  "mcp": 0.116
+                }
+              }
+            ],
+            "wallMs": 107414.9387,
+            "modelMs": 28504.728,
+            "toolMs": 188.742,
+            "guardrailMs": 0.4050000000000002,
+            "hostMs": 2.8040000000000003,
+            "unattributedMs": 20.468000000000686,
+            "unaccountedMs": 78701.0007,
+            "slowestStage": "catalogue-candidate-reranker"
+          },
+          "rerankerAligned": true,
+          "judgeEvaluated": false,
+          "judgePass": null,
+          "judgeConfidence": null,
+          "judgeAttempts": null,
+          "judgeReason": null,
+          "casePass": true
+        }
+      ],
+      "casePass": true,
+      "stability": "1/1",
+      "failureCodes": [],
+      "meanAnswerF1": 1,
+      "meanRetrievalRecall": 1
+    }
+  ],
+  "metrics": [
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "non_empty",
+      "passed": true,
+      "value": 1,
+      "reason": "Response length 302 meets minimum 1"
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_called_check",
+      "passed": true,
+      "value": 1,
+      "reason": "Called: search_catalogue, search_similarity_catalogue"
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "answer_exact",
+      "passed": false,
+      "value": 0,
+      "reason": "ANSWER_WRONG_SKU:Desk"
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "reranker_aligned",
+      "passed": true,
+      "value": 1,
+      "reason": "Reranker returned supplied SKUs: Desk, Chair"
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "constraint_compliance",
+      "passed": true,
+      "value": 1,
+      "reason": "All constraints met."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "retrieval_quality",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was selected."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "raw_retrieval_recall",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was returned by a search."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_call_accuracy",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected component was searched (100% coverage)."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "workflow_correctness",
+      "passed": true,
+      "value": 1,
+      "reason": "The expected workflow transitions ran to success."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "non_empty",
+      "passed": true,
+      "value": 1,
+      "reason": "Response length 270 meets minimum 1"
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_called_check",
+      "passed": true,
+      "value": 1,
+      "reason": "Called: search_catalogue, search_similarity_catalogue"
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "answer_exact",
+      "passed": true,
+      "value": 1,
+      "reason": "Exact SKU set matched."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "reranker_aligned",
+      "passed": true,
+      "value": 1,
+      "reason": "Reranker returned supplied SKUs: Desk, Chair, Plant"
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "constraint_compliance",
+      "passed": true,
+      "value": 1,
+      "reason": "All constraints met."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "retrieval_quality",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was selected."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "raw_retrieval_recall",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was returned by a search."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_call_accuracy",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected component was searched (100% coverage)."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "workflow_correctness",
+      "passed": true,
+      "value": 1,
+      "reason": "The expected workflow transitions ran to success."
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "non_empty",
+      "passed": true,
+      "value": 1,
+      "reason": "Response length 545 meets minimum 1"
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_called_check",
+      "passed": true,
+      "value": 1,
+      "reason": "Called: search_catalogue, search_similarity_catalogue"
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "answer_exact",
+      "passed": true,
+      "value": 1,
+      "reason": "Exact SKU set matched."
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "reranker_aligned",
+      "passed": true,
+      "value": 1,
+      "reason": "Reranker returned supplied SKUs: Desk, Chair, Plant"
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "constraint_compliance",
+      "passed": true,
+      "value": 1,
+      "reason": "All constraints met."
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "retrieval_quality",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was selected."
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "raw_retrieval_recall",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was returned by a search."
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_call_accuracy",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected component was searched (100% coverage)."
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "workflow_correctness",
+      "passed": true,
+      "value": 1,
+      "reason": "The expected workflow transitions ran to success."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "non_empty",
+      "passed": true,
+      "value": 1,
+      "reason": "Response length 394 meets minimum 1"
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_called_check",
+      "passed": true,
+      "value": 1,
+      "reason": "Called: search_catalogue, search_similarity_catalogue"
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "answer_exact",
+      "passed": false,
+      "value": 0,
+      "reason": "ANSWER_WRONG_SKU:Desk; ANSWER_WRONG_SKU:Chair"
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "reranker_aligned",
+      "passed": true,
+      "value": 1,
+      "reason": "Reranker returned supplied SKUs: Desk, Chair, Plant"
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "constraint_compliance",
+      "passed": true,
+      "value": 1,
+      "reason": "All constraints met."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "retrieval_quality",
+      "passed": false,
+      "value": 0,
+      "reason": "RETRIEVAL_MISS:DSKB07Z74NMV; RETRIEVAL_MISS:CHAB09RLYPZ1"
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "raw_retrieval_recall",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was returned by a search."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_call_accuracy",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected component was searched (100% coverage)."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "workflow_correctness",
+      "passed": true,
+      "value": 1,
+      "reason": "The expected workflow transitions ran to success."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "non_empty",
+      "passed": true,
+      "value": 1,
+      "reason": "Response length 446 meets minimum 1"
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_called_check",
+      "passed": true,
+      "value": 1,
+      "reason": "Called: search_catalogue, search_similarity_catalogue"
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "answer_exact",
+      "passed": true,
+      "value": 1,
+      "reason": "Exact SKU set matched."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "reranker_aligned",
+      "passed": true,
+      "value": 1,
+      "reason": "Reranker returned supplied SKUs: Desk, Chair, Monitor"
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "constraint_compliance",
+      "passed": true,
+      "value": 1,
+      "reason": "All constraints met."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "retrieval_quality",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was selected."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "raw_retrieval_recall",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected SKU was returned by a search."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "tool_call_accuracy",
+      "passed": true,
+      "value": 1,
+      "reason": "Every expected component was searched (100% coverage)."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "LocalEvaluator",
+      "metric": "workflow_correctness",
+      "passed": true,
+      "value": 1,
+      "reason": "The expected workflow transitions ran to success."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_evaluated",
+      "passed": true,
+      "value": 1,
+      "reason": "The final setup includes a mahogany desk (Alera VA216630MY Valencia Series Straight Front Desk Shell, Mahogany) and a green velvet armless chair (ZSARTS Velvet Armless Desk Chair, Green). Both items match the requested attributes\u2014mahogany finish for the desk and green velvet armless design for the chair\u2014satisfying the customer\u2019s explicit request. The quantities are correct, and all selected SKUs are within the provided candidate pool. No required attributes are missing."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_pass",
+      "passed": true,
+      "value": 1,
+      "reason": "The final setup includes a mahogany desk (Alera VA216630MY Valencia Series Straight Front Desk Shell, Mahogany) and a green velvet armless chair (ZSARTS Velvet Armless Desk Chair, Green). Both items match the requested attributes\u2014mahogany finish for the desk and green velvet armless design for the chair\u2014satisfying the customer\u2019s explicit request. The quantities are correct, and all selected SKUs are within the provided candidate pool. No required attributes are missing."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_confidence",
+      "passed": false,
+      "value": 0.95,
+      "reason": "The final setup includes a mahogany desk (Alera VA216630MY Valencia Series Straight Front Desk Shell, Mahogany) and a green velvet armless chair (ZSARTS Velvet Armless Desk Chair, Green). Both items match the requested attributes\u2014mahogany finish for the desk and green velvet armless design for the chair\u2014satisfying the customer\u2019s explicit request. The quantities are correct, and all selected SKUs are within the provided candidate pool. No required attributes are missing."
+    },
+    {
+      "runId": "eval-TS-001-r1",
+      "rowNumber": 1,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_attempts",
+      "passed": false,
+      "value": 1,
+      "reason": "The final setup includes a mahogany desk (Alera VA216630MY Valencia Series Straight Front Desk Shell, Mahogany) and a green velvet armless chair (ZSARTS Velvet Armless Desk Chair, Green). Both items match the requested attributes\u2014mahogany finish for the desk and green velvet armless design for the chair\u2014satisfying the customer\u2019s explicit request. The quantities are correct, and all selected SKUs are within the provided candidate pool. No required attributes are missing."
+    },
+    {
+      "runId": "eval-TS-041-r1",
+      "rowNumber": 41,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_evaluated",
+      "passed": false,
+      "value": 0,
+      "reason": ""
+    },
+    {
+      "runId": "eval-TS-081-r1",
+      "rowNumber": 81,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_evaluated",
+      "passed": false,
+      "value": 0,
+      "reason": ""
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_evaluated",
+      "passed": true,
+      "value": 1,
+      "reason": "The final desk is a HON Mod Desk Shell in Mahogany, which is not black and is not a mobile desk. The customer explicitly requested a black mobile desk, so the desk requirement is not satisfied."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_pass",
+      "passed": false,
+      "value": 0,
+      "reason": "The final desk is a HON Mod Desk Shell in Mahogany, which is not black and is not a mobile desk. The customer explicitly requested a black mobile desk, so the desk requirement is not satisfied."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_confidence",
+      "passed": false,
+      "value": 0.95,
+      "reason": "The final desk is a HON Mod Desk Shell in Mahogany, which is not black and is not a mobile desk. The customer explicitly requested a black mobile desk, so the desk requirement is not satisfied."
+    },
+    {
+      "runId": "eval-TS-121-r1",
+      "rowNumber": 121,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_attempts",
+      "passed": false,
+      "value": 1,
+      "reason": "The final desk is a HON Mod Desk Shell in Mahogany, which is not black and is not a mobile desk. The customer explicitly requested a black mobile desk, so the desk requirement is not satisfied."
+    },
+    {
+      "runId": "eval-TS-161-r1",
+      "rowNumber": 161,
+      "repetition": 1,
+      "provider": "local-llama-judge",
+      "metric": "judge_evaluated",
+      "passed": false,
+      "value": 0,
+      "reason": ""
+    }
+  ],
+  "summary": {
+    "rows": 5,
+    "executions": 5,
+    "casePass": 5,
+    "casePassRate": 1,
+    "metricPassRates": {
+      "answer_exact": 0.6,
+      "constraint_compliance": 1,
+      "retrieval_quality": 0.8,
+      "raw_retrieval_recall": 1,
+      "tool_call_accuracy": 1,
+      "workflow_correctness": 1,
+      "reranker_aligned": 1
+    },
+    "stability": {
+      "1/1": 5
+    },
+    "judgeConfigured": true,
+    "judgeEvaluated": 2,
+    "judgePass": 1,
+    "judgePassRate": 0.5
+  },
+  "scope": "Tiny",
+  "totalRows": 200,
+  "stopReason": null,
+  "bias": {
+    "metrics": [
+      {
+        "section": "Fairness",
+        "name": "Demographic Parity Difference",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Fairness",
+        "name": "Disparate Impact Ratio",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Fairness",
+        "name": "Equal Opportunity Difference",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No qualified labels or protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Fairness",
+        "name": "Equalized Odds Difference",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels or negative controls exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Fairness",
+        "name": "Group Calibration Error",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels or per-group confidence values exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Fairness",
+        "name": "Worst-Group Performance",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Group Exposure Difference",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Recall@K by Group",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "NDCG@K by Group",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Recommendation Diversity",
+        "status": "Computed",
+        "value": 0.9285714285714286,
+        "sampleSize": 14,
+        "reason": null,
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Category Exposure",
+        "status": "Computed",
+        "value": 0,
+        "sampleSize": 14,
+        "reason": null,
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Retrieval Coverage",
+        "status": "Computed",
+        "value": 1,
+        "sampleSize": 14,
+        "reason": null,
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Counterfactual Consistency",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No counterfactual pairs exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Recommendation",
+        "name": "Attribute Sensitivity",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No controlled attribute pairs exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Reasoning",
+        "name": "Verifier Refusal Rate",
+        "status": "Computed",
+        "value": 0,
+        "sampleSize": 5,
+        "reason": null,
+        "stage": "verifier"
+      },
+      {
+        "section": "Reasoning",
+        "name": "Decision Consistency Rate",
+        "status": "InsufficientData",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No duplicate sentence groups exist in the selected scope.",
+        "stage": null
+      },
+      {
+        "section": "Reasoning",
+        "name": "Counterfactual Flip Rate",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No counterfactual pairs exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Reasoning",
+        "name": "Unsupported Assumption Rate",
+        "status": "Computed",
+        "value": 0,
+        "sampleSize": 5,
+        "reason": null,
+        "stage": "rephraser"
+      },
+      {
+        "section": "Reasoning",
+        "name": "Evidence Grounding Rate",
+        "status": "Computed",
+        "value": 1,
+        "sampleSize": 16,
+        "reason": null,
+        "stage": "builder"
+      },
+      {
+        "section": "Reasoning",
+        "name": "Tool Selection Disparity",
+        "status": "Computed",
+        "value": 0,
+        "sampleSize": 3,
+        "reason": null,
+        "stage": "retriever"
+      },
+      {
+        "section": "Reasoning",
+        "name": "Constraint Violation Rate",
+        "status": "Computed",
+        "value": 0,
+        "sampleSize": 5,
+        "reason": null,
+        "stage": "builder"
+      },
+      {
+        "section": "Reasoning",
+        "name": "Reviewer Disagreement Rate",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No reviewer decisions were found in the trace.",
+        "stage": "reviewer"
+      },
+      {
+        "section": "Language",
+        "name": "Stereotype Incidence Rate",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No stereotype annotation or classifier exists in the evaluation harness.",
+        "stage": null
+      },
+      {
+        "section": "Language",
+        "name": "Toxicity Rate by Group",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No toxicity classifier or protected-group labels exist in the evaluation harness.",
+        "stage": null
+      },
+      {
+        "section": "Language",
+        "name": "Sentiment Disparity",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No equivalent prompt pairs or sentiment classifier exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Language",
+        "name": "Refusal Rate by Group",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Language",
+        "name": "Quality-of-Service Gap",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels exist in the fixture.",
+        "stage": null
+      },
+      {
+        "section": "Language",
+        "name": "Uncertainty Calibration Gap",
+        "status": "NotApplicable",
+        "value": null,
+        "sampleSize": 0,
+        "reason": "No protected-group labels or per-group confidence values exist in the fixture.",
+        "stage": null
+      }
+    ]
+  }
+}

@@ -16,7 +16,7 @@ namespace CoreRentalNet.Host.Configs;
 internal static class CatalogToolLimits
 {
     /// <summary>The rows a tool answer carries when the caller names no limit.</summary>
-    public const int DefaultProductCount = 8;
+    public const int DefaultProductCount = 12;
 
     /// <summary>The most rows a tool answer will carry, whatever the caller asks for.</summary>
     public const int MaximumProductCount = 25;
@@ -40,7 +40,7 @@ internal static class CatalogToolLimits
     /// <para>
     /// It is eight because recall is already saturated well below it: measured over the real catalogue, three
     /// terms within one category return the whole category, so a ninth buys almost nothing while it dilutes the
-    /// ranking the cap is spent on.
+    /// ranking the cap is spent on. The answer window is twelve; this input bound remains eight.
     /// </para>
     /// </remarks>
     public const int MaximumSearchTermCount = 8;
