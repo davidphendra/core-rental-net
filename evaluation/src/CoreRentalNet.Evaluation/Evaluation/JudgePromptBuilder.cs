@@ -20,14 +20,6 @@ public sealed class JudgePromptBuilder
         var evidence = new
         {
             request,
-            expectedSetup = context.ExpectedVariants.Select(variant => new
-            {
-                lines = variant.Lines.Select(line => new
-                {
-                    slot = line.Slot,
-                    skus = line.Skus,
-                }),
-            }),
             beforeReranker = context.FinalToolAnswers.Select(answer => new
             {
                 slot = answer.Slot,
@@ -53,13 +45,6 @@ public sealed class JudgePromptBuilder
                     line.Amount,
                     products.GetValueOrDefault(line.Sku)?.Description)),
             }),
-            deterministicFindings = new
-            {
-                answerExact = AnswerComparison.Evaluate(context).Exact,
-                rerankerAligned = RerankerAlignment.Evaluate(context).Aligned,
-                rawRetrievalRecall = context.FinalToolAnswers.Count > 0,
-            },
-            mismatch = RerankerMismatchDetector.Detect(context),
         };
 
         return

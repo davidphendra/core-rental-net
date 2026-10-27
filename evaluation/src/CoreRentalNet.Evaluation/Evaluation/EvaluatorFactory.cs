@@ -18,7 +18,6 @@ public static class EvaluatorFactory
                 WorkspaceToolNames.MeaningSearch),
 
             AnswerExactCheck.Create(),
-            RerankerAlignmentCheck.Create(),
             new ConstraintComplianceCheck(catalogue).Create(),
             RetrievalQualityCheck.Create(),
             RawRetrievalQualityCheck.Create(),

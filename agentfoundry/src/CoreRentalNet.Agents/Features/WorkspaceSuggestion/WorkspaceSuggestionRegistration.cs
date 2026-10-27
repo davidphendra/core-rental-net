@@ -53,9 +53,9 @@ public static class WorkspaceSuggestionRegistration
 
         services.AddSingleton(workflowOptions);
 
-        // The deterministic policies - the pool's bound, the selection's, the vocabulary's - are built by the
-        // executor builder from these options, which is the one source of what the bounds are. Registering them
-        // here as well would be a second source, and the two would be free to disagree.
+        // The remaining deterministic policies are built by the executor builder from these options. The
+        // post-reranker selection policy is the single validation gate; the rephraser prompt owns its own
+        // category and vocabulary reading.
 
         // Where a run's catalogue token is read from: the invocation's own headers, which the hosting layer
         // forwards for names carrying its client prefix. Nothing carries one in a message any more, so there is

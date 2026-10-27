@@ -21,9 +21,6 @@ internal sealed record WorkspaceSuggestionExecutors(
     ExecutorBinding ProductPool,
     ExecutorBinding Reranker,
     ExecutorBinding Composer,
-    ExecutorBinding Validator,
-    ExecutorBinding Reviewer,
-    ExecutorBinding RetryDecision,
     ExecutorBinding Success,
     ExecutorBinding Rejected,
     ExecutorBinding Unavailable)

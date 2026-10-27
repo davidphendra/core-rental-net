@@ -88,8 +88,7 @@ public sealed class LocalJudgeEvaluator(
     }
 
     private static bool ShouldEvaluate(WorkspaceContext context)
-        => !AnswerComparison.Evaluate(context).Exact
-           && RerankerAlignment.Evaluate(context).Aligned;
+        => !AnswerComparison.Evaluate(context).Exact;
 
     private static EvaluationResult ToResult(JudgeEvaluation evaluation)
     {

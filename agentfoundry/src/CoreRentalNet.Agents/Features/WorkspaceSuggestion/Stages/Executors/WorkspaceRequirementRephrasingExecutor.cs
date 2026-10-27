@@ -10,16 +10,12 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Reads the sentence again, using only the previous attempt's issues when there were any.</summary>
 /// <remarks>
-/// <b>The reading is bounded before it is kept.</b> A model that returned more words than a search accepts would
-/// otherwise reach the retriever, be refused at the tool boundary, and end a run over a cosmetic overrun — and
-/// the refusal's sentence does not cross back to say so. The policy is the reason that path is unreachable from
-/// this pipeline rather than a hope that the prompt was obeyed.
+/// The prompt owns the category reading and the search vocabulary. The application keeps only the budget
+/// invariant and the model-term correction, neither of which decides whether a component is relevant.
 /// </remarks>
 internal sealed class WorkspaceRequirementRephrasingExecutor(
     AIAgent stageAgent,
-    WorkspaceComponentSearchVocabularyLimitPolicy vocabularyLimitPolicy,
     WorkspaceRequirementBudgetInvariantPolicy budgetInvariantPolicy,
-    WorkspaceAccessoryRelevancePolicy accessoryRelevancePolicy,
     WorkspaceExplicitModelTermPolicy explicitModelTermPolicy,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Rephraser, logger, modelBacked: true)
@@ -47,11 +43,9 @@ internal sealed class WorkspaceRequirementRephrasingExecutor(
                     workspaceSuggestionWorkflowState.OriginalCustomerQuery);
 
                 workspaceSuggestionWorkflowState.RequirementExpansion =
-                    accessoryRelevancePolicy.ApplyRequestedAccessories(
-                        budgetInvariantPolicy.ApplyBudgetInvariant(
-                            vocabularyLimitPolicy.ApplySearchVocabularyLimits(
-                                explicitModelTermPolicy.Apply(expansion)),
-                            workspaceSuggestionWorkflowState.CustomerStatedCeilingMonthly));
+                    budgetInvariantPolicy.ApplyBudgetInvariant(
+                        explicitModelTermPolicy.Apply(expansion),
+                        workspaceSuggestionWorkflowState.CustomerStatedCeilingMonthly);
             },
             cancellationToken);
 

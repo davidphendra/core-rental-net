@@ -380,7 +380,7 @@ Six stage agents, each one prompt and one profile (`WorkspaceSuggestionAgentRost
 | Stage | Agent name | Prompt | Decides | Tools |
 |---|---|---|---|---|
 | Verifier | `workspace-request-verifier` | `workspace-request-verifier.v3.md` | Is this a workspace request at all? | none |
-| Rephraser | `workspace-requirement-rephraser` | `workspace-requirement-rephraser.v9.md` | What does the customer want, and what words will find it? | none |
+| Rephraser | `workspace-requirement-rephraser` | `workspace-requirement-rephraser.v10.md` | What does the customer want, and what words will find it? | none |
 | Retriever | `catalogue-product-retriever` | `catalogue-product-retriever.v6.md` | What does the catalogue offer? | the catalogue's MCP tools — **BM25** keyword and **semantic** vector search, as the caller's token allows |
 | Reranker | `catalogue-candidate-reranker` | `catalogue-candidate-reranker.v5.md` | Which of what it offered answers each component? | none |
 | Composer | `workspace-setup-composer` | `workspace-setup-composer.v4.md` | Which products form a setup? | none |
@@ -390,11 +390,8 @@ Six stage agents, each one prompt and one profile (`WorkspaceSuggestionAgentRost
 
 Code, not prompts — the decisions a model must not make:
 
-- `WorkspaceComponentProductPoolPolicy` — one product per SKU, at most fifteen per component.
-- `WorkspaceComponentProductSelectionPolicy` — the reranker's order, a SKU it was never given dropped.
-- `WorkspaceComponentSearchVocabularyLimitPolicy` — bounds the words before the retriever sees them.
-- `WorkspaceSetupCandidateStructureValidator` — every SKU came from the reranked set, quantities within capacity, components actually requested.
-- `WorkspaceSetupRetryDecisionPolicy` — which of the three endings, and whether an attempt is left.
+- `WorkspaceExplicitModelTermPolicy` — keeps a customer-typed model token with its named component.
+- `WorkspaceRequirementBudgetInvariantPolicy` — clears invented or inconsistent budgets.
 
 ### 9.5 The echo agent
 

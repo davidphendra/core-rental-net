@@ -3,20 +3,17 @@ using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.Logging;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Domain.Outputs;
-using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.DeterministicPolicies;
 using CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Routing;
 
 namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages.Executors;
 
 /// <summary>Orders each component's retrieved products, so the composer chooses from a short good list.</summary>
 /// <remarks>
-/// It selects nothing itself and composes nothing: it hands the model one component's rows at a time and keeps
-/// what came back through the selection policy, which is where the two guarantees live — a product cannot be
-/// introduced, and a component cannot be lost to a stronger sibling.
+/// It ranks and projects only. The reranker's chosen SKUs are resolved against the candidate pool for their
+/// component; that projection is intentionally non-validating.
 /// </remarks>
 internal sealed class WorkspaceComponentProductRerankingExecutor(
     AIAgent stageAgent,
-    WorkspaceComponentProductSelectionPolicy selectionPolicy,
     ILogger logger)
     : WorkspaceSuggestionStreamingExecutor(WorkspaceWorkflowExecutorNames.Reranker, logger, modelBacked: true)
 {
@@ -38,13 +35,40 @@ internal sealed class WorkspaceComponentProductRerankingExecutor(
                     WorkspaceStageInput.Reranking(workspaceSuggestionWorkflowState),
                     cancellationToken: stageCancellationToken);
 
-                workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates = selectionPolicy.SelectFromPool(
+                workspaceSuggestionWorkflowState.SelectedWorkspaceCandidates = MapCandidates(
                     workspaceSuggestionWorkflowState.CandidatePool,
-                    agentResponse.Result,
-                    workspaceSuggestionWorkflowState.RequirementExpansion);
+                    agentResponse.Result);
             },
             cancellationToken);
 
         return workspaceSuggestionWorkflowState;
+    }
+
+    private static IReadOnlyList<SelectedWorkspaceComponentProduct> MapCandidates(
+        IReadOnlyList<RetrievedWorkspaceComponentProduct> candidatePool,
+        WorkspaceComponentProductRankingResult rankingResult)
+    {
+        var productsBySku = new Dictionary<string, RetrievedWorkspaceComponentProduct>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var product in candidatePool)
+        {
+            productsBySku.TryAdd(product.Sku, product);
+        }
+
+        var selected = new List<SelectedWorkspaceComponentProduct>();
+
+        foreach (var (_, assessments) in rankingResult.Assessments.EveryComponent())
+        {
+            foreach (var assessment in assessments)
+            {
+                if (productsBySku.TryGetValue(assessment.Sku, out var product))
+                {
+                    selected.Add(new SelectedWorkspaceComponentProduct(product, assessment.Relevance));
+                }
+            }
+        }
+
+        return selected;
     }
 }

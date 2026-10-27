@@ -45,8 +45,8 @@ internal sealed class WorkspaceSuggestionWorkflowFactory()
             .AddEdge(executors.Reranker, executors.Composer)
             .AddEdge(executors.Composer, executors.Success)
 
-            // Reviewer, validator, and retry remain constructed for diagnostics only. They are not
-            // connected to the decision path: the composer materialises the reranker result directly.
+            // The composer materialises the reranker result directly; the selection policy is the only
+            // post-reranker validation.
             .WithOutputFrom(executors.All.ToArray())
             .WithName(WorkflowName)
             .Build();

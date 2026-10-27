@@ -11,10 +11,8 @@ namespace CoreRentalNet.Agents.Features.WorkspaceSuggestion.Stages;
 /// <summary>Builds one workspace workflow's stage executors, and nothing else.</summary>
 /// <remarks>
 /// <para>
-/// <b>The deterministic policies are built here, from the workflow's own options.</b> They were registered in the
-/// container as singletons <i>and</i> constructed in the factory, so three of those registrations were dead and
-/// the same bounds existed twice. One place constructs them and that place is this one; the options are the
-/// single source of what the bounds are.
+/// <b>The remaining deterministic policies are built here, from the workflow's own options.</b> The only
+/// post-reranker validation is the selection policy; the rephraser prompt owns category reading and vocabulary.
 /// </para>
 /// <para>
 /// <b>The executors belong to one request's graph.</b> The token service, header reader, tool-answer ledger and
@@ -46,11 +44,7 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
             Rephraser: new WorkspaceRequirementRephrasingExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Rephraser),
-                new WorkspaceComponentSearchVocabularyLimitPolicy(
-                    workflowOptions.MaximumSearchTermCountPerComponent,
-                    workflowOptions.MaximumSearchTermCharacterCount),
                 new WorkspaceRequirementBudgetInvariantPolicy(),
-                new WorkspaceAccessoryRelevancePolicy(),
                 new WorkspaceExplicitModelTermPolicy(),
                 logger
             ).BindExecutor(),
@@ -63,37 +57,16 @@ internal sealed class WorkspaceSuggestionExecutorBuilder(
 
             ProductPool: new WorkspaceComponentProductPoolExecutor(
                 new WorkspaceComponentProductPoolBuilder(CatalogueSearchToolNames.All),
-                new WorkspaceComponentProductPoolPolicy(
-                    workflowOptions.MaximumRetrievedProductsPerComponentForReranking),
                 runScopedServiceResolver, logger
             ).BindExecutor(),
 
             Reranker: new WorkspaceComponentProductRerankingExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Reranker),
-                new WorkspaceComponentProductSelectionPolicy(
-                    workflowOptions.MaximumSelectedProductsPerComponent),
                 logger
             ).BindExecutor(),
 
             Composer: new WorkspaceSetupCompositionExecutor(
                 agentBuilder.For(WorkspaceSuggestionAgentRoster.Composer),
-                logger
-            ).BindExecutor(),
-
-            Validator: new WorkspaceSetupCandidateValidationExecutor(
-                new WorkspaceSetupCandidateStructureValidator(),
-                logger
-            ).BindExecutor(),
-
-            Reviewer: new WorkspaceSetupReviewExecutor(
-                agentBuilder.For(WorkspaceSuggestionAgentRoster.Reviewer),
-                new WorkspaceSetupReviewEvidencePolicy(),
-                logger
-            ).BindExecutor(),
-
-            RetryDecision: new WorkspaceSetupRetryDecisionExecutor(
-                new WorkspaceSetupRetryDecisionPolicy(workflowOptions.MaximumAttemptCount),
-                new WorkspaceRetryProgressPolicy(),
                 logger
             ).BindExecutor(),
 

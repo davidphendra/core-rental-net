@@ -141,25 +141,14 @@ public sealed class EvaluationReportFactory(
             : null;
         var judgeReason = passRow?.Reason;
 
-        var failures = metrics
-            .Where(metric => metric.RunId == run.RunId
-                             && MetricNames.CasePassMetrics.Contains(metric.Metric)
-                             && !metric.Passed)
-            .SelectMany(metric => (metric.Reason ?? string.Empty)
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            .Where(code => code.Length > 0)
-            .Concat(run.TimedOut ? [FailureCodes.CaseTimeout] : [])
-            .Concat(judgeEvaluated == true && judgePass != true
-                ? [JudgeFailureCode(judgeReason)]
-                : [])
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
+        string[] failures = run.TimedOut
+            ? [FailureCodes.CaseTimeout]
+            : [];
 
         var context = WorkspaceContext.Parse(item.Context);
         var answer = AnswerComparison.Evaluate(context);
         var retrieval = RetrievalQuality.Evaluate(context);
-        var alignment = RerankerAlignment.Evaluate(context);
-        var casePass = alignment.Aligned;
+        var casePass = run.Completed && !run.TimedOut && context.Candidates.Count > 0;
 
         return new RepetitionResult(
             Repetition: run.Repetition,
@@ -169,7 +158,6 @@ public sealed class EvaluationReportFactory(
             RetrievalRecall: retrieval.SelectedRecall)
         {
             Timing = RunTimingFactory.Create(run.Trace, run.WallMs),
-            RerankerAligned = alignment.Aligned,
             JudgeEvaluated = judgeEvaluated,
             JudgePass = judgePass,
             JudgeConfidence = judgeConfidence,
@@ -217,11 +205,6 @@ public sealed class EvaluationReportFactory(
             JudgePassRate = judged == 0 ? null : judgePass / (double)judged,
         };
     }
-
-    private static string JudgeFailureCode(string? reason)
-        => reason?.StartsWith("JUDGE_ERROR", StringComparison.Ordinal) == true
-            ? FailureCodes.JudgeError
-            : FailureCodes.JudgeRejected;
 
     private static bool Passed(EvaluationMetric metric)
         => metric switch

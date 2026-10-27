@@ -27,7 +27,6 @@ internal static class WorkspaceRequirementExpansionMapper
         ArgumentException.ThrowIfNullOrWhiteSpace(originalCustomerQuery);
 
         var categories = ReadCategories(expansion.ComponentExpansions);
-        RefuseMissingExplicitCategory(originalCustomerQuery, categories.Keys);
         var allocations = ReadAllocations(expansion, categories.Keys);
 
         return new WorkspaceRequirementExpansion(
@@ -65,22 +64,6 @@ internal static class WorkspaceRequirementExpansionMapper
         }
 
         return categories;
-    }
-
-    private static void RefuseMissingExplicitCategory(
-        string originalCustomerQuery,
-        IEnumerable<WorkspaceComponentCategory> presentCategories)
-    {
-        var present = presentCategories.ToHashSet();
-        var missing = WorkspaceExplicitCategoryReader.Read(originalCustomerQuery)
-            .Where(category => !present.Contains(category))
-            .ToArray();
-
-        if (missing.Length > 0)
-        {
-            throw new JsonException(
-                $"The rephraser omitted explicitly named categories: {string.Join(", ", missing)}.");
-        }
     }
 
     private static Dictionary<WorkspaceComponentCategory, int> ReadAllocations(

@@ -11,9 +11,6 @@ public sealed record RepetitionResult(
     /// <summary>The measured timing tree for this execution.</summary>
     public RunTiming? Timing { get; init; }
 
-    /// <summary>Whether the reranker returned a non-empty selection drawn from its input.</summary>
-    public bool RerankerAligned { get; init; }
-
     /// <summary>Whether the local judge evaluated this repetition.</summary>
     public bool? JudgeEvaluated { get; init; }
 

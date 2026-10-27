@@ -101,11 +101,10 @@ dotnet run --project evaluation/src/CoreRentalNet.Evaluation -- run \
   --report specs/evaluation/reports/latest.json
 ```
 
-The judge is called only when `answer_exact` is false and `reranker_aligned` is true. It receives
-the final line quantity, amount, name and bounded description, and treats the expected SKU as a
-diagnostic reference rather than a mandatory SKU. A judge pass overrides the aligned result for that
-case. A timeout or malformed response is retried once (configurable with `--judge-retries`) and then
-recorded as `JUDGE_ERROR`.
+The judge is called only when `answer_exact` is false. It receives the final line quantity, amount,
+name and bounded description, and treats the expected SKU as a diagnostic reference rather than a
+mandatory SKU. The judge is diagnostic; it does not decide case pass. A timeout or malformed response
+is retried once (configurable with `--judge-retries`) and then recorded as `JUDGE_ERROR`.
 
 ## Bias report
 

@@ -29,7 +29,7 @@ internal static class WorkspaceSuggestionAgentRoster
 
     public static AgentProfile Rephraser { get; } = new(
         Name: "workspace-requirement-rephraser",
-        PromptFileName: "workspace-requirement-rephraser.v9.md",
+        PromptFileName: "workspace-requirement-rephraser.v10.md",
         Description: "Turns the sentence into what the workspace must be and the words that find each part of it.",
         Output: ChatResponseFormat.ForJsonSchema<WorkspaceRequirementExpansionWire>());
 
