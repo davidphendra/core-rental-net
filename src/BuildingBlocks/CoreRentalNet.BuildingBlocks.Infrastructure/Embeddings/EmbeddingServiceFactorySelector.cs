@@ -15,6 +15,7 @@ public static class EmbeddingServiceFactorySelector
         {
             EmbeddingProvider.AzureOpenAI => new AzureOpenAiEmbeddingServiceFactory(),
             EmbeddingProvider.OpenAiCompatible => new OpenAiCompatibleEmbeddingServiceFactory(),
+            EmbeddingProvider.Foundry => new FoundryEmbeddingServiceFactory(),
             _ => throw new ArgumentOutOfRangeException(
                 nameof(provider),
                 provider,

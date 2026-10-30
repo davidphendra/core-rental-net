@@ -19,7 +19,7 @@ public sealed class ConfigurationReaderTests
     /// <summary>A complete configuration. Each test removes or damages exactly one value.</summary>
     private static Dictionary<string, string?> EveryKey() => new()
     {
-        ["Catalog:FilePath"] = "/tmp/products.json",
+        ["Catalog:DatabasePath"] = "/tmp/catalog.db",
         ["Database:Path"] = "/tmp/product_embedding.db",
         ["Embedding:Provider"] = "AzureOpenAI",
         ["Embedding:Endpoint"] = "https://example.openai.azure.com/",
@@ -44,7 +44,7 @@ public sealed class ConfigurationReaderTests
     {
         var settings = Read(EveryKey());
 
-        settings.CataloguePath.Should().Be("/tmp/products.json");
+        settings.CatalogueDatabasePath.Should().Be("/tmp/catalog.db");
         settings.DatabasePath.Should().Be("/tmp/product_embedding.db");
         settings.Embedding.Provider.Should().Be(EmbeddingProvider.AzureOpenAI);
         settings.Embedding.Endpoint.Should().Be(new Uri("https://example.openai.azure.com/"));
@@ -130,14 +130,14 @@ public sealed class ConfigurationReaderTests
     public void A_relative_path_resolves_against_the_project_directory()
     {
         var values = EveryKey();
-        values["Catalog:FilePath"] = "products.json";
+        values["Catalog:DatabasePath"] = "catalog.db";
         values["Database:Path"] = "App_Data/product_embedding.db";
 
         var settings = Read(values);
 
-        Path.IsPathRooted(settings.CataloguePath).Should().BeTrue();
+        Path.IsPathRooted(settings.CatalogueDatabasePath).Should().BeTrue();
         Path.IsPathRooted(settings.DatabasePath).Should().BeTrue();
-        settings.CataloguePath.Should().EndWith("products.json");
+        settings.CatalogueDatabasePath.Should().EndWith("catalog.db");
         settings.DatabasePath.Should().EndWith(Path.Combine("App_Data", "product_embedding.db"));
     }
 
@@ -166,6 +166,22 @@ public sealed class ConfigurationReaderTests
         settings.Embedding.Provider.Should().Be(EmbeddingProvider.OpenAiCompatible);
         settings.Embedding.Endpoint.Should().Be(new Uri("http://localhost:8080/v1"));
         settings.Embedding.ApiKey.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void A_foundry_provider_needs_no_api_key()
+    {
+        var values = EveryKey();
+        values["Embedding:Provider"] = "Foundry";
+        values["Embedding:Endpoint"] = "https://example.services.ai.azure.com/api/projects/p";
+        values.Remove("Embedding:ApiKey");
+
+        var settings = Read(values);
+
+        settings.Embedding.Provider.Should().Be(EmbeddingProvider.Foundry);
+        settings.Embedding.Endpoint.Should().Be(
+            new Uri("https://example.services.ai.azure.com/api/projects/p"));
+        settings.Embedding.ApiKey.Should().BeNull();
     }
 
     [Fact]

@@ -33,7 +33,7 @@ internal sealed record VectorEmbeddingSettings(
     /// <summary>True when this deployment has been told where to embed, and with what.</summary>
     public bool IsConfigured
         => Uri.TryCreate(Endpoint, UriKind.Absolute, out _)
-            && (Provider == EmbeddingProvider.OpenAiCompatible
+            && (Provider is EmbeddingProvider.OpenAiCompatible or EmbeddingProvider.Foundry
                 || !string.IsNullOrWhiteSpace(ApiKey))
             && !string.IsNullOrWhiteSpace(Model)
             && Width > 0;
@@ -71,7 +71,8 @@ internal sealed record VectorEmbeddingSettings(
         return Enum.TryParse<EmbeddingProvider>(stated, ignoreCase: true, out var provider)
             ? provider
             : throw new InvalidOperationException(
-                $"VectorEmbedding:Provider must be {nameof(EmbeddingProvider.AzureOpenAI)} or "
-                + $"{nameof(EmbeddingProvider.OpenAiCompatible)}, but was '{stated}'.");
+                $"VectorEmbedding:Provider must be {nameof(EmbeddingProvider.AzureOpenAI)}, "
+                + $"{nameof(EmbeddingProvider.OpenAiCompatible)} or {nameof(EmbeddingProvider.Foundry)}, "
+                + $"but was '{stated}'.");
     }
 }

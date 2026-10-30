@@ -19,9 +19,9 @@ internal static class Usage
         unusable stops the run rather than falling back. The endpoint has no default; seed mode does
         not read it, because a file that is already built has nothing left to embed.
 
-        Embedding:Provider       AzureOpenAI or OpenAiCompatible                (default AzureOpenAI)
+        Embedding:Provider       AzureOpenAI, OpenAiCompatible or Foundry       (default AzureOpenAI)
         Embedding:Endpoint       the embedding server's OpenAI-compatible URL   (required to embed)
-        Embedding:ApiKey         the server's key; a local server may omit it   (required for AzureOpenAI)
+        Embedding:ApiKey         the server's key; Foundry and local servers omit it (required for AzureOpenAI)
         Embedding:Model          the model the server serves                    (default text-embedding-3-small)
         Embedding:Width          how many floats each vector holds              (default 384)
         Catalog:DatabasePath     path to catalog.db                         (default ../../Host/CoreRentalNet.Host/App_Data/catalog.db)

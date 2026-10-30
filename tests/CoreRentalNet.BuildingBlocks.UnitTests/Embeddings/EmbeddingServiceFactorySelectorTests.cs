@@ -25,6 +25,14 @@ public sealed class EmbeddingServiceFactorySelectorTests
     }
 
     [Fact]
+    public void The_foundry_provider_selects_the_foundry_factory()
+    {
+        var factory = EmbeddingServiceFactorySelector.Select(EmbeddingProvider.Foundry);
+
+        factory.Should().BeOfType<FoundryEmbeddingServiceFactory>();
+    }
+
+    [Fact]
     public void A_local_factory_builds_an_adapter_without_a_key()
     {
         var settings = new EmbeddingSettings(
@@ -36,7 +44,7 @@ public sealed class EmbeddingServiceFactorySelectorTests
 
         var service = new OpenAiCompatibleEmbeddingServiceFactory().Create(settings);
 
-        service.Should().BeOfType<OpenAiCompatibleEmbeddingService>();
+        service.Should().BeOfType<EmbeddingClientService>();
     }
 
     [Fact]

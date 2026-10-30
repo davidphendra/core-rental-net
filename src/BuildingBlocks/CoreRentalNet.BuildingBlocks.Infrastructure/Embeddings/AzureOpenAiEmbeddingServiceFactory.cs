@@ -18,6 +18,6 @@ public sealed class AzureOpenAiEmbeddingServiceFactory : IEmbeddingServiceFactor
         var client = new AzureOpenAIClient(settings.Endpoint, new AzureKeyCredential(apiKey))
             .GetEmbeddingClient(settings.Model);
 
-        return new OpenAiCompatibleEmbeddingService(client, settings.Width);
+        return new EmbeddingClientService(client, settings.Width);
     }
 }

@@ -13,6 +13,9 @@
     <!-- The Azure OpenAI client the adapter builds its EmbeddingClient from, reached with a key that comes
          from configuration rather than a file. Direct for the same reason as OpenAI above. -->
     <PackageReference Include="Azure.AI.OpenAI" />
+    <!-- The Foundry project client and the identity credential the Foundry embedding factory resolves. -->
+    <PackageReference Include="Azure.AI.Projects" />
+    <PackageReference Include="Azure.Identity" />
     <!-- The native vec0 extension, loaded on the connections that search vectors. The source helper the
          package carries is excluded: the loader is stated once, by us, in SqliteDatabase. -->
     <PackageReference Include="HiraokaHyperTools.sqlite-vec" ExcludeAssets="contentFiles" />

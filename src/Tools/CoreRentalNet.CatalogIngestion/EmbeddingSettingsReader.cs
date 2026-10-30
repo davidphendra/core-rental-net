@@ -38,8 +38,9 @@ internal static class EmbeddingSettingsReader
         return Enum.TryParse<EmbeddingProvider>(stated, ignoreCase: true, out var provider)
             ? provider
             : throw new ArgumentException(
-                $"Embedding:Provider must be {nameof(EmbeddingProvider.AzureOpenAI)} or "
-                + $"{nameof(EmbeddingProvider.OpenAiCompatible)}, but was '{stated}'.");
+                $"Embedding:Provider must be {nameof(EmbeddingProvider.AzureOpenAI)}, "
+                + $"{nameof(EmbeddingProvider.OpenAiCompatible)} or {nameof(EmbeddingProvider.Foundry)}, "
+                + $"but was '{stated}'.");
     }
 
     private static Uri Endpoint(IConfiguration configuration, EmbeddingProvider provider)
@@ -63,9 +64,13 @@ internal static class EmbeddingSettingsReader
     }
 
     private static string? ApiKey(IConfiguration configuration, EmbeddingProvider provider)
-        => provider == EmbeddingProvider.OpenAiCompatible
-            ? configuration["Embedding:ApiKey"]?.Trim()
-            : Required(configuration, "Embedding:ApiKey");
+        => provider switch
+        {
+            EmbeddingProvider.AzureOpenAI => Required(configuration, "Embedding:ApiKey"),
+            EmbeddingProvider.OpenAiCompatible => configuration["Embedding:ApiKey"]?.Trim(),
+            EmbeddingProvider.Foundry => null,
+            _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, "Unknown embedding provider."),
+        };
 
     private static string Text(IConfiguration configuration, string key, string fallback)
     {

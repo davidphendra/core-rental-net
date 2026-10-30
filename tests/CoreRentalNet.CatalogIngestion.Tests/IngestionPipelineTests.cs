@@ -11,7 +11,7 @@ using Xunit;
 namespace CoreRentalNet.CatalogIngestion.Tests;
 
 /// <summary>
-/// The whole chain against a real file: products.json → product → chunk → stored row.
+/// The whole chain against a real file: catalog.db → product → chunk → stored row.
 /// </summary>
 /// <remarks>
 /// The chunker and the server are stand-ins — nothing here says where a boundary should fall or whether a
@@ -31,7 +31,7 @@ public sealed class IngestionPipelineTests
         IProductChunker chunker,
         RecordingProgressReporter? reporter = null)
         => new(
-            CatalogueFile.Read(cataloguePath),
+            CatalogueDatabaseFile.Read(cataloguePath),
             chunker,
             new SqliteProductEmbeddingStore(databasePath),
             reporter ?? new RecordingProgressReporter(),
@@ -41,7 +41,7 @@ public sealed class IngestionPipelineTests
     [Fact]
     public async Task Every_chunk_becomes_a_row_carrying_its_product_details()
     {
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
 
         var written = await Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width, chunksPerProduct: 2))
@@ -58,7 +58,7 @@ public sealed class IngestionPipelineTests
     [Fact]
     public async Task Every_product_is_split_from_the_text_its_name_and_description_render_to()
     {
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
         var chunker = new StubProductChunker(Width);
 
@@ -72,7 +72,7 @@ public sealed class IngestionPipelineTests
     [Fact]
     public async Task Running_again_replaces_rather_than_appends()
     {
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
         var pipeline = Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width, chunksPerProduct: 2));
 
@@ -85,7 +85,7 @@ public sealed class IngestionPipelineTests
     [Fact]
     public async Task A_product_that_yields_no_chunks_is_refused_and_the_stored_rows_survive()
     {
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
 
         await Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width)).RunAsync(CancellationToken.None);
@@ -102,7 +102,7 @@ public sealed class IngestionPipelineTests
     [Fact]
     public async Task A_vector_of_the_wrong_width_is_refused_and_the_stored_rows_survive()
     {
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
 
         await Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width)).RunAsync(CancellationToken.None);
@@ -118,7 +118,7 @@ public sealed class IngestionPipelineTests
     {
         // The application will not search these vectors unless the recipe beside them says they came from the
         // model and width it is configured with, so a run that wrote rows and no recipe writes a dead file.
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
 
         await Pipeline(catalogue.Path, database.Path, new StubProductChunker(Width)).RunAsync(CancellationToken.None);
@@ -135,7 +135,7 @@ public sealed class IngestionPipelineTests
     [Fact]
     public async Task The_run_reports_every_step_through_to_completion()
     {
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.ThreeRows);
+        using var catalogue = new TemporaryCatalogDatabase();
         using var database = new TemporaryDatabase();
         var reporter = new RecordingProgressReporter();
 
@@ -151,14 +151,19 @@ public sealed class IngestionPipelineTests
     }
 
     [Fact]
-    public void A_catalogue_holding_no_products_is_refused_before_the_pipeline_runs()
+    public async Task A_catalogue_holding_no_products_is_refused_before_the_pipeline_runs()
     {
         // The loader refuses an empty file, so an empty table is not a state the tool can reach. This asserts
         // the behaviour it depends on: no products is a failure, not an empty result.
-        using var catalogue = new TemporaryCatalogFile(CatalogJson.NoRows);
+        using var catalogue = new TemporaryCatalogDatabase(empty: true);
+        using var database = new TemporaryDatabase();
 
-        var act = () => CatalogueFile.Read(catalogue.Path);
+        var act = async () => await Pipeline(
+                catalogue.Path,
+                database.Path,
+                new StubProductChunker(Width))
+            .RunAsync(CancellationToken.None);
 
-        act.Should().Throw<Exception>().WithMessage("*no products*");
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*no products*");
     }
 }

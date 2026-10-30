@@ -23,6 +23,6 @@ public sealed class OpenAiCompatibleEmbeddingServiceFactory : IEmbeddingServiceF
                 new OpenAIClientOptions { Endpoint = settings.Endpoint })
             .GetEmbeddingClient(settings.Model);
 
-        return new OpenAiCompatibleEmbeddingService(client, settings.Width);
+        return new EmbeddingClientService(client, settings.Width);
     }
 }
