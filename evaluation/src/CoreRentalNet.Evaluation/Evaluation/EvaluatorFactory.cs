@@ -1,5 +1,6 @@
 using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Evidence;
+using CoreRentalNet.Evaluation.Evaluation.AgentEval;
 using Microsoft.Agents.AI;
 
 namespace CoreRentalNet.Evaluation.Evaluation;
@@ -22,5 +23,7 @@ public static class EvaluatorFactory
             RetrievalQualityCheck.Create(),
             RawRetrievalQualityCheck.Create(),
             ToolCallAccuracyCheck.Create(),
-            WorkflowCorrectnessCheck.Create());
+            WorkflowCorrectnessCheck.Create(),
+            AgentEvalToolChainCheck.Create(),
+            AgentEvalWorkflowNodesCheck.Create());
 }

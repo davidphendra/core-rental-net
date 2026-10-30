@@ -41,6 +41,11 @@ drifted: three documents went on naming five files after `specs/` had stopped ho
   module reaches another module's `Domain` or `Infrastructure` (ARC-01).
 - **Concurrency is manual now.** Every write service must bump the record's `Version`; a forgotten
   bump is a silent lost update.
+- **AgentEval owns RAG and agent-quality measurement.** Any plan that measures RAG or agent quality
+  must name the AgentEval metric and pinned version. Do not specify a hand-written faithfulness,
+  answer-correctness, context-precision, context-recall, stochastic, regression, or reporting
+  implementation when AgentEval provides one. Local code is limited to adapters and documented
+  domain checks.
 - **Never deploy or provision without explicit product-owner consent**.
 - **No secrets in the repository.** `appsettings.Local.json` is gitignored and development-only.
 - **Do not save changes, artifacts or commits.** Nothing is written or committed without the product

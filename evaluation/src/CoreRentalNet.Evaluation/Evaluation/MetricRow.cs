@@ -9,4 +9,8 @@ public sealed record MetricRow(
     string Metric,
     bool Passed,
     double? Value,
-    string? Reason);
+    string? Reason)
+{
+    /// <summary>False when the metric could not be measured; never a failure.</summary>
+    public bool Measured { get; init; } = true;
+}

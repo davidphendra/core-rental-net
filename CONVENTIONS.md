@@ -52,6 +52,20 @@ gap pointed at a sixth file that was gone as well. One list, in one place.
 - Tests verify behaviour through public interfaces, not implementation details.
 - Hand-written fakes live beside the tests that use them.
 
+## Evaluation
+
+- Generic RAG and agent-quality measurement comes from the pinned AgentEval package. Its metrics,
+  prompts, tool/workflow assertions, stochastic statistics, comparison decisions and exporters are
+  not reimplemented locally.
+- Local evaluation code is limited to adapters (projecting evidence into AgentEval's models) and
+  domain checks AgentEval cannot express, such as exact SKU sets, slot constraints, per-slot tool
+  coverage, and the alternate-product equivalence judge.
+- Every plan that measures RAG or agent quality must state: metrics, judge, threshold, sampling and
+  cost, ground-truth mapping, comparability facts, export formats, and why any local check is not
+  an AgentEval metric.
+- The evaluation harness is `evaluation/CoreRentalNet.Evaluation.sln`. Its offline tests run in CI;
+  live evaluation and judge calls stay manual.
+
 ## Specs and process
 
 - Output documents are written under `specs/`.

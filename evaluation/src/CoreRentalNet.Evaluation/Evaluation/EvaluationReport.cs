@@ -20,4 +20,13 @@ public sealed record EvaluationReport(
 
     /// <summary>The A-D bias metrics, when the run was configured to produce them.</summary>
     public BiasReport? Bias { get; init; }
+
+    /// <summary>The AgentEval stochastic statistics over this run's repetitions.</summary>
+    public StochasticSummary? Stochastic { get; init; }
+
+    /// <summary>The evaluation policy digest recorded when the run was produced.</summary>
+    public string? PolicyDigest { get; init; }
+
+    /// <summary>Whether the AgentEval RAG judge was configured for this run.</summary>
+    public bool RagConfigured { get; init; }
 }

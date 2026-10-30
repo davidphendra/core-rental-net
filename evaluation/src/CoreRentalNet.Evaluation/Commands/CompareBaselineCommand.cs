@@ -30,6 +30,11 @@ public static class CompareBaselineCommand
                 $"({baseline.Summary.Rows}/{baseline.TotalRows}), current is " +
                 $"{current.Scope} ({current.Summary.Rows}/{current.TotalRows}).");
 
+            foreach (var reason in report.Reasons)
+            {
+                Console.Error.WriteLine($"  {reason}");
+            }
+
             return 2;
         }
 
@@ -37,6 +42,14 @@ public static class CompareBaselineCommand
         Console.WriteLine($"Regressions:           {report.Regressions.Count}");
         Console.WriteLine($"Regression rate:       {report.RegressionRate.ToString("P1", CultureInfo.InvariantCulture)}");
         Console.WriteLine($"Newly passing:         {report.NewlyPassing.Count}");
+        Console.WriteLine($"Snapshot changes:      {report.SnapshotChanges.Count}");
+
+        foreach (var drift in report.SnapshotChanges)
+        {
+            Console.WriteLine(
+                $"SNAPSHOT row {drift.RowNumber} {drift.CaseId}: " +
+                $"{string.Join("; ", drift.Differences)}");
+        }
 
         foreach (var regression in report.Regressions)
         {

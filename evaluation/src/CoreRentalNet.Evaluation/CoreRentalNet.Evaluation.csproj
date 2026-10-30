@@ -15,10 +15,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Agents.AI" Version="1.22.0" />
-    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.22.0" />
+    <!-- AgentEval is pinned exactly. The evaluation solution is independent of the main application,
+         so its MAF version can move with AgentEval's dependency floor without changing the host. -->
+    <PackageReference Include="AgentEval" Version="1.0.0-rc.1" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.24.0" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.24.0" />
     <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
-    <PackageReference Include="OpenAI" Version="2.13.0" />
+    <PackageReference Include="OpenAI" Version="2.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="CoreRentalNet.Evaluation.Tests" />
   </ItemGroup>
 
   <ItemGroup>

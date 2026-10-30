@@ -123,6 +123,16 @@ internal static class RunEvaluationOptionsParser
                     index++;
                     break;
 
+                case "--judge-mode":
+                    if (value is null)
+                    {
+                        throw new ArgumentException("--judge-mode requires a value.");
+                    }
+
+                    options = options with { JudgeMode = ParseJudgeMode(value) };
+                    index++;
+                    break;
+
                 case "--judge-model" when value is not null:
                     options = options with { JudgeModel = value };
                     index++;
@@ -153,6 +163,17 @@ internal static class RunEvaluationOptionsParser
                     index++;
                     break;
 
+                case "--success-rate-threshold" when value is not null
+                    && double.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var threshold):
+                    if (threshold < 0 || threshold > 1)
+                    {
+                        throw new ArgumentException("--success-rate-threshold must be between zero and one.");
+                    }
+
+                    options = options with { SuccessRateThreshold = threshold };
+                    index++;
+                    break;
+
                 case "--trace-directory" when value is not null:
                     options = options with { TraceDirectory = value };
                     index++;
@@ -160,6 +181,15 @@ internal static class RunEvaluationOptionsParser
 
                 case "--report" when value is not null:
                     options = options with { ReportPath = value };
+                    index++;
+                    break;
+
+                case "--export" when value is not null:
+                    options = options with
+                    {
+                        Exports = value
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    };
                     index++;
                     break;
             }
@@ -175,5 +205,15 @@ internal static class RunEvaluationOptionsParser
             "static" => EvaluationAuthMode.StaticToken,
             _ => throw new ArgumentException(
                 $"Unknown auth mode '{value}'. Use local or static."),
+        };
+
+    private static JudgeMode ParseJudgeMode(string value)
+        => value.Trim().ToLowerInvariant() switch
+        {
+            "rag" => JudgeMode.Rag,
+            "equivalence" => JudgeMode.Equivalence,
+            "both" => JudgeMode.Both,
+            _ => throw new ArgumentException(
+                $"Unknown judge mode '{value}'. Use rag, equivalence or both."),
         };
 }

@@ -1,30 +1,48 @@
 using CoreRentalNet.Evaluation.Configuration;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 
 namespace CoreRentalNet.Evaluation.Evaluation;
 
 /// <summary>Creates the optional local judge from configuration.</summary>
 public static class EvaluationJudgeFactory
 {
-    public static IAgentEvaluator? Create(EvaluationOptions options)
+    /// <summary>The judge chat client, or null when no judge endpoint is configured.</summary>
+    public static IChatClient? CreateClient(EvaluationOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.JudgeEndpoint is null)
-        {
-            return null;
-        }
+        return options.JudgeEndpoint is null
+            ? null
+            : OpenAiCompatibleJudgeClientFactory.Create(
+                options.JudgeEndpoint,
+                options.JudgeApiKey,
+                options.JudgeModel);
+    }
 
-        var chatClient = OpenAiCompatibleJudgeClientFactory.Create(
-            options.JudgeEndpoint,
-            options.JudgeApiKey,
-            options.JudgeModel);
+    /// <summary>The domain equivalence judge.</summary>
+    public static IAgentEvaluator CreateEquivalenceJudge(
+        IChatClient chatClient,
+        TimeSpan timeout,
+        int retries)
+    {
+        ArgumentNullException.ThrowIfNull(chatClient);
 
         return new LocalJudgeEvaluator(
             chatClient,
-            options.JudgeTimeout,
-            options.JudgeRetries,
+            timeout,
+            retries,
             new JudgePromptBuilder(),
             new JudgeVerdictParser());
+    }
+
+    /// <summary>The equivalence judge, or null when no judge endpoint is configured.</summary>
+    public static IAgentEvaluator? Create(EvaluationOptions options)
+    {
+        var client = CreateClient(options);
+
+        return client is null
+            ? null
+            : CreateEquivalenceJudge(client, options.JudgeTimeout, options.JudgeRetries);
     }
 }

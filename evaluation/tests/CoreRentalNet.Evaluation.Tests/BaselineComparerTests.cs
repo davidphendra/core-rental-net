@@ -55,11 +55,53 @@ public sealed class BaselineComparerTests
         report.Comparable.Should().BeFalse();
     }
 
+    [Fact]
+    public void Reports_with_different_policy_digests_are_not_comparable()
+    {
+        var baseline = Report(EvaluationScope.All, "policy-a", Case(1, pass: true));
+        var current = Report(EvaluationScope.All, "policy-b", Case(1, pass: true));
+
+        var report = new BaselineComparer().Compare(baseline, current);
+
+        report.Comparable.Should().BeFalse();
+        report.Reasons.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void A_missing_case_is_not_comparable()
+    {
+        var baseline = Report(Case(1, pass: true));
+        var current = Report(Case(2, pass: true));
+
+        var report = new BaselineComparer().Compare(baseline, current);
+
+        report.Comparable.Should().BeFalse();
+        report.Reasons.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public void A_changed_setup_is_a_snapshot_change()
+    {
+        var baseline = Report(Case(1, pass: true, actualOutput: "D1"));
+        var current = Report(Case(1, pass: true, actualOutput: "D2"));
+
+        var report = new BaselineComparer().Compare(baseline, current);
+
+        report.SnapshotChanges.Should().ContainSingle();
+        report.SnapshotChanges[0].RowNumber.Should().Be(1);
+    }
+
     private static EvaluationReport Report(params CaseResult[] cases)
-        => Report(EvaluationScope.All, cases);
+        => Report(EvaluationScope.All, null, cases);
 
     private static EvaluationReport Report(
         EvaluationScope scope,
+        params CaseResult[] cases)
+        => Report(scope, null, cases);
+
+    private static EvaluationReport Report(
+        EvaluationScope scope,
+        string? policyDigest,
         params CaseResult[] cases)
         => new(
             Cases: cases,
@@ -74,9 +116,10 @@ public sealed class BaselineComparerTests
         {
             Scope = scope,
             TotalRows = 200,
+            PolicyDigest = policyDigest,
         };
 
-    private static CaseResult Case(int row, bool pass)
+    private static CaseResult Case(int row, bool pass, string actualOutput = "D1")
         => new(
             RowNumber: row,
             CaseId: $"TS-{row:000}",
@@ -106,5 +149,8 @@ public sealed class BaselineComparerTests
             Stability: pass ? "3/3" : "0/3",
             FailureCodes: pass ? [] : ["ANSWER_MISMATCH"],
             MeanAnswerF1: pass ? 1 : 0,
-            MeanRetrievalRecall: pass ? 1 : 0);
+            MeanRetrievalRecall: pass ? 1 : 0)
+        {
+            ActualOutput = actualOutput,
+        };
 }

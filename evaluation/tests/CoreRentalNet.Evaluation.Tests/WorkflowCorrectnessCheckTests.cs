@@ -14,9 +14,9 @@ public sealed class WorkflowCorrectnessCheckTests
     }
 
     [Fact]
-    public void A_missing_reviewer_fails()
+    public void A_missing_composer_fails()
     {
-        var stages = ContextFixture.SuccessStages().Take(6).ToArray();
+        var stages = ContextFixture.SuccessStages().Take(3).ToArray();
 
         var result = WorkflowCorrectnessCheck.Create()(
             ContextFixture.Item(ContextFixture.Create(stages: stages)));
@@ -35,13 +35,10 @@ public sealed class WorkflowCorrectnessCheckTests
             "retrievingCatalogueProducts",
             "rerankingWorkspaceCandidates",
             "composingWorkspaceSetups",
-            "validatingWorkspaceSetups",
             "rephrasingRequirement",
             "retrievingCatalogueProducts",
             "rerankingWorkspaceCandidates",
             "composingWorkspaceSetups",
-            "validatingWorkspaceSetups",
-            "reviewingWorkspaceSetups",
         };
 
         WorkflowCorrectnessCheck.Create()(

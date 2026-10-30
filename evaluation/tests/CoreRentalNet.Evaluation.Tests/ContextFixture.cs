@@ -35,9 +35,10 @@ internal static class ContextFixture
         IReadOnlyList<string>? stages = null,
         string runStatus = "success",
         bool completedIsLast = true,
-        int finalAttempt = 1)
+        int finalAttempt = 1,
+        IReadOnlyList<ExpectedSetupVariant>? expectedVariants = null)
         => new(
-            ExpectedVariants: [DeskAndChair],
+            ExpectedVariants: expectedVariants ?? [DeskAndChair],
             Capacities: SlotCapacities.Default.AsDictionary(),
             Candidates: candidates ?? [ValidCandidate],
             Stages: stages ?? SuccessStages(),
@@ -61,8 +62,6 @@ internal static class ContextFixture
             "retrievingCatalogueProducts",
             "rerankingWorkspaceCandidates",
             "composingWorkspaceSetups",
-            "validatingWorkspaceSetups",
-            "reviewingWorkspaceSetups",
         ];
 
     public static IReadOnlyList<ToolAnswerEvidence> DefaultToolAnswers()

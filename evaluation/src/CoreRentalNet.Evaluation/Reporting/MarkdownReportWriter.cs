@@ -52,6 +52,8 @@ public static class MarkdownReportWriter
         }
 
         AppendJudge(text, report);
+        AppendRag(text, report);
+        AppendStochastic(text, report.Stochastic);
         AppendBias(text, report.Bias);
 
         text.AppendLine();
@@ -124,6 +126,74 @@ public static class MarkdownReportWriter
         }
     }
 
+    private static void AppendRag(StringBuilder text, EvaluationReport report)
+    {
+        var rows = report.Metrics
+            .Where(row => MetricNames.RagMetrics.Contains(row.Metric))
+            .ToArray();
+
+        if (rows.Length == 0)
+        {
+            return;
+        }
+
+        text.AppendLine();
+        text.AppendLine("## AgentEval RAG diagnostics");
+        text.AppendLine();
+        text.AppendLine("| Metric | Measured | Mean | Pass rate | Not measured |");
+        text.AppendLine("|---|---:|---:|---:|---:|");
+
+        foreach (var metric in MetricNames.RagMetrics)
+        {
+            var metricRows = rows
+                .Where(row => string.Equals(row.Metric, metric, StringComparison.Ordinal))
+                .ToArray();
+            var measured = metricRows.Where(row => row.Measured).ToArray();
+            var scored = measured.Where(row => row.Value is not null).ToArray();
+
+            var mean = scored.Length == 0
+                ? "-"
+                : scored.Average(row => row.Value!.Value).ToString("0.00", CultureInfo.InvariantCulture);
+            var passRate = measured.Length == 0
+                ? "-"
+                : Percentage(measured.Count(row => row.Passed) / (double)measured.Length);
+
+            text.AppendLine(
+                $"| `{metric}` | {measured.Length} | {mean} | {passRate} | " +
+                $"{metricRows.Count(row => !row.Measured)} |");
+        }
+    }
+
+    private static void AppendStochastic(StringBuilder text, StochasticSummary? stochastic)
+    {
+        if (stochastic is null)
+        {
+            return;
+        }
+
+        text.AppendLine();
+        text.AppendLine("## AgentEval stochastic");
+        text.AppendLine();
+        text.AppendLine(
+            $"Success-rate threshold: **{stochastic.SuccessRateThreshold.ToString("P0", CultureInfo.InvariantCulture)}**");
+        text.AppendLine();
+        text.AppendLine("| Metric | Runs | Measured | Not measured | Passed | Pass rate | Mean | Std dev | P95 | Verdict |");
+        text.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|---:|---|");
+
+        foreach (var metric in stochastic.Metrics)
+        {
+            text.AppendLine(
+                $"| `{metric.Metric}` | {metric.Runs} | {metric.Measured} | {metric.NotMeasured} | " +
+                $"{metric.Passed} | {Number(metric.PassRate, "P1")} | {Number(metric.Mean)} | " +
+                $"{Number(metric.StandardDeviation)} | {Number(metric.P95)} | {metric.Verdict} |");
+        }
+    }
+
+    private static string Number(double? value, string? format = null)
+        => value is { } number
+            ? number.ToString(format ?? "0.00", CultureInfo.InvariantCulture)
+            : "-";
+
     private static void AppendBias(StringBuilder text, BiasReport? bias)
     {
         if (bias is null)
@@ -191,11 +261,29 @@ public static class MarkdownReportWriter
         };
 
     private static string JudgeSummary(EvaluationSummary summary)
-        => !summary.JudgeConfigured
-            ? "not configured"
-            : summary.JudgeEvaluated == 0
+    {
+        var parts = new List<string>();
+
+        if (summary.RagMeasured + summary.RagNotMeasured > 0)
+        {
+            parts.Add(
+                $"AgentEval RAG {summary.RagMeasured} measured, " +
+                $"{summary.RagNotMeasured} not measured");
+        }
+
+        if (summary.JudgeEvaluated > 0)
+        {
+            parts.Add(
+                $"equivalence {summary.JudgePass}/{summary.JudgeEvaluated} passed " +
+                $"({Percentage(summary.JudgePassRate ?? 0)})");
+        }
+
+        return parts.Count > 0
+            ? string.Join("; ", parts)
+            : summary.JudgeConfigured
                 ? "configured; no eligible cases"
-                : $"{summary.JudgePass}/{summary.JudgeEvaluated} passed ({Percentage(summary.JudgePassRate ?? 0)})";
+                : "not configured";
+    }
 
     private static string JudgeCell(CaseResult testCase)
     {

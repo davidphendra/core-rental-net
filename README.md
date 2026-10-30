@@ -950,6 +950,11 @@ Output documents are written under `specs/`. This repository currently holds onl
 
 Built on **.NET 10**, **Microsoft Agent Framework** (`Microsoft.Agents.AI.*`), **Azure AI Foundry** (`Azure.AI.Projects`, `Azure.AI.Extensions.OpenAI`), **Azure OpenAI**, **Entity Framework Core + SQLite** (`Microsoft.EntityFrameworkCore.Sqlite`, `Microsoft.Data.Sqlite`), **ModelContextProtocol.AspNetCore**, **Lifti.Core** (name search), **HiraokaHyperTools.sqlite-vec** (vector search), **Auth0.AspNetCore.Authentication**, **OpenTelemetry** (Azure Monitor) and **xUnit**. See `Directory.Packages.props` for the pinned versions.
 
+The independent evaluation solution also uses **AgentEval** (`1.0.0-rc.1`) for RAG metrics, tool and
+workflow assertions, stochastic statistics, regression comparison and standard report export. Its
+pins and licence note live in `evaluation/src/CoreRentalNet.Evaluation/CoreRentalNet.Evaluation.csproj`
+and `specs/evaluation/AGENTEVAL.md`.
+
 ### 18.2 Design references
 
 The prototypes under `specs/design/` are kept as references for the visual design.

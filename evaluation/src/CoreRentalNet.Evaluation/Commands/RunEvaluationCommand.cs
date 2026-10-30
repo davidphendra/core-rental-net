@@ -1,6 +1,7 @@
 using CoreRentalNet.Evaluation.Cases;
 using CoreRentalNet.Evaluation.Configuration;
 using CoreRentalNet.Evaluation.Evaluation;
+using CoreRentalNet.Evaluation.Evaluation.AgentEval;
 using CoreRentalNet.Evaluation.Evidence;
 using CoreRentalNet.Evaluation.Execution;
 using CoreRentalNet.Evaluation.Reporting;
@@ -105,11 +106,25 @@ public static class RunEvaluationCommand
             EvaluatorFactory.CreateLocal(loaded.Catalogue),
         };
 
-        var judge = EvaluationJudgeFactory.Create(options);
+        var judgeClient = EvaluationJudgeFactory.CreateClient(options);
+        var judgeConfigured = judgeClient is not null;
 
-        if (judge is not null)
+        if (judgeClient is not null)
         {
-            evaluators.Add(judge);
+            if (options.JudgeMode is JudgeMode.Rag or JudgeMode.Both)
+            {
+                evaluators.Add(new ProjectingEvaluator(
+                    AgentEvalRagEvaluatorFactory.Create(judgeClient),
+                    new AgentEvalRagContextProjector()));
+            }
+
+            if (options.JudgeMode is JudgeMode.Equivalence or JudgeMode.Both)
+            {
+                evaluators.Add(EvaluationJudgeFactory.CreateEquivalenceJudge(
+                    judgeClient,
+                    options.JudgeTimeout,
+                    options.JudgeRetries));
+            }
         }
         else
         {
@@ -122,7 +137,7 @@ public static class RunEvaluationCommand
             new EvaluationReportFactory(
                 loaded.Catalogue,
                 BiasReportBuilder.CreateDefault(),
-                judge is not null));
+                judgeConfigured));
         var agent = new AgentHttpClient(options.AgentEndpoint, options.AgentName);
         var traceReader = new EvaluationTraceReader(options.TraceDirectory);
         var runner = new EvaluationRunner(
@@ -157,6 +172,16 @@ public static class RunEvaluationCommand
                 cancellationToken)
             .ConfigureAwait(false);
 
+        report = report with
+        {
+            Stochastic = StochasticSummaryFactory.Create(report, options.SuccessRateThreshold),
+            PolicyDigest = judgeClient is null
+                ? EvaluationPolicy.DeterministicDigest
+                : EvaluationPolicy.Digest(options.JudgeMode),
+            RagConfigured = judgeClient is not null
+                            && options.JudgeMode is JudgeMode.Rag or JudgeMode.Both,
+        };
+
         var reportDirectory = Path.GetDirectoryName(options.ReportPath);
         if (!string.IsNullOrEmpty(reportDirectory))
         {
@@ -169,6 +194,27 @@ public static class RunEvaluationCommand
                 Path.ChangeExtension(options.ReportPath, ".md"),
                 cancellationToken)
             .ConfigureAwait(false);
+
+        var agentEvalReport = AgentEvalReportProjector.Project(report, options.AgentName);
+        agentEvalReport.Print();
+
+        if (options.Exports.Count > 0)
+        {
+            try
+            {
+                await AgentEvalReportExporter.WriteAsync(
+                        agentEvalReport,
+                        options.ReportPath,
+                        options.Exports,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (ArgumentException exception)
+            {
+                Console.Error.WriteLine(exception.Message);
+                return 4;
+            }
+        }
 
         Console.WriteLine($"Rows: {report.Summary.Rows}");
         Console.WriteLine($"Executions: {report.Summary.Executions}");

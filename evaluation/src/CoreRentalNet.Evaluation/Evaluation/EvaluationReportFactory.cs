@@ -44,7 +44,7 @@ public sealed class EvaluationReportFactory(
         return new EvaluationReport(
             Cases: cases,
             Metrics: metrics,
-            Summary: Summarize(cases, runs.Count, judgeConfigured))
+            Summary: Summarize(cases, metrics, runs.Count, judgeConfigured))
         {
             Scope = scope,
             TotalRows = totalRows,
@@ -81,7 +81,10 @@ public sealed class EvaluationReportFactory(
                         Metric: metric.Name,
                         Passed: Passed(metric),
                         Value: ValueOf(metric),
-                        Reason: metric.Reason));
+                        Reason: metric.Reason)
+                    {
+                        Measured = IsMeasured(metric),
+                    });
                 }
             }
         }
@@ -112,7 +115,19 @@ public sealed class EvaluationReportFactory(
             Stability: $"{passCount}/{repetitions.Length}",
             FailureCodes: [.. repetitions.SelectMany(repetition => repetition.FailureCodes).Distinct(StringComparer.Ordinal)],
             MeanAnswerF1: repetitions.Average(repetition => repetition.AnswerF1),
-            MeanRetrievalRecall: repetitions.Average(repetition => repetition.RetrievalRecall));
+            MeanRetrievalRecall: repetitions.Average(repetition => repetition.RetrievalRecall))
+        {
+            ActualOutput = ActualOutput(runs[0], itemsByRunId),
+        };
+    }
+
+    private static string ActualOutput(
+        RowRun run,
+        IReadOnlyDictionary<string, EvalItem> itemsByRunId)
+    {
+        var context = WorkspaceContext.Parse(itemsByRunId[run.RunId].Context);
+
+        return EvaluationText.Candidate(context.Candidates);
     }
 
     private static RepetitionResult CreateRepetition(
@@ -169,6 +184,7 @@ public sealed class EvaluationReportFactory(
 
     private static EvaluationSummary Summarize(
         IReadOnlyList<CaseResult> cases,
+        IReadOnlyList<MetricRow> metrics,
         int executions,
         bool judgeConfigured)
     {
@@ -191,6 +207,40 @@ public sealed class EvaluationReportFactory(
         var judgePass = cases.SelectMany(testCase => testCase.Repetitions)
             .Count(repetition => repetition.JudgePass == true);
 
+        var ragRows = metrics
+            .Where(row => MetricNames.RagMetrics.Contains(row.Metric))
+            .ToArray();
+
+        var ragPassRates = MetricNames.RagMetrics.ToDictionary(
+            metric => metric,
+            metric =>
+            {
+                var measured = ragRows
+                    .Where(row => string.Equals(row.Metric, metric, StringComparison.Ordinal) && row.Measured)
+                    .ToArray();
+
+                return measured.Length == 0
+                    ? (double?)null
+                    : measured.Count(row => row.Passed) / (double)measured.Length;
+            },
+            StringComparer.Ordinal);
+
+        var ragMeans = MetricNames.RagMetrics.ToDictionary(
+            metric => metric,
+            metric =>
+            {
+                var measured = ragRows
+                    .Where(row => string.Equals(row.Metric, metric, StringComparison.Ordinal)
+                                  && row.Measured
+                                  && row.Value is not null)
+                    .ToArray();
+
+                return measured.Length == 0
+                    ? (double?)null
+                    : measured.Average(row => row.Value!.Value);
+            },
+            StringComparer.Ordinal);
+
         return new EvaluationSummary(
             Rows: cases.Count,
             Executions: executions,
@@ -203,6 +253,10 @@ public sealed class EvaluationReportFactory(
             JudgeEvaluated = judged,
             JudgePass = judgePass,
             JudgePassRate = judged == 0 ? null : judgePass / (double)judged,
+            RagMetricPassRates = ragPassRates,
+            RagMetricMeans = ragMeans,
+            RagMeasured = ragRows.Count(row => row.Measured),
+            RagNotMeasured = ragRows.Count(row => !row.Measured),
         };
     }
 
@@ -213,10 +267,18 @@ public sealed class EvaluationReportFactory(
             _ => metric.Interpretation?.Failed == false,
         };
 
+    private static bool IsMeasured(EvaluationMetric metric)
+        => metric switch
+        {
+            BooleanMetric boolean => boolean.Value is not null,
+            NumericMetric numeric => numeric.Value is not null,
+            _ => true,
+        };
+
     private static double? ValueOf(EvaluationMetric metric)
         => metric switch
         {
-            BooleanMetric boolean => boolean.Value == true ? 1 : 0,
+            BooleanMetric boolean => boolean.Value is { } value ? (value ? 1 : 0) : null,
             NumericMetric numeric => numeric.Value is { } value ? Convert.ToDouble(value) : null,
             _ => null,
         };

@@ -46,8 +46,20 @@ diagnostic fallback; it is not refreshed.
 ## Metrics
 
 Primary gates: exact SKU answer correctness, constraint compliance, selected retrieval recall,
-tool-call accuracy, workflow correctness, and regression rate. The detailed report also carries
-diagnostics such as answer F1, pool recall, component recall, MRR, stability and the optional local judge.
+tool-call accuracy, workflow correctness, and regression rate. The deterministic tool-chain and
+workflow-node checks are AgentEval assertions (`agenteval_tool_chain`, `agenteval_workflow_nodes`).
+
+Diagnostics include answer F1, pool recall, component recall, MRR, stability, the optional domain
+equivalence judge, and the AgentEval RAG metrics:
+
+- `llm_faithfulness`
+- `llm_answer_correctness`
+- `llm_context_precision`
+- `llm_context_recall`
+
+The RAG metrics are diagnostics until a calibration baseline promotes them. They receive retrieved
+catalogue evidence only; the expected setup is passed separately as ground truth. See
+[AGENTEVAL.md](AGENTEVAL.md).
 
 ## Local model run
 
@@ -88,23 +100,38 @@ the retrieval stages.
 The judge is optional and runs only against a local OpenAI-compatible llama-server. It never calls Azure
 Foundry. Leave `--judge-endpoint` unset to run the deterministic checks only.
 
+`--judge-mode` chooses the layer:
+
+| Mode | What runs |
+|---|---|
+| `rag` (default) | AgentEval RAG metrics |
+| `equivalence` | Domain equivalence judge for reranker mismatches |
+| `both` | Both layers |
+
 ```bash
 dotnet run --project evaluation/src/CoreRentalNet.Evaluation -- run \
   --auth-mode local \
+  --judge-mode both \
   --judge-endpoint http://localhost:8080/v1 \
   --judge-model gpt-oss-20b \
   --judge-api-key local \
   --judge-retries 1 \
+  --success-rate-threshold 0.8 \
   --agent-endpoint http://127.0.0.1:8088 \
   --mcp-endpoint http://127.0.0.1:5199/mcp \
   --trace-directory artifacts/evaluation/traces \
+  --export markdown,junit,trx \
   --report specs/evaluation/reports/latest.json
 ```
 
-The judge is called only when `answer_exact` is false. It receives the final line quantity, amount,
-name and bounded description, and treats the expected SKU as a diagnostic reference rather than a
-mandatory SKU. The judge is diagnostic; it does not decide case pass. A timeout or malformed response
-is retried once (configurable with `--judge-retries`) and then recorded as `JUDGE_ERROR`.
+The equivalence judge is called only when `answer_exact` is false. It receives the final line quantity,
+amount, name and bounded description, and treats the expected SKU as a diagnostic reference rather than
+a mandatory SKU. It is diagnostic; it does not decide case pass. A timeout or malformed response is
+retried once (configurable with `--judge-retries`) and then recorded as `JUDGE_ERROR`.
+
+The command always writes the domain JSON and Markdown report. It also prints the AgentEval-rendered
+summary. `--export` writes additional AgentEval formats beside the report as
+`<name>.agenteval.<extension>`.
 
 ## Bias report
 

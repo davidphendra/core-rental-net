@@ -13,6 +13,12 @@ public static class MetricNames
     public const string JudgePass = "judge_pass";
     public const string JudgeConfidence = "judge_confidence";
     public const string JudgeAttempts = "judge_attempts";
+    public const string LlmFaithfulness = "llm_faithfulness";
+    public const string LlmAnswerCorrectness = "llm_answer_correctness";
+    public const string LlmContextPrecision = "llm_context_precision";
+    public const string LlmContextRecall = "llm_context_recall";
+    public const string AgentEvalToolChain = "agenteval_tool_chain";
+    public const string AgentEvalWorkflowNodes = "agenteval_workflow_nodes";
 
     public static IReadOnlyList<string> JudgeMetrics { get; } =
     [
@@ -20,6 +26,15 @@ public static class MetricNames
         JudgePass,
         JudgeConfidence,
         JudgeAttempts,
+    ];
+
+    /// <summary>The AgentEval RAG metrics. They are diagnostics until a calibration baseline promotes them.</summary>
+    public static IReadOnlyList<string> RagMetrics { get; } =
+    [
+        LlmFaithfulness,
+        LlmAnswerCorrectness,
+        LlmContextPrecision,
+        LlmContextRecall,
     ];
 
     public static IReadOnlyList<string> All { get; } =
@@ -30,6 +45,8 @@ public static class MetricNames
         RawRetrievalRecall,
         ToolCallAccuracy,
         WorkflowCorrectness,
+        AgentEvalToolChain,
+        AgentEvalWorkflowNodes,
     ];
 
     public static IReadOnlyList<string> CasePassMetrics { get; } = [];

@@ -1,8 +1,9 @@
+using AgentEval.Output;
 using CoreRentalNet.Evaluation.Evaluation;
 
 namespace CoreRentalNet.Evaluation.Reporting;
 
-/// <summary>Compares two reports by row number, never by collapsing duplicate rows.</summary>
+/// <summary>Compares two reports through AgentEval's comparability decision.</summary>
 public sealed class BaselineComparer
 {
     public RegressionReport Compare(EvaluationReport baseline, EvaluationReport current)
@@ -14,37 +15,71 @@ public sealed class BaselineComparer
                 BaselinePassingRows: 0,
                 Regressions: [],
                 RegressionRate: 0,
-                NewlyPassing: []);
+                NewlyPassing: [])
+            {
+                Reasons =
+                [
+                    $"The runs are not comparable: baseline is {baseline.Scope} " +
+                    $"({baseline.Summary.Rows}/{baseline.TotalRows}), current is " +
+                    $"{current.Scope} ({current.Summary.Rows}/{current.TotalRows}).",
+                ],
+            };
         }
 
-        var currentByRow = current.Cases.ToDictionary(testCase => testCase.RowNumber);
-        var baselinePassing = baseline.Cases.Where(testCase => testCase.CasePass).ToArray();
+        var projector = new AgentEvalScenarioProjector();
+        var comparison = RunComparison.Of(
+            projector.Project(baseline),
+            projector.Project(current));
 
-        var regressions = baselinePassing
-            .Where(testCase => currentByRow.TryGetValue(testCase.RowNumber, out var currentCase)
-                               && !currentCase.CasePass)
-            .Select(testCase => new CaseRegression(
-                testCase.RowNumber,
-                testCase.CaseId,
-                testCase.Stability,
-                currentByRow[testCase.RowNumber].Stability,
-                currentByRow[testCase.RowNumber].FailureCodes))
+        var baselinePassing = baseline.Cases.Count(testCase => testCase.CasePass);
+
+        if (comparison.Verdict == ComparisonVerdict.Incomparable)
+        {
+            return new RegressionReport(
+                Comparable: false,
+                BaselinePassingRows: baselinePassing,
+                Regressions: [],
+                RegressionRate: 0,
+                NewlyPassing: [])
+            {
+                Reasons = comparison.RefusalReasons,
+            };
+        }
+
+        var baselineById = baseline.Cases.ToDictionary(AgentEvalScenarioProjector.Id);
+        var currentById = current.Cases.ToDictionary(AgentEvalScenarioProjector.Id);
+
+        var regressions = comparison.Scenarios
+            .Where(scenario => scenario.BaselinePassed && !scenario.CandidatePassed)
+            .Select(scenario =>
+            {
+                var before = baselineById[scenario.ScenarioId];
+                var after = currentById[scenario.ScenarioId];
+
+                return new CaseRegression(
+                    before.RowNumber,
+                    before.CaseId,
+                    before.Stability,
+                    after.Stability,
+                    after.FailureCodes);
+            })
             .ToArray();
 
-        var newlyPassing = baseline.Cases
-            .Where(testCase => !testCase.CasePass
-                               && currentByRow.TryGetValue(testCase.RowNumber, out var currentCase)
-                               && currentCase.CasePass)
-            .Select(testCase => testCase.RowNumber)
+        var newlyPassing = comparison.Scenarios
+            .Where(scenario => !scenario.BaselinePassed && scenario.CandidatePassed)
+            .Select(scenario => currentById[scenario.ScenarioId].RowNumber)
             .ToArray();
 
         return new RegressionReport(
             Comparable: true,
-            BaselinePassingRows: baselinePassing.Length,
+            BaselinePassingRows: baselinePassing,
             Regressions: regressions,
-            RegressionRate: baselinePassing.Length == 0
+            RegressionRate: baselinePassing == 0
                 ? 0
-                : regressions.Length / (double)baselinePassing.Length,
-            NewlyPassing: newlyPassing);
+                : regressions.Length / (double)baselinePassing,
+            NewlyPassing: newlyPassing)
+        {
+            SnapshotChanges = AgentEvalSnapshotComparer.Compare(baseline, current),
+        };
     }
 }

@@ -10,4 +10,8 @@ public sealed record CaseResult(
     string Stability,
     IReadOnlyList<string> FailureCodes,
     double MeanAnswerF1,
-    double MeanRetrievalRecall);
+    double MeanRetrievalRecall)
+{
+    /// <summary>The final workspace setup the agent returned, as the judge and snapshots read it.</summary>
+    public string ActualOutput { get; init; } = string.Empty;
+}

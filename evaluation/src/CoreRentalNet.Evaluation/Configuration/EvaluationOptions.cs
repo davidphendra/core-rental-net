@@ -49,6 +49,9 @@ public sealed record EvaluationOptions
     /// <summary>The local llama-server OpenAI-compatible endpoint. Null disables the judge.</summary>
     public Uri? JudgeEndpoint { get; init; }
 
+    /// <summary>Which judge layers run when a judge endpoint is configured.</summary>
+    public JudgeMode JudgeMode { get; init; } = JudgeMode.Rag;
+
     public string JudgeModel { get; init; } = "gpt-oss-20b";
 
     public string JudgeApiKey { get; init; } = "local";
@@ -58,5 +61,11 @@ public sealed record EvaluationOptions
     /// <summary>The number of retries after a judge timeout or malformed response.</summary>
     public int JudgeRetries { get; init; } = 1;
 
+    /// <summary>The share of all repetitions that must pass for an AgentEval stochastic verdict.</summary>
+    public double SuccessRateThreshold { get; init; } = 0.8;
+
     public string ReportPath { get; init; } = "specs/evaluation/reports/latest.json";
+
+    /// <summary>Extra AgentEval report formats to write beside the domain report.</summary>
+    public IReadOnlyList<string> Exports { get; init; } = [];
 }

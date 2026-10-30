@@ -20,4 +20,18 @@ public sealed record EvaluationSummary(
 
     /// <summary>The pass rate over judged repetitions, or null when the judge did not run.</summary>
     public double? JudgePassRate { get; init; }
+
+    /// <summary>Pass rates for the AgentEval RAG diagnostics, over measured rows only.</summary>
+    public IReadOnlyDictionary<string, double?> RagMetricPassRates { get; init; } =
+        new Dictionary<string, double?>(StringComparer.Ordinal);
+
+    /// <summary>Mean scores for the AgentEval RAG diagnostics, over measured rows only.</summary>
+    public IReadOnlyDictionary<string, double?> RagMetricMeans { get; init; } =
+        new Dictionary<string, double?>(StringComparer.Ordinal);
+
+    /// <summary>The number of RAG metric rows that produced a measurement.</summary>
+    public int RagMeasured { get; init; }
+
+    /// <summary>The number of RAG metric rows that could not be measured.</summary>
+    public int RagNotMeasured { get; init; }
 }
