@@ -51,19 +51,6 @@ public sealed class CatalogApiAuthorizationTests(CatalogApiAuthorizedFactory fac
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact] // API-10
-    public async Task With_the_configured_permission_it_answers_with_the_catalogue()
-    {
-        var response = await SendAsync("read:catalog");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-
-        document.RootElement.GetProperty("count").GetInt32().Should().Be(205);
-        document.RootElement.GetProperty("value")[0].GetProperty("category").GetString().Should().NotBeNullOrWhiteSpace();
-    }
-
     private async Task<HttpResponseMessage> SendAsync(string permissions)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/catalog");

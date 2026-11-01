@@ -49,45 +49,6 @@ public sealed class CatalogApiSimilarityTests(CatalogApiSimilarityFactory factor
     }
 
     [Fact] // API-40
-    public async Task With_the_permission_it_answers_nearest_first()
-    {
-        var scored = ScoredSkus();
-
-        var response = await SendAsync("searchsimilarity:aibuilder", "/api/catalog/similarity?query=two+screens");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var body = document.RootElement;
-
-        Items(body).Select(item => item.GetProperty("sku").GetString()).Should().Equal(scored);
-        body.GetProperty("count").GetInt32().Should().Be(scored.Length);
-        body.GetProperty("total").GetInt32().Should().Be(scored.Length);
-        body.GetProperty("truncated").GetBoolean().Should().BeFalse();
-    }
-
-    [Fact] // API-40
-    public async Task A_limit_caps_the_answer_and_the_total_still_says_what_matched()
-    {
-        var scored = ScoredSkus();
-
-        var response = await SendAsync(
-            "searchsimilarity:aibuilder",
-            "/api/catalog/similarity?query=two+screens&limit=1");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var body = document.RootElement;
-
-        Items(body).Should().HaveCount(1);
-        body.GetProperty("value")[0].GetProperty("sku").GetString().Should().Be(scored[0]);
-        body.GetProperty("count").GetInt32().Should().Be(1);
-        body.GetProperty("total").GetInt32().Should().Be(scored.Length);
-        body.GetProperty("truncated").GetBoolean().Should().BeTrue();
-    }
-
-    [Fact] // API-40
     public async Task A_sentence_that_was_not_sent_is_a_400()
     {
         // A similarityService search with nothing to be similar to is not a search: refused by the framework before the

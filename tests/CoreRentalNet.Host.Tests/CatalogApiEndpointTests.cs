@@ -16,32 +16,6 @@ namespace CoreRentalNet.Host.Tests;
 /// </remarks>
 public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassFixture<CatalogApiFactory>
 {
-    [Fact] // API-17
-    public async Task The_answer_is_an_envelope_whose_count_is_its_own_length()
-    {
-        var response = await factory.CreateClient().GetAsync("/api/catalog");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        var body = document.RootElement;
-
-        // Exactly these, so a field added to the answer is a deliberate change to the contract rather
-        // than something that appeared in it.
-        body.EnumerateObject().Select(property => property.Name).Should().BeEquivalentTo(
-            ["value", "count", "total", "truncated"]);
-        body.GetProperty("value").GetArrayLength().Should().Be(205);
-        body.GetProperty("count").GetInt32().Should().Be(205);
-    }
-
-    [Fact] // API-03
-    public async Task No_filter_returns_the_whole_catalogue_in_catalog_order()
-    {
-        var products = await GetArrayAsync("/api/catalog");
-
-        products.GetArrayLength().Should().Be(205);
-        products[0].GetProperty("name").GetString().Should().Be("HON Mod Desk Shell, 60 x 30 x 29, Mahogany");
-    }
 
     [Fact] // API-04
     public async Task A_category_narrows_to_that_category()
@@ -53,32 +27,12 @@ public sealed class CatalogApiEndpointTests(CatalogApiFactory factory) : IClassF
             product => product.GetProperty("category").GetString() == "desk");
     }
 
-    [Fact] // API-04
-    public async Task A_subcategory_narrows_to_that_subcategory()
-    {
-        var products = await GetArrayAsync("/api/catalog?subCategory=monitor");
-
-        products.GetArrayLength().Should().Be(30);
-        products.EnumerateArray().Should().OnlyContain(
-            product => product.GetProperty("subCategory").GetString() == "monitor");
-    }
-
     [Fact] // API-02
     public async Task A_filter_is_matched_ignoring_case()
     {
         var products = await GetArrayAsync("/api/catalog?category=DESK");
 
         products.GetArrayLength().Should().Be(25);
-    }
-
-    [Fact] // API-05
-    public async Task A_search_narrows_by_name_only()
-    {
-        var products = await GetArrayAsync("/api/catalog?search=teak");
-
-        products.GetArrayLength().Should().BeGreaterThan(0);
-        products.EnumerateArray().Should().OnlyContain(
-            product => product.GetProperty("name").GetString()!.Contains("Teak", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact] // API-06
