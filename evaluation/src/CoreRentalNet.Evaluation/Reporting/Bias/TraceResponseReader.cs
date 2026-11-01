@@ -1,5 +1,7 @@
 using System.Text.Json;
-using CoreRentalNet.Evaluation.Evidence;
+using CoreRentalNet.Evaluation.Evidence.Trace;
+using CoreRentalNet.Evaluation.Evidence.Projection;
+using CoreRentalNet.Evaluation.Evidence.Context;
 
 namespace CoreRentalNet.Evaluation.Reporting.Bias;
 

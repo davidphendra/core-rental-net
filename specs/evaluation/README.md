@@ -186,3 +186,47 @@ The report separates:
 
 A model-backed node whose model span did not stop before a timeout is attributed to model time; the report
 marks the case with `CASE_TIMEOUT` and keeps the measured node duration.
+
+## Annotated datasets (evaluation/data)
+
+The harness also runs three independent datasets, and reports through the same store.
+
+| Verb | Purpose |
+|---|---|
+| `datasets` | load + validate development, validation and test without spending a model call |
+| `run-dataset --dataset development\|validation\|test` | execute a dataset, grade it, store `run.json` |
+| `report <run.json>` | render `report.html` beside the record (self-contained, no CDN) |
+| `compare-runs <baseline> <current>` | deltas, preceded by incomparability warnings |
+
+Options: `--limit N`, `--case ID`, `--run-id`, `--reports-dir`, `--case-timeout` (default 600 s, covers a cold
+model load), `--compare-with <run-id|path|previous>`, `--generator-model`, `--thresholds`.
+
+### Endpoints (verified by probe, not assumed)
+
+| Port | Serves |
+|---:|---|
+| 8080 | llama.cpp model router — `Qwen3-Coder-30B-A3B-Instruct`, `gpt-oss-20b`, embeddings, rerankers |
+| 8088 | agent host (Responses protocol) |
+| 5199 | web host; MCP tools at `/mcp` |
+| 8090 | local OIDC provider for `--auth-mode local` |
+
+### Exit codes
+
+| Code | Meaning |
+|---:|---|
+| 0 | completed |
+| 1 | dataset invalid (rule or identifier error) |
+| 2 | refused (lockbox without confirmation) or preflight failed |
+| 3 | run stopped by a case timeout |
+
+### Lockbox
+
+`--dataset test` is refused unless `--confirm-lockbox` is passed. A second run over the same dataset hash is
+refused unless `--re-evaluate-lockbox`, and any such re-run is a re-run, not an independent result.
+
+### Not proven live
+
+The judge metrics, a full dataset run, and every threshold verdict. Integration tests exist and are marked
+`Skip` with their reason; they are not green.
+
+See also `evaluation/METRICS_MATRIX.md` and `evaluation/data/CHANGELOG.md`.

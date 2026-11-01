@@ -1,7 +1,20 @@
 using System.Text.Json;
-using CoreRentalNet.Evaluation.Cases;
-using CoreRentalNet.Evaluation.Contracts;
-using CoreRentalNet.Evaluation.Evidence;
+using CoreRentalNet.Evaluation.Cases.Model;
+using CoreRentalNet.Evaluation.Cases.Parsing;
+using CoreRentalNet.Evaluation.Cases.Validation;
+using CoreRentalNet.Evaluation.Contracts.Suggestion;
+using CoreRentalNet.Evaluation.Contracts.Catalogue;
+using CoreRentalNet.Evaluation.Contracts.Reranker;
+using CoreRentalNet.Evaluation.Contracts.Trace;
+using CoreRentalNet.Evaluation.Evidence.Trace;
+using CoreRentalNet.Evaluation.Evidence.Projection;
+using CoreRentalNet.Evaluation.Evidence.Context;
+
+using CoreRentalNet.Evaluation.Evaluation.Pipeline;
+using CoreRentalNet.Evaluation.Evaluation.Checks;
+using CoreRentalNet.Evaluation.Evaluation.Judging;
+using CoreRentalNet.Evaluation.Evaluation.Timing;
+using CoreRentalNet.Evaluation.Evaluation.Stochastic;
 
 namespace CoreRentalNet.Evaluation.Evaluation.AgentEval;
 

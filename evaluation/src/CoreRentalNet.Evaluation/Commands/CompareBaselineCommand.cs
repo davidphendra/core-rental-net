@@ -1,5 +1,8 @@
 using System.Globalization;
-using CoreRentalNet.Evaluation.Reporting;
+using CoreRentalNet.Evaluation.Reporting.Html;
+using CoreRentalNet.Evaluation.Reporting.Comparison;
+using CoreRentalNet.Evaluation.Reporting.Writers;
+using CoreRentalNet.Evaluation.Reporting.AgentEval;
 
 namespace CoreRentalNet.Evaluation.Commands;
 

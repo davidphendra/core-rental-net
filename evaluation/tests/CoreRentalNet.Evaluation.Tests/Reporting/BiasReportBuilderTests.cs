@@ -1,0 +1,88 @@
+using AwesomeAssertions;
+using CoreRentalNet.Evaluation.Cases.Model;
+using CoreRentalNet.Evaluation.Cases.Parsing;
+using CoreRentalNet.Evaluation.Cases.Validation;
+using CoreRentalNet.Evaluation.Evaluation.Pipeline;
+using CoreRentalNet.Evaluation.Evaluation.Checks;
+using CoreRentalNet.Evaluation.Evaluation.Judging;
+using CoreRentalNet.Evaluation.Evaluation.Timing;
+using CoreRentalNet.Evaluation.Evaluation.Stochastic;
+using CoreRentalNet.Evaluation.Evidence.Trace;
+using CoreRentalNet.Evaluation.Evidence.Projection;
+using CoreRentalNet.Evaluation.Evidence.Context;
+using CoreRentalNet.Evaluation.Execution.Transport;
+using CoreRentalNet.Evaluation.Execution.Auth;
+using CoreRentalNet.Evaluation.Execution.Tools;
+using CoreRentalNet.Evaluation.Execution.Running;
+using CoreRentalNet.Evaluation.Reporting.Bias;
+using Xunit;
+
+using CoreRentalNet.Evaluation.Tests.Fixtures;
+
+namespace CoreRentalNet.Evaluation.Tests.Reporting;
+
+public sealed class BiasReportBuilderTests
+{
+    [Fact]
+    public void All_four_sections_are_present_even_without_labels()
+    {
+        var report = Build(ContextFixture.Create());
+
+        report.Metrics.Select(metric => metric.Section).Distinct()
+            .Should().BeEquivalentTo(Enum.GetValues<BiasSectionName>());
+        report.Metrics.Where(metric => metric.Section == BiasSectionName.Fairness)
+            .Should().OnlyContain(metric => metric.Status == BiasMetricStatus.NotApplicable);
+        report.Metrics.Where(metric => metric.Section == BiasSectionName.Language)
+            .Should().OnlyContain(metric => metric.Status == BiasMetricStatus.NotApplicable);
+    }
+
+    [Fact]
+    public void Recommendation_metrics_compute_from_existing_evidence()
+    {
+        var report = Build(ContextFixture.Create());
+
+        report.Metrics.Single(metric => metric.Name == "Recommendation Diversity")
+            .Value.Should().Be(1);
+        report.Metrics.Single(metric => metric.Name == "Retrieval Coverage")
+            .Value.Should().Be(1);
+    }
+
+    private static BiasReport Build(EvaluationContext context)
+    {
+        var testCase = new EvaluationCase(
+            1,
+            "TS-001",
+            "a desk and a chair",
+            [ContextFixture.DeskAndChair],
+            null,
+            null);
+        var run = new RowRun(
+            testCase,
+            1,
+            "run-1",
+            [],
+            new RunTrace("run-1", [], []));
+        var repetition = new RepetitionResult(
+            1,
+            new Dictionary<string, bool>(StringComparer.Ordinal),
+            [],
+            1,
+            1);
+        var result = new CaseResult(
+            1,
+            testCase.CaseId,
+            testCase.Sentence,
+            [repetition],
+            true,
+            "1/1",
+            [],
+            1,
+            1);
+
+        return BiasReportBuilder.CreateDefault().Build(new BiasInput(
+            [result],
+            [new BiasRun(run, context)],
+            [],
+            ContextFixture.Catalogue));
+    }
+}

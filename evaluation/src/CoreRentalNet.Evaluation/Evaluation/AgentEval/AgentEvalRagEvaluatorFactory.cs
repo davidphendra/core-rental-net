@@ -1,9 +1,15 @@
-using AgentEval.Core;
-using AgentEval.MAF.Evaluators;
-using AgentEval.Metrics.RAG;
+using global::AgentEval.Core;
+using global::AgentEval.MAF.Evaluators;
+using global::AgentEval.Metrics.RAG;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI.Evaluation;
+
+using CoreRentalNet.Evaluation.Evaluation.Pipeline;
+using CoreRentalNet.Evaluation.Evaluation.Checks;
+using CoreRentalNet.Evaluation.Evaluation.Judging;
+using CoreRentalNet.Evaluation.Evaluation.Timing;
+using CoreRentalNet.Evaluation.Evaluation.Stochastic;
 
 namespace CoreRentalNet.Evaluation.Evaluation.AgentEval;
 

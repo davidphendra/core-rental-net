@@ -5,6 +5,10 @@ return args switch
     ["validate-cases", .. var rest] => await ValidateCasesCommand.RunAsync(rest),
     ["run", .. var rest] => await RunEvaluationCommand.RunAsync(rest),
     ["compare", .. var rest] => await CompareBaselineCommand.RunAsync(rest),
+    ["datasets", .. _] => await ValidateDatasetsCommand.RunAsync([]),
+    ["report", .. var rest] => await WriteReportCommand.RunAsync(rest),
+    ["run-dataset", .. var rest] => await RunDatasetCommand.RunAsync(rest),
+    ["compare-runs", .. var rest] => await CompareRunsCommand.RunAsync(rest),
     [] => PrintUsage(),
     _ => PrintUsage(),
 };
@@ -19,5 +23,9 @@ static int PrintUsage()
     Console.WriteLine("      [--judge-timeout <seconds>] [--judge-retries <n>] [--success-rate-threshold <0..1>]");
     Console.WriteLine("      [--export json,junit,markdown,trx,csv] [--report <path>]");
     Console.WriteLine("  compare <baseline.json> <current.json>");
+    Console.WriteLine("  datasets                     (load and validate development, validation and test)");
+    Console.WriteLine("  report <run.json>            (render a stored run as HTML beside the record)");
+    Console.WriteLine("  run-dataset --dataset development|validation|test [--run-id id] [--confirm-lockbox]");
+    Console.WriteLine("  compare-runs <baseline-run.json> <current-run.json>");
     return 1;
 }
