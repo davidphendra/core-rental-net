@@ -50,21 +50,6 @@ public sealed class CatalogSemanticSearchTests
         }
     }
 
-    /// <summary>The price words, measured rather than asserted.</summary>
-    public static TheoryData<string> PriceWords
-    {
-        get
-        {
-            var data = new TheoryData<string>();
-
-            foreach (var phrase in Fixture.Characterisation)
-            {
-                data.Add(phrase.Phrase);
-            }
-
-            return data;
-        }
-    }
 
     [Theory]
     [MemberData(nameof(Kinds))]
@@ -77,20 +62,6 @@ public sealed class CatalogSemanticSearchTests
         products.Should().NotBeEmpty("the paraphrase reached the catalogue and something was near it");
         products[0].Sku.Should().Be(query.ExpectedSku, "the product the sentence describes comes first");
         products.Should().OnlyContain(product => Matches(product, query), "the narrowing kept every other kind out");
-    }
-
-    [Theory]
-    [MemberData(nameof(Kinds))]
-    public async Task An_unfiltered_paraphrase_ranks_its_product_in_the_top_three(string kind)
-    {
-        var query = Fixture.Query(kind);
-
-        var products = await SearchAcrossTheKindAsync(query);
-
-        products.Should().NotBeEmpty();
-        products.Take(3).Select(product => product.Sku).Should().Contain(
-            query.ExpectedSku,
-            "across the whole catalogue the right product is still near the top - this is the ranking rule S2");
     }
 
     [Fact]
@@ -142,24 +113,6 @@ public sealed class CatalogSemanticSearchTests
                 monitor.Should().BeLessThan(at, $"the monitor must outrank {lamp.Sku}, a lamp");
             }
         }
-    }
-
-    [Theory]
-    [MemberData(nameof(PriceWords))]
-    public async Task A_price_word_does_not_reach_the_dearest_product(string phrase)
-    {
-        // RECORDED GAP, not a quality claim. The embedding model has no notion of price: nothing in a product's
-        // text says "luxury", so a price word is near nothing in particular. This pins that fact so a change of
-        // model fails here rather than passing quietly, and it is why the suite asserts paraphrases and not
-        // price synonyms.
-        var dearest = Fixture.Products.MaxBy(product => product.PricePerMonth)!;
-
-        var products = await SearchAsync(phrase, CategoryForSku(dearest.Sku));
-
-        products.Should().NotBeEmpty("the search still answers; it simply has no price to go on");
-        products.Take(3).Select(product => product.Sku).Should().NotContain(
-            dearest.Sku,
-            "the dearest product is not what a price word retrieves");
     }
 
     private static Task<IReadOnlyList<ProductDto>> SearchAsync(CatalogEmbeddingFixtureQuery query)

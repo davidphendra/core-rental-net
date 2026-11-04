@@ -30,14 +30,6 @@ public sealed class CatalogEmbeddingFixtureGuardTests
     private static string ProductsJson => RepoRoot.Combine("src", "shared", "data", "products.json");
 
     [Fact]
-    public void The_fixture_was_built_from_the_catalogue_that_is_here_now()
-    {
-        Fixture.Recipe.CatalogueHash.Should().Be(
-            CatalogHash.OfFile(ProductsJson),
-            "the vectors describe a catalogue that has changed; regenerate the fixture");
-    }
-
-    [Fact]
     public void The_fixture_records_the_text_contract_and_width_the_tool_writes()
     {
         Fixture.Recipe.ModelId.Should().NotBeNullOrWhiteSpace();

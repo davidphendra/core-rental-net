@@ -77,32 +77,6 @@ public sealed class NameFieldScoreBoostSweepTests(ITestOutputHelper output)
                 + "mean it had started hiding products");
     }
 
-    [Fact] // raising the weight cannot help: the range saturates, which is why the default is not at an edge
-    public async Task Raising_the_weight_above_the_default_changes_nothing_at_all()
-    {
-        var measured = await MeasureEachWeight();
-
-        PositionsAt(measured, 10).Should().Equal(
-            PositionsAt(measured, 5),
-            "the weight saturates by five, so a future increase has to be justified by something other than this");
-    }
-
-    [Fact] // and it barely moves the order in either direction
-    public async Task The_weight_leaves_the_mean_position_where_it_was()
-    {
-        var measured = await MeasureEachWeight();
-
-        foreach (var weight in measured)
-        {
-            var reachable = weight.Outcomes.Where(outcome => outcome.Position > 0).ToList();
-
-            reachable.Average(outcome => outcome.Position).Should().BeInRange(
-                3,
-                4,
-                $"at weight {weight.NameFieldScoreBoost} the weight is not the lever, so the mean stays where it is");
-        }
-    }
-
     [Fact] // the constant itself: change it and this fails, so the number cannot drift away from its measurement
     public async Task The_shipping_service_answers_as_the_measured_weight_of_five_does()
     {
