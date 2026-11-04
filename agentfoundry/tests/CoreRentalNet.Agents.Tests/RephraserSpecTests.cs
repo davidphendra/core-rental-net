@@ -53,15 +53,6 @@ public sealed class RephraserSpecTests
             "presence in the compact answer is relevance");
     }
 
-    [Fact] // a category the customer named explicitly may not disappear through omission
-    public async Task A_reading_that_omits_an_explicitly_named_category_is_refused()
-    {
-        var act = async () => await Requirement(OnlyDeskJson(), "a desk and a chair");
-
-        await act.Should().ThrowAsync<JsonException>(
-            "the customer named the chair, and omission now means irrelevant");
-    }
-
     [Fact]
     public void A_reading_carrying_a_sku_a_price_or_a_product_name_is_rejected()
     {

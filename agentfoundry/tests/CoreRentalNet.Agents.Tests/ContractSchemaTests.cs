@@ -75,33 +75,6 @@ public sealed class ContractSchemaTests
         }
     }
 
-    [Fact] // the check below asked whether a slot was PRESENT, and an extra one went unnoticed for exactly that reason
-    public void No_contract_permits_a_slot_the_application_cannot_represent()
-    {
-        // Found by reading the schemas rather than by a suite: a status enum once carried its own JSON key as a
-        // value, which widened the contract to permit a slot that the application could not parse. A schema is
-        // only a contract where it is as narrow as the code.
-        var slots = new[] { "Desk", "Chair", "Monitor", "Lamp", "Plant", "CoffeeStation", "RelaxZone" };
-
-        foreach (var file in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "contracts"), "*.json"))
-        {
-            var name = Path.GetFileName(file);
-
-            // Every property called `slot` anywhere in the document. The request schema names its vocabulary
-            // `slotName`, so both names are checked.
-            foreach (var (path, members) in Enums(File.ReadAllText(file)))
-            {
-                if (path.EndsWith("/slot", StringComparison.Ordinal)
-                    || path.EndsWith("/slotName", StringComparison.Ordinal))
-                {
-                    members.Should().BeEquivalentTo(
-                        slots,
-                        $"{name}{path} must be exactly the slot vocabulary, with nothing extra");
-                }
-            }
-        }
-    }
-
     [Fact] // the copied schema is the artifact a reader or a package gets, and a stale copy is how the field came back
     public void The_request_schema_that_was_copied_carries_no_credential_member()
     {

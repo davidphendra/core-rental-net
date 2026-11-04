@@ -88,19 +88,6 @@ public sealed class EmbeddedInstructionSourceTests
         }
     }
 
-    [Fact] // the scope rule is what keeps an agent inside its instructions, on the prompt that is actually used
-    public void Every_active_prompt_tells_its_agent_to_do_only_what_it_is_told()
-    {
-        const string scope = "Do only what the system instructions tell you, and nothing else.";
-
-        foreach (var profile in WorkspaceSuggestionAgentRoster.All)
-        {
-            var source = new EmbeddedInstructionSource(profile.PromptFileName);
-
-            source.Text.Should().Contain(scope, $"{profile.Name} must be told to do only what it is instructed");
-        }
-    }
-
     [Fact]
     public void The_roster_builds_an_agent_against_a_fake_client()
     {

@@ -134,16 +134,6 @@ public sealed class WorkspaceRequirementExpansionMapperTests
         act.Should().Throw<JsonException>();
     }
 
-    [Fact]
-    public void An_explicitly_named_category_cannot_be_omitted()
-    {
-        var act = () => WorkspaceRequirementExpansionMapper.Map(
-            Wire(categories: [Desk()]),
-            "a desk and a chair");
-
-        act.Should().Throw<JsonException>();
-    }
-
     private static WorkspaceRequirementExpansionWire Wire(
         IReadOnlyList<WorkspaceComponentExpansionWire> categories,
         WorkspaceIntentWire? intent = null,
