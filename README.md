@@ -8,7 +8,7 @@
 |---|---|
 | **A — Orientation** | [1. Title & status](#1-title--status) · [2. What it is](#2-what-it-is) · [3. System at a glance](#3-system-at-a-glance) · [4. Repository map](#4-repository-map) · [5. New here? Start with this](#5-new-here-start-with-this) · [6. Requirements](#6-requirements) · [7. Quick start](#7-quick-start) |
 | **B — Architecture** | [8. The application](#8-architecture--the-application) · [9. The agent host](#9-architecture--the-agent-host) · [10. How the two connect](#10-how-the-two-connect) · [11. Domain glossary](#11-domain-glossary) |
-| **C — Reference** | [12. Configuration](#12-configuration) · [13. Testing & quality gates](#13-testing--quality-gates) · [14. Build, versioning & CI](#14-build-versioning--ci) · [15. Deployment & operations](#15-deployment--operations) |
+| **C — Reference** | [12. Configuration](#12-configuration) · [13. Testing & quality gates](#13-testing--quality-gates) · [13.8 The evaluation harness](#138-the-evaluation-harness) · [14. Build, versioning & CI](#14-build-versioning--ci) · [15. Deployment & operations](#15-deployment--operations) |
 | **D — Help & process** | [16. Troubleshooting / FAQ](#16-troubleshooting--faq) · [17. Process & conventions](#17-process--conventions) · [18. Credits](#18-credits) |
 
 ---
@@ -204,6 +204,7 @@ The catalogue is built once; after that every customer follows the same walk. Ea
 | `src/` | The application source — modules, building blocks, host, ingestion tool, catalog data |
 | `agentfoundry/` | The agent deployable — its own solution, source, tests, `azure.yaml` and pipeline |
 | `tests/` | The application test projects (unit, integration, architecture, browser) |
+| `evaluation/` | The evaluation harness — its own solution, annotated datasets, metrics and HTML reports |
 | `specs/design/` | Design prototypes kept as references |
 | `scripts/` | `resolve-version.sh`, `write-agent-version.sh` |
 | `.github/workflows/ci.yml` | GitHub Actions: build + tests + Chromium |
@@ -252,21 +253,32 @@ agentfoundry/
 
 ### 4.4 Test projects
 
-| Project | Tier | Measured (2026-10-12) |
+Each tier answers a different question, which is why the suites are divided rather than ranked. **Unit** tests prove that money, slots, the workspace, orders, invoices and the schedule behave. **Tool** tests prove the two catalogue tools — ingestion, which builds the vector index, and populate, which generates `products.json`. **Integration** tests prove that a real SQLite file, a real catalogue file and a real schema work together. **Architecture** tests prove module boundaries, table prefixes and one type per file. **Behaviour lock** pins the behaviours that must not regress. **Host** tests cover endpoints, response envelopes and authorization. **Evaluation** tests measure the harness itself. **Browser** runs the whole funnel in Chromium with no mocks and no intercepted calls. The **agent** suite is separate and runs from `agentfoundry/`.
+
+| Project | Tier | Measured at `4100710` |
 |---|---|---|
-| `CoreRentalNet.BuildingBlocks.UnitTests` | Unit | 37 |
-| `CoreRentalNet.Modules.Catalog.UnitTests` | Unit | 70 |
+| `CoreRentalNet.BuildingBlocks.UnitTests` | Unit | 42 |
+| `CoreRentalNet.Modules.Catalog.UnitTests` | Unit | 73 |
 | `CoreRentalNet.Modules.Workspace.UnitTests` | Unit | 81 |
 | `CoreRentalNet.Modules.Rentals.UnitTests` | Unit | 94 |
+| `CoreRentalNet.CatalogIngestion.Tests` | Tool | 56 |
+| `CoreRentalNet.CatalogPopulate.Tests` | Tool | 34 |
 | `CoreRentalNet.BehaviourLock` | Behaviour lock | 37 |
-| `CoreRentalNet.IntegrationTests` | Integration | 148 |
-| `CoreRentalNet.ArchitectureTests` | Architecture | 63 |
-| `CoreRentalNet.Host.Tests` | Host | 269 |
-| `CoreRentalNet.E2E` | Browser | 121 (54 ✅ / 66 ❌ / 1 ⏭) |
+| `CoreRentalNet.IntegrationTests` | Integration | 133 |
+| `CoreRentalNet.ArchitectureTests` | Architecture | 67 |
+| `CoreRentalNet.Host.Tests` | Host | 257 |
+| `evaluation/tests/CoreRentalNet.Evaluation.Tests` | Evaluation | 435, 2 skipped |
+| `CoreRentalNet.E2E` | Browser | not measured in this revision |
 | `CoreRentalNet.E2E.LocalProvider` | Test support — a local OIDC provider | — |
-| `agentfoundry/tests/CoreRentalNet.Agents.Tests` | Agent | 199 |
+| `agentfoundry/tests/CoreRentalNet.Agents.Tests` | Agent | 259 |
 
-### 4.5 Find it fast
+### 4.5 Where the numbers come from
+
+A count in the table above is a measurement, not a specification. It records what the suites contained at the commit named in the column heading, and it is expected to move: a test removed for a defect that has its own fix will lower a number without lowering quality, and a test added for a new rule will raise one. CI is authoritative — `azure-pipelines.yml` runs the non-browser tiers on every push, `agentfoundry/azure-pipelines.yml` runs the agent suite, and `dotnet test` on any single project prints a current figure in seconds.
+
+Two rows are marked rather than counted on purpose. The browser tier needs Chromium and is not run by the main pipeline, so carrying a stale pass/fail split forward would describe a suite that no longer exists; run `dotnet test tests/CoreRentalNet.E2E` to measure it. `CoreRentalNet.E2E.LocalProvider` is test support rather than a test project.
+
+### 4.6 Find it fast
 
 | Want to find… | Look in |
 |---|---|
@@ -814,6 +826,18 @@ Add `CORERENTAL_TENANT_AUDIENCE` when the tenant has an API whose token carries 
 ### 13.7 F.I.R.S.T. and naming
 
 `[Fact]`/`[Theory]` with a matrix id where one exists; name a test after the behaviour it proves; every bug fix gets a regression test. The full list is in `CONVENTIONS.md`.
+
+### 13.8 The evaluation harness
+
+`evaluation/CoreRentalNet.Evaluation.sln` is a separate solution, not a test project, and it exists to answer a question the test tiers cannot: does the agent's answer actually match the question that was asked? A unit test proves that a rule fires; an integration test proves that a catalogue loads. Neither can tell you whether a customer who asked for a desk and two chairs was handed a bean bag, or whether a request outside the catalogue was refused for the right reason. The harness closes that gap by replaying a dataset of annotated cases against the live agent and scoring each response against the outcome it was expected to reach. The first live run — ten validation cases, ten correct — is the shape of every later run.
+
+The score is taken against an outcome contract, `WORKFLOW_STATUS:*`, rather than against the prose of the answer, so a run cannot be flattered by a well-written reply that recommends the wrong space. Each case carries an expected outcome, an expected SKU set, and the equipment it was meant to seat; the SKU set is compared as a set, so reranker order is evidence rather than a pass condition, and a slot-equivalent substitute is recorded as `Substituted` and counted apart from a miss. `indeterminate` is a first-class verdict: when the agent neither recommends nor refuses, the case is excluded from accuracy instead of being silently counted as wrong, because a harness that cannot say "I could not tell" will report a number either way. Datasets are read in place and hashed with SHA-256, never copied, so a stored result can never drift from the cases that produced it.
+
+What comes out is a per-case verdict plus the aggregates that make it readable. Deterministic metrics cover outcome accuracy, abstention, slot substitution and constraint-rule breaks, with ranking metrics — Recall@K, Precision@K and nDCG@K — scored where relevance labels exist, which today means the development split. Model-judged metrics cover relevance and completeness, with faithfulness and context precision and recall scored when an AgentEval report is imported. Above the per-case score, three views do the diagnostic work: stage comparison separates what retrieval found from what the reranker ordered and what was finally recommended, category performance shows which part of the catalogue the agent handles badly, and the generalization gap between splits shows how much of a result survives contact with cases the work was not tuned on. Means arrive with confidence intervals, so a figure is a range rather than a promise. Every run is stored, `compare-runs` puts one beside a baseline, and the self-contained HTML report under `specs/evaluation/reports/<runId>/` can be handed to someone who has no build.
+
+Reading a run means reading three different things that all look like failure. A **miss** says the customer's words never reached the right SKU. A **substitution** says they reached a slot-equivalent product, which is often acceptable and always worth a look. An **abstention** says the agent declined when it should have recommended — the costliest of the three, because it is invisible in a headline accuracy figure until you read the interval around it. A wide interval is an instruction, not a result: it means run more cases before believing the mean. A low score on one category is more useful still, because it points at a part of the catalogue rather than at the agent as a whole.
+
+That is where the harness feeds the catalogue. A miss names a SKU that the customer's words should have reached, and the fix is usually in that product's generated `metadata` — its `tags`, `attributes`, `bestFor` and `notFor` — rather than in the ranking code. §3.6 is the same mechanism seen from the other side: a product whose name never says *lumbar* is still findable because the word lives in its description and its generated tags, and a MISS is what it looks like when a term that should have been there was not. The loop is deliberately closed by a person. The harness reads the catalogue through `ProductCatalogReader` and never writes to it, because a scorer that edits its own inputs cannot be trusted to report on them. So the sequence is human: read the miss, change the metadata, re-ingest through `CatalogIngestion` and `CatalogPopulate` into `product_embedding.db`, replay the dataset, and put the new run beside the old with `compare-runs`. Because both runs are hashed against the catalogue that produced them, the improvement is provable rather than asserted. `evaluation/METRICS_MATRIX.md` records, for each metric, what data it needs and whether it is evaluable today — the honest column is the last one, where several metrics are implemented but limited by missing labels.
 
 ---
 
